@@ -1,7 +1,7 @@
 ---
 name: "\U0001F6E0Feature Template"
 about: 기능 개발을 위한 이슈 템플릿입니다.
-title: "[Feat] 이슈 내용"
+title: "[FEATURE] 이슈 내용"
 labels: feat
 assignees: ""
 ---

@@ -1,7 +1,7 @@
 ---
 name: "\U0001F527Fix Template"
 about: 버그 수정시 사용하는 템플릿입니다.
-title: "[Fix] 작업 내용"
+title: "[FIX] 작업 내용"
 labels: fix
 assignees: ''
 ---
