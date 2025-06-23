@@ -1,4 +1,4 @@
-package or.sopt.houme.global.error.code;
+package or.sopt.houme.global.api;
 
 import lombok.Getter;
 import org.springframework.http.HttpStatus;

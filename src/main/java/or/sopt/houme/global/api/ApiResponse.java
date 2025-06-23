@@ -1,4 +1,4 @@
-package or.sopt.houme.global.error.dto;
+package or.sopt.houme.global.api;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import org.springframework.http.HttpStatus;

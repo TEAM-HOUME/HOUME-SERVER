@@ -1,8 +1,5 @@
-package or.sopt.houme.global.handler;
+package or.sopt.houme.global.api;
 
-import or.sopt.houme.global.error.code.ErrorCode;
-import or.sopt.houme.global.error.dto.ApiResponse;
-import or.sopt.houme.global.error.exception.BusinessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
