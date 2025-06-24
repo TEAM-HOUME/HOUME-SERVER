@@ -11,7 +11,9 @@ import or.sopt.houme.domain.user.entity.Role;
 import or.sopt.houme.domain.user.entity.SocialType;
 import or.sopt.houme.domain.user.entity.User;
 import or.sopt.houme.domain.user.repository.UserRepository;
+import or.sopt.houme.global.config.JWTConfig;
 import or.sopt.houme.global.config.KaKaoConfig;
+import or.sopt.houme.global.jwt.JWTUtil;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 

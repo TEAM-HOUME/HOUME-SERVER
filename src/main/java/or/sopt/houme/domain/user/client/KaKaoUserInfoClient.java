@@ -1,7 +1,8 @@
 package or.sopt.houme.domain.user.client;
 
-import or.sopt.assignment.domain.user.controller.dto.KaKaoUserInfoResponse;
-import or.sopt.assignment.global.config.KaKaoOAuthFeignConfig;
+
+import or.sopt.houme.domain.user.controller.dto.KaKaoUserInfoResponse;
+import or.sopt.houme.global.config.KaKaoOAuthFeignConfig;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestHeader;

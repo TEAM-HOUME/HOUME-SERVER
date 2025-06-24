@@ -10,7 +10,10 @@ public enum ErrorCode {
     NOT_FOUND_URL(HttpStatus.NOT_FOUND, 40401, "지원하지 않는 URL입니다."),
 
     METHOD_NOT_ALLOWED(HttpStatus.METHOD_NOT_ALLOWED, 40501, "잘못된 HTTP method 요청입니다."),
-    ;
+
+    // Token 관련 예외
+    TOKEN_INVALID_TYPE(HttpStatus.BAD_REQUEST,40601 ,"액세스 토큰이 존재하지 않습니다."),
+    TOKEN_ACCESS_EXPIRED(HttpStatus.BAD_REQUEST,40602 ,"액세스 토큰이 만료되었습니다." );
 
     private final HttpStatus status;
     private final int code;

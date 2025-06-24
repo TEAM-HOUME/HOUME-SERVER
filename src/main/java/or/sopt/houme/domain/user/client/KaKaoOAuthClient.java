@@ -2,6 +2,7 @@ package or.sopt.houme.domain.user.client;
 
 
 
+import or.sopt.houme.domain.user.controller.dto.KaKaoCallbackResponse;
 import or.sopt.houme.domain.user.controller.dto.KaKaoOAuthTokenDTO;
 import or.sopt.houme.global.config.KaKaoOAuthFeignConfig;
 import org.springframework.cloud.openfeign.FeignClient;
@@ -25,7 +26,7 @@ public interface KaKaoOAuthClient {
      * 리다이렉트 시키는 것으로 대체됩니다
      * */
     @GetMapping("/oauth/authorize")
-    OAuthCallbackResponse getCode(@RequestParam("client_id") String client_id,
+    KaKaoCallbackResponse getCode(@RequestParam("client_id") String client_id,
                                   @RequestParam("redirect_uri") String redirect_uri,
                                   @RequestParam("response_type") String response_type);
 
