@@ -1,6 +1,7 @@
 package or.sopt.houme.domain.user.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -14,6 +15,7 @@ import java.io.IOException;
 @RestController
 @RequiredArgsConstructor
 @Slf4j
+@Tag(name = "소셜로그인 관련 API")
 public class OAuthController {
 
     private final OAuthService oAuthService;

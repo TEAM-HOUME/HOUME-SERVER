@@ -23,7 +23,8 @@ public class WhiteListConfig {
     public static final List<String> oauthWhitelist() {
         return List.of(
                 "/oauth/kakao/",
-                "/oauth/kakao/callback"
+                "/oauth/kakao/callback",
+                "/access"
         );
     }
 }
