@@ -13,6 +13,7 @@ public class JWTService {
     private final JWTUtil jwtUtil;
     private final JWTConfig jwtConfig;
 
+    // 토큰 발급기를 위한 메서드입니다
     public void createToken(HttpServletResponse response) {
 
         String access = jwtUtil.createJwt("access", 1L, "ROLE_USER", jwtConfig.getAccessTokenValidityInSeconds());
