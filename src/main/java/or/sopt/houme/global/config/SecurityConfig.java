@@ -17,6 +17,7 @@ import org.springframework.web.cors.CorsConfigurationSource;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 
 
 @Configuration
@@ -36,7 +37,6 @@ public class SecurityConfig {
 
         return configuration.getAuthenticationManager();
     }
-
 
 
     @Bean
@@ -80,10 +80,10 @@ public class SecurityConfig {
 
         /**
          * 인가 경로를 설정합니다
-         * 현재는 테스트이므로 모든 경로에 대한 인가를 허용하겠습니다
          * */
         http.authorizeHttpRequests((auth)->auth
-                .requestMatchers("/**").permitAll()
+                .requestMatchers(WhiteListConfig.swaggerWhitelist().toArray(new String[0])).permitAll()
+                .requestMatchers(WhiteListConfig.oauthWhitelist().toArray(new String[0])).permitAll()
                 .anyRequest().authenticated());
 
         http
