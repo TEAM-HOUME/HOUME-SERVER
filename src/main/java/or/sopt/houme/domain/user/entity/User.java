@@ -1,4 +1,4 @@
-package or.sopt.houme.domain;
+package or.sopt.houme.domain.user.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
