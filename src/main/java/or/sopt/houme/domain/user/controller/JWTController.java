@@ -11,6 +11,7 @@ import or.sopt.houme.domain.user.service.JWTService;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -41,5 +42,20 @@ public class JWTController {
         log.info("User's Name: {}",userDetails.getUser().getId());
 
         return "액세스 토큰이 성공적으로 작동합니다";
+    }
+
+
+    @Operation(
+            summary = "리프레시,액세스 토큰 재발급 API",
+            description = "리프레시,액세스 토큰 재발급 API입니다.<br>" +
+                    "리프레시 토큰 탈취에 대비하여 액세스와 함께 리프레시 토큰도 재발급하는 Refresh Rotate 로직입니다 "
+    )
+    @PostMapping("/reissue")
+    public String reissue(@AuthenticationPrincipal CustomUserDetails userDetails, HttpServletRequest request, HttpServletResponse response) {
+
+        log.info("요청 들어옴");
+        jwtService.RefreshRotate(request,response);
+
+        return "성공적으로 재설정 되었습니다";
     }
 }

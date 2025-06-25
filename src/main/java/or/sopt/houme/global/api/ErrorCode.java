@@ -12,8 +12,13 @@ public enum ErrorCode {
     METHOD_NOT_ALLOWED(HttpStatus.METHOD_NOT_ALLOWED, 40501, "잘못된 HTTP method 요청입니다."),
 
     // Token 관련 예외
-    TOKEN_INVALID_TYPE(HttpStatus.BAD_REQUEST,40601 ,"액세스 토큰이 존재하지 않습니다."),
-    TOKEN_ACCESS_EXPIRED(HttpStatus.BAD_REQUEST,40602 ,"액세스 토큰이 만료되었습니다." );
+    ACCESS_INVALID_TYPE(HttpStatus.BAD_REQUEST,40601 ,"액세스 토큰이 존재하지 않습니다."),
+    ACCESS_TOKEN_EXPIRED(HttpStatus.BAD_REQUEST,40602 ,"액세스 토큰이 만료되었습니다." ),
+    REFRESH_TOKEN_NULL(HttpStatus.BAD_REQUEST,40603 ,"리프레시 토큰이 존재하지 않습니다"),
+    REFRESH_TOKEN_EXPIRED(HttpStatus.BAD_REQUEST,40604 ,"리프레시 토큰이 만료되었습니다" ),
+
+    // 회원 관련 예외
+    USER_NOT_FOUND(HttpStatus.NOT_FOUND,40605 ,"회원을 찾을 수 없습니다" );
 
     private final HttpStatus status;
     private final int code;
