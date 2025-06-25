@@ -8,7 +8,6 @@ import or.sopt.houme.domain.user.client.KaKaoOAuthClient;
 import or.sopt.houme.domain.user.client.KaKaoUserInfoClient;
 import or.sopt.houme.domain.user.controller.dto.KaKaoOAuthTokenDTO;
 import or.sopt.houme.domain.user.controller.dto.KaKaoUserInfoResponse;
-import or.sopt.houme.domain.user.entity.RefreshToken;
 import or.sopt.houme.domain.user.entity.Role;
 import or.sopt.houme.domain.user.entity.SocialType;
 import or.sopt.houme.domain.user.entity.User;
@@ -33,6 +32,7 @@ public class OAuthService {
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
     private final JWTUtil jwtUtil;
     private final JWTConfig jwtConfig;
+
     private final RefreshTokenRepository refreshTokenRepository;
 
     private final KaKaoConfig kaKaoConfig;
@@ -82,9 +82,7 @@ public class OAuthService {
         String access = jwtUtil.createJwt("access", byEmail.getId(), byEmail.getRole().toString(), jwtConfig.getAccessTokenValidityInSeconds());
         String refresh = jwtUtil.createJwt("refresh", byEmail.getId(), byEmail.getRole().toString(), jwtConfig.getRefreshTokenValidityInSeconds());
 
-        RefreshToken newRefreshToken = RefreshToken.of(byEmail.getId(), refresh);
-
-        refreshTokenRepository.save(newRefreshToken);
+        refreshTokenRepository.saveRefreshToken(byEmail.getId(),refresh,jwtConfig.getRefreshTokenValidityInSeconds());
 
         response.setHeader("access-token", access);
 

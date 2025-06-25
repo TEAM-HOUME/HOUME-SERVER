@@ -6,7 +6,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import or.sopt.houme.domain.user.entity.RefreshToken;
 import or.sopt.houme.domain.user.entity.User;
 import or.sopt.houme.domain.user.repository.RefreshTokenRepository;
 import or.sopt.houme.domain.user.repository.UserRepository;
@@ -25,8 +24,8 @@ public class JWTService {
 
     private final JWTUtil jwtUtil;
     private final JWTConfig jwtConfig;
-    private final RefreshTokenRepository refreshTokenRepository;
     private final UserRepository userRepository;
+    private final RefreshTokenRepository refreshTokenRedisTemplateUtil;
 
 
     // 토큰 발급기를 위한 메서드입니다
@@ -85,7 +84,7 @@ public class JWTService {
         // 3. 리프레시 토큰에서 ID를 가져와서 해당 토큰이 서버에 존재하는지 확인
         Long userId = jwtUtil.getId(refresh);
 
-        Boolean isExist = refreshTokenRepository.existsById(userId);
+        Boolean isExist = refreshTokenRedisTemplateUtil.existsById(userId);
 
         if (!isExist) {
             throw new TokenException(ErrorCode.REFRESH_TOKEN_NULL);
@@ -106,11 +105,9 @@ public class JWTService {
         String newRefresh = jwtUtil.createJwt("refresh", findUser.getId(), findUser.getRole().toString(), jwtConfig.getRefreshTokenValidityInSeconds());
 
 
-        refreshTokenRepository.deleteById(userId);
+        refreshTokenRedisTemplateUtil.deleteById(userId);
 
-        RefreshToken newRefreshToken = RefreshToken.of(userId, refresh);
-
-        refreshTokenRepository.save(newRefreshToken);
+        refreshTokenRedisTemplateUtil.saveRefreshToken(userId,newRefresh,jwtConfig.getRefreshTokenValidityInSeconds());
 
         response.setHeader("access-token", access);
 
