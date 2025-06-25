@@ -34,7 +34,7 @@ spring:
           kakao:
             client-name: kakao
             client-id: ${KAKAO_CLIENT_ID}
-            redirect-uri: http://localhost:8080/oauth/kakao/callback
+            redirect-uri: http://localhost:3000
             authorization-grant-type: authorization_code
             scope: profile_nickname,account_email
             client-authentication-method: client_secret_post
@@ -48,5 +48,5 @@ spring:
   jwt:
     header: Authorization
     secret: e4testr8Z9testsD7fHtestnPtestuVwXtest3e5g7i9l2n4
-    access-token-validity-in-seconds: 10 #3600
+    access-token-validity-in-seconds: 3600
     refresh-token-validity-in-seconds: 2592000
