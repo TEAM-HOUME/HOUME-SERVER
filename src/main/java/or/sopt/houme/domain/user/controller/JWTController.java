@@ -19,13 +19,13 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequiredArgsConstructor
 @Slf4j
-@Tag(name = "테스트용 토큰 발급기 API")
+@Tag(name = "토큰 관련 API")
 public class JWTController {
 
     private final JWTService jwtService;
 
     @GetMapping("/access")
-    @Operation(summary = "액세스 토큰 발급기",
+    @Operation(summary = "테스트용 액세스 토큰 발급기",
             description = "자체 로그인이 없기 때문에 액세스 토큰이 필요한 경우에 해당 메서드를 이용하여 토큰을 발급 받아주세요")
     public void createAccess(HttpServletResponse response){
         jwtService.createToken(response);
