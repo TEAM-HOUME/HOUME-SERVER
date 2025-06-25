@@ -107,10 +107,9 @@ public class JWTService {
 
 
         refreshTokenRepository.deleteById(userId);
-        RefreshToken newRefreshToken = RefreshToken.builder()
-                .userId(findUser.getId())
-                .refreshToken(newRefresh)
-                .build();
+
+        RefreshToken newRefreshToken = RefreshToken.of(userId, refresh);
+
         refreshTokenRepository.save(newRefreshToken);
 
         response.setHeader("access-token", access);
