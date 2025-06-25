@@ -8,6 +8,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import or.sopt.houme.domain.user.controller.dto.CustomUserDetails;
 import or.sopt.houme.domain.user.service.JWTService;
+import or.sopt.houme.global.api.ApiResponse;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -44,18 +46,17 @@ public class JWTController {
         return "액세스 토큰이 성공적으로 작동합니다";
     }
 
-
+    @PostMapping("/reissue")
     @Operation(
             summary = "리프레시,액세스 토큰 재발급 API",
-            description = "리프레시,액세스 토큰 재발급 API입니다.<br>" +
-                    "리프레시 토큰 탈취에 대비하여 액세스와 함께 리프레시 토큰도 재발급하는 Refresh Rotate 로직입니다 "
+            description = "리프레시,액세스 토큰 재발급 API입니다.<br><br>" +
+                    "리프레시 토큰 탈취에 대비하여 액세스와 함께 리프레시 토큰도 재발급하는 Refresh Rotate 로직입니다 <br><br>" +
+                    "**반드시 만료된 액세스토큰을 헤더에서 뺀 후**에 요청을 넣어주세요"
     )
-    @PostMapping("/reissue")
-    public String reissue(@AuthenticationPrincipal CustomUserDetails userDetails, HttpServletRequest request, HttpServletResponse response) {
+    public ResponseEntity<ApiResponse<?>> reissue(HttpServletRequest request, HttpServletResponse response) {
 
-        log.info("요청 들어옴");
         jwtService.RefreshRotate(request,response);
 
-        return "성공적으로 재설정 되었습니다";
+        return ResponseEntity.ok(ApiResponse.ok("성공적으로 재생성되었습니다"));
     }
 }
