@@ -1,7 +1,8 @@
 package or.sopt.houme.domain.user.entity;
 
-import jakarta.persistence.Id;
+
 import lombok.*;
+import org.springframework.data.annotation.Id;
 import org.springframework.data.redis.core.RedisHash;
 
 @RedisHash(value = "token", timeToLive = 604800) // 7일 = 60 * 60 * 24 * 7
@@ -13,7 +14,7 @@ import org.springframework.data.redis.core.RedisHash;
 public class RefreshToken {
 
     @Id
-    private Long id;
+    private Long userId;
 
     private String refreshToken;
 }

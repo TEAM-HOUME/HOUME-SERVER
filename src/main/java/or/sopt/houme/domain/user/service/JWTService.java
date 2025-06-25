@@ -20,7 +20,6 @@ import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
-@Slf4j
 public class JWTService {
 
 
@@ -37,11 +36,11 @@ public class JWTService {
         response.setHeader("access-token", access);
     }
 
+    /***/
     public void RefreshRotate(HttpServletRequest request, HttpServletResponse response){
 
         String refresh = null;
 
-        log.info("쿠키 탐색");
         Cookie[] cookies = request.getCookies();
         if (cookies == null) throw new TokenException(ErrorCode.REFRESH_TOKEN_NULL);
 
@@ -69,18 +68,18 @@ public class JWTService {
         String category = jwtUtil.getCategory(refresh);
 
         if (!category.equals("refresh")) {
-
             throw new TokenException(ErrorCode.REFRESH_TOKEN_NULL);
         }
 
-        Boolean isExist = refreshTokenRepository.existsByRefreshToken(refresh);
+        Long userId = jwtUtil.getId(refresh);
+
+        Boolean isExist = refreshTokenRepository.existsById(userId);
+
         if (!isExist) {
 
             //response body
             throw new TokenException(ErrorCode.REFRESH_TOKEN_NULL);
         }
-
-        Long userId = jwtUtil.getId(refresh);
 
         User findUser = userRepository.findById(userId)
                 .orElseThrow(() -> new UserException(ErrorCode.USER_NOT_FOUND));
@@ -90,8 +89,9 @@ public class JWTService {
         String newRefresh = jwtUtil.createJwt("refresh", findUser.getId(), findUser.getRole().toString(), jwtConfig.getRefreshTokenValidityInSeconds());
 
 
-        refreshTokenRepository.deleteByRefreshToken(refresh);
+        refreshTokenRepository.deleteById(userId);
         RefreshToken newRefreshToken = RefreshToken.builder()
+                .userId(findUser.getId())
                 .refreshToken(newRefresh)
                 .build();
         refreshTokenRepository.save(newRefreshToken);
@@ -104,9 +104,6 @@ public class JWTService {
                 false);
 
         response.addCookie(refreshCookie);
-
-        log.info("새롭게 구현한 리프레시 토큰: {}", refresh);
-        log.info("새롭게 구현한 액세스 토큰: {}", access);
 
     }
 }
