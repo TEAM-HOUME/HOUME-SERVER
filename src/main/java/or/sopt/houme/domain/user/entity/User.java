@@ -24,4 +24,7 @@ public class User {
 
     @Enumerated(EnumType.STRING)
     private SocialType socialType;
+
+
+    // 회원의 정적팩터링 메서드는 아직 구현하지 않았습니다
 }

@@ -82,10 +82,7 @@ public class OAuthService {
         String access = jwtUtil.createJwt("access", byEmail.getId(), byEmail.getRole().toString(), jwtConfig.getAccessTokenValidityInSeconds());
         String refresh = jwtUtil.createJwt("refresh", byEmail.getId(), byEmail.getRole().toString(), jwtConfig.getRefreshTokenValidityInSeconds());
 
-        RefreshToken newRefreshToken = RefreshToken.builder()
-                .userId(byEmail.getId())
-                .refreshToken(refresh)
-                .build();
+        RefreshToken newRefreshToken = RefreshToken.of(byEmail.getId(), refresh);
 
         refreshTokenRepository.save(newRefreshToken);
 

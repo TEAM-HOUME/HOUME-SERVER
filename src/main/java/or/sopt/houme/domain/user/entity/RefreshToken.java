@@ -17,4 +17,11 @@ public class RefreshToken {
     private Long userId;
 
     private String refreshToken;
+
+    public static RefreshToken of(Long userId, String refreshToken) {
+        return RefreshToken.builder()
+                .userId(userId)
+                .refreshToken(refreshToken)
+                .build();
+    }
 }
