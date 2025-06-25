@@ -1,5 +1,6 @@
 package or.sopt.houme.domain.user.service;
 
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -7,9 +8,11 @@ import or.sopt.houme.domain.user.client.KaKaoOAuthClient;
 import or.sopt.houme.domain.user.client.KaKaoUserInfoClient;
 import or.sopt.houme.domain.user.controller.dto.KaKaoOAuthTokenDTO;
 import or.sopt.houme.domain.user.controller.dto.KaKaoUserInfoResponse;
+import or.sopt.houme.domain.user.entity.RefreshToken;
 import or.sopt.houme.domain.user.entity.Role;
 import or.sopt.houme.domain.user.entity.SocialType;
 import or.sopt.houme.domain.user.entity.User;
+import or.sopt.houme.domain.user.repository.RefreshTokenRepository;
 import or.sopt.houme.domain.user.repository.UserRepository;
 import or.sopt.houme.global.config.JWTConfig;
 import or.sopt.houme.global.config.KaKaoConfig;
@@ -29,6 +32,7 @@ public class OAuthService {
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
     private final JWTUtil jwtUtil;
     private final JWTConfig jwtConfig;
+    private final RefreshTokenRepository refreshTokenRepository;
 
     private final KaKaoConfig kaKaoConfig;
 
@@ -75,7 +79,22 @@ public class OAuthService {
         User byEmail = userRepository.findByEmail(userInfo.getKakao_account().getEmail());
 
         String access = jwtUtil.createJwt("access", byEmail.getId(), byEmail.getRole().toString(), jwtConfig.getAccessTokenValidityInSeconds());
+
+        String refresh = jwtUtil.createJwt("refresh", byEmail.getId(), byEmail.getRole().toString(), jwtConfig.getRefreshTokenValidityInSeconds());
+        RefreshToken newRefreshToken = RefreshToken.builder()
+                .refreshToken(refresh)
+                .build();
+        refreshTokenRepository.save(newRefreshToken);
+
         response.setHeader("access-token", access);
+
+        Cookie refreshCookie = new Cookie("refresh-token", refresh);
+        refreshCookie.setHttpOnly(true);
+        refreshCookie.setSecure(false);
+        refreshCookie.setPath("/");
+        refreshCookie.setMaxAge((jwtConfig.getRefreshTokenValidityInSeconds().intValue()));
+
+        response.addCookie(refreshCookie);
     }
 
 
