@@ -18,7 +18,8 @@ public enum ErrorCode {
     REFRESH_TOKEN_EXPIRED(HttpStatus.BAD_REQUEST,40604 ,"리프레시 토큰이 만료되었습니다" ),
 
     // 회원 관련 예외
-    USER_NOT_FOUND(HttpStatus.NOT_FOUND,40605 ,"회원을 찾을 수 없습니다" );
+    USER_NOT_FOUND(HttpStatus.NOT_FOUND,40605 ,"회원을 찾을 수 없습니다" ),
+    COOKIE_NULL(HttpStatus.NOT_FOUND,40606 ,"쿠키를 찾을 수 없습니다" );
 
     private final HttpStatus status;
     private final int code;

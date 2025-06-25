@@ -36,27 +36,38 @@ public class JWTService {
         response.setHeader("access-token", access);
     }
 
-    /***/
+
+    /**
+     * 액세스 토큰이 만료가 되면 발생하는 예외를 클라이언트가 받게되면
+     * 서버에 RTT 로직을 호출합니다.
+     *
+     * 그러면 서버에서는 해당 로직을 수행합니다
+     *
+     * 만약 여기서 걸리는 경우가 존재한다면, 새롭게 로그인을 하여 리프레시 토큰을 발급받아야 합니다.
+     * */
     public void RefreshRotate(HttpServletRequest request, HttpServletResponse response){
 
         String refresh = null;
 
+        // 0. 쿠키를 탐색
         Cookie[] cookies = request.getCookies();
-        if (cookies == null) throw new TokenException(ErrorCode.REFRESH_TOKEN_NULL);
+        if (cookies == null) throw new TokenException(ErrorCode.COOKIE_NULL);
 
+        // 1. 쿠키를 순차적으로 돌면서 우리가 이전에 설정해놓은 쿠키의 키값과 일치하는 쿠키가 존재하는지 탐색
         for (Cookie cookie : cookies) {
-
             if (cookie.getName().equals("refresh-token")) {
 
                 refresh = cookie.getValue();
             }
         }
 
+        // 1-1. 쿠키 속에 우리가 만들어놓은 리프레시 토큰이 존재하지 않는다면 예외 발생
         if (refresh == null) {
 
             throw new TokenException(ErrorCode.REFRESH_TOKEN_NULL);
         }
 
+        // 1-2. 토큰의 유효기간이 만료되었다면 예외 발생
         try {
             jwtUtil.isExpired(refresh);
         } catch (ExpiredJwtException e) {
@@ -64,23 +75,29 @@ public class JWTService {
             throw new TokenException(ErrorCode.REFRESH_TOKEN_EXPIRED);
         }
 
-
+        // 2. 발견한 토큰의 카테고리가 refresh 가 맞는지 확인
         String category = jwtUtil.getCategory(refresh);
 
         if (!category.equals("refresh")) {
             throw new TokenException(ErrorCode.REFRESH_TOKEN_NULL);
         }
 
+        // 3. 리프레시 토큰에서 ID를 가져와서 해당 토큰이 서버에 존재하는지 확인
         Long userId = jwtUtil.getId(refresh);
 
         Boolean isExist = refreshTokenRepository.existsById(userId);
 
         if (!isExist) {
-
-            //response body
             throw new TokenException(ErrorCode.REFRESH_TOKEN_NULL);
         }
 
+
+        /**
+         * 위의 모든 검증절차를 통과하였다면
+         * 기존의 리프레시 토큰은 서버에서 삭제하고
+         *
+         * 액세스 토큰과 리프레시 토큰을 새롭게 발급합니다
+         * */
         User findUser = userRepository.findById(userId)
                 .orElseThrow(() -> new UserException(ErrorCode.USER_NOT_FOUND));
 
