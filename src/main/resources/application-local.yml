@@ -12,6 +12,12 @@ spring:
     password: ${LOCAL_DB_PASSWORD}
     driver-class-name: com.mysql.cj.jdbc.Driver
 
+  data:
+    redis:
+      host: localhost
+      port: 6379
+
+
   jpa:
     hibernate:
       ddl-auto: update
@@ -28,7 +34,7 @@ spring:
           kakao:
             client-name: kakao
             client-id: ${KAKAO_CLIENT_ID}
-            redirect-uri: http://localhost:3000
+            redirect-uri: http://localhost:8080/oauth/kakao/callback
             authorization-grant-type: authorization_code
             scope: profile_nickname,account_email
             client-authentication-method: client_secret_post

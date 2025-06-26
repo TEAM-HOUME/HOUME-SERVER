@@ -24,7 +24,8 @@ public class WhiteListConfig {
         return List.of(
                 "/oauth/kakao/",
                 "/oauth/kakao/callback",
-                "/access"
+                "/access",
+                "/reissue"
         );
     }
 }

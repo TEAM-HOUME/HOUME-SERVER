@@ -1,5 +1,6 @@
 package or.sopt.houme.domain.user.service;
 
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -10,10 +11,12 @@ import or.sopt.houme.domain.user.controller.dto.KaKaoUserInfoResponse;
 import or.sopt.houme.domain.user.entity.Role;
 import or.sopt.houme.domain.user.entity.SocialType;
 import or.sopt.houme.domain.user.entity.User;
+import or.sopt.houme.domain.user.repository.RefreshTokenRepository;
 import or.sopt.houme.domain.user.repository.UserRepository;
 import or.sopt.houme.global.config.JWTConfig;
 import or.sopt.houme.global.config.KaKaoConfig;
 import or.sopt.houme.global.jwt.JWTUtil;
+import or.sopt.houme.global.util.CookieUtil;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -29,6 +32,8 @@ public class OAuthService {
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
     private final JWTUtil jwtUtil;
     private final JWTConfig jwtConfig;
+
+    private final RefreshTokenRepository refreshTokenRepository;
 
     private final KaKaoConfig kaKaoConfig;
 
@@ -75,7 +80,18 @@ public class OAuthService {
         User byEmail = userRepository.findByEmail(userInfo.getKakao_account().getEmail());
 
         String access = jwtUtil.createJwt("access", byEmail.getId(), byEmail.getRole().toString(), jwtConfig.getAccessTokenValidityInSeconds());
+        String refresh = jwtUtil.createJwt("refresh", byEmail.getId(), byEmail.getRole().toString(), jwtConfig.getRefreshTokenValidityInSeconds());
+
+        refreshTokenRepository.saveRefreshToken(byEmail.getId(),refresh,jwtConfig.getRefreshTokenValidityInSeconds());
+
         response.setHeader("access-token", access);
+
+        Cookie refreshCookie = CookieUtil.createSecureCookie("refresh-token",
+                refresh,
+                jwtConfig.getRefreshTokenValidityInSeconds().intValue(),
+                false);
+
+        response.addCookie(refreshCookie);
     }
 
 

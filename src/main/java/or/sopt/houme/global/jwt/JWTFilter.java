@@ -64,11 +64,11 @@ public class JWTFilter extends OncePerRequestFilter{
 
             String category = jwtUtil.getCategory(accessToken);
             if (!"access".equals(category)) {
-                throw new TokenException(ErrorCode.TOKEN_INVALID_TYPE);
+                throw new TokenException(ErrorCode.ACCESS_INVALID_TYPE);
             }
 
         } catch (ExpiredJwtException e) {
-            throw new TokenException(ErrorCode.TOKEN_ACCESS_EXPIRED);
+            throw new TokenException(ErrorCode.ACCESS_TOKEN_EXPIRED);
         }
 
         //토큰에서 id와 role 획득
