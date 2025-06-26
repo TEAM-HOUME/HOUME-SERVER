@@ -36,14 +36,14 @@ public class JWTController {
     @Operation(summary = "액세스 토큰 사용 방법",
             description = "**@AuthenticationPrincipal** 어노테이션을 통해서 회원정보를 가져옵니다 <br><br>" +
                     "이걸로 회원을 식별해주시면 됩니다")
-    public String accessTest(@AuthenticationPrincipal CustomUserDetails userDetails, HttpServletRequest request) {
+    public ResponseEntity<ApiResponse<String>> accessTest(@AuthenticationPrincipal CustomUserDetails userDetails, HttpServletRequest request) {
 
         String accessToken = request.getHeader("Authorization");
 
         log.info("Access Token: {}", accessToken);
         log.info("User's Name: {}",userDetails.getUser().getId());
 
-        return "액세스 토큰이 성공적으로 작동합니다";
+        return ResponseEntity.ok(ApiResponse.ok("액세스 토큰이 성공적으로 작동합니다"));
     }
 
     @PostMapping("/reissue")
@@ -53,7 +53,7 @@ public class JWTController {
                     "리프레시 토큰 탈취에 대비하여 액세스와 함께 리프레시 토큰도 재발급하는 Refresh Rotate 로직입니다 <br><br>" +
                     "**반드시 만료된 액세스토큰을 헤더에서 뺀 후**에 요청을 넣어주세요"
     )
-    public ResponseEntity<ApiResponse<?>> reissue(HttpServletRequest request, HttpServletResponse response) {
+    public ResponseEntity<ApiResponse<String>> reissue(HttpServletRequest request, HttpServletResponse response) {
 
         jwtService.RefreshRotate(request,response);
 
