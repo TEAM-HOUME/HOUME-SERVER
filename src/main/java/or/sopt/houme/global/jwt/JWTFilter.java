@@ -12,7 +12,7 @@ import or.sopt.houme.domain.user.controller.dto.CustomUserDetails;
 import or.sopt.houme.domain.user.entity.Role;
 import or.sopt.houme.domain.user.entity.User;
 import or.sopt.houme.global.api.ErrorCode;
-import or.sopt.houme.global.api.TokenException;
+import or.sopt.houme.global.api.handler.TokenException;
 import or.sopt.houme.global.config.JWTConfig;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
