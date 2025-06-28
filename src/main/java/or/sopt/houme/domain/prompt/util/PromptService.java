@@ -1,6 +1,8 @@
 package or.sopt.houme.domain.prompt.util;
 
+import or.sopt.houme.domain.prompt.dto.PromptRequestDTO;
+
 public interface PromptService {
 
-    void makePrompt();
+    String makePrompt(PromptRequestDTO promptRequestDTO);
 }
