@@ -42,7 +42,7 @@ public class ImageService {
 
             byte[] image = getGptImage(request);
 
-            // S3에 이미지 저장: 비동기적으로 작동 할 수 있도록 리팩터링 돼야함
+            // S3에 이미지 저장
             s3Util.upload(image, S3DirNameConstant.CHAT_GPT_DIRNAME);
 
             return image;
