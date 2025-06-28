@@ -1,5 +1,6 @@
 package or.sopt.houme.domain.user.service;
 
+import feign.FeignException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -14,6 +15,7 @@ import or.sopt.houme.domain.user.entity.User;
 import or.sopt.houme.domain.user.repository.RefreshTokenRepository;
 import or.sopt.houme.domain.user.repository.UserRepository;
 import or.sopt.houme.global.api.ErrorCode;
+import or.sopt.houme.global.api.handler.TokenException;
 import or.sopt.houme.global.api.handler.UserException;
 import or.sopt.houme.global.config.JWTConfig;
 import or.sopt.houme.global.config.KaKaoConfig;
@@ -45,6 +47,9 @@ public class OAuthService {
      *
      * 실제로는 클라이언트 단으로 주소가 리다이렉트되어 인가코드를 클라이언트에서 파싱하여 넘겨줄 것이기 떄문에 해당 메서드는 사용되지 않습니다
      * 서버에서 로직의 유효성을 검사하기 위해 사용합니다
+     *
+     * 현재 fallback 로직이 구현되어있지 않습니다. 아직 Feign의 fallback factory에 대한 학습이 부족해서...
+     * 앱잼기간내에 구현해보겠습니다 FIXME
      * */
     public String requestRedirect() {
         return String.format(
@@ -56,12 +61,27 @@ public class OAuthService {
 
     public void kakaoLogin(String accessCode, HttpServletResponse response) {
 
+        // 인가코드가 비어있다면 예외발생
+        if (accessCode == null || accessCode.isEmpty()) {
+            throw new UserException(ErrorCode.KAKAO_AUTH_CODE_INVALID);
+        }
+
         // 인가코드를 받고 그걸 통해서 인증 액세스 토큰을 발급받습니다
-        KaKaoOAuthTokenDTO authorizationCode = getKaKaoOAuthTokenDTO(accessCode);
+        KaKaoOAuthTokenDTO authorizationCode;
+        try {
+            authorizationCode = getKaKaoOAuthTokenDTO(accessCode);
+        } catch (FeignException e) {
+            throw new UserException(ErrorCode.KAKAO_AUTH_CODE_INVALID);
+        }
 
         // 그리고 액세스 토큰을 이용하여 회원 정보를 가져옵니다
-        KaKaoUserInfoResponse userInfo = kaKaoUserInfoClient.getUserInfo(
-                "Bearer "+authorizationCode.getAccess_token());
+        KaKaoUserInfoResponse userInfo;
+        try {
+            userInfo = kaKaoUserInfoClient.getUserInfo(
+                    "Bearer "+authorizationCode.getAccess_token());
+        }catch (FeignException e) {
+            throw new UserException(ErrorCode.KAKAO_ACCESSTOKEN_INVALID);
+        }
 
         // 만약 해당 이메일을 통해 회원가입된 회원이 존재하지 않는다면, 새로운 회원을 생성합니다
         Boolean userExist = userRepository.existsByEmail(userInfo.getKakao_account().getEmail());
