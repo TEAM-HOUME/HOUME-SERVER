@@ -13,6 +13,8 @@ import or.sopt.houme.domain.user.entity.SocialType;
 import or.sopt.houme.domain.user.entity.User;
 import or.sopt.houme.domain.user.repository.RefreshTokenRepository;
 import or.sopt.houme.domain.user.repository.UserRepository;
+import or.sopt.houme.global.api.ErrorCode;
+import or.sopt.houme.global.api.handler.UserException;
 import or.sopt.houme.global.config.JWTConfig;
 import or.sopt.houme.global.config.KaKaoConfig;
 import or.sopt.houme.global.jwt.JWTUtil;
@@ -77,7 +79,8 @@ public class OAuthService {
         }
 
         // 그리고 회원 정보를 기반으로 액세스토큰을 발급하여 헤더에 넣습니다
-        User byEmail = userRepository.findByEmail(userInfo.getKakao_account().getEmail());
+        User byEmail = userRepository.findByEmail(userInfo.getKakao_account().getEmail())
+                .orElseThrow(()-> new UserException(ErrorCode.USER_NOT_FOUND));
 
         String access = jwtUtil.createJwt("access", byEmail.getId(), byEmail.getRole().toString(), jwtConfig.getAccessTokenValidityInSeconds());
         String refresh = jwtUtil.createJwt("refresh", byEmail.getId(), byEmail.getRole().toString(), jwtConfig.getRefreshTokenValidityInSeconds());
