@@ -4,6 +4,8 @@ package or.sopt.houme.domain.user.controller.dto;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import or.sopt.houme.domain.user.entity.User;
+import or.sopt.houme.global.api.ErrorCode;
+import or.sopt.houme.global.api.handler.UserException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
@@ -25,13 +27,15 @@ public class CustomUserDetails implements UserDetails {
     // Role 반환
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
+        if (user == null) {
+            throw new UserException(ErrorCode.USER_NOT_FOUND);
+        }
+        if (user.getRole() == null) {
+            throw new UserException(ErrorCode.USER_ROLE_EXCEPTION);
+        }
+
         Collection<GrantedAuthority> collection = new ArrayList<>();
-        collection.add(() -> {
-            if (user != null) {
-                return user.getRole().name();
-            }
-            return null;
-        });
+        collection.add(() -> user.getRole().name());
         return collection;
     }
 
