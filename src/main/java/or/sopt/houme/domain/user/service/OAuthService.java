@@ -33,7 +33,6 @@ public class OAuthService {
     private final KaKaoOAuthClient kaKaoOAuthClient;
     private final KaKaoUserInfoClient kaKaoUserInfoClient;
     private final UserRepository userRepository;
-    private final BCryptPasswordEncoder bCryptPasswordEncoder;
     private final JWTUtil jwtUtil;
     private final JWTConfig jwtConfig;
 
@@ -89,7 +88,7 @@ public class OAuthService {
         if (userExist == Boolean.FALSE) {
             User newUser = User.builder()
                     .name(userInfo.getProperties().getNickname())
-                    .password(bCryptPasswordEncoder.encode("kakaoPassword"))
+                    .password(null)
                     .email(userInfo.getKakao_account().getEmail())
                     .role(Role.ROLE_USER)
                     .socialType(SocialType.KAKAO)

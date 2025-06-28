@@ -38,7 +38,7 @@ public class CustomUserDetails implements UserDetails {
 
     @Override
     public String getPassword() {
-        return user.getPassword();
+        return user != null ? user.getPassword() : null;
     }
 
     // 소셜로그인이기에 username이 존재하지 않음
@@ -48,7 +48,7 @@ public class CustomUserDetails implements UserDetails {
     }
 
     public String getEmail() {
-        return user.getEmail();
+        return user != null ? user.getEmail() : null;
     }
 
     @Override
