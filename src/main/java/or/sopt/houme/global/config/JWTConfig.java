@@ -1,6 +1,8 @@
 package or.sopt.houme.global.config;
 
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
@@ -26,7 +28,13 @@ public class JWTConfig {
     private String secret;
 
     // 초단위로 토큰의 만료기간을 설정하고 ms단위로 로직에서 파싱한다
+    @NotNull(message = "액세스 토큰 유효기간은 필수입니다")
+    @Min(value = 60, message = "액세스 토큰 유효기간은 최소 60초 이상이어야 합니다")
     private Long accessTokenValidityInSeconds;
+
+    @NotNull(message = "리프레시 토큰 유효기간은 필수입니다")
+    @Min(value = 3600, message = "리프레시 토큰 유효기간은 최소 3600초(1시간) 이상이어야 합니다")
     private Long refreshTokenValidityInSeconds;
+
 
 }

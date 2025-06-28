@@ -11,7 +11,6 @@ import or.sopt.houme.domain.user.service.JWTService;
 import or.sopt.houme.global.api.ApiResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -57,7 +56,7 @@ public class JWTController {
     )
     public ResponseEntity<ApiResponse<String>> reissue(HttpServletRequest request, HttpServletResponse response) {
 
-        jwtService.RefreshRotate(request,response);
+        jwtService.refreshRotate(request,response);
 
         return ResponseEntity.ok(ApiResponse.ok("성공적으로 재생성되었습니다"));
     }

@@ -43,7 +43,7 @@ public class JWTService {
      *
      * 만약 여기서 걸리는 경우가 존재한다면, 새롭게 로그인을 하여 리프레시 토큰을 발급받아야 합니다.
      * */
-    public void RefreshRotate(HttpServletRequest request, HttpServletResponse response){
+    public void refreshRotate(HttpServletRequest request, HttpServletResponse response){
 
         String refresh = null;
 
