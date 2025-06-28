@@ -22,7 +22,11 @@ public class CustomUserDetails implements UserDetails {
      * */
     private final User user;
 
-    // Role 반환
+    /**
+     * 사용자의 권한 정보를 반환합니다.
+     *
+     * @return 사용자의 역할(Role)에 해당하는 권한 컬렉션을 반환합니다. 사용자가 없을 경우 권한 값은 null이 될 수 있습니다.
+     */
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         Collection<GrantedAuthority> collection = new ArrayList<>();
@@ -36,36 +40,72 @@ public class CustomUserDetails implements UserDetails {
     }
 
 
+    /**
+     * 사용자의 비밀번호를 반환합니다.
+     *
+     * @return 사용자 비밀번호
+     */
     @Override
     public String getPassword() {
         return user.getPassword();
     }
 
-    // 소셜로그인이기에 username이 존재하지 않음
+    /**
+     * 소셜 로그인 방식으로 인해 사용자 이름(username)을 반환하지 않습니다.
+     *
+     * @return 항상 빈 문자열을 반환합니다.
+     */
     @Override
     public String getUsername() {
         return "";
     }
 
+    /**
+     * 사용자의 이메일 주소를 반환합니다.
+     *
+     * @return 사용자의 이메일 주소
+     */
     public String getEmail() {
         return user.getEmail();
     }
 
+    /**
+     * 계정이 만료되지 않았음을 나타냅니다.
+     *
+     * @return 항상 true를 반환하여 계정이 만료되지 않았음을 의미합니다.
+     */
     @Override
     public boolean isAccountNonExpired() {
         return true;
     }
 
+    /**
+     * 계정이 잠겨 있지 않음을 나타냅니다.
+     *
+     * 항상 true를 반환하여 계정이 잠금 상태가 아님을 보장합니다.
+     *
+     * @return 계정이 잠겨 있지 않으면 true
+     */
     @Override
     public boolean isAccountNonLocked() {
         return true;
     }
 
+    /**
+     * 사용자의 인증 정보가 만료되지 않았음을 나타냅니다.
+     *
+     * @return 항상 true를 반환하여 인증 정보가 만료되지 않았음을 의미합니다.
+     */
     @Override
     public boolean isCredentialsNonExpired() {
         return true;
     }
 
+    /**
+     * 사용자가 항상 활성화되어 있음을 나타냅니다.
+     *
+     * @return 계정이 활성화된 경우 true를 반환합니다.
+     */
     @Override
     public boolean isEnabled() {
         return true;

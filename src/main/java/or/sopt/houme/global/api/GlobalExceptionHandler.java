@@ -12,6 +12,12 @@ import org.springframework.web.servlet.NoHandlerFoundException;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
+    /**
+     * GeneralException이 발생했을 때 해당 에러 코드와 메시지를 포함한 실패 응답을 반환합니다.
+     *
+     * @param e 처리할 GeneralException 인스턴스
+     * @return 에러 코드, 메시지, HTTP 상태가 포함된 ApiResponse를 담은 ResponseEntity
+     */
     @ExceptionHandler(GeneralException.class)
     public ResponseEntity<ApiResponse<Void>> handleGeneralException(GeneralException e) {
         ErrorCode errorCode = e.getErrorCode();
@@ -21,6 +27,12 @@ public class GlobalExceptionHandler {
     }
 
 
+    /**
+     * 요청 헤더가 누락된 경우 표준화된 에러 응답을 반환합니다.
+     *
+     * @param ex 누락된 요청 헤더 예외
+     * @return 에러 코드와 메시지가 포함된 ApiResponse를 HTTP 상태와 함께 반환
+     */
     @ExceptionHandler(MissingRequestHeaderException.class)
     public ResponseEntity<ApiResponse<Void>> handleMissingHeader(MissingRequestHeaderException ex) {
         ErrorCode errorCode = ErrorCode.REQUEST_HEADER_EMPTY;
@@ -29,6 +41,12 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(errorCode.getStatus()).body(response);
     }
 
+    /**
+     * 지원되지 않는 HTTP 요청 메서드가 사용된 경우 표준화된 오류 응답을 반환합니다.
+     *
+     * @param e 지원되지 않는 HTTP 메서드 예외
+     * @return METHOD_NOT_ALLOWED 오류 코드와 메시지를 포함한 ApiResponse를 반환합니다.
+     */
     @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
     public ResponseEntity<ApiResponse<Void>> handleHttpRequestMethodNotSupportedException(HttpRequestMethodNotSupportedException e) {
         ErrorCode errorCode = ErrorCode.METHOD_NOT_ALLOWED;

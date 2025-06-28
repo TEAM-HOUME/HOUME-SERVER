@@ -38,6 +38,19 @@ public class JWTFilter extends OncePerRequestFilter{
     private final JWTUtil jwtUtil;
     private final JWTConfig jwtConfig;
 
+    /**
+     * HTTP 요청에서 JWT 액세스 토큰을 검증하고, 유효한 경우 인증 정보를 Spring Security 컨텍스트에 등록합니다.
+     *
+     * 요청의 Authorization 헤더에서 Bearer 토큰을 추출하여 만료 여부와 토큰 유형("access")을 확인합니다.
+     * 유효한 토큰이면 사용자 ID와 역할 정보를 추출하여 인증 객체를 생성하고, SecurityContextHolder에 설정합니다.
+     * 토큰이 없거나 유효하지 않은 경우 인증 없이 다음 필터로 요청 처리를 계속합니다.
+     *
+     * @param request  현재 HTTP 요청
+     * @param response 현재 HTTP 응답
+     * @param filterChain 필터 체인
+     * @throws ServletException 필터 처리 중 서블릿 예외가 발생한 경우
+     * @throws IOException 입출력 예외가 발생한 경우
+     */
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
 

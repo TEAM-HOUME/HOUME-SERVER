@@ -12,6 +12,13 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class SwaggerConfig {
 
+    /**
+     * OpenAPI 명세를 설정하여 Swagger UI에서 하우미 API 문서를 제공합니다.
+     *
+     * JWT Bearer 인증 스키마("JWTToken")를 포함하여 API 메타데이터(제목, 설명, 버전)와 서버 URL("/")을 구성합니다.
+     *
+     * @return 하우미 API의 OpenAPI 명세 인스턴스
+     */
     @Bean
     public OpenAPI HOUME_API(){
         Info info=new Info()

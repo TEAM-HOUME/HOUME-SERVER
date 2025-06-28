@@ -27,7 +27,12 @@ public class JWTService {
     private final RefreshTokenRepository refreshTokenRedisTemplateUtil;
 
 
-    // 토큰 발급기를 위한 메서드입니다
+    /**
+     * 새로운 액세스 토큰을 생성하여 HTTP 응답 헤더에 설정합니다.
+     *
+     * 액세스 토큰은 고정된 사용자 ID(1L)와 역할("ROLE_USER")로 생성되며, 토큰의 유효 기간은 설정값을 따릅니다.
+     * 생성된 토큰은 "access-token" 헤더에 추가됩니다.
+     */
     public void createToken(HttpServletResponse response) {
 
         String access = jwtUtil.createJwt("access", 1L, "ROLE_USER", jwtConfig.getAccessTokenValidityInSeconds());
@@ -36,13 +41,13 @@ public class JWTService {
 
 
     /**
-     * 액세스 토큰이 만료가 되면 발생하는 예외를 클라이언트가 받게되면
-     * 서버에 RTT 로직을 호출합니다.
+     * 만료된 액세스 토큰을 갱신하기 위해 리프레시 토큰을 검증하고, 새로운 액세스 및 리프레시 토큰을 발급하여 응답에 설정합니다.
      *
-     * 그러면 서버에서는 해당 로직을 수행합니다
-     *
-     * 만약 여기서 걸리는 경우가 존재한다면, 새롭게 로그인을 하여 리프레시 토큰을 발급받아야 합니다.
-     * */
+     * 클라이언트가 만료된 액세스 토큰으로 인해 RTT(Refresh Token Rotation) 요청을 보낼 때 호출됩니다. 
+     * 요청의 쿠키에서 리프레시 토큰을 추출하고, 유효성 및 만료 여부, 카테고리, 서버 저장 여부를 검증합니다.
+     * 모든 검증을 통과하면 기존 리프레시 토큰을 삭제하고, 새로운 액세스 토큰과 리프레시 토큰을 생성하여 응답 헤더와 쿠키에 각각 설정합니다.
+     * 검증에 실패할 경우 토큰 관련 예외가 발생하며, 이 경우 클라이언트는 재로그인을 통해 새로운 리프레시 토큰을 발급받아야 합니다.
+     */
     public void RefreshRotate(HttpServletRequest request, HttpServletResponse response){
 
         String refresh = null;

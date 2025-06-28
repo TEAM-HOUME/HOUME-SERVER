@@ -15,9 +15,11 @@ import org.springframework.web.bind.annotation.RequestHeader;
 public interface KaKaoUserInfoClient {
 
     /**
-     * 사용자에 대한 액세스 토큰으로 사용자 정보를 가져옵니다
-     * 이때 헤더는 당연하겠지만 반드시 "Bearer " 가 추가된 채로 파라미터로 들어와야합니다
-     * */
+     * 카카오 액세스 토큰을 사용하여 사용자 정보를 조회합니다.
+     *
+     * @param accessToken "Bearer " 접두사가 포함된 카카오 액세스 토큰
+     * @return 카카오 사용자 정보 응답 객체
+     */
     @PostMapping("/v2/user/me")
     KaKaoUserInfoResponse getUserInfo(@RequestHeader("Authorization") String accessToken);
 }

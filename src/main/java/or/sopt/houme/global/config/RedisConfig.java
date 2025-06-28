@@ -23,6 +23,13 @@ public class RedisConfig {
     private int port;
 
 
+    /**
+     * Redis 연결을 위한 RedisConnectionFactory 빈을 생성합니다.
+     *
+     * 애플리케이션에서 Redis에 연결할 때 사용할 Lettuce 기반의 RedisConnectionFactory를 반환합니다.
+     *
+     * @return Redis 서버와의 연결을 제공하는 RedisConnectionFactory 인스턴스
+     */
     @Bean
     public RedisConnectionFactory redisConnectionFactory() {
         RedisStandaloneConfiguration config = new RedisStandaloneConfiguration(host, port);

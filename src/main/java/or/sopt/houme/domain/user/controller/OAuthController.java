@@ -20,6 +20,14 @@ public class OAuthController {
 
     private final OAuthService oAuthService;
 
+    /**
+     * 카카오 소셜 로그인 인증을 시작하고, 사용자를 카카오 인증 서버로 리다이렉트합니다.
+     *
+     * 카카오 인증 서버로 리다이렉트된 후, 인증이 완료되면 인가 코드가 포함된 상태로 클라이언트가 다시 리다이렉트됩니다.
+     *
+     * @param response 클라이언트를 리다이렉트하기 위한 HTTP 응답 객체
+     * @throws IOException 리다이렉트 처리 중 입출력 오류가 발생한 경우
+     */
     @GetMapping("/oauth/kakao")
     @Operation(summary = "카카오 소셜로그인 API",
             description = "카카오로 로그인 요청을 전송합니다. <br><br>" +
@@ -32,6 +40,11 @@ public class OAuthController {
     }
 
 
+    /**
+     * 카카오 OAuth 인증 후 콜백 요청을 처리하여 사용자 정보를 파싱하고 토큰을 발급합니다.
+     *
+     * @param accessCode 카카오 인증 서버에서 전달된 인가 코드
+     */
     @Operation(summary = "카카오 인증서버 토큰 검증 API",
     description = "리다이렉트에서 AccessCode를 가지고 서버로 돌아오기 위한 엔드포인트입니다 <br><br><br>" +
             "해당 코드를 이용해서 사용자 정보를 파싱하고 **액세스 토큰는 헤더에, 리프레시 토큰은 쿠키에 담아** 반환합니다")

@@ -39,11 +39,12 @@ public class OAuthService {
 
 
     /**
-     * 카카오 인증 서버에 인가코드를 요청하는 메서드입니다
+     * 카카오 OAuth 인증을 위한 인가 코드 요청 URL을 생성하여 반환합니다.
      *
-     * 실제로는 클라이언트 단으로 주소가 리다이렉트되어 인가코드를 클라이언트에서 파싱하여 넘겨줄 것이기 떄문에 해당 메서드는 사용되지 않습니다
-     * 서버에서 로직의 유효성을 검사하기 위해 사용합니다
-     * */
+     * 이 메서드는 서버 측에서 OAuth 인증 로직의 유효성을 검증할 때 사용되며, 실제 클라이언트 리다이렉트에는 사용되지 않습니다.
+     *
+     * @return 카카오 인가 코드 요청을 위한 URL 문자열
+     */
     public String requestRedirect() {
         return String.format(
                 "https://kauth.kakao.com/oauth/authorize?client_id=%s&redirect_uri=%s&response_type=code",
@@ -52,6 +53,16 @@ public class OAuthService {
     }
 
 
+    /**
+     * 카카오 OAuth 인가 코드를 이용해 로그인 처리를 수행합니다.
+     *
+     * 인가 코드를 통해 카카오 액세스 토큰을 발급받고, 해당 토큰으로 카카오 사용자 정보를 조회합니다.
+     * 이메일 기준으로 기존 회원이 없으면 신규 회원을 생성합니다.
+     * 이후 JWT 액세스 토큰과 리프레시 토큰을 발급하여, 액세스 토큰은 응답 헤더에, 리프레시 토큰은 보안 쿠키로 응답에 추가합니다.
+     *
+     * @param accessCode 카카오에서 발급받은 인가 코드
+     * @param response   액세스/리프레시 토큰을 설정할 HTTP 응답 객체
+     */
     public void kakaoLogin(String accessCode, HttpServletResponse response) {
 
         // 인가코드를 받고 그걸 통해서 인증 액세스 토큰을 발급받습니다
@@ -95,6 +106,12 @@ public class OAuthService {
     }
 
 
+    /**
+     * 주어진 인가 코드를 사용하여 카카오 OAuth 토큰 정보를 조회합니다.
+     *
+     * @param accessCode 카카오에서 발급한 인가 코드
+     * @return 카카오 OAuth 토큰 정보 DTO
+     */
     private KaKaoOAuthTokenDTO getKaKaoOAuthTokenDTO(String accessCode) {
 
         return kaKaoOAuthClient.getToken(

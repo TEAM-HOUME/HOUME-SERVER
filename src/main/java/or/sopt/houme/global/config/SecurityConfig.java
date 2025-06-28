@@ -30,12 +30,26 @@ public class SecurityConfig {
     private final JWTFilter jwtFilter;
 
 
+    /**
+     * BCrypt 해싱 알고리즘을 사용하는 비밀번호 인코더 빈을 생성합니다.
+     *
+     * @return 비밀번호를 안전하게 해싱하기 위한 BCryptPasswordEncoder 인스턴스
+     */
     @Bean
     public BCryptPasswordEncoder bCryptPasswordEncoder(){
         return new BCryptPasswordEncoder();
     }
 
-    //AuthenticationManager Bean 등록, UsernamePasswordAuthenticationFilter에서 필요하기 때문에 생성자로 주입한다
+    /**
+     * AuthenticationManager 빈을 생성하여 반환합니다.
+     *
+     * AuthenticationConfiguration에서 AuthenticationManager를 가져와 반환하며,
+     * 인증 관련 필터(예: UsernamePasswordAuthenticationFilter)에서 사용됩니다.
+     *
+     * @param configuration 인증 매니저 구성을 위한 AuthenticationConfiguration 인스턴스
+     * @return AuthenticationManager 인스턴스
+     * @throws Exception AuthenticationManager를 가져올 수 없는 경우 예외가 발생할 수 있습니다.
+     */
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) throws Exception {
 
@@ -43,6 +57,16 @@ public class SecurityConfig {
     }
 
 
+    /**
+     * Spring Security의 HTTP 보안 필터 체인을 구성하여 CORS, CSRF, 인증 및 인가 정책을 설정합니다.
+     *
+     * CORS 정책을 커스터마이즈하여 특정 오리진, 메서드, 헤더, 인증 정보를 허용하며, CSRF 보호와 폼 로그인, HTTP Basic 인증을 비활성화합니다.
+     * Swagger 및 OAuth 관련 화이트리스트 경로는 인증 없이 접근을 허용하고, 그 외 모든 요청은 인증이 필요합니다.
+     * 세션 관리는 무상태(Stateless)로 설정되며, JWT 기반 인증을 위해 커스텀 JWT 필터가 UsernamePasswordAuthenticationFilter 앞에 추가됩니다.
+     *
+     * @return 구성된 SecurityFilterChain 인스턴스
+     * @throws Exception 보안 설정 중 오류가 발생할 경우
+     */
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception{
 

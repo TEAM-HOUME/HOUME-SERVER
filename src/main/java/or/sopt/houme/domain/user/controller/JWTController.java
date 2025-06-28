@@ -24,6 +24,11 @@ public class JWTController {
 
     private final JWTService jwtService;
 
+    /**
+     * 테스트용 액세스 토큰을 발급하여 HTTP 응답에 추가합니다.
+     *
+     * 자체 로그인 기능이 없으므로, 액세스 토큰이 필요한 경우 이 엔드포인트를 통해 토큰을 발급받을 수 있습니다.
+     */
     @GetMapping("/access")
     @Operation(summary = "테스트용 액세스 토큰 발급기",
             description = "자체 로그인이 없기 때문에 액세스 토큰이 필요한 경우에 해당 메서드를 이용하여 토큰을 발급 받아주세요")
@@ -32,6 +37,13 @@ public class JWTController {
     }
 
 
+    /**
+     * 인증된 사용자의 정보를 확인하고 액세스 토큰의 유효성을 테스트하는 엔드포인트입니다.
+     *
+     * @param userDetails 인증된 사용자의 상세 정보
+     * @param request HTTP 요청 객체
+     * @return 액세스 토큰이 정상적으로 작동함을 알리는 성공 메시지의 ApiResponse
+     */
     @GetMapping("/access-test")
     @Operation(summary = "액세스 토큰 사용 방법",
             description = "**@AuthenticationPrincipal** 어노테이션을 통해서 회원정보를 가져옵니다 <br><br>" +
@@ -46,6 +58,14 @@ public class JWTController {
         return ResponseEntity.ok(ApiResponse.ok("액세스 토큰이 성공적으로 작동합니다"));
     }
 
+    /**
+     * 리프레시 및 액세스 토큰을 재발급합니다.
+     *
+     * Refresh Rotate 로직을 사용하여 리프레시 토큰과 액세스 토큰을 모두 새로 발급합니다.
+     * 만료된 액세스 토큰은 요청 헤더에서 제거한 후 호출해야 합니다.
+     *
+     * @return 토큰 재발급 성공 메시지를 포함한 ApiResponse
+     */
     @PostMapping("/reissue")
     @Operation(
             summary = "리프레시,액세스 토큰 재발급 API",

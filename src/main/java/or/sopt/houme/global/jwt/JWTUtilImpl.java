@@ -15,6 +15,12 @@ public class JWTUtilImpl implements JWTUtil {
 
     private final SecretKey secretKey;
 
+    /****
+     * JWT 시크릿 키를 검증하고 HS256 알고리즘으로 인코딩하여 초기화하는 생성자입니다.
+     *
+     * @param secret application.yml에서 주입된 JWT 시크릿 문자열
+     * @throws IllegalStateException 시크릿 키가 null인 경우 발생합니다.
+     */
     public JWTUtilImpl(@Value("${spring.jwt.secret}") String secret) {
         if (secret == null) {
             throw new IllegalStateException("Secret is null!");
@@ -28,7 +34,12 @@ public class JWTUtilImpl implements JWTUtil {
     }
 
 
-    // 회원의 식별자를 파싱하는 메서드
+    /**
+     * JWT 토큰에서 회원의 식별자(id) 값을 추출합니다.
+     *
+     * @param token 파싱할 JWT 토큰 문자열
+     * @return 토큰에 포함된 회원의 식별자(Long)
+     */
     @Override
     public Long getId(String token) {
         return Jwts.parserBuilder()
@@ -40,7 +51,12 @@ public class JWTUtilImpl implements JWTUtil {
     }
 
 
-    // 회원의 권한을 파싱하는 메서드
+    /**
+     * JWT 토큰에서 회원의 권한("role" 클레임)을 추출하여 반환합니다.
+     *
+     * @param token 권한 정보를 포함한 JWT 토큰 문자열
+     * @return 토큰에 포함된 회원의 권한 문자열
+     */
     @Override
     public String getRole(String token) {
         return Jwts.parserBuilder()
@@ -52,7 +68,12 @@ public class JWTUtilImpl implements JWTUtil {
     }
 
 
-    // 회원의 토큰 만료기간을 파싱하는 메서드
+    /**
+     * 주어진 JWT 토큰이 만료되었는지 여부를 반환합니다.
+     *
+     * @param token 만료 여부를 확인할 JWT 토큰 문자열
+     * @return 토큰이 만료되었으면 true, 그렇지 않으면 false
+     */
     @Override
     public Boolean isExpired(String token) {
         Date expiration = Jwts.parserBuilder()
@@ -66,7 +87,12 @@ public class JWTUtilImpl implements JWTUtil {
     }
 
 
-    // 액세스 토큰과 리프레시 토큰을 구별하는 메서드
+    /**
+     * JWT 토큰에서 "category" 클레임 값을 추출하여 반환합니다.
+     *
+     * @param token JWT 토큰 문자열
+     * @return 토큰의 "category" 클레임 값 (예: 액세스 토큰 또는 리프레시 토큰 구분)
+     */
     @Override
     public String getCategory(String token) {
         return Jwts.parserBuilder()
@@ -79,18 +105,14 @@ public class JWTUtilImpl implements JWTUtil {
 
 
     /**
-     * 토큰을 생성하는 메서드
+     * 지정된 카테고리, 회원 ID, 역할, 만료 기간을 포함하는 JWT 토큰을 생성합니다.
      *
-     * @param category: 리프레시 토큰과 액세스 토큰을 구분하기 위한 파라미터
-     *
-     * @param expiredMs: 두 토큰에 따라 만료기간이 상이하기 때문에 파라미터로 받아야함
-     *                   JWT는 Date 타입으로 만료기간을 저장하고 Date는 기본적으로 ms단위이기 때문에
-     *                   *1000L를 해야 초단위 계산이 가능해진다
-     *
-     * @param id: claim에 들어가서 회원을 식별해줄 수 있도록 하는 데이터
-     *          일반적으로 unique의 속성을 지녀야하고,
-     *          개인적으로는 id 하나만 이용하기 보다는 두 개정도 이용하면 좋지 않을까 하는 생각이 들긴하지만..
-     * */
+     * @param category 토큰의 종류를 구분하는 값 (예: access, refresh)
+     * @param id 회원을 식별하는 고유 ID
+     * @param role 회원의 권한 정보
+     * @param expiredMs 토큰의 만료 기간(초 단위)
+     * @return 생성된 JWT 토큰 문자열
+     */
     @Override
     public String createJwt(String category, Long id, String role, Long expiredMs) {
 
