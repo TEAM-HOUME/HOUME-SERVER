@@ -84,7 +84,9 @@ public class JWTFilter extends OncePerRequestFilter{
         try {
                 role = Role.valueOf(roleString);
             } catch (IllegalArgumentException e) {
-                throw new TokenException(ErrorCode.ROLE_INVALID_TYPE);
+                setErrorResponse(response, ErrorCode.ROLE_INVALID_TYPE);
+
+                return;
             }
 
         User user = User.builder()
