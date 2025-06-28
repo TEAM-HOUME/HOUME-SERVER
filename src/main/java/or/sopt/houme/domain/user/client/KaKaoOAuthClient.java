@@ -4,7 +4,6 @@ package or.sopt.houme.domain.user.client;
 
 import or.sopt.houme.domain.user.controller.dto.KaKaoCallbackResponse;
 import or.sopt.houme.domain.user.controller.dto.KaKaoOAuthTokenDTO;
-import or.sopt.houme.global.config.KaKaoOAuthFeignConfig;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -12,8 +11,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 @FeignClient(
         name = "kakaoOAuthClient",
-        url = "https://kauth.kakao.com",
-        configuration = KaKaoOAuthFeignConfig.class
+        url = "https://kauth.kakao.com"
 )
 public interface KaKaoOAuthClient {
 
