@@ -51,6 +51,9 @@ spring:
     access-token-validity-in-seconds: 3600
     refresh-token-validity-in-seconds: 2592000
 
+openai:
+  api-key: ${OPEN_AI_KEY}
+
 cloud:
   aws:
     s3:
