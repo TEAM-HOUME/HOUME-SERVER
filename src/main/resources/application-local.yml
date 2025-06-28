@@ -48,5 +48,5 @@ spring:
   jwt:
     header: Authorization
     secret: e4testr8Z9testsD7fHtestnPtestuVwXtest3e5g7i9l2n4
-    access-token-validity-in-seconds: 3600
+    access-token-validity-in-seconds: 10
     refresh-token-validity-in-seconds: 2592000

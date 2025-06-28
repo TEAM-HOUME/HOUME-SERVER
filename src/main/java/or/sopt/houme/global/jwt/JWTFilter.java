@@ -64,11 +64,15 @@ public class JWTFilter extends OncePerRequestFilter{
 
             String category = jwtUtil.getCategory(accessToken);
             if (!"access".equals(category)) {
-                throw new TokenException(ErrorCode.ACCESS_INVALID_TYPE);
+                setErrorResponse(response, ErrorCode.ACCESS_INVALID_TYPE);
+
+                return;
             }
 
         } catch (ExpiredJwtException e) {
-            throw new TokenException(ErrorCode.ACCESS_TOKEN_EXPIRED);
+            setErrorResponse(response, ErrorCode.ACCESS_TOKEN_EXPIRED);
+
+            return;
         }
 
         //토큰에서 id와 role 획득
@@ -97,4 +101,19 @@ public class JWTFilter extends OncePerRequestFilter{
 
         filterChain.doFilter(request, response);
     }
+
+
+    /**
+     * 필터단에서 발생하는 예외는 저희가 만든 예외 핸들러로는 캐치 할 수 없습니다.
+     * 서블렛까지 들어가기 전에 예외가 발생하면 return 시켜버리기 때문이죠. 그래서 이렇게 리스폰스에 직접 데이터를 넣어서 반환합니다
+     * */
+    private void setErrorResponse(HttpServletResponse response, ErrorCode errorCode) throws IOException {
+        response.setStatus(errorCode.getStatus().value());
+        response.setContentType("application/json;charset=UTF-8");
+        response.getWriter().write(String.format(
+                "{\"code\":%d, \"message\":\"%s\"}",
+                errorCode.getCode(), errorCode.getMsg()
+        ));
+    }
+
 }
