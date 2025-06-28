@@ -79,8 +79,15 @@ public class JWTFilter extends OncePerRequestFilter{
         Long id = jwtUtil.getId(accessToken);
         String roleString = jwtUtil.getRole(accessToken);
 
-        // String role을 Role enum으로 변환
-        Role role = Role.valueOf(roleString);
+/*        // String role을 Role enum으로 변환
+        Role role = Role.valueOf(roleString);*/
+
+        Role role;
+        try {
+                role = Role.valueOf(roleString);
+            } catch (IllegalArgumentException e) {
+                throw new TokenException(ErrorCode.ROLE_INVALID_TYPE);
+            }
 
         User user = User.builder()
                 .id(id)
