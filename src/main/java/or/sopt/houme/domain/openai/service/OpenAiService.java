@@ -4,9 +4,8 @@ import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import or.sopt.houme.domain.openai.client.OpenAIImageClient;
-import or.sopt.houme.domain.openai.controller.dto.ChatGptImageRequest;
-import or.sopt.houme.domain.openai.controller.dto.ChatGptImageResponse;
-import or.sopt.houme.domain.openai.util.PromptUtil;
+import or.sopt.houme.domain.openai.controller.dto.OpenAiRequest;
+import or.sopt.houme.domain.openai.controller.dto.OpenAiResponse;
 import or.sopt.houme.global.api.ErrorCode;
 import or.sopt.houme.global.api.handler.ChatGptException;
 import or.sopt.houme.global.util.S3Util;
@@ -19,7 +18,7 @@ import java.util.Base64;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class ImageService {
+public class OpenAiService {
 
     private final OpenAIImageClient openAIImageClient;
     private final S3Util s3Util;
@@ -36,13 +35,12 @@ public class ImageService {
     public byte[] createImage(String prompt) {
 
         // 요청을 위한 객체를 생성
-        ChatGptImageRequest request = ChatGptImageRequest.of(prompt);
+        OpenAiRequest request = OpenAiRequest.of(prompt);
 
         try {
-
             byte[] image = getGptImage(request);
 
-            // S3에 이미지 저장
+            // 비동기로 S3에 이미지 저장
             s3Util.upload(image, S3DirNameConstant.CHAT_GPT_DIRNAME);
 
             return image;
@@ -55,8 +53,8 @@ public class ImageService {
 
 
 
-    private byte[] getGptImage(ChatGptImageRequest request) {
-        ChatGptImageResponse response = openAIImageClient.generateImage("Bearer " + apiKey, request);
+    private byte[] getGptImage(OpenAiRequest request) {
+        OpenAiResponse response = openAIImageClient.generateImage("Bearer " + apiKey, request);
 
         if (response.getData() == null || response.getData().isEmpty()) {
             log.error("OpenAI 응답 데이터가 비어 있음");

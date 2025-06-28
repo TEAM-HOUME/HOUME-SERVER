@@ -1,15 +1,14 @@
-package or.sopt.houme.domain.openai.util;
+package or.sopt.houme.domain.prompt.util;
 
 import lombok.RequiredArgsConstructor;
-import or.sopt.houme.domain.openai.service.ImageService;
-import org.springframework.stereotype.Component;
+import or.sopt.houme.domain.openai.service.OpenAiService;
 import org.springframework.stereotype.Service;
 
-@Component
+@Service
 @RequiredArgsConstructor
-public class PromptUtilImpl implements PromptUtil {
+public class PromptServiceImpl implements PromptService {
 
-    private final ImageService imageService;
+    private final OpenAiService imageService;
 
     @Override
     public void makePrompt() {

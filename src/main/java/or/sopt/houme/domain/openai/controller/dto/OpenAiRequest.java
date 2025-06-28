@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class ChatGptImageRequest {
+public class OpenAiRequest {
 
     private String model = "gpt-image-1";
     private String prompt;
@@ -17,8 +17,8 @@ public class ChatGptImageRequest {
     private String background = "auto";
     private String output_format = "png";
 
-    public static ChatGptImageRequest of(String prompt) {
-        return ChatGptImageRequest.builder()
+    public static OpenAiRequest of(String prompt) {
+        return OpenAiRequest.builder()
                 .prompt(prompt)
                 .model("gpt-image-1")
                 .n(1)
