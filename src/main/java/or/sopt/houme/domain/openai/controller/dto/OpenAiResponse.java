@@ -5,7 +5,7 @@ import lombok.Data;
 import java.util.List;
 
 @Data
-public class ChatGptImageResponse {
+public class OpenAiResponse {
     private List<ImageData> data;
 
     @Data
