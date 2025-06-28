@@ -25,6 +25,10 @@ public enum ErrorCode {
     COOKIE_NULL(HttpStatus.NOT_FOUND,40402 ,"쿠키를 찾을 수 없습니다" ),
     KAKAO_AUTH_CODE_INVALID(HttpStatus.BAD_REQUEST,40006 ,"카카오 인가코드가 유효하지 않습니다"),
     KAKAO_ACCESSTOKEN_INVALID(HttpStatus.INTERNAL_SERVER_ERROR,50001 ,"액세스토큰으로 회원정보를 가져오는 중에 예외가 발생했습니다. 서버개발자에게 문의해주세요" ),
+    USER_ROLE_EXCEPTION(HttpStatus.NOT_FOUND,40007 ,"회원의 권한을 찾을 수 없습니다. 서버에 문의해주세요" ),
+
+    // 이미지 관련 예외
+    CHAT_GPT_CALL_EXCEPTION(HttpStatus.INTERNAL_SERVER_ERROR,50001 ,"챗 gpt 호출 중 예외가 발생하였습니다" );
     USER_ROLE_EXCEPTION(HttpStatus.UNAUTHORIZED,40300 ,"회원의 권한을 찾을 수 없습니다. 서버에 문의해주세요" ),
 
     IMAGE_UPLOAD_AMAZON_EXCEPTION(HttpStatus.INTERNAL_SERVER_ERROR, 50002, "이미지 업로드 중, AWS 예외가 발생하였습니다. 서버 관리자에게 문의해주세요"),
