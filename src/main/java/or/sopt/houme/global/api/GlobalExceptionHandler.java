@@ -11,13 +11,15 @@ import org.springframework.web.servlet.NoHandlerFoundException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
-    @ExceptionHandler(BusinessException.class)
-    public ResponseEntity<ApiResponse<Void>> handleBusinessException(BusinessException e) {
+
+    @ExceptionHandler(GeneralException.class)
+    public ResponseEntity<ApiResponse<Void>> handleGeneralException(GeneralException e) {
         ErrorCode errorCode = e.getErrorCode();
         ApiResponse<Void> response = ApiResponse.fail(errorCode.getCode(), errorCode.getMsg());
 
         return ResponseEntity.status(errorCode.getStatus()).body(response);
     }
+
 
     @ExceptionHandler(MissingRequestHeaderException.class)
     public ResponseEntity<ApiResponse<Void>> handleMissingHeader(MissingRequestHeaderException ex) {
@@ -26,7 +28,6 @@ public class GlobalExceptionHandler {
 
         return ResponseEntity.status(errorCode.getStatus()).body(response);
     }
-
 
     @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
     public ResponseEntity<ApiResponse<Void>> handleHttpRequestMethodNotSupportedException(HttpRequestMethodNotSupportedException e) {
