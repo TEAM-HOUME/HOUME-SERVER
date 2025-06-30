@@ -56,8 +56,8 @@ cloud:
     s3:
       bucket: houme-bucket
     credentials:
-      accessKey: ${S3_ACCESS}
-      secretKey: ${S3_SECRET}
+      access-Key: ${S3_ACCESS}
+      secret-Key: ${S3_SECRET}
     region:
       static: ap-northeast-2
       auto: false
