@@ -2,7 +2,7 @@ name: develop-ci
 on:
   pull_request:
     types: [opened, synchronize]
-    branches: [feat/#18/develop-ci]
+    branches: [develop]
     paths:
       - 'src/**'
 
