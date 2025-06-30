@@ -91,9 +91,9 @@ jacocoTestReport {
         html.required.set(true)
         xml.required.set(true)
         csv.required.set(true)
-        html.destination file("$buildDir/reports/jacoco/index.html")
-        xml.destination file("$buildDir/reports/jacoco/index.xml")
-        csv.destination file("$buildDir/reports/jacoco/index.csv")
+        html.destination file("${project.layout.buildDirectory.get().asFile}/reports/jacoco/index/html")
+        xml.destination file("${project.layout.buildDirectory.get().asFile}/reports/jacoco/index/jacoco.xml")
+        csv.destination file("${project.layout.buildDirectory.get().asFile}/reports/jacoco/index/jacoco.csv")
     }
 
     afterEvaluate {
