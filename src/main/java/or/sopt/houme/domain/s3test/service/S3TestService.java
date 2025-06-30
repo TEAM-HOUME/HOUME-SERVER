@@ -18,7 +18,7 @@ public class S3TestService {
 
         ImageUploadResponseDTO upload = s3Util.upload(dirName, file);
 
-        return "imageLink:   "+upload.getImagePath() + " <br> filename:   " + upload.getFilename();
+        return "imageLink:   "+upload.getImageLink() + " <br> filename:   " + upload.getFilename();
     }
 
     public void deleteImage(String filename) {

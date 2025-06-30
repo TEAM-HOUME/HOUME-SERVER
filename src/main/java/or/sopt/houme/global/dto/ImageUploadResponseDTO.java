@@ -13,13 +13,13 @@ public class ImageUploadResponseDTO {
 
     private String filename;
     private String originalFilename;
-    private String imagePath;
+    private String imageLink;
 
     public static ImageUploadResponseDTO from(String filename, String originalFilename, String imagePath) {
         return ImageUploadResponseDTO.builder()
                 .filename(filename)
                 .originalFilename(originalFilename)
-                .imagePath(imagePath)
+                .imageLink(imagePath)
                 .build();
     }
 }
