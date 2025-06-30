@@ -2,6 +2,7 @@ plugins {
     id 'java'
     id 'org.springframework.boot' version '3.2.3'
     id 'io.spring.dependency-management' version '1.1.4'
+    id 'jacoco'
 }
 
 group = 'or.sopt'
@@ -70,8 +71,38 @@ dependencies {
 
     // redis
     implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+
+    // H2
+    runtimeOnly 'com.h2database:h2'
 }
 
 tasks.named('test') {
     useJUnitPlatform()
+    finalizedBy 'jacocoTestReport'
+}
+
+jacoco {
+    toolVersion = '0.8.12'
+}
+
+jacocoTestReport {
+    dependsOn test
+    reports {
+        html.required.set(true)
+        xml.required.set(true)
+        csv.required.set(true)
+        html.destination file("$buildDir/reports/jacoco/index.html")
+        xml.destination file("$buildDir/reports/jacoco/index.xml")
+        csv.destination file("$buildDir/reports/jacoco/index.csv")
+    }
+
+    afterEvaluate {
+        classDirectories.setFrom(
+                files(classDirectories.files.collect {
+                    fileTree(dir: it, excludes: [
+                            // 여기에 제외할 테스트 영역을 설정 할 수 있습니다. 이 부분은 논의 후 설정하면 좋을 것 같습니다
+                    ])
+                })
+        )
+    }
 }
