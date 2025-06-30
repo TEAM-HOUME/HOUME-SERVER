@@ -73,7 +73,7 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-data-redis'
 
     // H2
-    implementation 'com.h2database:h2'
+    runtimeOnly 'com.h2database:h2'
 }
 
 tasks.named('test') {
