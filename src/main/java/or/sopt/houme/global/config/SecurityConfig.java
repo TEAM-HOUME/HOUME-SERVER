@@ -86,6 +86,7 @@ public class SecurityConfig {
         http.authorizeHttpRequests((auth)->auth
                 .requestMatchers(WhiteListConfig.swaggerWhitelist().toArray(new String[0])).permitAll()
                 .requestMatchers(WhiteListConfig.oauthWhitelist().toArray(new String[0])).permitAll()
+                .requestMatchers(WhiteListConfig.serverWhitelist().toArray(new String[0])).permitAll()
                 .anyRequest().authenticated());
 
         http
