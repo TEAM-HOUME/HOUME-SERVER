@@ -48,7 +48,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: jacoco-html-report
-          path: ${{ github.workspace }}/build/reports/jacoco/index/html/index.html
+          path: ${{ github.workspace }}/build/reports/jacoco/index/html/
       - name: Get the Coverage info
         run: |
           echo "🍀총 커버리지 ${{ steps.jacoco.outputs.coverage-overall }}"
@@ -62,7 +62,8 @@ jobs:
         uses: mikepenz/action-junit-report@v3
         if: always()
         with:
-          report_paths: '**/build/test-results/test/TEST-*.html'
+          report_paths: '**/build/test-results/test/TEST-*.xml'
+# Discord 알림란
 #  notify:
 #    runs-on: ubuntu-latest
 
