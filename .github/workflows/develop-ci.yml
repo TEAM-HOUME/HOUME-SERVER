@@ -90,6 +90,7 @@ jobs:
           payload=$(jq -n --arg actor "${{ github.actor }}" \
                           --arg message "$message" \
                           --arg pr_url "https://github.com/${{ github.repository }}/pull/${{ github.event.pull_request.number }}" \
+                          --arg pr_title "$pr_title" \
             '{
               # discord에 등록될 메시지 형태
               "embeds": [
