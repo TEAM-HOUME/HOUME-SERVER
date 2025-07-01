@@ -27,4 +27,11 @@ public class WhiteListConfig {
                 "/reissue"
         );
     }
+
+    // oauth 관련 인가 설정
+    public static final List<String> serverWhitelist() {
+        return List.of(
+                "/actuator/health"
+        );
+    }
 }
