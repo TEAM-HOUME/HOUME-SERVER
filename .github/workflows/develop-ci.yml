@@ -63,7 +63,7 @@ jobs:
         if: always()
         with:
           report_paths: '**/build/test-results/test/TEST-*.xml'
-# Discord 알림란
+  # Discord 알림란
   notify-discord:
     needs: test # test job이 끝나야 실행
     runs-on: ubuntu-latest
@@ -84,8 +84,8 @@ jobs:
           # 디스코드에 보낼 payload JSON 생성
           # actor: 커밋 작성자, message: 커밋 메시지, commit_url: 커밋 링크
           payload=$(jq -n --arg actor "${{ github.actor }}" \
-                          --arg message "${{ env.commit_message }}" \
-                          --arg commit_url "https://github.com/${{ github.repository }}/commit/${{ env.commit_id }}" \
+                          --arg message "$message" \
+                          --arg commit_url "https://github.com/${{ github.repository }}/commit/${{ github.event.pull_request.number }}" \
             '{
               # discord에 등록될 메시지 형태
               "embeds": [
