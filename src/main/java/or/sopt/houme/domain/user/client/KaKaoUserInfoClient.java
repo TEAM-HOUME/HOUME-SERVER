@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RequestHeader;
         configuration = KaKaoOAuthFeignConfig.class
 )
 public interface KaKaoUserInfoClient {
-
+    // ㅅㄷㄴㅅ stesd
     /**
      * 사용자에 대한 액세스 토큰으로 사용자 정보를 가져옵니다
      * 이때 헤더는 당연하겠지만 반드시 "Bearer " 가 추가된 채로 파라미터로 들어와야합니다
