@@ -95,7 +95,7 @@ jobs:
               "embeds": [
                 {
                   "title": "🏚️ PR이 생성되었습니다!",
-                  "description": "\($actor)님이 PR을 만들었습니다!\n📄 ($pr_title) \n \($message)\n🔗[워크플로우 실행 확인하기](\($pr_url))",
+                  "description": "\($actor)님이 PR을 만들었습니다!\n📄 \($pr_title) \n \($message)\n🔗[워크플로우 실행 확인하기](\($pr_url))",
                   "color": 3447003,
                   "timestamp": now | todateiso8601
                 }
