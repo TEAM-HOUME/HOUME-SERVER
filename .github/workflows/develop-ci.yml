@@ -73,25 +73,29 @@ jobs:
         env:
           DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
           STATUS: ${{ job.status }}
+          PR_TITLE: ${{ github.event.pull_request.title }}
         run: |
-          message="✅CI 성공"
+          message="✅ CI 성공"
           color=3066993 # 초록
           
           if [ "$STATUS" != "success" ]; then
-            message="❌CI 실패"
+            message="❌ CI 실패"
             color=15158332 # 빨강
           fi
           # 디스코드에 보낼 payload JSON 생성
-          # actor: 커밋 작성자, message: 커밋 메시지, commit_url: 커밋 링크
+          # actor: 작성자, message: CI 완수 메시지, pr_url: PR 링크
+          
+          pr_title="$PR_TITLE"
+          
           payload=$(jq -n --arg actor "${{ github.actor }}" \
                           --arg message "$message" \
-                          --arg commit_url "https://github.com/${{ github.repository }}/commit/${{ github.event.pull_request.number }}" \
+                          --arg pr_url "https://github.com/${{ github.repository }}/pull/${{ github.event.pull_request.number }}" \
             '{
               # discord에 등록될 메시지 형태
               "embeds": [
                 {
-                  "title": "🏚️PR이 생성되었습니다!",
-                  "description": "\($actor)님이 새로운 기능을 만들었습니다!\n📄\($message)\n🔗[워크플로우 실행 확인하기](\($commit_url))",
+                  "title": "🏚️ PR이 생성되었습니다!",
+                  "description": "\($actor)님이 PR을 만들었습니다!\n📄 ($pr_title) \n \($message)\n🔗[워크플로우 실행 확인하기](\($pr_url))",
                   "color": 3447003,
                   "timestamp": now | todateiso8601
                 }
