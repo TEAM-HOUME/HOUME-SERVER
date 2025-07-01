@@ -91,13 +91,14 @@ jobs:
                           --arg message "$message" \
                           --arg pr_url "https://github.com/${{ github.repository }}/pull/${{ github.event.pull_request.number }}" \
                           --arg pr_title "$pr_title" \
+                          --argjson color "$color" \
             '{
               # discord에 등록될 메시지 형태
               "embeds": [
                 {
                   "title": "🏚️ PR이 생성되었습니다!",
                   "description": "\($actor)님이 PR을 만들었습니다!\n📄 \($pr_title) \n \($message)\n🔗[워크플로우 실행 확인하기](\($pr_url))",
-                  "color": 3447003,
+                  "color": $color,
                   "timestamp": now | todateiso8601
                 }
               ]
