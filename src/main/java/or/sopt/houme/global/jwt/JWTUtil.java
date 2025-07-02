@@ -9,5 +9,9 @@ public interface JWTUtil {
 
     String getCategory(String token);
 
+    String getJti(String token);
+
+    long getRemainingExpiration(String token);
+
     String createJwt(String category, Long id, String role, Long expiredMs);
 }

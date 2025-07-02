@@ -15,6 +15,7 @@ public enum ErrorCode {
     REFRESH_TOKEN_NULL(HttpStatus.BAD_REQUEST,40003 ,"리프레시 토큰이 존재하지 않습니다"),
     REFRESH_TOKEN_EXPIRED(HttpStatus.BAD_REQUEST,40004 ,"리프레시 토큰이 만료되었습니다" ),
     ROLE_INVALID_TYPE(HttpStatus.BAD_REQUEST,40005,"권한이 일치하지 않습니다"),
+    ACCESS_TOKEN_BLACKLISTED(HttpStatus.UNAUTHORIZED,40401 ,"회원의 액세스 토큰이 블랙리스트 처리되었습니다" ),
 
     // 회원 관련 예외
     USER_NOT_FOUND(HttpStatus.NOT_FOUND,40401 ,"회원을 찾을 수 없습니다" ),

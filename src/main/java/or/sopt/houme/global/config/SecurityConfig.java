@@ -1,7 +1,10 @@
 package or.sopt.houme.global.config;
 
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import or.sopt.houme.domain.user.controller.dto.CustomUserDetails;
+import or.sopt.houme.domain.user.service.OAuthService;
 import or.sopt.houme.global.jwt.JWTFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -28,7 +31,7 @@ import java.util.List;
 public class SecurityConfig {
 
     private final JWTFilter jwtFilter;
-
+    private final OAuthService oAuthService;
 
     @Bean
     public BCryptPasswordEncoder bCryptPasswordEncoder(){
@@ -89,9 +92,12 @@ public class SecurityConfig {
                 .requestMatchers(WhiteListConfig.serverWhitelist().toArray(new String[0])).permitAll()
                 .anyRequest().authenticated());
 
+
         http
                 .sessionManagement((session) -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+
+        http.logout(AbstractHttpConfigurer::disable);
 
         http.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
