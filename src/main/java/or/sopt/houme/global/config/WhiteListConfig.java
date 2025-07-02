@@ -24,8 +24,7 @@ public class WhiteListConfig {
                 "/oauth/kakao/",
                 "/oauth/kakao/callback",
                 "/access",
-                "/reissue",
-                "/logout"
+                "/reissue"
         );
     }
 
