@@ -33,7 +33,6 @@ import java.io.IOException;
  * 요청의 수명주기 안에서 단 한 번만 실행되어 필요없는 검증이 추가적으로 실행되는 오버헤드를 방지합니다
  * */
 @RequiredArgsConstructor
-@Slf4j
 @Component
 public class JWTFilter extends OncePerRequestFilter{
 
@@ -61,13 +60,11 @@ public class JWTFilter extends OncePerRequestFilter{
          * 토큰의 헤더가 access인지 확인해서 액세스토큰이 맞는지 검증한다
          * */
         try {
-            log.info("토큰 있어서 검증 시작");
 
             jwtUtil.isExpired(accessToken);
 
-            // ✅ 블랙리스트 검사
+            // 블랙리스트 검사
             String jti = jwtUtil.getJti(accessToken);
-            log.info("jti: {}", jti);
 
             if (blacklistTokenRepository.exists(jti)) {
                 setErrorResponse(response, ErrorCode.ACCESS_TOKEN_BLACKLISTED);
