@@ -65,7 +65,6 @@ public class JWTFilter extends OncePerRequestFilter{
 
             // 블랙리스트 검사
             String jti = jwtUtil.getJti(accessToken);
-
             if (blacklistTokenRepository.exists(jti)) {
                 setErrorResponse(response, ErrorCode.ACCESS_TOKEN_BLACKLISTED);
                 return;
