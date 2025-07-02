@@ -3,6 +3,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import or.sopt.houme.domain.credit.entity.Credit;
 import or.sopt.houme.domain.house.entity.House;
+import or.sopt.houme.global.Entity.BaseEntity;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -13,7 +14,7 @@ import java.util.List;
 @AllArgsConstructor
 @Getter
 @Builder
-public class User {
+public class User extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

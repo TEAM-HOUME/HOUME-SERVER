@@ -19,10 +19,18 @@ public class BaseEntity {
 
     @CreatedDate
     @Column(updatable = false)
-    private LocalDateTime created_at;
+    private LocalDateTime createdAt;
 
     @LastModifiedDate
-    private LocalDateTime updated_at;
+    private LocalDateTime updatedAt;
+
+    // 상태 값을 바꾸는 soft delete 로 사용
+    @Column
+    protected LocalDateTime deletedAt;
+
+    public void softDelete() {
+        this.deletedAt = LocalDateTime.now();
+    }
 
     @CreatedBy
     @Column(updatable = false)
