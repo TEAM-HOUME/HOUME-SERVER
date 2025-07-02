@@ -2,13 +2,17 @@ package or.sopt.houme.domain.user.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import or.sopt.houme.domain.user.controller.dto.CustomUserDetails;
 import or.sopt.houme.domain.user.service.OAuthService;
 import or.sopt.houme.global.api.ApiResponse;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -43,5 +47,16 @@ public class OAuthController {
         oAuthService.kakaoLogin(accessCode,response);
 
         return ResponseEntity.ok(ApiResponse.ok("로그인이 완료되었습니다"));
+    }
+
+    @Operation(summary = "로그아웃 API")
+    @PostMapping("/logout")
+    public ResponseEntity<ApiResponse<String>> logout(@AuthenticationPrincipal CustomUserDetails userDetails,
+                                                      HttpServletResponse response,
+                                                      HttpServletRequest request) {
+
+        oAuthService.logout(userDetails,request,response);
+
+        return ResponseEntity.ok(ApiResponse.ok("로그아웃이 정상적으로 처리되었습니다"));
     }
 }

@@ -2,16 +2,19 @@ package or.sopt.houme.domain.user.service;
 
 import feign.FeignException;
 import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import or.sopt.houme.domain.user.client.KaKaoOAuthClient;
 import or.sopt.houme.domain.user.client.KaKaoUserInfoClient;
+import or.sopt.houme.domain.user.controller.dto.CustomUserDetails;
 import or.sopt.houme.domain.user.controller.dto.KaKaoOAuthTokenDTO;
 import or.sopt.houme.domain.user.controller.dto.KaKaoUserInfoResponse;
 import or.sopt.houme.domain.user.entity.Role;
 import or.sopt.houme.domain.user.entity.SocialType;
 import or.sopt.houme.domain.user.entity.User;
+import or.sopt.houme.domain.user.repository.BlacklistTokenRepository;
 import or.sopt.houme.domain.user.repository.RefreshTokenRepository;
 import or.sopt.houme.domain.user.repository.UserRepository;
 import or.sopt.houme.global.api.ErrorCode;
@@ -37,6 +40,7 @@ public class OAuthService {
     private final JWTConfig jwtConfig;
 
     private final RefreshTokenRepository refreshTokenRepository;
+    private final BlacklistTokenRepository blacklistTokenRepository;
 
     private final KaKaoConfig kaKaoConfig;
 
@@ -115,6 +119,36 @@ public class OAuthService {
 
         response.addCookie(refreshCookie);
     }
+
+
+    public void logout(CustomUserDetails userDetails, HttpServletRequest request, HttpServletResponse response) {
+
+        log.info("로그아웃 시작");
+
+        Long id = userDetails.getUser().getId();
+        refreshTokenRepository.deleteById(id); // 1. 리프레시 토큰 삭제
+
+        String authorizationHeader = request.getHeader(jwtConfig.getHeader());
+
+        if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
+            log.warn("Authorization header is missing or invalid during logout.");
+            return;
+        }
+
+        String accessToken = authorizationHeader.substring(7).trim();
+
+        // 2. jti 추출
+        String jti = jwtUtil.getJti(accessToken);
+        log.info("jti: {}", jti);
+
+        // 3. 액세스 토큰 남은 시간 계산
+        long expiration = jwtUtil.getRemainingExpiration(accessToken);
+
+        // 4. 블랙리스트 등록
+        blacklistTokenRepository.save(jti, expiration);
+        log.info("Access token added to blacklist: {}", jti);
+    }
+
 
 
     private KaKaoOAuthTokenDTO getKaKaoOAuthTokenDTO(String accessCode) {
