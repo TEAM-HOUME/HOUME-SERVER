@@ -18,19 +18,16 @@ import or.sopt.houme.domain.user.repository.BlacklistTokenRepository;
 import or.sopt.houme.domain.user.repository.RefreshTokenRepository;
 import or.sopt.houme.domain.user.repository.UserRepository;
 import or.sopt.houme.global.api.ErrorCode;
-import or.sopt.houme.global.api.handler.TokenException;
 import or.sopt.houme.global.api.handler.UserException;
 import or.sopt.houme.global.config.JWTConfig;
 import or.sopt.houme.global.config.KaKaoConfig;
 import or.sopt.houme.global.jwt.JWTUtil;
 import or.sopt.houme.global.util.CookieUtil;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 
 @Service
 @RequiredArgsConstructor
-@Slf4j
 public class OAuthService {
 
     private final KaKaoOAuthClient kaKaoOAuthClient;
@@ -121,32 +118,34 @@ public class OAuthService {
     }
 
 
-    public void logout(CustomUserDetails userDetails, HttpServletRequest request, HttpServletResponse response) {
-
-        log.info("로그아웃 시작");
+    /**
+     * @param userDetails userDetails 에서 회원의 id를 받아서 그걸로 리프레시 토큰을 삭제합니다
+     * @param request 헤더를 블랙리스트에 추가하기 위해 필요합니다
+     *
+     *
+     * 로그아웃 로직은 다음과 같습니다
+     * 1. 회원의 식별자를 통해 서버에서 리프레시 토큰을 삭제합니다
+     * 2. 액세스 토큰을 찾아서 블랙리스트에 추가합니다
+     * 2-1. 이때 남은 액세스 토큰의 만료기간을 TTL로 설정합니다
+     * 3. JWTFilter 에서 블랙리스트에 해당 토큰이 있는지 탐색하고 있다면 그에 맞는 예외를 반환합니다
+     * */
+    public void logout(CustomUserDetails userDetails, HttpServletRequest request) {
 
         Long id = userDetails.getUser().getId();
-        refreshTokenRepository.deleteById(id); // 1. 리프레시 토큰 삭제
+        refreshTokenRepository.deleteById(id);
 
         String authorizationHeader = request.getHeader(jwtConfig.getHeader());
 
         if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
-            log.warn("Authorization header is missing or invalid during logout.");
             return;
         }
 
         String accessToken = authorizationHeader.substring(7).trim();
 
-        // 2. jti 추출
         String jti = jwtUtil.getJti(accessToken);
-        log.info("jti: {}", jti);
-
-        // 3. 액세스 토큰 남은 시간 계산
         long expiration = jwtUtil.getRemainingExpiration(accessToken);
 
-        // 4. 블랙리스트 등록
         blacklistTokenRepository.save(jti, expiration);
-        log.info("Access token added to blacklist: {}", jti);
     }
 
 

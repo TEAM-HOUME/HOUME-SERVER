@@ -52,10 +52,9 @@ public class OAuthController {
     @Operation(summary = "로그아웃 API")
     @PostMapping("/logout")
     public ResponseEntity<ApiResponse<String>> logout(@AuthenticationPrincipal CustomUserDetails userDetails,
-                                                      HttpServletResponse response,
                                                       HttpServletRequest request) {
 
-        oAuthService.logout(userDetails,request,response);
+        oAuthService.logout(userDetails,request);
 
         return ResponseEntity.ok(ApiResponse.ok("로그아웃이 정상적으로 처리되었습니다"));
     }
