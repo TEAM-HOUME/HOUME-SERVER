@@ -2,6 +2,7 @@ plugins {
     id 'java'
     id 'org.springframework.boot' version '3.2.3'
     id 'io.spring.dependency-management' version '1.1.4'
+    id 'com.google.cloud.tools.jib' version '3.4.5'       // Jib 플러그인
     id 'jacoco'
 }
 
@@ -85,6 +86,27 @@ dependencies {
 tasks.named('test') {
     useJUnitPlatform()
     finalizedBy 'jacocoTestReport'
+}
+
+jib {
+    from {
+        image = 'openjdk:17-oracle' // 베이스 이미지 지정
+    }
+    to {
+        image = project.hasProperty('jibToImage') ? project.getProperty('jibToImage') : 'default/image'
+        tags = ['latest', "${project.version}".toString()]
+        credHelper = 'ecr-login'
+    }
+    container {
+        jvmFlags = ["-Xms512m", "-Xmx512m"]
+        creationTime = "USE_CURRENT_TIMESTAMP"
+    }
+    extraDirectories {
+        paths = ["src/main/resources"] // 파일 경로 지정
+        permissions = [
+                "/chatbot-prompts.json": "644" // 권한 설정 (선택)
+        ]
+    }
 }
 
 jacoco {
