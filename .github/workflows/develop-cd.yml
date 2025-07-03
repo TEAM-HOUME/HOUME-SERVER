@@ -14,21 +14,21 @@ on:
 jobs:
   set-environment:
     # if: github.event.pull_request.merged == true
-    runs-on: ubuntu-latest
-    outputs:
-      environment: ${{ steps.set-env.outputs.environment }}
-    steps:
-      - name: 환경 변수 세팅 # 배포 환경 (개발 환경인지 운영 환경인지, 지금은 불필요)
-        id: set-env
-        run: |
-          echo ${{ github.base_ref }}
-          echo "environment=develop" >> $GITHUB_OUTPUT
-          
-          if [[ ${{ github.base_ref }} == "main" ]]; then
-            echo "environment=prod" >> $GITHUB_OUTPUT
-          fi
-      - name: check env
-        run: echo ${{ steps.set-env.outputs.environment }}
+#    runs-on: ubuntu-latest
+#    outputs:
+#      environment: ${{ steps.set-env.outputs.environment }}
+#    steps:
+#      - name: 환경 변수 세팅 # 배포 환경 (개발 환경인지 운영 환경인지, 지금은 불필요)
+#        id: set-env
+#        run: |
+#          echo ${{ github.base_ref }}
+#          echo "environment=develop" >> $GITHUB_OUTPUT
+#
+#          if [[ ${{ github.base_ref }} == "main" ]]; then
+#            echo "environment=prod" >> $GITHUB_OUTPUT
+#          fi
+#      - name: check env
+#        run: echo ${{ steps.set-env.outputs.environment }}
 
   image-build:
     runs-on: ubuntu-latest
