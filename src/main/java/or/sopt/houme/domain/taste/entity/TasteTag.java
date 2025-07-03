@@ -14,8 +14,10 @@ public class TasteTag {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "taste_id")
     private Taste taste;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "tag_id")
     private Tag tag;
 }

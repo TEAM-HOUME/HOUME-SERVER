@@ -15,8 +15,13 @@ public class HouseFloorPlan {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "floor_plan_id")
     private FloorPlan floorPlan;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "house_id")
     private House house;
+
+    @Column(name = "is_reverse", nullable = false)
+    private boolean isReverse;
 }

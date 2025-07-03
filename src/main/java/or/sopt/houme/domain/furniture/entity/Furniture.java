@@ -16,14 +16,19 @@ public class Furniture {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(name = "is_required", nullable = false)
     private boolean isRequired;
 
     @Enumerated(EnumType.STRING)
+    @Column(name = "bed_type", nullable = false)
     private BedType bedType;
 
     @Enumerated(EnumType.STRING)
+    @Column(name = "closet_type", nullable = false)
     private ClosetType closetType;
 
+
     @Enumerated(EnumType.STRING)
+    @Column(name = "selective_furniture_type", nullable = false)
     private SelectiveFurnitureType selectiveFurnitureType;
 }

@@ -15,8 +15,10 @@ public class HouseFurniture {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "furniture_id")
     private Furniture furniture;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "house_id")
     private House house;
 }

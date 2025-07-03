@@ -15,8 +15,10 @@ public class PromptPreference {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "preference_id")
     private Preference preference;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "house_id")
     private House house;
 }

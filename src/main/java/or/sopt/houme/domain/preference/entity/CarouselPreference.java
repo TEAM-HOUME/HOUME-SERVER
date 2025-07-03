@@ -15,8 +15,10 @@ public class CarouselPreference {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "preference_id")
     private Preference preference;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "carousel_id")
     private Carousel carousel;
 }
