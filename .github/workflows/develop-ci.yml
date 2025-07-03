@@ -131,10 +131,7 @@ jobs:
     permissions:
       id-token: write
       contents: read
-    strategy:
-      matrix:
-        environment: ["${{ needs.set-environment.outputs.environment }}"]
-    environment: ${{ matrix.environment }}
+    environment: ${{ needs.set-environment.outputs.environment }}
     steps:
       - name: checkout the code
         uses: actions/checkout@v4
