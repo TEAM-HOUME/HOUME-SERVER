@@ -2,8 +2,6 @@ name: develop-cd.yml
 on:
   push:
     branches: [feat/#32/develop-cd]
-    paths:
-      - 'src/**'
 
   pull_request:
     types: [synchronize, closed, opened]
