@@ -11,6 +11,8 @@ import lombok.extern.slf4j.Slf4j;
 import or.sopt.houme.domain.user.controller.dto.CustomUserDetails;
 import or.sopt.houme.domain.user.entity.Role;
 import or.sopt.houme.domain.user.entity.User;
+import or.sopt.houme.domain.user.repository.BlacklistTokenRepository;
+import or.sopt.houme.domain.user.repository.RefreshTokenRepository;
 import or.sopt.houme.global.api.ErrorCode;
 import or.sopt.houme.global.api.handler.TokenException;
 import or.sopt.houme.global.config.JWTConfig;
@@ -31,12 +33,12 @@ import java.io.IOException;
  * 요청의 수명주기 안에서 단 한 번만 실행되어 필요없는 검증이 추가적으로 실행되는 오버헤드를 방지합니다
  * */
 @RequiredArgsConstructor
-@Slf4j
 @Component
 public class JWTFilter extends OncePerRequestFilter{
 
     private final JWTUtil jwtUtil;
     private final JWTConfig jwtConfig;
+    private final BlacklistTokenRepository blacklistTokenRepository;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
@@ -58,9 +60,16 @@ public class JWTFilter extends OncePerRequestFilter{
          * 토큰의 헤더가 access인지 확인해서 액세스토큰이 맞는지 검증한다
          * */
         try {
-            log.info("토큰 있어서 검증 시작");
 
             jwtUtil.isExpired(accessToken);
+
+            // 블랙리스트 검사
+            String jti = jwtUtil.getJti(accessToken);
+            if (blacklistTokenRepository.exists(jti)) {
+                setErrorResponse(response, ErrorCode.ACCESS_TOKEN_BLACKLISTED);
+                return;
+            }
+
 
             String category = jwtUtil.getCategory(accessToken);
             if (!"access".equals(category)) {

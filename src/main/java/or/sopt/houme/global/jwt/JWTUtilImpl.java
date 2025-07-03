@@ -9,6 +9,7 @@ import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
+import java.util.UUID;
 
 @Component
 public class JWTUtilImpl implements JWTUtil {
@@ -37,6 +38,17 @@ public class JWTUtilImpl implements JWTUtil {
                 .parseClaimsJws(token)
                 .getBody()
                 .get("id", Long.class);
+    }
+
+    // 토큰의 식별자를 파싱하는 메서드
+    @Override
+    public String getJti(String token) {
+        return Jwts.parserBuilder()
+                .setSigningKey(secretKey)
+                .build()
+                .parseClaimsJws(token)
+                .getBody()
+                .getId();
     }
 
 
@@ -77,6 +89,18 @@ public class JWTUtilImpl implements JWTUtil {
                 .get("category", String.class);
     }
 
+    @Override
+    public long getRemainingExpiration(String token) {
+        Date expiration = Jwts.parserBuilder()
+                .setSigningKey(secretKey)
+                .build()
+                .parseClaimsJws(token)
+                .getBody()
+                .getExpiration();
+
+        return (expiration.getTime() - System.currentTimeMillis()) / 1000;
+    }
+
 
     /**
      * 토큰을 생성하는 메서드
@@ -90,6 +114,9 @@ public class JWTUtilImpl implements JWTUtil {
      * @param id: claim에 들어가서 회원을 식별해줄 수 있도록 하는 데이터
      *          일반적으로 unique의 속성을 지녀야하고,
      *          개인적으로는 id 하나만 이용하기 보다는 두 개정도 이용하면 좋지 않을까 하는 생각이 들긴하지만..
+     *
+     *
+     *          07/02 토큰에 액세스 토큰 블랙리스트 처리를 위한 JId 를 추가하였습니다
      * */
     @Override
     public String createJwt(String category, Long id, String role, Long expiredMs) {
@@ -100,6 +127,7 @@ public class JWTUtilImpl implements JWTUtil {
                 .claim("category", category)
                 .claim("id", id)
                 .claim("role", role)
+                .setId(UUID.randomUUID().toString())
                 .setIssuedAt(new Date(System.currentTimeMillis()))
                 .setExpiration(new Date(System.currentTimeMillis() + expiredMs))
                 .signWith(secretKey)

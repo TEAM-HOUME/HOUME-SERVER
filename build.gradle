@@ -2,6 +2,8 @@ plugins {
     id 'java'
     id 'org.springframework.boot' version '3.2.3'
     id 'io.spring.dependency-management' version '1.1.4'
+    id 'com.google.cloud.tools.jib' version '3.4.5'       // Jib 플러그인
+    id 'jacoco'
 }
 
 group = 'or.sopt'
@@ -70,8 +72,64 @@ dependencies {
 
     // redis
     implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+
+    // H2
+    runtimeOnly 'com.h2database:h2'
+
+    // Spring Cloud Starter
+    implementation 'org.springframework.cloud:spring-cloud-starter-aws:2.2.6.RELEASE'
+
+    // Spring Actuator
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
 }
 
 tasks.named('test') {
     useJUnitPlatform()
+    finalizedBy 'jacocoTestReport'
+}
+
+jib {
+    from {
+        image = 'openjdk:17-oracle' // 베이스 이미지 지정
+    }
+    to {
+        image = project.hasProperty('jibToImage') ? project.getProperty('jibToImage') : 'default/image'
+// 배포전용
+//        if (!project.hasProperty('jibToImage')){
+//            throw new GradleException("'-PjibToImage=xxx' 프로퍼티가 필요합니다.")
+//        }
+//        image = project.property('jibToImage').toString()
+        tags = ['latest', "${project.version}".toString()]
+        credHelper = 'ecr-login'
+    }
+    container {
+        jvmFlags = ["-Xms512m", "-Xmx512m"]
+        creationTime = "USE_CURRENT_TIMESTAMP"
+    }
+}
+
+jacoco {
+    toolVersion = '0.8.12'
+}
+
+jacocoTestReport {
+    dependsOn test
+    reports {
+        html.required.set(true)
+        xml.required.set(true)
+        csv.required.set(true)
+        html.destination file("${project.layout.buildDirectory.get().asFile}/reports/jacoco/index/html")
+        xml.destination file("${project.layout.buildDirectory.get().asFile}/reports/jacoco/index/jacoco.xml")
+        csv.destination file("${project.layout.buildDirectory.get().asFile}/reports/jacoco/index/jacoco.csv")
+    }
+
+    afterEvaluate {
+        classDirectories.setFrom(
+                files(classDirectories.files.collect {
+                    fileTree(dir: it, excludes: [
+                            // 여기에 제외할 테스트 영역을 설정 할 수 있습니다. 이 부분은 논의 후 설정하면 좋을 것 같습니다
+                    ])
+                })
+        )
+    }
 }
