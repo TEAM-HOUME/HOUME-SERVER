@@ -21,6 +21,7 @@ public class House {
     @Enumerated(EnumType.STRING)
     private Structure structure;
 
+    @Enumerated(EnumType.STRING)
     private Equilibrium equilibrium;
 
     @Enumerated(EnumType.STRING)
