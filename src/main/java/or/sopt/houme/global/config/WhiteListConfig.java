@@ -31,7 +31,8 @@ public class WhiteListConfig {
     // oauth 관련 인가 설정
     public static final List<String> serverWhitelist() {
         return List.of(
-                "/actuator/health"
+                "/actuator/health",
+                "/api/v1/env"
         );
     }
 }

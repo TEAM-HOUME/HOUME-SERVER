@@ -63,3 +63,6 @@ cloud:
       auto: false
     stack:
       auto: false
+
+server:
+  env: local
