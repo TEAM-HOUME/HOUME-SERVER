@@ -3,7 +3,9 @@ package or.sopt.houme.global.Entity;
 import jakarta.persistence.Column;
 import jakarta.persistence.EntityListeners;
 import jakarta.persistence.MappedSuperclass;
+import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedBy;
@@ -15,7 +17,8 @@ import java.time.LocalDateTime;
 @EntityListeners(AuditingEntityListener.class)
 @Getter
 @MappedSuperclass
-public class BaseEntity {
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+public abstract class BaseEntity {
 
     @CreatedDate
     @Column(updatable = false)
