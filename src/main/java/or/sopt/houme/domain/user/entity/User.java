@@ -42,7 +42,7 @@ public class User extends BaseEntity {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
-    private Status status;
+    private UserStatus status;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "role", nullable = false)
