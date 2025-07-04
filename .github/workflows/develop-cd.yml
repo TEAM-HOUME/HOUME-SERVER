@@ -50,8 +50,7 @@ jobs:
           mkdir -p ./src/main/resources
           echo "${{ secrets.APPLICATION_DEV }}" > ./src/main/resources/application-dev.yml
       - name: Jib로 이미지 빌드 및 ECR 업로드
-        run: ./gradlew jib -PjibToImage=${{ secrets.ECR_REGISTRY }} \
-          -PjibTag=${{ github.run_id }}
+        run: ./gradlew jib -PjibToImage=${{ secrets.ECR_REGISTRY }} -PjibTag=${{ github.run_id }}
 
   deploy:
     # if: github.event.pull_request.merged == true
