@@ -28,6 +28,11 @@ public class BaseEntity {
     @Column
     protected LocalDateTime deletedAt;
 
+    /**
+     * 엔티티를 소프트 삭제 처리하여 삭제 시각을 현재 시각으로 설정합니다.
+     *
+     * 이 메서드는 엔티티를 실제로 삭제하지 않고, `deletedAt` 필드에 현재 시각을 기록하여 논리적으로 삭제된 상태로 만듭니다.
+     */
     public void softDelete() {
         this.deletedAt = LocalDateTime.now();
     }

@@ -12,6 +12,11 @@ public enum Structure {
 
     private final String description;
 
+    /**
+     * 주어진 설명으로 구조(enum) 상수를 초기화합니다.
+     *
+     * @param description 구조 유형에 대한 한글 설명
+     */
     Structure(String description) {
         this.description = description;
     }

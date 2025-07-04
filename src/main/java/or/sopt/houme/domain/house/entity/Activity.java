@@ -11,6 +11,11 @@ public enum Activity {
 
     private final String description;
 
+    /**
+     * 각 활동 유형에 대한 설명을 초기화합니다.
+     *
+     * @param description 활동 유형의 한글 설명
+     */
     Activity(String description) {
         this.description = description;
     }

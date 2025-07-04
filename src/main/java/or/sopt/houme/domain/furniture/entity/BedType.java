@@ -12,6 +12,11 @@ public enum BedType {
 
     private final String description;
 
+    /**
+     * 각 침대 유형에 대한 설명을 초기화합니다.
+     *
+     * @param description 침대 유형의 한글 설명
+     */
     BedType(String description) {
         this.description = description;
     }

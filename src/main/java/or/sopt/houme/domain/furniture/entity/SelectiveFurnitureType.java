@@ -11,6 +11,11 @@ public enum SelectiveFurnitureType {
 
     private final String description;
 
+    /**
+     * 각 가구 유형에 대한 설명을 초기화합니다.
+     *
+     * @param description 가구 유형의 한글 설명
+     */
     SelectiveFurnitureType(String description) {
         this.description = description;
     }

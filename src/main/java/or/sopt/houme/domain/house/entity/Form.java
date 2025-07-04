@@ -11,6 +11,11 @@ public enum Form {
 
     private final String description;
 
+    /**
+     * 주어진 설명 문자열로 Form 열거형 상수를 초기화합니다.
+     *
+     * @param description 주택 형태에 대한 설명 문자열
+     */
     Form(String description) {
         this.description = description;
     }
