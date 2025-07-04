@@ -83,16 +83,6 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
 
-      - name: Docker 로그인 (ECR)
-        run: |
-          aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | docker login --username AWS --password-stdin ${{ secrets.ECR_REGISTRY }}
-
-      - name: Pull, Tag, Push latest
-        run: |
-          docker pull ${{ secrets.ECR_REGISTRY }}:${{ github.run_id }}
-          docker tag ${{ secrets.ECR_REGISTRY }}:${{ github.run_id }} ${{ secrets.ECR_REGISTRY }}:latest
-          docker push ${{ secrets.ECR_REGISTRY }}:latest
-
   deploy:
     # if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
