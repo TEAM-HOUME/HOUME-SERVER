@@ -71,7 +71,7 @@ jobs:
           STATUS=$(curl -k -o /dev/null -w "%{http_code}" "http://${{ secrets.HOUME_DOMAIN }}/actuator/health")
           echo $STATUS
           if [ $STATUS = 200 ]; then
-            CURRENT_UPSTREAM=$(curl -s -k https://${{ secrets.HOUME_DOMAIN }}/api/v1/env | jq -r '.env')
+            CURRENT_UPSTREAM=$(curl -s -k http://${{ secrets.HOUME_DOMAIN }}/api/v1/env | jq -r '.env')
           else
             CURRENT_UPSTREAM=green
           fi
@@ -107,13 +107,14 @@ jobs:
             sudo docker pull ${{ secrets.ECR_REGISTRY }}/houme:latest
             sudo docker-compose -f deploy/docker-compose-${{env.TARGET_UPSTREAM}}.yml up -d
 
-      - name: 새로운 서버 통신 확인
-        uses: jtalk/url-health-check-action@v3
+      - name: 새로운 서버 헬스체킹
+        uses: appleboy/ssh-action@master
         with:
-          url: http://${{ secrets.HOUME_SERVER_IP }}:${{env.STOPPED_PORT}}/actuator/healths
-          max-attempts: 3
-          retry-delay: 10s
-          insecure: true
+          username: ubuntu
+          host: ${{ secrets.HOUME_SERVER_IP }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            curl -s -o /dev/null -w "%{http_code}" http://localhost:${{ env.STOPPED_PORT }}/actuator/health
 
       - name: nginx upstream 변경
         uses: appleboy/ssh-action@master
