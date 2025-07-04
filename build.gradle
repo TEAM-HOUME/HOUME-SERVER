@@ -100,12 +100,16 @@ jib {
 //            throw new GradleException("'-PjibToImage=xxx' 프로퍼티가 필요합니다.")
 //        }
 //        image = project.property('jibToImage').toString()
-        tags = [project.hasProperty('jibTag') ? project.getProperty('jibTag') : 'default']
+        // runId 기반 태그 (ex: 16063719236) 와 latest 모두 추가
+        tags = project.hasProperty('jibTag')
+                ? [project.getProperty('jibTag'), 'latest']
+                : ['latest']
         credHelper = 'ecr-login'
     }
     container {
         jvmFlags = ["-Xms512m", "-Xmx512m"]
         creationTime = "USE_CURRENT_TIMESTAMP"
+        format = 'Docker'
     }
 }
 
