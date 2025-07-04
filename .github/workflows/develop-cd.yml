@@ -124,6 +124,8 @@ jobs:
 
       - name: 새로운 서버 헬스체킹
         uses: appleboy/ssh-action@master
+        env:
+          STOPPED_PORT: ${{ env.STOPPED_PORT }}
         with:
           username: ubuntu
           host: ${{ secrets.HOUME_SERVER_IP }}
