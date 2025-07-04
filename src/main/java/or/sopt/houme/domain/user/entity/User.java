@@ -3,7 +3,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import or.sopt.houme.domain.credit.entity.Credit;
 import or.sopt.houme.domain.house.entity.House;
-import or.sopt.houme.global.Entity.BaseEntity;
+import or.sopt.houme.global.entity.BaseEntity;
 
 import java.util.ArrayList;
 import java.util.Date;

@@ -1,4 +1,4 @@
-package or.sopt.houme.global.Entity;
+package or.sopt.houme.global.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.EntityListeners;
