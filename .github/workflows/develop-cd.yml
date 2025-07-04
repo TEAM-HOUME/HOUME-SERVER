@@ -45,6 +45,11 @@ jobs:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Remove application-local.yml
+        run: |
+          rm -f src/main/resources/application-local.yml
+
       - name: Add application-dev.yml
         run: |
           mkdir -p ./src/main/resources
@@ -98,6 +103,7 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           script_stop: true
           script: |
+            aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | docker login --username AWS --password-stdin ${{ secrets.ECR_REGISTRY }}
             sudo docker pull ${{ secrets.ECR_REGISTRY }}/houme:latest
             sudo docker-compose -f docker-compose-${{env.TARGET_UPSTREAM}}.yml up -d
 
