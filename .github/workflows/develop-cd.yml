@@ -63,7 +63,7 @@ jobs:
     steps:
       - name: Set target IP
         run: |
-          STATUS=$(curl -k -o /dev/null -w "%{http_code}" "https://${{ secrets.HOUME_DOMAIN }}/actuator/health")
+          STATUS=$(curl -k -o /dev/null -w "%{http_code}" "http://${{ secrets.HOUME_DOMAIN }}/actuator/health")
           echo $STATUS
           if [ $STATUS = 200 ]; then
             CURRENT_UPSTREAM=$(curl -s -k https://${{ secrets.HOUME_DOMAIN }}/api/v1/env | jq -r '.env')
