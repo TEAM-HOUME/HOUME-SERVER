@@ -120,7 +120,7 @@ jobs:
           script: |
             aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | docker login --username AWS --password-stdin ${{ secrets.ECR_REGISTRY }}
             sudo docker pull ${{ secrets.ECR_REGISTRY }}:latest
-            sudo docker-compose -f deploy/docker-compose-${{env.TARGET_UPSTREAM}}.yml up -d
+            sudo docker compose -f deploy/docker-compose-${{env.TARGET_UPSTREAM}}.yml up -d --remove-orphans
 
       - name: 새로운 서버 헬스체킹
         uses: appleboy/ssh-action@master
