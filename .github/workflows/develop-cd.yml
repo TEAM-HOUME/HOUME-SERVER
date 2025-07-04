@@ -108,7 +108,7 @@ jobs:
           password: ${{ secrets.DOCKER_TOKEN }}
 
       - name: Docker compose
-        uses: appleboy/ssh-action@master
+        uses: appleboy/ssh-action@v1.0.3
         env:
           TARGET_UPSTREAM: ${{ env.TARGET_UPSTREAM }}
         with:
@@ -122,7 +122,7 @@ jobs:
             sudo docker compose -f deploy/docker-compose-${{env.TARGET_UPSTREAM}}.yml up -d --remove-orphans
 
       - name: 새로운 서버 헬스체킹 (재시도 5회, 3초 간격)
-        uses: appleboy/ssh-action@master
+        uses: appleboy/ssh-action@v1.0.3
         env:
           STOPPED_PORT: ${{ env.STOPPED_PORT }}
         with:
@@ -144,7 +144,7 @@ jobs:
             exit 1
 
       - name: nginx upstream 변경
-        uses: appleboy/ssh-action@master
+        uses: appleboy/ssh-action@v1.0.3
         with:
           username: ubuntu
           host: ${{ secrets.HOUME_SERVER_IP }}
@@ -155,7 +155,7 @@ jobs:
             sudo nginx -t && sudo nginx -s reload
 
       - name: 기존 서버 중지
-        uses: appleboy/ssh-action@master
+        uses: appleboy/ssh-action@v1.0.3
         with:
           username: ubuntu
           host: ${{ secrets.HOUME_SERVER_IP }}
@@ -170,7 +170,7 @@ jobs:
             fi
 
       - name: 기존 도커 이미지 제거
-        uses: appleboy/ssh-action@master
+        uses: appleboy/ssh-action@v1.0.3
         with:
           username: ubuntu
           host: ${{ secrets.HOUME_SERVER_IP }}
