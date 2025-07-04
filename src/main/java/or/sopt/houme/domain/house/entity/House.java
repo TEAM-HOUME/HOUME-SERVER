@@ -28,7 +28,7 @@ public class House {
     private Equilibrium equilibrium;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "activity", nullable = false)
+    @Column(name = "activity", nullable = true)
     private Activity activity;
 
     @ManyToOne(fetch = FetchType.LAZY)

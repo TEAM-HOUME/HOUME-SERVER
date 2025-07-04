@@ -5,8 +5,8 @@ import or.sopt.houme.domain.credit.entity.Credit;
 import or.sopt.houme.domain.house.entity.House;
 import or.sopt.houme.global.entity.BaseEntity;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 @Entity
@@ -20,14 +20,14 @@ public class User extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "name", nullable = false)
+    @Column(name = "name", nullable = true)
     private String name;
 
-    @Column(name = "birthday", nullable = false)
-    private Date birthday;
+    @Column(name = "birthday", nullable = true)
+    private LocalDate birthday;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "gender", nullable = false)
+    @Column(name = "gender", nullable = true)
     private Gender gender;
 
     @Column(name = "email", unique = true, nullable = false)
