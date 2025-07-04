@@ -93,18 +93,23 @@ jib {
         image = 'openjdk:17-oracle' // 베이스 이미지 지정
     }
     to {
-        image = project.hasProperty('jibToImage') ? project.getProperty('jibToImage') : 'default/image'
+        image = '528350874585.dkr.ecr.ap-northeast-2.amazonaws.com/houme'
+//        image = project.hasProperty('jibToImage') ? project.getProperty('jibToImage') : 'default/image'
 // 배포전용
 //        if (!project.hasProperty('jibToImage')){
 //            throw new GradleException("'-PjibToImage=xxx' 프로퍼티가 필요합니다.")
 //        }
 //        image = project.property('jibToImage').toString()
-        tags = ['latest', "${project.version}".toString()]
+        // runId 기반 태그 (ex: 16063719236) 와 latest 모두 추가
+        tags = project.hasProperty('jibTag')
+                ? [project.getProperty('jibTag')]
+                : ['default']
         credHelper = 'ecr-login'
     }
     container {
         jvmFlags = ["-Xms512m", "-Xmx512m"]
         creationTime = "USE_CURRENT_TIMESTAMP"
+        format = 'Docker'
     }
 }
 
