@@ -49,9 +49,9 @@ jobs:
         run: |
           mkdir -p ./src/main/resources
           echo "${{ secrets.APPLICATION_DEV }}" > ./src/main/resources/application-dev.yml
-      - name: Jib Push with RunID
-        run: ./gradlew jib -Djib.to.image=528350874585.dkr.ecr.ap-northeast-2.amazonaws.com/houme \
-          -Djib.to.tags=${{ github.run_id }}
+      - name: Jib로 이미지 빌드 및 ECR 업로드
+        run: ./gradlew jib -PjibToImage=${{ secrets.ECR_REGISTRY }} \
+          -PjibTag=${{ github.run_id }}
 
   deploy:
     # if: github.event.pull_request.merged == true
