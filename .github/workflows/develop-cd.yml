@@ -98,7 +98,7 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           script_stop: true
           script: |
-            sudo docker pull ${{ secrets.DOCKER_USERNAME }}/houme:latest
+            sudo docker pull ${{ secrets.ECR_REGISTRY }}/houme:latest
             sudo docker-compose -f docker-compose-${{env.TARGET_UPSTREAM}}.yml up -d
 
       - name: 새로운 서버 통신 확인
