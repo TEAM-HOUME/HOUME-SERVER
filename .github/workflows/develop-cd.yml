@@ -101,7 +101,7 @@ jobs:
             sudo docker pull ${{ secrets.ECR_REGISTRY }}:latest
             sudo docker compose -f deploy/docker-compose-${{env.TARGET_UPSTREAM}}.yml up -d --remove-orphans
 
-      - name: 새로운 서버 헬스체킹 (재시도 5회, 3초 간격)
+      - name: 새로운 서버 헬스체킹 (재시도 7회, 3초 간격)
         uses: appleboy/ssh-action@v1.0.3
         env:
           STOPPED_PORT: ${{ env.STOPPED_PORT }}
@@ -159,47 +159,53 @@ jobs:
           script: |
             sudo docker image prune -f
   notify-discord-cd:
-    needs: deploy # deploy job이 끝나야 실행
+    needs: deploy
     runs-on: ubuntu-latest
-    if: always()  # 성공하든 실패하든
+    if: always()
     steps:
       - name: 디스코드 알림
         env:
           DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
           STATUS: ${{ needs.deploy.result }}
           PR_TITLE: ${{ github.event.pull_request.title }}
+          REPO: ${{ github.repository }}
+          RUN_ID: ${{ github.run_id }}
         run: |
-          message="✅ CD 성공"
-          color=3066993 # 초록
-          if [ "$STATUS" != "success" ]; then
-            message="❌ CD 실패"
-            color=15158332 # 빨강
-          fi
-          # 디스코드에 보낼 payload JSON 생성
-          # actor: 작성자, message: CD 완수 메시지, pr_url: PR 링크
+          actor="${{ github.actor }}"
           pr_title="$PR_TITLE"
-          payload=$(jq -n --arg actor "${{ github.actor }}" \
-                          --arg message "$message" \
-                          --arg pr_url "https://github.com/${{ github.repository }}/pull/${{ github.event.pull_request.number }}" \
-                          --arg pr_title "$pr_title" \
-                          --argjson color "$color" \
+          pr_url="https://github.com/${REPO}/pull/${{ github.event.pull_request.number }}"
+          action_url="https://github.com/${REPO}/actions/runs/${RUN_ID}"
+
+          if [ "$STATUS" = "success" ]; then
+            icon="✅"
+            color=3066993
+            description="$icon **$actor** 님이 배포를 성공적으로 완료했습니다! 🎉\n\n📄 PR 제목: *${pr_title}*\n🔗 PR 링크: ${pr_url}"
+          else
+            icon="❌"
+            color=15158332
+            description="$icon **$actor** 님의 배포가 실패했습니다. ⚠️\n\n📄 PR 제목: *${pr_title}*\n🔗 PR 링크: ${pr_url}\n🔍 실패 단계 확인: ${action_url}"
+          fi
+
+          payload=$(jq -n \
+            --arg title "🚀 배포 결과 알림" \
+            --arg description "$description" \
+            --argjson color "$color" \
             '{
-              # discord에 등록될 메시지 형태
               "embeds": [
                 {
-                  "title": "🙈새로운 배포 결과!",
-                  "description": "\($actor)님이 배포를 진행했습니다!\n📄 \($pr_title) \n \($message)\n🔗[워크플로우 실행 확인하기](\($pr_url))",
+                  "title": $title,
+                  "description": $description,
                   "color": $color,
-                  "timestamp": now | todateiso8601
+                  "timestamp": (now | todateiso8601)
                 }
               ]
             }')
 
-            # discord  웹훅 URL로 서버에 Post 요청
-          curl  -H "Content-Type: application/json" \
-                -X POST \
-                -d "$payload" \
-                "$DISCORD_WEBHOOK"
+          curl -H "Content-Type: application/json" \
+               -X POST \
+               -d "$payload" \
+               "$DISCORD_WEBHOOK"
+
 #          develop -> main PR 생성 로직
 #  create-pr:
 #    if: needs.set-environment.outputs.environment == 'develop'
