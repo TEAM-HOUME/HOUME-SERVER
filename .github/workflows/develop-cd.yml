@@ -1,17 +1,14 @@
 name: develop-cd.yml
 on:
-  push:
-    branches: [feat/#32/develop-cd]
-
   pull_request:
     types: [synchronize, closed, opened]
-    branches: [feat/#32/develop-cd]
+    branches: [develop]
     paths:
       - 'src/**'
 
 jobs:
   set-environment:
-    # if: github.event.pull_request.merged == true
+    if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
     outputs:
       environment: ${{ steps.set-env.outputs.environment }}
@@ -73,7 +70,7 @@ jobs:
         run: ./gradlew jib -PjibToImage=${{ secrets.ECR_REGISTRY }} -PjibTag=${{ github.run_id }}
 
   deploy:
-    # if: github.event.pull_request.merged == true
+    if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
     needs: [ set-environment, image-build ]
     permissions:
@@ -223,23 +220,24 @@ jobs:
                 -X POST \
                 -d "$payload" \
                 "$DISCORD_WEBHOOK"
-  create-pr:
-     # if: needs.set-environment.outputs.environment == 'develop'
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write      # 레포지토리 내용 수정 권한
-      pull-requests: write # PR 생성 권한
-    needs: [ set-environment, deploy ]
-    steps:
-      - name: checkout
-        uses: actions/checkout@v4
-      - name: gh auth login
-        run: |
-          echo ${{ secrets.ACCESS_TOKEN }} | gh auth login --with-token
-      - name: create branch
-        run: |
-          git checkout -b release/${{ github.run_id }}
-          git push origin release/${{ github.run_id }}
-      - name: create pr
-        run: |
-          gh pr create --base master --head release/${{ github.run_id }} --title "[DEPLOY] release/${{ github.run_id }} -> master" --body "release pr"
+#          develop -> main PR 생성 로직
+#  create-pr:
+#    if: needs.set-environment.outputs.environment == 'develop'
+#    runs-on: ubuntu-latest
+#    permissions:
+#      contents: write      # 레포지토리 내용 수정 권한
+#      pull-requests: write # PR 생성 권한
+#    needs: [ set-environment, deploy ]
+#    steps:
+#      - name: checkout
+#        uses: actions/checkout@v4
+#      - name: gh auth login
+#        run: |
+#          echo ${{ secrets.ACCESS_TOKEN }} | gh auth login --with-token
+#      - name: create branch
+#        run: |
+#          git checkout -b release/${{ github.run_id }}
+#          git push origin release/${{ github.run_id }}
+#      - name: create pr
+#        run: |
+#          gh pr create --base main --head release/${{ github.run_id }} --title "[DEPLOY] release/${{ github.run_id }} -> main" --body "release pr"
