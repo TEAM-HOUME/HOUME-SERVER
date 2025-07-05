@@ -30,18 +30,18 @@ public class Users extends BaseEntity {
     @Column(name = "gender", nullable = true)
     private Gender gender;
 
-    @Column(name = "email", unique = true, nullable = false)
+    @Column(name = "email", unique = true, nullable = true)
     private String email;
 
     @Column(name = "password", nullable = true)
     private String password;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "social_type", nullable = false)
+    @Column(name = "social_type", nullable = true)
     private SocialType socialType;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "status", nullable = false)
+    @Column(name = "status", nullable = true)
     private UserStatus status;
 
     @Enumerated(EnumType.STRING)
