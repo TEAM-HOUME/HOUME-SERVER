@@ -17,6 +17,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @ActiveProfiles("test")
 @SpringBootTest
+@DisplayName("[House Service Test]")
 class HouseServiceImplTest {
 
     @Autowired
