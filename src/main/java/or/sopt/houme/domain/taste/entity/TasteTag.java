@@ -8,7 +8,7 @@ import lombok.*;
 @Getter
 @AllArgsConstructor
 @Builder
-@Table(name = "tasteTags")
+@Table(name = "taste_tags")
 public class TasteTag {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

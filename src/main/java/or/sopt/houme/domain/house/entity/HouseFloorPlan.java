@@ -9,7 +9,7 @@ import or.sopt.houme.domain.floorPlan.entity.FloorPlan;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
-@Table(name = "houseFloorPlans")
+@Table(name = "house_floor_plans")
 public class HouseFloorPlan {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
