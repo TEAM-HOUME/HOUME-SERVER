@@ -2,7 +2,7 @@ name: develop-cd.yml
 on:
   pull_request:
     types: [synchronize, closed, opened]
-    branches: [develop]
+    branches: [develop, feat/#32/develop-cd]
     paths:
       - 'src/**'
 
