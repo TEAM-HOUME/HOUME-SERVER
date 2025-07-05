@@ -101,7 +101,7 @@ jobs:
             sudo docker pull ${{ secrets.ECR_REGISTRY }}:latest
             sudo docker compose -f deploy/docker-compose-${{ env.TARGET_UPSTREAM }}.yml up -d --remove-orphans
 
-      - name: 새로운 서버 헬스체킹 (재시도 10회, 3초 간격)
+      - name: 새로운 서버 헬스체킹 (재시도 10회, 5초 간격)
         uses: appleboy/ssh-action@v1.0.3
         env:
           STOPPED_PORT: ${{ env.STOPPED_PORT }}
@@ -118,7 +118,7 @@ jobs:
                 echo "서버 확인"
                 exit 0
               fi
-              sleep 3
+              sleep 5
             done
             echo "서버 헬스체크 실패"
             exit 1
