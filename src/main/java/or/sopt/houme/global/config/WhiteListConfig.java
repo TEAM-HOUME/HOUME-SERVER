@@ -35,4 +35,11 @@ public class WhiteListConfig {
                 "/api/v1/env"
         );
     }
+
+    // 집 이미지 생성하는 플로우 설정들
+    public static final List<String> makeHouseWhitelist() {
+        return List.of(
+                "/api/v1/housing-options"
+        );
+    }
 }
