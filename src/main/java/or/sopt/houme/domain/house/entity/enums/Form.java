@@ -1,4 +1,4 @@
-package or.sopt.houme.domain.house.entity;
+package or.sopt.houme.domain.house.entity.enums;
 
 import lombok.Getter;
 

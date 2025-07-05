@@ -2,9 +2,9 @@ package or.sopt.houme.domain.house.service;
 
 import or.sopt.houme.domain.house.dto.HouseOptionDTO;
 import or.sopt.houme.domain.house.dto.response.HouseOptionsResponse;
-import or.sopt.houme.domain.house.entity.Equilibrium;
-import or.sopt.houme.domain.house.entity.Form;
-import or.sopt.houme.domain.house.entity.Structure;
+import or.sopt.houme.domain.house.entity.enums.Equilibrium;
+import or.sopt.houme.domain.house.entity.enums.Form;
+import or.sopt.houme.domain.house.entity.enums.Structure;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
