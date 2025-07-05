@@ -5,7 +5,6 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import or.sopt.houme.domain.user.client.KaKaoOAuthClient;
 import or.sopt.houme.domain.user.client.KaKaoUserInfoClient;
 import or.sopt.houme.domain.user.controller.dto.CustomUserDetails;
@@ -13,7 +12,7 @@ import or.sopt.houme.domain.user.controller.dto.KaKaoOAuthTokenDTO;
 import or.sopt.houme.domain.user.controller.dto.KaKaoUserInfoResponse;
 import or.sopt.houme.domain.user.entity.Role;
 import or.sopt.houme.domain.user.entity.SocialType;
-import or.sopt.houme.domain.user.entity.User;
+import or.sopt.houme.domain.user.entity.Users;
 import or.sopt.houme.domain.user.repository.BlacklistTokenRepository;
 import or.sopt.houme.domain.user.repository.RefreshTokenRepository;
 import or.sopt.houme.domain.user.repository.UserRepository;
@@ -87,7 +86,7 @@ public class OAuthService {
         Boolean userExist = userRepository.existsByEmail(userInfo.getKakao_account().getEmail());
 
         if (userExist == Boolean.FALSE) {
-            User newUser = User.builder()
+            Users newUser = Users.builder()
                     .name(userInfo.getProperties().getNickname())
                     .password(null)
                     .email(userInfo.getKakao_account().getEmail())
@@ -99,7 +98,7 @@ public class OAuthService {
         }
 
         // 그리고 회원 정보를 기반으로 액세스토큰을 발급하여 헤더에 넣습니다
-        User byEmail = userRepository.findByEmail(userInfo.getKakao_account().getEmail())
+        Users byEmail = userRepository.findByEmail(userInfo.getKakao_account().getEmail())
                 .orElseThrow(()-> new UserException(ErrorCode.USER_NOT_FOUND));
 
         String access = jwtUtil.createJwt("access", byEmail.getId(), byEmail.getRole().toString(), jwtConfig.getAccessTokenValidityInSeconds());

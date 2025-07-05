@@ -11,7 +11,7 @@ import lombok.*;
 @Getter
 @AllArgsConstructor
 @Builder
-public class Carousel {
+public class Carousels {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

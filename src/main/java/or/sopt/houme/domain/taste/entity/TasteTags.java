@@ -8,11 +8,16 @@ import lombok.*;
 @Getter
 @AllArgsConstructor
 @Builder
-public class Taste {
+public class TasteTags {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "taste_image", nullable = false)
-    private String tasteImage;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "taste_id")
+    private Tastes taste;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "tag_id")
+    private Tags tag;
 }

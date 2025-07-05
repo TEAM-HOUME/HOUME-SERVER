@@ -1,19 +1,18 @@
-package or.sopt.houme.domain.preference.entity;
+package or.sopt.houme.domain.taste.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-import or.sopt.houme.global.entity.BaseEntity;
 
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
 @AllArgsConstructor
 @Builder
-public class Preference extends BaseEntity {
+public class Tags {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "is_like", nullable = false)
-    private boolean isLike;
+    @Column(name = "tag_name", nullable = false)
+    private String tagName;
 }

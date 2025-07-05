@@ -2,7 +2,7 @@ package or.sopt.houme.domain.generatedImage.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-import or.sopt.houme.domain.house.entity.House;
+import or.sopt.houme.domain.house.entity.Houses;
 import or.sopt.houme.global.entity.BaseEntity;
 
 @Entity
@@ -10,7 +10,7 @@ import or.sopt.houme.global.entity.BaseEntity;
 @Getter
 @AllArgsConstructor
 @Builder
-public class GenerateImage extends BaseEntity {
+public class GenerateImages extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -24,5 +24,5 @@ public class GenerateImage extends BaseEntity {
 
     @OneToOne
     @JoinColumn(name = "house_id")
-    private House house;
+    private Houses house;
 }

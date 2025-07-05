@@ -2,26 +2,23 @@ package or.sopt.houme.domain.house.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-import or.sopt.houme.domain.floorPlan.entity.FloorPlan;
+import or.sopt.houme.domain.taste.entity.Tastes;
 
 @Entity
-@Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Getter
 @AllArgsConstructor
 @Builder
-public class HouseFloorPlan {
+public class HouseTastes {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "floor_plan_id")
-    private FloorPlan floorPlan;
+    @JoinColumn(name = "taste_id")
+    private Tastes taste;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "house_id")
-    private House house;
-
-    @Column(name = "is_reverse", nullable = false)
-    private boolean isReverse;
+    private Houses house;
 }

@@ -1,23 +1,24 @@
-package or.sopt.houme.domain.taste.entity;
+package or.sopt.houme.domain.preference.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import or.sopt.houme.domain.carousel.entity.Carousels;
 
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
 @AllArgsConstructor
 @Builder
-public class TasteTag {
+public class CarouselPreferences {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "taste_id")
-    private Taste taste;
+    @JoinColumn(name = "preference_id")
+    private Preferences preference;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "tag_id")
-    private Tag tag;
+    @JoinColumn(name = "carousel_id")
+    private Carousels carousel;
 }

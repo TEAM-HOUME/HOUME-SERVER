@@ -2,23 +2,23 @@ package or.sopt.houme.domain.house.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-import or.sopt.houme.domain.furniture.entity.Furniture;
+import or.sopt.houme.domain.furniture.entity.Furnitures;
 
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
-public class HouseFurniture {
+public class HouseFurnitures {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "furniture_id")
-    private Furniture furniture;
+    private Furnitures furniture;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "house_id")
-    private House house;
+    private Houses house;
 }

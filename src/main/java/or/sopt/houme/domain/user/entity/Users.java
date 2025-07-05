@@ -1,8 +1,8 @@
 package or.sopt.houme.domain.user.entity;
 import jakarta.persistence.*;
 import lombok.*;
-import or.sopt.houme.domain.credit.entity.Credit;
-import or.sopt.houme.domain.house.entity.House;
+import or.sopt.houme.domain.credit.entity.Credits;
+import or.sopt.houme.domain.house.entity.Houses;
 import or.sopt.houme.global.entity.BaseEntity;
 
 import java.time.LocalDate;
@@ -14,7 +14,7 @@ import java.util.List;
 @AllArgsConstructor
 @Getter
 @Builder
-public class User extends BaseEntity {
+public class Users extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -49,10 +49,10 @@ public class User extends BaseEntity {
     private Role role;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Credit> credits = new ArrayList<>();
+    private List<Credits> credits = new ArrayList<>();
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<House> houses = new ArrayList<>();
+    private List<Houses> houses = new ArrayList<>();
 
     // 회원의 정적팩터링 메서드는 아직 구현하지 않았습니다
 }

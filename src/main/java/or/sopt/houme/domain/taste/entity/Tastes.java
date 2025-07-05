@@ -8,11 +8,11 @@ import lombok.*;
 @Getter
 @AllArgsConstructor
 @Builder
-public class Tag {
+public class Tastes {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "tag_name", nullable = false)
-    private String tagName;
+    @Column(name = "taste_image", nullable = false)
+    private String tasteImage;
 }
