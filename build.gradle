@@ -81,6 +81,9 @@ dependencies {
 
     // Spring Actuator
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
+
+    // postgresql
+    runtimeOnly 'org.postgresql:postgresql:42.7.3'
 }
 
 tasks.named('test') {
