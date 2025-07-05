@@ -11,7 +11,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Getter
 @Builder
-public class Furnitures {
+@Table(name = "furnitures")
+public class Furniture {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

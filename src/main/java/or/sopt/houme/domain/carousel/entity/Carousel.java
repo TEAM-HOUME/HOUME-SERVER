@@ -1,9 +1,6 @@
 package or.sopt.houme.domain.carousel.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.*;
 
 @Entity
@@ -11,7 +8,8 @@ import lombok.*;
 @Getter
 @AllArgsConstructor
 @Builder
-public class Carousels {
+@Table(name = "carousels")
+public class Carousel {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

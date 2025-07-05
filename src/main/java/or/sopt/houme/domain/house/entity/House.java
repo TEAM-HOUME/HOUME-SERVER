@@ -2,15 +2,16 @@ package or.sopt.houme.domain.house.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-import or.sopt.houme.domain.generatedImage.entity.GenerateImages;
-import or.sopt.houme.domain.user.entity.Users;
+import or.sopt.houme.domain.generatedImage.entity.GenerateImage;
+import or.sopt.houme.domain.user.entity.User;
 
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
 @AllArgsConstructor
 @Builder
-public class Houses {
+@Table(name = "houses")
+public class House {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -33,10 +34,10 @@ public class Houses {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
-    private Users user;
+    private User user;
 
     @OneToOne(mappedBy = "house")
-    private GenerateImages generateImage;
+    private GenerateImage generateImage;
 
     // 입력값이 유효한지에 대한 여부
     @Column(name = "is_valid", nullable = false)

@@ -8,16 +8,17 @@ import lombok.*;
 @Getter
 @AllArgsConstructor
 @Builder
-public class TasteTags {
+@Table(name = "tasteTags")
+public class TasteTag {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "taste_id")
-    private Tastes taste;
+    private Taste taste;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "tag_id")
-    private Tags tag;
+    private Tag tag;
 }

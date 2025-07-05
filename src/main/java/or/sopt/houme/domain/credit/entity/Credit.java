@@ -2,7 +2,7 @@ package or.sopt.houme.domain.credit.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-import or.sopt.houme.domain.user.entity.Users;
+import or.sopt.houme.domain.user.entity.User;
 import or.sopt.houme.global.entity.BaseEntity;
 
 @Entity
@@ -10,7 +10,8 @@ import or.sopt.houme.global.entity.BaseEntity;
 @Getter
 @AllArgsConstructor
 @Builder
-public class Credits extends BaseEntity {
+@Table(name = "credits")
+public class Credit extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -21,5 +22,5 @@ public class Credits extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
-    private Users user;
+    private User user;
 }

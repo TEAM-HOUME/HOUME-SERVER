@@ -8,7 +8,8 @@ import lombok.*;
 @Getter
 @AllArgsConstructor
 @Builder
-public class FloorPlans {
+@Table(name = "floorPlans")
+public class FloorPlan {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

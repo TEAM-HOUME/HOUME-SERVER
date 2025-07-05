@@ -2,23 +2,24 @@ package or.sopt.houme.domain.preference.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-import or.sopt.houme.domain.carousel.entity.Carousels;
+import or.sopt.houme.domain.carousel.entity.Carousel;
 
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
 @AllArgsConstructor
 @Builder
-public class CarouselPreferences {
+@Table(name = "carouselPreferences")
+public class CarouselPreference {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "preference_id")
-    private Preferences preference;
+    private Preference preference;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "carousel_id")
-    private Carousels carousel;
+    private Carousel carousel;
 }

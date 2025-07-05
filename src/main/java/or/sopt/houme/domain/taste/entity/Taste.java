@@ -8,7 +8,8 @@ import lombok.*;
 @Getter
 @AllArgsConstructor
 @Builder
-public class Tastes {
+@Table(name = "tastes")
+public class Taste {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

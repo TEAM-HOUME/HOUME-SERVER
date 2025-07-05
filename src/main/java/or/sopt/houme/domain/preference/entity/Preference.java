@@ -9,7 +9,8 @@ import or.sopt.houme.global.entity.BaseEntity;
 @Getter
 @AllArgsConstructor
 @Builder
-public class Preferences extends BaseEntity {
+@Table(name = "preferences")
+public class Preference extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

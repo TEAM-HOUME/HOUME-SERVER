@@ -1,27 +1,25 @@
-package or.sopt.houme.domain.house.entity;
+package or.sopt.houme.domain.preference.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-import or.sopt.houme.domain.floorPlan.entity.FloorPlans;
+import or.sopt.houme.domain.house.entity.House;
 
 @Entity
-@Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Getter
 @AllArgsConstructor
 @Builder
-public class HouseFloorPlans {
+@Table(name = "promptPreferences")
+public class PromptPreference {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "floor_plan_id")
-    private FloorPlans floorPlan;
+    @JoinColumn(name = "preference_id")
+    private Preference preference;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "house_id")
-    private Houses house;
-
-    @Column(name = "is_reverse", nullable = false)
-    private boolean isReverse;
+    private House house;
 }
