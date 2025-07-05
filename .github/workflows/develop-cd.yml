@@ -101,7 +101,7 @@ jobs:
             sudo docker pull ${{ secrets.ECR_REGISTRY }}:latest
             sudo docker compose -f deploy/docker-compose-${{ env.TARGET_UPSTREAM }}.yml up -d --remove-orphans
 
-      - name: 새로운 서버 헬스체킹 (재시도 7회, 3초 간격)
+      - name: 새로운 서버 헬스체킹 (재시도 10회, 3초 간격)
         uses: appleboy/ssh-action@v1.0.3
         env:
           STOPPED_PORT: ${{ env.STOPPED_PORT }}
@@ -110,7 +110,7 @@ jobs:
           host: ${{ secrets.HOUME_SERVER_IP }}
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
-            for i in {1..7}
+            for i in {1..10}
             do
               STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:$STOPPED_PORT/actuator/health)
               echo "[$i] Health check response code: $STATUS"
