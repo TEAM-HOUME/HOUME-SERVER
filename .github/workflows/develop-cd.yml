@@ -134,21 +134,6 @@ jobs:
             echo "set \$service_url ${{ env.TARGET_UPSTREAM }};" | sudo tee /etc/nginx/sites-enabled/service-env.inc
             sudo nginx -t && sudo nginx -s reload
 
-      - name: 기존 서버 중지
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          username: ubuntu
-          host: ${{ secrets.HOUME_SERVER_IP }}
-          key: ${{ secrets.EC2_SSH_KEY }}
-          script_stop: true
-          script: |
-            if [ "$(sudo docker ps -aq -f name=${{ env.CURRENT_UPSTREAM }})" ]; then
-              sudo docker stop ${{ env.CURRENT_UPSTREAM }} || true
-              sudo docker rm ${{ env.CURRENT_UPSTREAM }} || true
-            else
-              echo "No container named ${{ env.CURRENT_UPSTREAM }} found. Skipping stop & remove."
-            fi
-
       - name: 기존 도커 이미지 제거
         uses: appleboy/ssh-action@v1.0.3
         with:
@@ -158,6 +143,7 @@ jobs:
           script_stop: true
           script: |
             sudo docker image prune -f
+
   notify-discord-cd:
     needs: deploy
     runs-on: ubuntu-latest
