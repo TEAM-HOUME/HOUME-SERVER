@@ -42,7 +42,7 @@ class HouseControllerTest {
     @Test
     @WithMockUser   // 인증된 사용자로 요청
     @DisplayName("/housing-options가 집 구조(주거형태, 공간구조, 평형) 정보에 대한 옵션 리스트들을 반환한다.")
-    void getHealthCheckEnv() throws Exception {
+    void getHousingOptions() throws Exception {
         // Given
         List<HouseOptionDTO> housingTypes = List.of(
                 new HouseOptionDTO("OFFICETEL", "오피스텔")
