@@ -19,4 +19,5 @@ public class FloorPlan {
 
     @Column(name = "floor_plan_prompt", nullable = false)
     private String floorPlanPrompt;
+
 }
