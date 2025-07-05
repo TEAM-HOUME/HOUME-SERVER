@@ -12,6 +12,8 @@ import or.sopt.houme.domain.house.entity.enums.Structure;
 import or.sopt.houme.domain.house.repository.HouseRepository;
 import or.sopt.houme.domain.house.repository.InvalidHouseRequestRepository;
 import or.sopt.houme.domain.user.entity.User;
+import or.sopt.houme.global.api.ErrorCode;
+import or.sopt.houme.global.api.GeneralException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -52,14 +54,19 @@ public class HouseServiceImpl implements HouseService {
     @Transactional
     @Override
     public void selectHouseOptions(User user, HouseSelectRequest houseSelectRequest) {
-        Form form = Form.valueOf(houseSelectRequest.housingType());
-        Structure structure = Structure.valueOf(houseSelectRequest.roomType());
-        Equilibrium equilibrium = Equilibrium.valueOf(houseSelectRequest.areaType());
+        try {
+            Form form = Form.valueOf(houseSelectRequest.housingType());
+            Structure structure = Structure.valueOf(houseSelectRequest.roomType());
+            Equilibrium equilibrium = Equilibrium.valueOf(houseSelectRequest.areaType());
 
-        if (houseSelectRequest.isValid()){
-            saveValidHouse(user, form, structure, equilibrium);
-        } else {    // 유효하지 않은 요청일 시에 로그 남기기
-            logInvalidHouseRequest(user, form, structure, equilibrium);
+            if (houseSelectRequest.isValid()){
+                saveValidHouse(user, form, structure, equilibrium);
+            } else {    // 유효하지 않은 요청일 시에 로그 남기기
+                logInvalidHouseRequest(user, form, structure, equilibrium);
+            }
+        } catch (IllegalArgumentException e) {
+            // 잘못된 enum값들 처리
+            throw new GeneralException(ErrorCode.HOUSE_NOT_ALLOWED_OPTION);
         }
     }
 
