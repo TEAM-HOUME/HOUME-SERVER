@@ -9,6 +9,7 @@ import or.sopt.houme.domain.taste.entity.Taste;
 @Getter
 @AllArgsConstructor
 @Builder
+@Table(name = "house_tastes")
 public class HouseTaste {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

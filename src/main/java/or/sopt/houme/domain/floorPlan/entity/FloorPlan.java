@@ -8,6 +8,7 @@ import lombok.*;
 @Getter
 @AllArgsConstructor
 @Builder
+@Table(name = "floor_plans")
 public class FloorPlan {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -19,3 +20,4 @@ public class FloorPlan {
     @Column(name = "floor_plan_prompt", nullable = false)
     private String floorPlanPrompt;
 }
+

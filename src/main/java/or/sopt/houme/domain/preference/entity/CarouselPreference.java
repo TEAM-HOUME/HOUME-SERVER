@@ -9,6 +9,7 @@ import or.sopt.houme.domain.carousel.entity.Carousel;
 @Getter
 @AllArgsConstructor
 @Builder
+@Table(name = "carousel_preferences")
 public class CarouselPreference {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

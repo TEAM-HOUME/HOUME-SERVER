@@ -5,7 +5,6 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import or.sopt.houme.domain.user.client.KaKaoOAuthClient;
 import or.sopt.houme.domain.user.client.KaKaoUserInfoClient;
 import or.sopt.houme.domain.user.controller.dto.CustomUserDetails;

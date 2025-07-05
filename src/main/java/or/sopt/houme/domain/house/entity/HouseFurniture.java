@@ -9,6 +9,7 @@ import or.sopt.houme.domain.furniture.entity.Furniture;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
+@Table(name = "house_furnitures")
 public class HouseFurniture {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

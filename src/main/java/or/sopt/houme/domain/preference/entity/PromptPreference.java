@@ -9,6 +9,7 @@ import or.sopt.houme.domain.house.entity.House;
 @Getter
 @AllArgsConstructor
 @Builder
+@Table(name = "prompt_preferences")
 public class PromptPreference {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

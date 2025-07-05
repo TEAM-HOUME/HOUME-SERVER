@@ -10,6 +10,7 @@ import or.sopt.houme.global.entity.BaseEntity;
 @Getter
 @AllArgsConstructor
 @Builder
+@Table(name = "generate_images")
 public class GenerateImage extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

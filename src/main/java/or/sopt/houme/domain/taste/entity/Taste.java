@@ -8,6 +8,7 @@ import lombok.*;
 @Getter
 @AllArgsConstructor
 @Builder
+@Table(name = "tastes")
 public class Taste {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
