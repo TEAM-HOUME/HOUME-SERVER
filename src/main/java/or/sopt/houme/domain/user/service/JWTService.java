@@ -5,7 +5,7 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
-import or.sopt.houme.domain.user.entity.User;
+import or.sopt.houme.domain.user.entity.Users;
 import or.sopt.houme.domain.user.repository.RefreshTokenRepository;
 import or.sopt.houme.domain.user.repository.UserRepository;
 import or.sopt.houme.global.api.ErrorCode;
@@ -96,7 +96,7 @@ public class JWTService {
          *
          * 액세스 토큰과 리프레시 토큰을 새롭게 발급합니다
          * */
-        User findUser = userRepository.findById(userId)
+        Users findUser = userRepository.findById(userId)
                 .orElseThrow(() -> new UserException(ErrorCode.USER_NOT_FOUND));
 
 
