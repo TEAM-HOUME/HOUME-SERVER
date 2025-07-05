@@ -3,7 +3,7 @@ package or.sopt.houme.domain.user.controller.dto;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import or.sopt.houme.domain.user.entity.Users;
+import or.sopt.houme.domain.user.entity.User;
 import or.sopt.houme.global.api.ErrorCode;
 import or.sopt.houme.global.api.handler.UserException;
 import org.springframework.security.core.GrantedAuthority;
@@ -22,7 +22,7 @@ public class CustomUserDetails implements UserDetails {
      * 해당 세션의 생명주기는 하나의 요청에 한정됩니다
      * 새로운 요청이 들어오면 UserDetail 은 초기화 됩니다
      * */
-    private final Users user;
+    private final User user;
 
     // Role 반환
     @Override

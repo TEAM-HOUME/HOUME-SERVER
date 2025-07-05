@@ -9,7 +9,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import or.sopt.houme.domain.user.controller.dto.CustomUserDetails;
 import or.sopt.houme.domain.user.entity.Role;
-import or.sopt.houme.domain.user.entity.Users;
+import or.sopt.houme.domain.user.entity.User;
 import or.sopt.houme.domain.user.repository.BlacklistTokenRepository;
 import or.sopt.houme.global.api.ErrorCode;
 import or.sopt.houme.global.config.JWTConfig;
@@ -95,7 +95,7 @@ public class JWTFilter extends OncePerRequestFilter{
                 return;
             }
 
-        Users user = Users.builder()
+        User user = User.builder()
                 .id(id)
                 .role(role)
                 .build();
