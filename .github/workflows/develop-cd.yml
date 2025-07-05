@@ -3,8 +3,8 @@ on:
   pull_request:
     types: [synchronize, closed, opened]
     branches: [develop, feat/#32/develop-cd]
-    paths:
-      - 'src/**'
+#    paths:
+#      - 'src/**'
 
 jobs:
   image-build:
@@ -143,8 +143,8 @@ jobs:
           script_stop: true
           script: |
             if [ "$(sudo docker ps -aq -f name=${{ env.CURRENT_UPSTREAM }})" ]; then
-              sudo docker stop ${{ env.CURRENT_UPSTREAM }}
-              sudo docker rm ${{ env.CURRENT_UPSTREAM }}
+              sudo docker stop ${{ env.CURRENT_UPSTREAM }} || true
+              sudo docker rm ${{ env.CURRENT_UPSTREAM }} || true
             else
               echo "No container named ${{ env.CURRENT_UPSTREAM }} found. Skipping stop & remove."
             fi
@@ -179,11 +179,11 @@ jobs:
           if [ "$STATUS" = "success" ]; then
             icon="✅"
             color=3066993
-            description="$icon **$actor** 님이 배포를 성공적으로 완료했습니다! 🎉\n\n📄 PR 제목: *${pr_title}*\n🔗 PR 링크: ${pr_url}"
+            description="$icon **$actor** 님이 배포를 성공적으로 완료했습니다! 🎉 \n\n 📄 PR 제목: *${pr_title}* \n 🔗 PR 링크: ${pr_url}"
           else
             icon="❌"
             color=15158332
-            description="$icon **$actor** 님의 배포가 실패했습니다. ⚠️\n\n📄 PR 제목: *${pr_title}*\n🔗 PR 링크: ${pr_url}\n🔍 실패 단계 확인: ${action_url}"
+            description="$icon **$actor** 님의 배포가 실패했습니다. ⚠️ \n\n 📄 PR 제목: *${pr_title}* \n 🔗 PR 링크: ${pr_url} \n 🔍 실패 단계 확인: ${action_url}"
           fi
 
           payload=$(jq -n \
