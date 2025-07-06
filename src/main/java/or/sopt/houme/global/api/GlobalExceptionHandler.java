@@ -15,7 +15,7 @@ public class GlobalExceptionHandler {
 
 
     @ExceptionHandler(GeneralException.class)
-    public ResponseEntity<ApiResponse<Void>> handleHttpMediaTypeNotAcceptableException(GeneralException e) {
+    public ResponseEntity<ApiResponse<Void>> handleGeneralException(GeneralException e) {
         ErrorCode errorCode = e.getErrorCode();
         ApiResponse<Void> response = ApiResponse.fail(errorCode.getCode(), errorCode.getMsg());
 
@@ -24,7 +24,7 @@ public class GlobalExceptionHandler {
 
 
     @ExceptionHandler(HttpMediaTypeNotAcceptableException.class)
-    public ResponseEntity<ApiResponse<Void>> handleGeneralException(HttpMediaTypeNotAcceptableException e) {
+    public ResponseEntity<ApiResponse<Void>> handleHttpMediaTypeNotAcceptableException(HttpMediaTypeNotAcceptableException e) {
         ErrorCode errorCode = ErrorCode.HTTP_MEDIA_TYPE_NOT_ACCEPTABLE;
         ApiResponse<Void> response = ApiResponse.fail(errorCode.getCode(), errorCode.getMsg());
 
