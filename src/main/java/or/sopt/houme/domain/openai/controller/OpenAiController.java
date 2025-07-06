@@ -27,7 +27,7 @@ public class OpenAiController {
 
         ImageUploadResponseDTO responseDTO = imageService.makeImage(new PromptRequestDTO());
 
-        return ResponseEntity.ok().contentType(MediaType.IMAGE_PNG).body(responseDTO.getImageLink());
+        return ResponseEntity.ok().body(responseDTO.getImageLink());
     }
 
 }
