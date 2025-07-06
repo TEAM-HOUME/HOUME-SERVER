@@ -25,10 +25,9 @@ public class OpenAiController {
     @GetMapping(value = "/generate")
     public ResponseEntity<String> generate() {
 
-        ImageUploadResponseDTO response = imageService.makeImage(new PromptRequestDTO());
+        ImageUploadResponseDTO responseDTO = imageService.makeImage(new PromptRequestDTO());
 
-        return ResponseEntity.ok(response.getImageLink());
-
+        return ResponseEntity.ok().contentType(MediaType.IMAGE_PNG).body(responseDTO.getImageLink());
     }
 
 }
