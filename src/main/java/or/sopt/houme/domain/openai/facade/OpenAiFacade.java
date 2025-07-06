@@ -3,7 +3,8 @@ package or.sopt.houme.domain.openai.facade;
 import lombok.RequiredArgsConstructor;
 import or.sopt.houme.domain.openai.service.OpenAiService;
 import or.sopt.houme.domain.prompt.dto.PromptRequestDTO;
-import or.sopt.houme.domain.prompt.util.PromptService;
+import or.sopt.houme.domain.prompt.service.PromptService;
+import or.sopt.houme.global.dto.ImageUploadResponseDTO;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -26,12 +27,12 @@ public class OpenAiFacade {
      * 4. 데이터베이스에 이미지 저장
      *
      * 까지의 로직을 할 수 있도록 구현하였습니다
+     *
+     * 최종적으로는 이미지의 다양한 메타데이터를 포함한 response 를 반환합니다
      * */
-    public byte[] makeImage(PromptRequestDTO promptRequestDTO){
+    public ImageUploadResponseDTO makeImage(PromptRequestDTO promptRequestDTO){
 
         String prompt = promptService.makePrompt(promptRequestDTO);
-
-        // 데이터베이스 이미지 저장
 
         return openAiService.createImage(prompt);
     }

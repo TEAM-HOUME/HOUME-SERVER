@@ -2,6 +2,7 @@ package or.sopt.houme.global.api;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.HttpMediaTypeNotAcceptableException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MissingRequestHeaderException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -12,9 +13,19 @@ import org.springframework.web.servlet.NoHandlerFoundException;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
+
     @ExceptionHandler(GeneralException.class)
     public ResponseEntity<ApiResponse<Void>> handleGeneralException(GeneralException e) {
         ErrorCode errorCode = e.getErrorCode();
+        ApiResponse<Void> response = ApiResponse.fail(errorCode.getCode(), errorCode.getMsg());
+
+        return ResponseEntity.status(errorCode.getStatus()).body(response);
+    }
+
+
+    @ExceptionHandler(HttpMediaTypeNotAcceptableException.class)
+    public ResponseEntity<ApiResponse<Void>> handleGeneralException(HttpMediaTypeNotAcceptableException e) {
+        ErrorCode errorCode = ErrorCode.HTTP_MEDIA_TYPE_NOT_ACCEPTABLE;
         ApiResponse<Void> response = ApiResponse.fail(errorCode.getCode(), errorCode.getMsg());
 
         return ResponseEntity.status(errorCode.getStatus()).body(response);
