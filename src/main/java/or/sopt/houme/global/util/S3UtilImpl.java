@@ -88,6 +88,8 @@ public class S3UtilImpl implements S3Util {
             amazonS3.putObject(new PutObjectRequest(bucket, fileName, inputStream, metadata));
         } catch (AmazonServiceException e) {
             throw new S3Exception(ErrorCode.IMAGE_UPLOAD_AMAZON_EXCEPTION);
+        } catch (Exception e) {
+            throw new S3Exception(ErrorCode.IMAGE_UPLOAD_IO_EXCEPTION);
         }
 
         return ImageUploadResponseDTO.from(

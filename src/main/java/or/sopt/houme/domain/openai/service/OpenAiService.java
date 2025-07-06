@@ -8,6 +8,7 @@ import or.sopt.houme.domain.openai.controller.dto.OpenAiRequest;
 import or.sopt.houme.domain.openai.controller.dto.OpenAiResponse;
 import or.sopt.houme.global.api.ErrorCode;
 import or.sopt.houme.global.api.handler.ChatGptException;
+import or.sopt.houme.global.api.handler.S3Exception;
 import or.sopt.houme.global.dto.ImageUploadResponseDTO;
 import or.sopt.houme.global.util.S3Util;
 import or.sopt.houme.global.util.constant.S3DirNameConstant;
@@ -58,9 +59,13 @@ public class OpenAiService {
             return null;
         }
 
-        // 응답 타입인 base64로 인코딩된 string 을 이미지로 변환
-        String b64 = response.getData().get(0).getB64_json();
-        return Base64.getDecoder().decode(b64);
+        try {
+            // 응답 타입인 base64로 인코딩된 string 을 이미지로 변환
+            String b64 = response.getData().get(0).getB64_json();
+            return Base64.getDecoder().decode(b64);
+        }catch (IllegalArgumentException e){
+            throw new S3Exception(ErrorCode.INCODING_EXCEPTION);
+        }
     }
 
 }
