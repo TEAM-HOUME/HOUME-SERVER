@@ -56,7 +56,7 @@ public class OpenAiService {
         OpenAiResponse response = openAIImageClient.generateImage("Bearer " + apiKey, request);
 
         if (response.getData() == null || response.getData().isEmpty()) {
-            return null;
+            throw new ChatGptException(ErrorCode.CHAT_GPT_CALL_EXCEPTION);
         }
 
         try {
