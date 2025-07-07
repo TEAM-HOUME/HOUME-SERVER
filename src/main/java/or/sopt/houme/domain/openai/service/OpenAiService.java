@@ -52,7 +52,7 @@ public class OpenAiService {
 
 
 
-    private byte[] getGptImage(OpenAiRequest request) {
+    public byte[] getGptImage(OpenAiRequest request) {
         OpenAiResponse response = openAIImageClient.generateImage("Bearer " + apiKey, request);
 
         if (response.getData() == null || response.getData().isEmpty()) {
