@@ -106,12 +106,6 @@ clean {
     delete file(querydslDir)
 }
 
-configurations {
-    compileOnly {
-        extendsFrom annotationProcessor
-    }
-}
-
 tasks.named('test') {
     useJUnitPlatform()
     finalizedBy 'jacocoTestReport'
