@@ -18,7 +18,7 @@ public class UserRepositoryImpl implements UserRepositoryCustom {
                 .select(credit.count())
                 .from(credit)
                 .where(
-                        credit.id.eq(userId),
+                        credit.user.id.eq(userId),
                         credit.status.eq(CreditStatus.ACTIVE)
                 )
                 .fetchOne();
