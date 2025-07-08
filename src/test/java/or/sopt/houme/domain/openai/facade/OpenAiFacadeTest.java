@@ -4,13 +4,11 @@ import or.sopt.houme.domain.openai.service.OpenAiService;
 import or.sopt.houme.domain.prompt.dto.PromptRequestDTO;
 import or.sopt.houme.domain.prompt.service.PromptService;
 import or.sopt.houme.global.dto.ImageUploadResponseDTO;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -18,7 +16,7 @@ import static org.mockito.Mockito.*;
 
 @ActiveProfiles("test")
 @ExtendWith(MockitoExtension.class)
-@DisplayName("OpenAiFacade Test")
+@DisplayName("OpenAiFacadeImpl Test")
 class OpenAiFacadeTest {
 
     @Mock
@@ -28,7 +26,7 @@ class OpenAiFacadeTest {
     private PromptService promptService;
 
     @InjectMocks
-    private OpenAiFacade openAiFacade;
+    private OpenAiFacadeImpl openAiFacade;
 
 
     @Test
