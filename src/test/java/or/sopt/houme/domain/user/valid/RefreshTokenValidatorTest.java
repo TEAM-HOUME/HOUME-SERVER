@@ -10,24 +10,27 @@ import or.sopt.houme.global.jwt.JWTUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+@ExtendWith(MockitoExtension.class)
 class RefreshTokenValidatorTest {
 
+
+    @Mock
     private JWTUtil jwtUtil;
+
+    @Mock
     private RefreshTokenRepository refreshTokenRepository;
+
+    @InjectMocks
     private RefreshTokenValidator refreshTokenValidator;
 
-
-
-    @BeforeEach
-    void setUp() {
-        jwtUtil = mock(JWTUtil.class);
-        refreshTokenRepository = mock(RefreshTokenRepository.class);
-        refreshTokenValidator = new RefreshTokenValidator(jwtUtil, refreshTokenRepository);
-    }
 
 
     @Test
