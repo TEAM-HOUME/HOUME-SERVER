@@ -37,6 +37,9 @@ public class User extends BaseEntity {
     @Column(name = "password", nullable = true)
     private String password;
 
+    @Column(name = "has_generated_image")
+    private Boolean hasGeneratedImage;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "social_type", nullable = true)
     private SocialType socialType;
