@@ -15,9 +15,12 @@ import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfi
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -83,7 +86,15 @@ class UserControllerTest {
     @WithMockUser(username = "test@example.com", roles = "USER") // ✅ 요거 추가
     void getMyPageInfo_Success() throws Exception {
         // Given
-        given(userService.getMyPageInfo(any(User.class))).willReturn(mockResponse);
+        User mockUser = mockUserDetails.getUser();
+
+        // ✅ 정확히 동일한 객체를 넘겨서 mock 동작 유도
+        given(userService.getMyPageInfo(mockUser)).willReturn(mockResponse);
+
+        // ✅ SecurityContext에 수동 주입
+        UsernamePasswordAuthenticationToken auth =
+                new UsernamePasswordAuthenticationToken(mockUser, null, mockUserDetails.getAuthorities());
+        SecurityContextHolder.getContext().setAuthentication(auth);
 
         // When & Then
         mockMvc.perform(get("/api/v1/mypage/user"))
