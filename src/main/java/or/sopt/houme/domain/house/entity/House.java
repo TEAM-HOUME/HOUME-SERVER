@@ -14,6 +14,7 @@ import or.sopt.houme.domain.user.entity.User;
 @Getter
 @AllArgsConstructor
 @Builder
+@Table(name = "houses")
 public class House {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
