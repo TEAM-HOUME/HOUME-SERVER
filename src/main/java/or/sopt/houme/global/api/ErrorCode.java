@@ -29,7 +29,7 @@ public enum ErrorCode {
     USER_ROLE_EXCEPTION(HttpStatus.NOT_FOUND,40007 ,"회원의 권한을 찾을 수 없습니다. 서버에 문의해주세요" ),
 
     // 이미지 관련 예외
-    CHAT_GPT_CALL_EXCEPTION(HttpStatus.INTERNAL_SERVER_ERROR,50001 ,"챗 gpt 호출 중 예외가 발생하였습니다" ),
+    CHAT_GPT_CALL_EXCEPTION(HttpStatus.INTERNAL_SERVER_ERROR,50009 ,"챗 gpt 호출 중 예외가 발생하였습니다" ),
 
     IMAGE_UPLOAD_AMAZON_EXCEPTION(HttpStatus.INTERNAL_SERVER_ERROR, 50002, "이미지 업로드 중, AWS 예외가 발생하였습니다. 서버 관리자에게 문의해주세요"),
     IMAGE_UPLOAD_IO_EXCEPTION(HttpStatus.INTERNAL_SERVER_ERROR, 50003, "이미지 업로드 중, IO 예외가 발생하였습니다. 서버 관리자에게 문의해주세요"),
