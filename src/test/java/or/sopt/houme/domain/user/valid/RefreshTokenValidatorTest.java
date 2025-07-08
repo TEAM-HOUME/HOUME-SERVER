@@ -106,10 +106,6 @@ class RefreshTokenValidatorTest {
     @DisplayName("validateRefreshToken()는 토큰이 만료되면 정해진 예외를 반환한다")
     void validateRefreshToken_expired() {
         // given
-        JWTUtil jwtUtil = mock(JWTUtil.class);
-        RefreshTokenRepository repository = mock(RefreshTokenRepository.class);
-        RefreshTokenValidator validator = new RefreshTokenValidator(jwtUtil, repository);
-
         String token = "expired-refresh-token";
         Cookie cookie = new Cookie("refresh-token", token);
         HttpServletRequest request = mock(HttpServletRequest.class);
@@ -121,7 +117,7 @@ class RefreshTokenValidatorTest {
 
         // when & then
         TokenException e = assertThrows(TokenException.class, () ->
-                validator.validateRefreshToken(request)
+                refreshTokenValidator.validateRefreshToken(request)
         );
 
         assertEquals(ErrorCode.REFRESH_TOKEN_EXPIRED, e.getErrorCode());
