@@ -13,6 +13,7 @@ import or.sopt.houme.domain.user.controller.dto.KaKaoUserInfoResponse;
 import or.sopt.houme.domain.user.entity.Role;
 import or.sopt.houme.domain.user.entity.SocialType;
 import or.sopt.houme.domain.user.entity.User;
+import or.sopt.houme.domain.user.entity.UserStatus;
 import or.sopt.houme.domain.user.repository.BlacklistTokenRepository;
 import or.sopt.houme.domain.user.repository.RefreshTokenRepository;
 import or.sopt.houme.domain.user.repository.UserRepository;
@@ -92,6 +93,7 @@ public class OAuthService {
                     .email(userInfo.getKakao_account().getEmail())
                     .role(Role.ROLE_USER)
                     .socialType(SocialType.KAKAO)
+                    .status(UserStatus.ACTIVE)
                     .build();
 
             userRepository.save(newUser);

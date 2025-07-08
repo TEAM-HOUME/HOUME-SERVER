@@ -45,15 +45,11 @@ class HouseControllerTest {
     @DisplayName("/housing-options가 집 구조(주거형태, 공간구조, 평형) 정보에 대한 옵션 리스트들을 반환한다.")
     void getHousingOptions() throws Exception {
         // Given
-        List<HouseOptionDTO> housingTypes = List.of(
-                new HouseOptionDTO("OFFICETEL", "오피스텔")
-        );
-        List<HouseOptionDTO> roomTypes = List.of(
-                new HouseOptionDTO("OPEN_ONE_ROOM", "오픈형 원룸")
-        );
-        List<HouseOptionDTO> areaTypes = List.of(
-                new HouseOptionDTO("UNDER_5", "5평 이하")
-        );        HouseOptionsResponse houseOptionsResponse = new HouseOptionsResponse(housingTypes, roomTypes, areaTypes);
+        List<HouseOptionDTO> housingTypes = List.of(new HouseOptionDTO("OFFICETEL", "오피스텔"));
+        List<HouseOptionDTO> roomTypes = List.of(new HouseOptionDTO("OPEN_ONE_ROOM", "오픈형 원룸"));
+        List<HouseOptionDTO> areaTypes = List.of(new HouseOptionDTO("UNDER_5", "5평 이하"));
+
+        HouseOptionsResponse houseOptionsResponse = new HouseOptionsResponse(housingTypes, roomTypes, areaTypes);
 
         when(houseService.getHouseOptionsResponse()).thenReturn(houseOptionsResponse);
 

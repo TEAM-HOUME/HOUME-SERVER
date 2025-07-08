@@ -1,14 +1,19 @@
 package or.sopt.houme.domain.house.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import or.sopt.houme.domain.house.dto.request.HouseSelectRequest;
 import or.sopt.houme.domain.house.dto.response.HouseOptionsResponse;
 import or.sopt.houme.domain.house.service.HouseService;
+import or.sopt.houme.domain.user.controller.dto.CustomUserDetails;
 import or.sopt.houme.global.api.ApiResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/v1")
@@ -23,5 +28,16 @@ public class HouseController {
     @GetMapping("/housing-options")
     public ResponseEntity<ApiResponse<HouseOptionsResponse>> housingOptions() {
         return ResponseEntity.ok(ApiResponse.ok(houseService.getHouseOptionsResponse()));
+    }
+
+    // 집 구조 선택 API
+    @Operation(summary = "집 구조 선택 API",
+            description = "집 구조를 선택받고 저장합니다. (주거형태, 공간구조, 평형) 옵션들을 저장합니다.")
+    @PostMapping("/housing-selections")
+    public ResponseEntity<ApiResponse<Void>>  housingSelections(@AuthenticationPrincipal CustomUserDetails userDetails,
+                                                                @Valid @RequestBody HouseSelectRequest houseSelectRequest) {
+
+        houseService.selectHouseOptions(userDetails.getUser(), houseSelectRequest);
+        return ResponseEntity.ok(ApiResponse.ok(null));
     }
 }
