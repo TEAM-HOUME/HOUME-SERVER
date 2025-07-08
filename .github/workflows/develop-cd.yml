@@ -1,8 +1,5 @@
 name: develop-cd.yml
 on:
-  push:
-    branches: [fix/#54/cd_add-skip]
-
   pull_request:
     types: [synchronize, closed, opened]
     branches: [develop]
