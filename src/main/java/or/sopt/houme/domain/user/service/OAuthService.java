@@ -80,6 +80,7 @@ public class OAuthService {
             authorizationCode = getKaKaoOAuthTokenDTO(accessCode);
             log.info("액세스 토큰을 발급받았습니다: {}", authorizationCode);
         } catch (FeignException e) {
+            log.info(e.getMessage());
             throw new UserException(ErrorCode.KAKAO_AUTH_CODE_INVALID);
         }
 
