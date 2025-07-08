@@ -45,6 +45,7 @@ class UserLandingControllerTest {
                 .andExpect(jsonPath("$.data").value(true));
     }
 
+
     @Test
     @DisplayName("checkHasGeneratedImage()는 false를 반환한다")
     void checkHasGeneratedImage_false() throws Exception {
