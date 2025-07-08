@@ -62,7 +62,8 @@ public class SecurityConfig {
                          * 다양한 메서드에 대해 CORS 정책을 허용합니다
                          * */
                         configuration.setAllowedOrigins(Arrays.asList(
-                                "http://localhost:3000"
+                                "http://localhost:5173",
+                                "http://localhost:5174"
                         ));
                         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
                         configuration.setAllowCredentials(true);
@@ -91,6 +92,7 @@ public class SecurityConfig {
                 .requestMatchers(WhiteListConfig.oauthWhitelist().toArray(new String[0])).permitAll()
                 .requestMatchers(WhiteListConfig.serverWhitelist().toArray(new String[0])).permitAll()
                 .requestMatchers(WhiteListConfig.makeHouseWhitelist().toArray(new String[0])).permitAll()
+                .requestMatchers(WhiteListConfig.userWhiteList().toArray(new String[0])).permitAll()
                 .anyRequest().authenticated());
 
 

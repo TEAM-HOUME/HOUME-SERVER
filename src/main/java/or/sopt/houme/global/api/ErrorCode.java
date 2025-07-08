@@ -17,6 +17,8 @@ public enum ErrorCode {
     REFRESH_TOKEN_EXPIRED(HttpStatus.BAD_REQUEST,40004 ,"리프레시 토큰이 만료되었습니다" ),
     ROLE_INVALID_TYPE(HttpStatus.BAD_REQUEST,40005,"권한이 일치하지 않습니다"),
     ACCESS_TOKEN_BLACKLISTED(HttpStatus.UNAUTHORIZED,40401 ,"회원의 액세스 토큰이 블랙리스트 처리되었습니다" ),
+    INVALID_SIGNATURE(HttpStatus.UNAUTHORIZED,40402,"토큰의 서명이 유효하지 않습니다"),
+    INVALID_TOKEN(HttpStatus.UNAUTHORIZED,40403,"유효하지 않은 토큰입니다"),
 
     // HouseEnum 처리 예외
     HOUSE_NOT_ALLOWED_OPTION(HttpStatus.BAD_REQUEST, 40007, "유효하지 않은 집 구조 옵션입니다."),

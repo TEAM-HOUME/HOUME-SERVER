@@ -5,7 +5,6 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import or.sopt.houme.domain.user.client.KaKaoOAuthClient;
 import or.sopt.houme.domain.user.client.KaKaoUserInfoClient;
 import or.sopt.houme.domain.user.controller.dto.CustomUserDetails;
@@ -24,14 +23,16 @@ import or.sopt.houme.global.config.JWTConfig;
 import or.sopt.houme.global.config.KaKaoConfig;
 import or.sopt.houme.global.jwt.JWTUtil;
 import or.sopt.houme.global.util.CookieUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 
 @Service
 @RequiredArgsConstructor
-@Slf4j
 public class OAuthService {
 
+    private static final Logger log = LoggerFactory.getLogger(OAuthService.class);
     private final KaKaoOAuthClient kaKaoOAuthClient;
     private final KaKaoUserInfoClient kaKaoUserInfoClient;
     private final UserRepository userRepository;
@@ -63,28 +64,25 @@ public class OAuthService {
 
     public void kakaoLogin(String accessCode, HttpServletResponse response) {
 
-        log.info("aaa: {}", kaKaoConfig.getRedirectUri()); // ← {} 안 쓴 로그는 출력 안됨
+        log.info("aa:{}",kaKaoConfig.getRedirectUri());
 
-        log.info("accessCode: {}", accessCode);
-
+        log.info("aa:{}",accessCode);
         // 인가코드가 비어있다면 예외발생
         if (accessCode == null || accessCode.isEmpty()) {
-            log.info("인가코드가 비어있진 않습니다");
-            throw new UserException(ErrorCode.REQUEST_HEADER_EMPTY);
+            throw new UserException(ErrorCode.KAKAO_AUTH_CODE_INVALID);
         }
 
-        log.info("인가코드가 비어있진 않습니다");
+        log.info("인가코드가 비어있지 않습니다");
         // 인가코드를 받고 그걸 통해서 인증 액세스 토큰을 발급받습니다
         KaKaoOAuthTokenDTO authorizationCode;
         try {
-            log.info("페이징 시작");
+            log.info("액세스 토큰 발급을 시작합니다");
             authorizationCode = getKaKaoOAuthTokenDTO(accessCode);
+            log.info("액세스 토큰을 발급받았습니다: {}", authorizationCode);
         } catch (FeignException e) {
             log.info(e.getMessage());
             throw new UserException(ErrorCode.KAKAO_AUTH_CODE_INVALID);
         }
-
-        log.info("authorizationCode: {}", authorizationCode);
 
         // 그리고 액세스 토큰을 이용하여 회원 정보를 가져옵니다
         KaKaoUserInfoResponse userInfo;
