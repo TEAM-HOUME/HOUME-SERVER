@@ -165,11 +165,27 @@ jobs:
           if [ "$STATUS" = "success" ]; then
             icon="✅"
             color=3066993
-            description="$icon **$actor** 님이 배포를 성공적으로 완료했습니다! 🎉 \n\n 📄 PR 제목: *${pr_title}* \n 🔗 PR 링크: ${pr_url}"
+            description="$icon **$actor** 님이 배포를 성공적으로 완료했습니다! 🎉
+            📄 PR 제목: *${pr_title}*
+            🔗 PR 링크: ${pr_url}"
+          elif [ "$STATUS" = "skipped" ]; then
+            icon="⏭️"
+            color=8359053
+            description="$icon **$actor** 님의 배포 job이 스킵되었습니다.
+            🔍 워크플로 조건을 확인해주세요.
+            🔗 PR 링크: ${pr_url}"
+          elif [ "$STATUS" = "cancelled" ]; then
+            icon="⚪"
+            color=9807270    # 회색 계열
+            description="$icon **$actor** 님이 배포를 취소했습니다.
+            🔗 PR 링크: ${pr_url}"
           else
             icon="❌"
             color=15158332
-            description="$icon **$actor** 님의 배포가 실패했습니다. ⚠️ \n\n 📄 PR 제목: *${pr_title}* \n 🔗 PR 링크: ${pr_url} \n 🔍 실패 단계 확인: ${action_url}"
+            description="$icon **$actor** 님의 배포가 실패했습니다. ⚠️
+            📄 PR 제목: *${pr_title}*
+            🔗 PR 링크: ${pr_url}
+            🔍 실패 단계 확인: ${action_url}"
           fi
 
           payload=$(jq -n \
