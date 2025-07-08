@@ -43,4 +43,11 @@ public class WhiteListConfig {
                 "/api/v1/housing-selections"
         );
     }
+
+    // 회원 관련 인가 설정
+    public static final List<String> userWhiteList() {
+        return List.of(
+                "/api/v1/check-has-generated-image"
+        );
+    }
 }
