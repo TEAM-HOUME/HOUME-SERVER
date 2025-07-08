@@ -91,6 +91,7 @@ public class SecurityConfig {
                 .requestMatchers(WhiteListConfig.oauthWhitelist().toArray(new String[0])).permitAll()
                 .requestMatchers(WhiteListConfig.serverWhitelist().toArray(new String[0])).permitAll()
                 .requestMatchers(WhiteListConfig.makeHouseWhitelist().toArray(new String[0])).permitAll()
+                .requestMatchers(WhiteListConfig.userWhiteList().toArray(new String[0])).permitAll()
                 .anyRequest().authenticated());
 
 
