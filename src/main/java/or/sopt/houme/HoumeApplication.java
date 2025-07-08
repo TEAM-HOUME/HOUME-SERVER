@@ -6,7 +6,6 @@ import org.springframework.cloud.openfeign.EnableFeignClients;
 
 @SpringBootApplication
 @EnableFeignClients
-@EnableAsync
 public class HoumeApplication {
 
     public static void main(String[] args) {
