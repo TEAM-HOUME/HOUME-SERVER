@@ -80,6 +80,9 @@ jobs:
           if [ "$STATUS" != "success" ]; then
             message="❌ CI 실패"
             color=15158332 # 빨강
+          elif [ "$STATUS" = "skipped" ]; then
+            message="⏭️ CI 스킵"
+            color=8359053 # 회색
           fi
           # 디스코드에 보낼 payload JSON 생성
           # actor: 작성자, message: CI 완수 메시지, pr_url: PR 링크
