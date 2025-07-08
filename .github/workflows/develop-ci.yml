@@ -77,7 +77,10 @@ jobs:
         run: |
           message="✅ CI 성공"
           color=3066993 # 초록
-          if [ "$STATUS" != "success" ]; then
+          if [ "$STATUS" = "skipped" ]; then
+            message="⏭️ CI 스킵"
+            color=8359053 # 회색
+          elif [ "$STATUS" != "success" ]; then
             message="❌ CI 실패"
             color=15158332 # 빨강
           fi
