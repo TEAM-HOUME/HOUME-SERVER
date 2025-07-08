@@ -23,6 +23,8 @@ import or.sopt.houme.global.config.JWTConfig;
 import or.sopt.houme.global.config.KaKaoConfig;
 import or.sopt.houme.global.jwt.JWTUtil;
 import or.sopt.houme.global.util.CookieUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 
@@ -30,6 +32,7 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class OAuthService {
 
+    private static final Logger log = LoggerFactory.getLogger(OAuthService.class);
     private final KaKaoOAuthClient kaKaoOAuthClient;
     private final KaKaoUserInfoClient kaKaoUserInfoClient;
     private final UserRepository userRepository;
@@ -60,6 +63,8 @@ public class OAuthService {
 
 
     public void kakaoLogin(String accessCode, HttpServletResponse response) {
+
+        log.info("aa:{}",kaKaoConfig.getRedirectUri());
 
         // 인가코드가 비어있다면 예외발생
         if (accessCode == null || accessCode.isEmpty()) {
