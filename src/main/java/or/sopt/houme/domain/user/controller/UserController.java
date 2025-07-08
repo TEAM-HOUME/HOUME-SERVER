@@ -3,6 +3,7 @@ package or.sopt.houme.domain.user.controller;
 import lombok.RequiredArgsConstructor;
 import or.sopt.houme.domain.user.controller.dto.CustomUserDetails;
 import or.sopt.houme.domain.user.controller.dto.MyPageInfoResponse;
+import or.sopt.houme.domain.user.controller.dto.UserImageHistoryListResponse;
 import or.sopt.houme.domain.user.service.UserService;
 import or.sopt.houme.global.api.ApiResponse;
 import org.springframework.http.ResponseEntity;
@@ -22,5 +23,12 @@ public class UserController {
         MyPageInfoResponse myPageInfoResponse = userService.getMyPageInfo(userDetails.getUser());
 
         return ResponseEntity.ok(ApiResponse.ok(myPageInfoResponse));
+    }
+
+    @GetMapping(value = "/mypage/images")
+    public ResponseEntity<ApiResponse<UserImageHistoryListResponse>> getUserImageHistoryList(@AuthenticationPrincipal CustomUserDetails userDetails) {
+        UserImageHistoryListResponse userImageHistoryListResponse = userService.getUserImageHistoryList(userDetails.getUser());
+
+        return ResponseEntity.ok(ApiResponse.ok(userImageHistoryListResponse));
     }
 }
