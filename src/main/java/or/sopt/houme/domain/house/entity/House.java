@@ -47,7 +47,7 @@ public class House {
     @Column(name = "is_valid", nullable = false)
     private boolean isValid;
 
-    // 완성된 프롬
+    // 완성된 프롬프트를 저장합니다
     @Column(name = "house_prompt", nullable = false)
     private String housePrompt;
 }
