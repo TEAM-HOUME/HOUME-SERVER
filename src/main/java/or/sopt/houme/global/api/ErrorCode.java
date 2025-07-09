@@ -29,9 +29,9 @@ public enum ErrorCode {
      * 401 UNAUTHORIZED
      */
     // Token 관련 예외
-    ACCESS_TOKEN_BLACKLISTED(HttpStatus.UNAUTHORIZED,40401 ,"회원의 액세스 토큰이 블랙리스트 처리되었습니다" ),
-    INVALID_SIGNATURE(HttpStatus.UNAUTHORIZED,40402,"토큰의 서명이 유효하지 않습니다"),
-    INVALID_TOKEN(HttpStatus.UNAUTHORIZED,40403,"유효하지 않은 토큰입니다"),
+    ACCESS_TOKEN_BLACKLISTED(HttpStatus.UNAUTHORIZED,40101 ,"회원의 액세스 토큰이 블랙리스트 처리되었습니다" ),
+    INVALID_SIGNATURE(HttpStatus.UNAUTHORIZED,40102,"토큰의 서명이 유효하지 않습니다"),
+    INVALID_TOKEN(HttpStatus.UNAUTHORIZED,40103,"유효하지 않은 토큰입니다"),
 
     /**
      * 403 FORBIDDEN
