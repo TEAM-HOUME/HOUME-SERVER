@@ -9,6 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import or.sopt.houme.global.api.ErrorCode;
 import or.sopt.houme.global.api.handler.S3Exception;
 import or.sopt.houme.global.dto.ImageUploadResponseDTO;
+import or.sopt.houme.global.util.constant.S3ExtensionConstant;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
@@ -17,6 +18,8 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.UUID;
+
+import static or.sopt.houme.global.util.constant.S3ExtensionConstant.EXTENSION_PNG;
 
 @Component
 @RequiredArgsConstructor
@@ -75,7 +78,8 @@ public class S3UtilImpl implements S3Util {
     @Override
     public ImageUploadResponseDTO uploadByByte(String dirName, byte[] imageBytes) {
 
-        String originalFileName = UUID.randomUUID() + ".png";
+        String originalFileName = UUID.randomUUID() + EXTENSION_PNG;
+        log.info(EXTENSION_PNG);
         String contentType = "image/png";
 
         String fileName = dirName + "/" + UUID.randomUUID() + "-" + originalFileName;
