@@ -27,6 +27,8 @@ public class FloorPlanController {
     @GetMapping("/house-templates")
     public ResponseEntity<ApiResponse<FloorPlanListResponse>> getHouseTemplates(@AuthenticationPrincipal CustomUserDetails userDetails) {
 
-        return ResponseEntity.ok().body(ApiResponse.ok(floorPlanFacade.getFloorPlan(userDetails.getUser())));
+        FloorPlanListResponse floorPlan = floorPlanFacade.getFloorPlan(userDetails.getUser());
+
+        return ResponseEntity.ok().body(ApiResponse.ok(floorPlan));
     }
 }
