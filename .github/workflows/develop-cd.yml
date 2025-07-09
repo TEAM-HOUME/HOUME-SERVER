@@ -101,17 +101,17 @@ jobs:
           script: |
             aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | sudo docker login --username AWS --password-stdin ${{ secrets.ECR_REGISTRY }}
             sudo docker pull ${{ secrets.ECR_REGISTRY }}:latest
-            sudo docker compose -f deploy/docker-compose-${{ env.TARGET_UPSTREAM }}.yml up -d --remove-orphans
+            sudo docker compose -f deploy/docker-compose-${{ env.TARGET_UPSTREAM }}.yml up -d
 
       - name: 새로운 서버 헬스체킹 (재시도 15회, 5초 간격)
         uses: appleboy/ssh-action@v1.0.3
-        env:
-          STOPPED_PORT: ${{ env.STOPPED_PORT }}
         with:
           username: ubuntu
           host: ${{ secrets.HOUME_SERVER_IP }}
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
+            STOPPED_PORT="${{ env.STOPPED_PORT }}"
+            echo "📌 STOPPED_PORT is $STOPPED_PORT"
             for i in {1..15}
             do
               STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:$STOPPED_PORT/actuator/health)
@@ -126,7 +126,7 @@ jobs:
             exit 1
 
       - name: nginx upstream 변경
-        uses: appleboy/ssh-action@v1.0.3
+        uses: appleboy/ssh-action@master
         with:
           username: ubuntu
           host: ${{ secrets.HOUME_SERVER_IP }}
@@ -135,6 +135,21 @@ jobs:
           script: |
             echo "set \$service_url ${{ env.TARGET_UPSTREAM }};" | sudo tee /etc/nginx/sites-enabled/service-env.inc
             sudo nginx -t && sudo nginx -s reload
+
+      - name: 기존 서버 중지
+        uses: appleboy/ssh-action@master
+        with:
+          username: ubuntu
+          host: ${{ secrets.HOUME_SERVER_IP }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script_stop: true
+          script: |
+            if [ "$(sudo docker ps -aq -f name=${{ env.CURRENT_UPSTREAM }})" ]; then
+              sudo docker stop ${{ env.CURRENT_UPSTREAM }}
+              sudo docker rm ${{ env.CURRENT_UPSTREAM }}
+            else
+              echo "No container named ${{ env.CURRENT_UPSTREAM }} found. Skipping stop & remove."
+            fi
 
       - name: 기존 도커 이미지 제거
         uses: appleboy/ssh-action@v1.0.3
