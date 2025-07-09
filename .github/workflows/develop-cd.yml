@@ -108,13 +108,13 @@ jobs:
 
       - name: 새로운 서버 헬스체킹 (재시도 15회, 5초 간격)
         uses: appleboy/ssh-action@v1.0.3
-        env:
-          STOPPED_PORT: ${{ env.STOPPED_PORT }}
         with:
           username: ubuntu
           host: ${{ secrets.HOUME_SERVER_IP }}
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
+            STOPPED_PORT="${{ env.STOPPED_PORT }}"
+            echo "📌 STOPPED_PORT is $STOPPED_PORT"
             for i in {1..15}
             do
               STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:$STOPPED_PORT/actuator/health)
