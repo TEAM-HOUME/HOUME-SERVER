@@ -46,4 +46,8 @@ public class House {
     // 입력값이 유효한지에 대한 여부 (true = 유효한 값)
     @Column(name = "is_valid", nullable = false)
     private boolean isValid;
+
+    // 완성된 프롬
+    @Column(name = "house_prompt", nullable = false)
+    private String housePrompt;
 }
