@@ -14,6 +14,18 @@ public class Taste {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "taste_image", nullable = false)
-    private String tasteImage;
+    @Column(name = "url", nullable = false)
+    private String url;
+
+    @Column(name = "filename", nullable = false)
+    private String filename;
+
+    @Column(name = "original_file_name", nullable = false)
+    private String originalFilename;
+
+    @Column(name = "file_extension", nullable = false)
+    private String fileExtension;
+
+    @Column(name = "taste_prompt", nullable = false)
+    private String tastePrompt;
 }
