@@ -1,19 +1,19 @@
 package or.sopt.houme.domain.prompt.dto;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import or.sopt.houme.domain.house.entity.enums.Equilibrium;
 
 @Getter
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class PromptRequestDTO {
 
-    /**
-     * 도면 식별자
-     * 평형 식별자
-     * 무드 식별자
-     * 가구 식별자
-     * */
     private Long floorPlanId;
     private Long tasteId;
     private Equilibrium equilibrium;
-
+    private PromptFurnitureListDTO promptFurnitureListDTO;
 }
