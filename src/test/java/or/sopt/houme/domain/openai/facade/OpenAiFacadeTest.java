@@ -1,15 +1,20 @@
 package or.sopt.houme.domain.openai.facade;
 
 import or.sopt.houme.domain.openai.service.OpenAiService;
+import or.sopt.houme.domain.prompt.dto.PromptFurnitureListDTO;
 import or.sopt.houme.domain.prompt.dto.PromptRequestDTO;
 import or.sopt.houme.domain.prompt.service.PromptService;
+import or.sopt.houme.domain.house.entity.enums.Equilibrium;
 import or.sopt.houme.global.dto.ImageUploadResponseDTO;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.*;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.context.ActiveProfiles;
+
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -28,13 +33,20 @@ class OpenAiFacadeTest {
     @InjectMocks
     private OpenAiFacadeImpl openAiFacade;
 
-
     @Test
     @DisplayName("makeImage() 를 통해서 프롬프트를 활용해서 이미지를 생성할 수 있다")
     void makeImage_success() {
         // Given
-        PromptRequestDTO requestDTO = new PromptRequestDTO();
+        PromptFurnitureListDTO furnitureListDTO = PromptFurnitureListDTO.of(List.of(1L, 2L, 3L));
+        PromptRequestDTO requestDTO = PromptRequestDTO.of(
+                1L,
+                2L,
+                Equilibrium.UNDER_5,
+                furnitureListDTO
+        );
+
         String generatedPrompt = "test prompt";
+
         ImageUploadResponseDTO mockResponse = ImageUploadResponseDTO.from(
                 "file-key",
                 "original.png",

@@ -41,7 +41,7 @@ class OpenAiControllerTest {
                 "https://example.com/generated_123.png"
         );
 
-        Mockito.when(openAiFacade.makeImage(any()))
+        Mockito.when(openAiFacade.testMakeImage())
                 .thenReturn(mockResponse);
 
         // when & then

@@ -21,7 +21,7 @@ public class OpenAiController {
     @PostMapping(value = "/generate")
     public ResponseEntity<ApiResponse<String>> generate() {
 
-        ImageUploadResponseDTO responseDTO = openAiFacade.makeImage(new PromptRequestDTO());
+        ImageUploadResponseDTO responseDTO = openAiFacade.testMakeImage();
 
         return ResponseEntity.ok().body(ApiResponse.ok(responseDTO.getImageLink()));
     }

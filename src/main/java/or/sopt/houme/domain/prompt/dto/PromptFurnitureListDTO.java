@@ -1,17 +1,10 @@
 package or.sopt.houme.domain.prompt.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-
 import java.util.List;
 
-@Getter
-@Builder
-@AllArgsConstructor
-@NoArgsConstructor
-public class PromptFurnitureListDTO {
+public record PromptFurnitureListDTO(List<Long> furnitureIds) {
 
-    private List<Long> furnitureIds;
+    public static PromptFurnitureListDTO of(List<Long> furnitureIds) {
+        return new PromptFurnitureListDTO(furnitureIds);
+    }
 }

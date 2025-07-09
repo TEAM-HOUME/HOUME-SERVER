@@ -36,4 +36,14 @@ public class OpenAiFacadeImpl implements OpenAiFacade {
 
         return openAiService.createImage(prompt);
     }
+
+
+    /**
+     * 테스트 메서드입니다
+     * */
+    @Override
+    public ImageUploadResponseDTO testMakeImage(){
+
+        return openAiService.createImage("웃는 남자 이미지 만들어줘");
+    }
 }
