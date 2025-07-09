@@ -25,6 +25,7 @@ public enum ErrorCode {
     // 회원 관련 예외
     USER_NOT_FOUND(HttpStatus.NOT_FOUND,40401 ,"회원을 찾을 수 없습니다" ),
     COOKIE_NULL(HttpStatus.NOT_FOUND,40402 ,"쿠키를 찾을 수 없습니다" ),
+    IMAGE_HISTORY_NOT_FOUND(HttpStatus.NOT_FOUND,40403 ,"이미지 생성 이력을 찾을 수 없습니다." ),
     KAKAO_AUTH_CODE_INVALID(HttpStatus.BAD_REQUEST,40006 ,"카카오 인가코드가 유효하지 않습니다"),
     KAKAO_ACCESSTOKEN_INVALID(HttpStatus.INTERNAL_SERVER_ERROR,50001 ,"액세스토큰으로 회원정보를 가져오는 중에 예외가 발생했습니다. 서버개발자에게 문의해주세요" ),
     USER_ROLE_EXCEPTION(HttpStatus.UNAUTHORIZED,40300 ,"회원의 권한을 찾을 수 없습니다. 서버에 문의해주세요" ),

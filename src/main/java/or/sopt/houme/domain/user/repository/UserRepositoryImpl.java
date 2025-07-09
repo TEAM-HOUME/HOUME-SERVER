@@ -4,6 +4,7 @@ import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import or.sopt.houme.domain.credit.entity.CreditStatus;
+import or.sopt.houme.domain.generatedImage.entity.GenerateImage;
 import or.sopt.houme.domain.house.entity.QHouse;
 import or.sopt.houme.domain.house.entity.mapping.QHouseTaste;
 import or.sopt.houme.domain.taste.entity.QTag;
@@ -15,6 +16,7 @@ import or.sopt.houme.domain.generatedImage.entity.QGenerateImage;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 import static or.sopt.houme.domain.credit.entity.QCredit.credit;
 
@@ -62,5 +64,21 @@ public class UserRepositoryImpl implements UserRepositoryCustom {
                 .join(tasteTag.tag, tag)
                 .where(user.id.eq(userId))
                 .fetch();
+    }
+
+    @Override
+    public Optional<GenerateImage> findImageHistoryById(Long userId) {
+        QUser user = QUser.user;
+        QHouse house = QHouse.house;
+        QGenerateImage generateImage = QGenerateImage.generateImage;
+
+        return Optional.ofNullable(queryFactory
+                .select(generateImage)
+                .from(house)
+                .join(house.generateImage, generateImage)
+                .join(house.user, user)
+                .where(user.id.eq(userId))
+                .limit(1)
+                .fetchOne());
     }
 }

@@ -20,7 +20,7 @@ public class UserService {
 
     @Transactional(readOnly = true)
     public MyPageInfoResponse getMyPageInfo(User user) {
-        User findUser = userRepository.findById(user.getId()).orElseThrow(() -> new UserException(ErrorCode.USER_NOT_FOUND));
+        User findUser = findUser(user);
         String name = findUser.getName();
         long creditCount = userRepository.countByMemberIdAndStatus(user.getId());
         return MyPageInfoResponse.of(name, creditCount);
@@ -28,8 +28,17 @@ public class UserService {
 
     @Transactional(readOnly = true)
     public UserImageHistoryListResponse getUserImageHistoryList(User user) {
-        User findUser = userRepository.findById(user.getId()).orElseThrow(() -> new UserException(ErrorCode.USER_NOT_FOUND));
+        User findUser = findUser(user);
+        validateImageHistoryExists(user);  // 생성된 이미지 이력이 없으면 예외터짐
         List<UserImageHistoryDTO> histories = userRepository.getUserImageHistory(findUser.getId());
         return UserImageHistoryListResponse.of(histories);
+    }
+
+    private User findUser(User user) {
+        return userRepository.findById(user.getId()).orElseThrow(() -> new UserException(ErrorCode.USER_NOT_FOUND));
+    }
+
+    private void validateImageHistoryExists(User user) {
+        userRepository.findImageHistoryById(user.getId()).orElseThrow(() -> new UserException(ErrorCode.IMAGE_HISTORY_NOT_FOUND));
     }
 }
