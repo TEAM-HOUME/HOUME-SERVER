@@ -48,7 +48,7 @@ spring:
   jwt:
     header: Authorization
     secret: ${JWT_SECRET}
-    access-token-validity-in-seconds: 3600
+    access-token-validity-in-seconds: 30
     refresh-token-validity-in-seconds: 2592000
 
 openai:

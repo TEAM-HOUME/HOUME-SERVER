@@ -90,7 +90,17 @@ class OpenAiServiceTest {
         when(openAIImageClient.generateImage(anyString(), any(OpenAiRequest.class))).thenReturn(response);
 
         // when
-        byte[] result = openAiService.getGptImage(OpenAiRequest.of("tree"));
+        OpenAiRequest request = OpenAiRequest.of(
+                "gpt-image-1",
+                "tree",
+                1,
+                "1024x1024",
+                "medium",
+                "auto",
+                "b64_json"
+        );
+
+        byte[] result = openAiService.getGptImage(request);
 
         // then
         assertArrayEquals(imageBytes, result);

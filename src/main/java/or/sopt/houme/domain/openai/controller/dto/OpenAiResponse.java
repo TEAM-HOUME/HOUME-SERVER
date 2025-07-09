@@ -8,6 +8,7 @@ import java.util.List;
 
 @Data
 @JsonIgnoreProperties(ignoreUnknown = true)
+@AllArgsConstructor
 public class OpenAiResponse {
     private List<ImageData> data;
 
