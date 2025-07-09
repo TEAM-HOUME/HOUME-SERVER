@@ -1,8 +1,5 @@
 name: develop-cd.yml
 on:
-  push:
-    branches: [feat/#70/template-provided]
-
   pull_request:
     types: [synchronize, closed, opened]
     branches: [develop]
@@ -12,7 +9,7 @@ on:
 
 jobs:
   image-build:
-#    if: github.event.pull_request.merged == true
+    if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
     permissions:
       id-token: write
@@ -55,7 +52,7 @@ jobs:
         run: ./gradlew jib -PjibToImage=${{ secrets.ECR_REGISTRY }} -PjibTag=runid-${{ github.run_id }}
 
   deploy:
-#    if: github.event.pull_request.merged == true
+    if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
     needs: [ image-build ]
     permissions:
