@@ -2,6 +2,7 @@ package or.sopt.houme.facade;
 
 import or.sopt.houme.domain.floorPlan.dto.response.FloorPlanListResponse;
 import or.sopt.houme.domain.floorPlan.dto.response.FloorPlanResponse;
+import or.sopt.houme.domain.floorPlan.facade.FloorPlanFacade;
 import or.sopt.houme.domain.floorPlan.service.FloorPlanService;
 import or.sopt.houme.domain.house.dto.LatestHouseConditionDTO;
 import or.sopt.houme.domain.house.entity.enums.Equilibrium;
@@ -23,8 +24,6 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
-import static org.awaitility.Awaitility.given;
-import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
 
 @SpringBootTest
@@ -70,7 +69,7 @@ class FloorPlanFacadeTest {
                 new FloorPlanResponse(4L, officetel, openOneRoom, floorPlanImage));
 
         when(houseService.findLatestHouse(user)).thenReturn(houseConditionDTO);
-        when(floorPlanService.getHousingPlan(houseConditionDTO.form(), houseConditionDTO.structure(), houseConditionDTO.equilibrium())).thenReturn(floorPlanResponses);
+        when(floorPlanService.getHousingPlan(houseConditionDTO.form(), houseConditionDTO.structure())).thenReturn(floorPlanResponses);
 
         // When
         FloorPlanListResponse floorPlan = floorPlanFacade.getFloorPlan(user);

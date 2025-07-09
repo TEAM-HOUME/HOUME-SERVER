@@ -9,5 +9,5 @@ import java.util.List;
 public interface FloorPlanCustomRepository {
 
     // Form이랑 Structure 기반으로 도면 검색
-    List<FloorPlan> findAllByStructureAndType(Form form, Structure structure);
+    List<FloorPlan> findAllByFormAndStructure(Form form, Structure structure);
 }

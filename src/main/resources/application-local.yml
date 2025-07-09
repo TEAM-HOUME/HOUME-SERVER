@@ -48,8 +48,18 @@ spring:
   jwt:
     header: Authorization
     secret: ${JWT_SECRET}
-    access-token-validity-in-seconds: 3600
+    access-token-validity-in-seconds: 30
     refresh-token-validity-in-seconds: 2592000
+
+openai:
+  api-key: ${OPEN_AI_KEY}
+  image:
+    model: gpt-image-1
+    n: 1
+    size: 1024x1024
+    quality: medium
+    background: auto
+    output-format: png
 
 cloud:
   aws:

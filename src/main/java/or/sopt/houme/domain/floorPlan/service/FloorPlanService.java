@@ -10,5 +10,5 @@ import java.util.List;
 public interface FloorPlanService {
 
     // 집 구조 도면 서비스 제공 (Form, Structure)
-    List<FloorPlanResponse> getHousingPlan(Form form, Structure structure, Equilibrium equilibrium);
+    List<FloorPlanResponse> getHousingPlan(Form form, Structure structure);
 }

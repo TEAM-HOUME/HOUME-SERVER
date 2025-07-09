@@ -73,7 +73,7 @@ class FloorPlanServiceImplTest {
         floorPlanRepository.saveAll(List.of(floorPlan1, floorPlan2, floorPlan3));
 
         // When
-        List<FloorPlanResponse> housingPlan = floorPlanService.getHousingPlan(officetel, openOneRoom, under5);
+        List<FloorPlanResponse> housingPlan = floorPlanService.getHousingPlan(officetel, openOneRoom);
 
         // Then
         assertThat(housingPlan).isNotNull();

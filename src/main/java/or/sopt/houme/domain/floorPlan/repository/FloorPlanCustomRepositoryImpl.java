@@ -18,7 +18,7 @@ public class FloorPlanCustomRepositoryImpl implements FloorPlanCustomRepository 
     private final JPAQueryFactory queryFactory;
 
     @Override
-    public List<FloorPlan> findAllByStructureAndType(Form form, Structure structure) {
+    public List<FloorPlan> findAllByFormAndStructure(Form form, Structure structure) {
 
         return queryFactory
                 .selectFrom(floorPlan)

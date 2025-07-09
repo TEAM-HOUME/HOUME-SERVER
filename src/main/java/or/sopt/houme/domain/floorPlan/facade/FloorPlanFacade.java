@@ -1,4 +1,4 @@
-package or.sopt.houme.facade;
+package or.sopt.houme.domain.floorPlan.facade;
 
 import lombok.RequiredArgsConstructor;
 import or.sopt.houme.domain.floorPlan.dto.response.FloorPlanListResponse;
@@ -26,13 +26,8 @@ public class FloorPlanFacade {
         // 가장 최근 house 가져오기
         LatestHouseConditionDTO latestHouse = houseService.findLatestHouse(user);
 
-        // 생성된 house가 없을때
-        if (latestHouse == null) {
-            throw new GeneralException(ErrorCode.NOT_FOUND_HOUSE);
-        }
-
         // 관련 도면 조회하기
-        List<FloorPlanResponse> housingPlan = floorPlanService.getHousingPlan(latestHouse.form(), latestHouse.structure(), latestHouse.equilibrium());
+        List<FloorPlanResponse> housingPlan = floorPlanService.getHousingPlan(latestHouse.form(), latestHouse.structure());
 
         return new FloorPlanListResponse(housingPlan);
     }

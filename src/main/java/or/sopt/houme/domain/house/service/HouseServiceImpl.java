@@ -76,6 +76,9 @@ public class HouseServiceImpl implements HouseService {
     public LatestHouseConditionDTO findLatestHouse(User user) {
         House latestHouse = houseRepository.findLatestHouse(user);
 
+        if (latestHouse == null) {
+            throw new GeneralException(ErrorCode.NOT_FOUND_HOUSE);
+        }
         return new LatestHouseConditionDTO(latestHouse.getForm(), latestHouse.getStructure(), latestHouse.getEquilibrium());
     }
 

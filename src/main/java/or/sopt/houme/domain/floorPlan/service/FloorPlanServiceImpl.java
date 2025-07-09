@@ -21,10 +21,10 @@ public class FloorPlanServiceImpl implements FloorPlanService {
 
     // 집 구조 도면 제공 서비스 (조건에 받아서)
     @Override
-    public List<FloorPlanResponse> getHousingPlan(Form form, Structure structure, Equilibrium equilibrium) {
+    public List<FloorPlanResponse> getHousingPlan(Form form, Structure structure) {
 
         List<FloorPlan> allByStructureAndType =
-                floorPlanRepository.findAllByStructureAndType(form, structure);
+                floorPlanRepository.findAllByFormAndStructure(form, structure);
 
         return allByStructureAndType.stream()
                 .map(FloorPlanResponse::of)
