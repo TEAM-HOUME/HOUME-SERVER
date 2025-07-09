@@ -9,14 +9,17 @@ import lombok.extern.slf4j.Slf4j;
 import or.sopt.houme.global.api.ErrorCode;
 import or.sopt.houme.global.api.handler.S3Exception;
 import or.sopt.houme.global.dto.ImageUploadResponseDTO;
+import or.sopt.houme.global.util.constant.S3ExtensionConstant;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.net.URLDecoder;
-import java.nio.charset.StandardCharsets;
 import java.util.UUID;
+
+import static or.sopt.houme.global.util.constant.S3ExtensionConstant.EXTENSION_PNG;
 
 @Component
 @RequiredArgsConstructor
@@ -45,7 +48,8 @@ public class S3UtilImpl implements S3Util {
         // S3 이미지 저장에 필요한 메타데이터를 정의합니다
         ObjectMetadata metadata = new ObjectMetadata();
         metadata.setContentLength(file.getSize());
-        metadata.setContentType(file.getContentType());
+        String contentType = file.getContentType();
+        metadata.setContentType(contentType);
 
         String originalFileName = file.getOriginalFilename();
 
@@ -61,8 +65,46 @@ public class S3UtilImpl implements S3Util {
         }
 
         // 저장된 링크를 포함한 메타데이터를 반환합니다. 메타데이터는 추후 논의하고 어떤 데이터를 넣을지 얘기해보는게 좋을 것 같습니다
-        return ImageUploadResponseDTO.from(fileName,originalFileName,amazonS3.getUrl(bucket, fileName).toString());
+        return ImageUploadResponseDTO.from(fileName,originalFileName,amazonS3.getUrl(bucket, fileName).toString(),contentType);
     }
+
+
+    /**
+     * byte[] 로 반환된 이미지를 저장하는 메서드입니다.
+     *
+     * @param dirName S3 내부에 파일을 저장할 위치를 정의합니다
+     * @param imageBytes 저장할 파일을 정의합니다. 이때 타입은 byte[] 입니다
+     * */
+    @Override
+    public ImageUploadResponseDTO uploadByByte(String dirName, byte[] imageBytes) {
+
+        String originalFileName = UUID.randomUUID() + EXTENSION_PNG;
+        log.info(EXTENSION_PNG);
+        String contentType = "image/png";
+
+        String fileName = dirName + "/" + UUID.randomUUID() + "-" + originalFileName;
+
+        ObjectMetadata metadata = new ObjectMetadata();
+        metadata.setContentLength(imageBytes.length);
+        metadata.setContentType(contentType);
+
+        try {
+            ByteArrayInputStream inputStream = new ByteArrayInputStream(imageBytes);
+            amazonS3.putObject(new PutObjectRequest(bucket, fileName, inputStream, metadata));
+        } catch (AmazonServiceException e) {
+            throw new S3Exception(ErrorCode.IMAGE_UPLOAD_AMAZON_EXCEPTION);
+        } catch (Exception e) {
+            throw new S3Exception(ErrorCode.IMAGE_UPLOAD_IO_EXCEPTION);
+        }
+
+        return ImageUploadResponseDTO.from(
+                fileName,
+                originalFileName,
+                amazonS3.getUrl(bucket, fileName).toString(),
+                contentType
+        );
+    }
+
 
 
 
