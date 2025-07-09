@@ -58,9 +58,9 @@ public class UserRepositoryImpl implements UserRepositoryCustom {
                 .from(user)
                 .join(user.houses, house)
                 .join(house.generateImage, generateImage)
-                .join(houseTaste.house, house)
+                .join(houseTaste).on(houseTaste.house.eq(house))
                 .join(houseTaste.taste, taste)
-                .join(tasteTag.taste, taste)
+                .join(tasteTag).on(tasteTag.taste.eq(taste))
                 .join(tasteTag.tag, tag)
                 .where(user.id.eq(userId))
                 .fetch();
