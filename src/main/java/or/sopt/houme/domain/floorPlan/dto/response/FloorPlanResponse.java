@@ -14,6 +14,6 @@ public record FloorPlanResponse(
 
     public static FloorPlanResponse of(FloorPlan floorPlan){
         return new FloorPlanResponse(floorPlan.getId(), floorPlan.getForm(),
-                floorPlan.getStructure(), floorPlan.getFloorPlanImage());
+                floorPlan.getStructure(), floorPlan.getUrl());
     }
 }

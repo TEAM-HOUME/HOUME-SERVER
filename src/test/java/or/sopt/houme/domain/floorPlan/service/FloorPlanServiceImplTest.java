@@ -37,24 +37,37 @@ class FloorPlanServiceImplTest {
         Form officetel = Form.OFFICETEL;
         Structure openOneRoom = Structure.OPEN_ONE_ROOM;
         Equilibrium under5 = Equilibrium.UNDER_5;
+        String url = "imageUrl";
+        String filename = "filename";
+        String originalFilename = "originalFilename";
+        String fileExtension = "jps";
 
         FloorPlan floorPlan1 = FloorPlan.builder()
                 .form(Form.OFFICETEL)
                 .structure(Structure.OPEN_ONE_ROOM)
                 .floorPlanPrompt("prompt1")
-                .floorPlanImage("promptImage1")
+                .url(url)
+                .filename(filename)
+                .originalFilename(originalFilename)
+                .fileExtension(fileExtension)
                 .build();
         FloorPlan floorPlan2 = FloorPlan.builder()
                 .form(Form.ETC)
                 .structure(Structure.DUPLEX)
                 .floorPlanPrompt("prompt2")
-                .floorPlanImage("promptImage2")
+                .url(url)
+                .filename(filename)
+                .originalFilename(originalFilename)
+                .fileExtension(fileExtension)
                 .build();
         FloorPlan floorPlan3 = FloorPlan.builder()
                 .form(Form.OFFICETEL)
                 .structure(Structure.OPEN_ONE_ROOM)
                 .floorPlanPrompt("prompt3")
-                .floorPlanImage("promptImage3")
+                .url(url)
+                .filename(filename)
+                .originalFilename(originalFilename)
+                .fileExtension(fileExtension)
                 .build();
 
         floorPlanRepository.saveAll(List.of(floorPlan1, floorPlan2, floorPlan3));
@@ -67,12 +80,12 @@ class FloorPlanServiceImplTest {
         assertThat(housingPlan.size()).isEqualTo(2);
         assertThat(housingPlan.get(0))
                 .extracting("id", "form", "structure", "floorPlanImage")
-                .contains(1L, officetel, openOneRoom, "promptImage1");
+                .contains(1L, officetel, openOneRoom, url);
         assertThat(housingPlan).hasSize(2)
                 .extracting("form", "structure", "floorPlanImage")
                 .containsExactlyInAnyOrder(
-                        tuple(officetel, openOneRoom, "promptImage1"),
-                        tuple(officetel, openOneRoom, "promptImage3")
+                        tuple(officetel, openOneRoom, url),
+                        tuple(officetel, openOneRoom, url)
                 );
     }
 }

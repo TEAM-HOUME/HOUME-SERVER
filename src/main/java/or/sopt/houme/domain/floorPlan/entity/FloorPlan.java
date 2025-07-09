@@ -37,9 +37,6 @@ public class FloorPlan {
     @Column(name = "structure", nullable = false)
     private Structure structure;            // 형태
 
-    @Column(name = "floor_plan_image", nullable = false)
-    private String floorPlanImage;
-
     @Column(name = "floor_plan_prompt", nullable = false)
     private String floorPlanPrompt;
 }
