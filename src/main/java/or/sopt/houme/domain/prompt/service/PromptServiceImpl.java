@@ -1,6 +1,9 @@
 package or.sopt.houme.domain.prompt.service;
 
 import lombok.RequiredArgsConstructor;
+import or.sopt.houme.domain.floorPlan.entity.FloorPlan;
+import or.sopt.houme.domain.floorPlan.repository.FloorPlanRepository;
+import or.sopt.houme.domain.house.entity.enums.Equilibrium;
 import or.sopt.houme.domain.openai.service.OpenAiService;
 import or.sopt.houme.domain.prompt.dto.PromptRequestDTO;
 import org.springframework.stereotype.Service;
@@ -9,12 +12,24 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class PromptServiceImpl implements PromptService {
 
+    private final FloorPlanRepository floorPlanRepository;
+
     @Override
     public String makePrompt(PromptRequestDTO requestDTO) {
 
-        String result = "프롬프트 제작 계획이 확정되면 구현합니다";
+        // 도면 프롬프트 가져오기
+        FloorPlan floorPlanId = floorPlanRepository.getReferenceById(requestDTO.floorPlanId());
+        String floorPlanPrompt = floorPlanId.getFloorPlanPrompt();
 
-        // 임시로 프롬프트를 넣어보았습니다. 원래는 requestDTO를 기반으로 프롬프트를 만들어서 이를 반환합니다 FIXME
+        // 평형 프롬프트 가져오기
+        Equilibrium equilibrium = requestDTO.equilibrium();
+        String equilibriumPrompt = equilibrium.getDescription();
+
+        // 취향 프롬프트 가져오기
+
+
+        // 가구 프롬프트 가져오기
+
         return "웃는 남자의 이미지를 뽑아줘";
     }
 }
