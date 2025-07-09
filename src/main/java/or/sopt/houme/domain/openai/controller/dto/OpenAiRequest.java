@@ -11,24 +11,31 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class OpenAiRequest {
 
-    private String model = "gpt-image-1";
+    private String model;
     private String prompt;
-    private int n = 1;
-    private String size = "1024x1024";
-    private String quality = "medium";
-    private String background = "auto";
-    private String output_format = "png";
+    private int n;
+    private String size;
+    private String quality;
+    private String background;
+    private String output_format;
 
-    public static OpenAiRequest of(String prompt) {
+    public static OpenAiRequest of(
+            String model,
+            String prompt,
+            int n,
+            String size,
+            String quality,
+            String background,
+            String output_format
+    ) {
         return OpenAiRequest.builder()
+                .model(model)
                 .prompt(prompt)
-                .model("gpt-image-1")
-                .n(1)
-                .size("1024x1024")
-                .quality("medium")
-                .background("auto")
-                .output_format("png")
+                .n(n)
+                .size(size)
+                .quality(quality)
+                .background(background)
+                .output_format(output_format)
                 .build();
     }
-
 }

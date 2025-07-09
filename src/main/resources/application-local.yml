@@ -53,6 +53,13 @@ spring:
 
 openai:
   api-key: ${OPEN_AI_KEY}
+  image:
+    model: gpt-image-1
+    n: 1
+    size: 1024x1024
+    quality: medium
+    background: auto
+    output-format: png
 
 cloud:
   aws:
