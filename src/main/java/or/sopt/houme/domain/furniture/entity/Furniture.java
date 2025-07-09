@@ -28,6 +28,8 @@ public class Furniture {
     @Column(name = "closet_type", nullable = false)
     private ClosetType closetType;
 
+    @Column(name = "furniture_prompt", nullable = false)
+    private String furniturePrompt;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "selective_furniture_type", nullable = false)
