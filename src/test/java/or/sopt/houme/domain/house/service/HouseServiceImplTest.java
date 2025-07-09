@@ -10,6 +10,8 @@ import or.sopt.houme.domain.house.entity.enums.Structure;
 import or.sopt.houme.domain.house.repository.HouseRepository;
 import or.sopt.houme.domain.user.entity.*;
 import or.sopt.houme.domain.user.repository.UserRepository;
+import or.sopt.houme.global.api.ErrorCode;
+import or.sopt.houme.global.api.GeneralException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +23,8 @@ import java.time.LocalDate;
 import java.util.Arrays;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
+import static org.mockito.Mockito.when;
 
 @ActiveProfiles("test")
 @SpringBootTest
@@ -106,5 +110,29 @@ class HouseServiceImplTest {
         assertThat(latestHouse)
                 .extracting("form", "structure", "equilibrium")
                 .contains(Form.OFFICETEL, Structure.OPEN_ONE_ROOM, Equilibrium.UNDER_5);
+    }
+
+    @Test
+    @DisplayName("[Exception] 생성되어있는 house가 없는 경우 예외가 발생한다.")
+    void getHousingPlanNoHouse() {
+        // Given
+        User user = User.builder()
+                .name("test_user")
+                .birthday(LocalDate.of(2001, 1, 10))
+                .gender(Gender.MALE)
+                .email("example.com")
+                .password(null)
+                .hasGeneratedImage(false)
+                .socialType(SocialType.KAKAO)
+                .status(UserStatus.ACTIVE)
+                .role(Role.ROLE_USER)
+                .build();
+
+        userRepository.save(user);
+
+        // When // Then
+        assertThatThrownBy(() -> houseService.findLatestHouse(user))
+                .isInstanceOf(GeneralException.class)
+                .hasMessageContaining(ErrorCode.NOT_FOUND_HOUSE.getMsg());
     }
 }

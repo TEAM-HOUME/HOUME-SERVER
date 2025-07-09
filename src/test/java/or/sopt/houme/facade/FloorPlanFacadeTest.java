@@ -82,28 +82,5 @@ class FloorPlanFacadeTest {
                 .contains(officetel, openOneRoom, floorPlanImage);
     }
 
-    @Test
-    @DisplayName("[Exception] 생성되어있는 house가 없는 경우 예외가 발생한다.")
-    void getHousingPlanNoHouse() {
-        // Given
-        User user = User.builder()
-                .name("test_user")
-                .birthday(LocalDate.of(2001, 1, 10))
-                .gender(Gender.MALE)
-                .email("example.com")
-                .password(null)
-                .hasGeneratedImage(false)
-                .socialType(SocialType.KAKAO)
-                .status(UserStatus.ACTIVE)
-                .role(Role.ROLE_USER)
-                .build();
-
-        when(houseService.findLatestHouse(user)).thenReturn(null);
-
-        // When // Then
-        assertThatThrownBy(() -> floorPlanFacade.getFloorPlan(user))
-                .isInstanceOf(GeneralException.class)
-                .hasMessageContaining(ErrorCode.NOT_FOUND_HOUSE.getMsg());
-    }
 
 }
