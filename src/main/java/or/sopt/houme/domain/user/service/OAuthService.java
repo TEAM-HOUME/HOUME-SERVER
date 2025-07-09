@@ -126,7 +126,12 @@ public class OAuthService {
                 jwtConfig.getRefreshTokenValidityInSeconds().intValue(),
                 false);
 
-        response.addCookie(refreshCookie);
+        CookieUtil.addSameSiteCookie(
+                response,
+                "refresh-token",
+                refresh,
+                jwtConfig.getRefreshTokenValidityInSeconds().intValue()
+        );
 
         return isNewUser;
     }

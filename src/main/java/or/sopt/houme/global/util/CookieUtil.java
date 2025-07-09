@@ -1,6 +1,7 @@
 package or.sopt.houme.global.util;
 
 import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
 
 public class CookieUtil {
 
@@ -12,4 +13,13 @@ public class CookieUtil {
         cookie.setMaxAge(maxAgeSeconds);
         return cookie;
     }
+
+    public static void addSameSiteCookie(HttpServletResponse response, String name, String value, int maxAgeSeconds) {
+        String cookieValue = String.format(
+                "%s=%s; Path=/; Max-Age=%d; HttpOnly; Secure; SameSite=None",
+                name, value, maxAgeSeconds
+        );
+        response.addHeader("Set-Cookie", cookieValue);
+    }
+
 }
