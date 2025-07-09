@@ -14,6 +14,7 @@ import or.sopt.houme.domain.house.entity.mapping.HouseTaste;
 import or.sopt.houme.domain.taste.entity.Tag;
 import or.sopt.houme.domain.taste.entity.Taste;
 import or.sopt.houme.domain.taste.entity.TasteTag;
+import or.sopt.houme.domain.user.controller.dto.UserImageHistoryDTO;
 import or.sopt.houme.domain.user.entity.*;
 import or.sopt.houme.global.config.QuerydslConfig;
 import org.junit.jupiter.api.BeforeEach;
@@ -26,6 +27,8 @@ import org.springframework.test.context.ActiveProfiles;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -76,11 +79,34 @@ class UserRepositoryImplTest {
         em.persist(mockHouse);
 
         mockGenerateImage = GenerateImage.builder()
-                .url("test-url.png")
-                .type(Type.PNG)        // 예: Type.IMAGE 또는 Type.VIDEO (enum 값은 실제 정의에 따라)
-                .house(mockHouse)        // 이미 생성한 mockHouse 객체 사용
+                .url("https://example.com/image.png")
+                .filename("image.png")
+                .originalFilename("original-image.png")
+                .fileExtension("png")
+                .type(Type.PNG) // 예: Type은 ENUM이니 실제 enum 값에 맞게 수정
+                .house(mockHouse) // 이미 생성된 House mock 객체
                 .build();
         em.persist(mockGenerateImage);
+
+        mockTaste = Taste.builder()
+                .url("https://example.com/taste-image.png")
+                .filename("taste-image.png")
+                .originalFilename("original-taste-image.png")
+                .fileExtension("png")
+                .tastePrompt("깔끔한 화이트톤의 거실 인테리어") // 예시 프롬프트
+                .build();
+        em.persist(mockTaste);
+
+        Tag mockTag = Tag.builder()
+                .tagName("모던")
+                .build();
+        em.persist(mockTag);
+
+        mockTasteTag = TasteTag.builder()
+                .taste(mockTaste)
+                .tag(mockTag)
+                .build();
+        em.persist(mockTasteTag);
 
         mockHouseTaste = HouseTaste.builder()
                 .house(mockHouse)   // 이미 생성된 House 객체
@@ -88,9 +114,8 @@ class UserRepositoryImplTest {
                 .build();
         em.persist(mockHouseTaste);
 
-        mockTaste = Taste.builder()
-                .tasteImage("taste-modern.png")  // 예시 이미지 URL 또는 경로
-                .build();
+        em.flush();
+        em.clear();
     }
 
 
@@ -120,6 +145,27 @@ class UserRepositoryImplTest {
     @Test
     @DisplayName("✅ 사용자 이미지 히스토리 조회 성공")
     void getUserImageHistory_Success() {
+        // when
+        List<UserImageHistoryDTO> result = userRepositoryImpl.getUserImageHistory(mockUser.getId());
 
+        // then
+        assertThat(result).hasSize(1);
+        UserImageHistoryDTO dto = result.get(0);
+        assertThat(dto.generatedImageUrl()).isEqualTo("https://example.com/image.png");
+        assertThat(dto.tasteTag()).isEqualTo("모던");
+        assertThat(dto.equilibrium()).isEqualTo("UNDER_5");
+        assertThat(dto.houseForm()).isEqualTo("OFFICETEL");
+    }
+
+    @Test
+    @DisplayName("✅ 유저 ID로 이미지 히스토리 1건 조회 성공")
+    void findImageHistoryById_Success() {
+        // when
+        Optional<GenerateImage> result = userRepositoryImpl.findImageHistoryById(mockUser.getId());
+
+        // then
+        assertThat(result).isPresent(); // Optional이 존재해야 함
+        assertThat(result.get().getUrl()).isEqualTo("https://example.com/image.png");
+        assertThat(result.get().getFilename()).isEqualTo("image.png");
     }
 }
