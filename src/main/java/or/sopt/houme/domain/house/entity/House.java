@@ -48,6 +48,6 @@ public class House {
     private boolean isValid;
 
     // 완성된 프롬프트를 저장합니다
-    @Column(name = "house_prompt", columnDefinition = "TEXT")
+    @Column(name = "house_prompt", columnDefinition = "TEXT", nullable = true)
     private String housePrompt;
 }
