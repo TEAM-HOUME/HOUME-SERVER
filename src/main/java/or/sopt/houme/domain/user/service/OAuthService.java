@@ -64,9 +64,6 @@ public class OAuthService {
 
     public void kakaoLogin(String accessCode, HttpServletResponse response) {
 
-        log.info("aa:{}",kaKaoConfig.getRedirectUri());
-
-        log.info("aa:{}",accessCode);
         // 인가코드가 비어있다면 예외발생
         if (accessCode == null || accessCode.isEmpty()) {
             throw new UserException(ErrorCode.KAKAO_AUTH_CODE_INVALID);
@@ -78,7 +75,6 @@ public class OAuthService {
         try {
             log.info("액세스 토큰 발급을 시작합니다");
             authorizationCode = getKaKaoOAuthTokenDTO(accessCode);
-            log.info("액세스 토큰을 발급받았습니다: {}", authorizationCode);
         } catch (FeignException e) {
             log.info(e.getMessage());
             throw new UserException(ErrorCode.KAKAO_AUTH_CODE_INVALID);
