@@ -8,6 +8,7 @@ public enum ErrorCode {
     REQUEST_HEADER_EMPTY(HttpStatus.BAD_REQUEST, 40000, "요청 헤더가 누락되었습니다."),
     NOT_FOUND_URL(HttpStatus.NOT_FOUND, 40400, "지원하지 않는 URL입니다."),
     METHOD_NOT_ALLOWED(HttpStatus.METHOD_NOT_ALLOWED, 40500, "잘못된 HTTP method 요청입니다."),
+    HTTP_MEDIA_TYPE_NOT_ACCEPTABLE(HttpStatus.INTERNAL_SERVER_ERROR,50007,"HTTP 리퀘스트 타입에 오류가 발생하였습니다"),
 
     // Token 관련 예외
     ACCESS_INVALID_TYPE(HttpStatus.BAD_REQUEST,40001 ,"액세스 토큰이 존재하지 않습니다."),
@@ -28,12 +29,16 @@ public enum ErrorCode {
     IMAGE_HISTORY_NOT_FOUND(HttpStatus.NOT_FOUND,40403 ,"이미지 생성 이력을 찾을 수 없습니다." ),
     KAKAO_AUTH_CODE_INVALID(HttpStatus.BAD_REQUEST,40006 ,"카카오 인가코드가 유효하지 않습니다"),
     KAKAO_ACCESSTOKEN_INVALID(HttpStatus.INTERNAL_SERVER_ERROR,50001 ,"액세스토큰으로 회원정보를 가져오는 중에 예외가 발생했습니다. 서버개발자에게 문의해주세요" ),
-    USER_ROLE_EXCEPTION(HttpStatus.UNAUTHORIZED,40300 ,"회원의 권한을 찾을 수 없습니다. 서버에 문의해주세요" ),
+    USER_ROLE_EXCEPTION(HttpStatus.NOT_FOUND,40008 ,"회원의 권한을 찾을 수 없습니다. 서버에 문의해주세요" ),
+
+    // 이미지 관련 예외
+    CHAT_GPT_CALL_EXCEPTION(HttpStatus.INTERNAL_SERVER_ERROR,50009 ,"챗 gpt 호출 중 예외가 발생하였습니다" ),
 
     IMAGE_UPLOAD_AMAZON_EXCEPTION(HttpStatus.INTERNAL_SERVER_ERROR, 50002, "이미지 업로드 중, AWS 예외가 발생하였습니다. 서버 관리자에게 문의해주세요"),
     IMAGE_UPLOAD_IO_EXCEPTION(HttpStatus.INTERNAL_SERVER_ERROR, 50003, "이미지 업로드 중, IO 예외가 발생하였습니다. 서버 관리자에게 문의해주세요"),
     IMAGE_STILL_EXIST(HttpStatus.INTERNAL_SERVER_ERROR,50005 ,"이미지가 삭제되지 않고 S3에 남아있습니다. 서버 관리자에게 문의해주세요" ),
-    IMAGE_DELETE_EXCEPTION(HttpStatus.INTERNAL_SERVER_ERROR,50006 ,"이미지 삭제에 실패하였습니다. 서버관리자에게 문의해주세요" );
+    IMAGE_DELETE_EXCEPTION(HttpStatus.INTERNAL_SERVER_ERROR,50006 ,"이미지 삭제에 실패하였습니다. 서버관리자에게 문의해주세요" ),
+    INCODING_EXCEPTION(HttpStatus.INTERNAL_SERVER_ERROR,50008 ,"인코딩 과정 중 예외가 발생하였습니다" );
 
     private final HttpStatus status;
     private final int code;
