@@ -115,7 +115,7 @@ jobs:
             for i in {1..15}
             do
               STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:$STOPPED_PORT/actuator/health)
-              echo "[$i] Health check response code: $STATUS"
+              echo "[$i] $STOPPED_PORT Health check response code: $STATUS"
               if [ "$STATUS" = "200" ]; then
                 echo "서버 확인"
                 exit 0
