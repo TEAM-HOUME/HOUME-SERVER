@@ -49,7 +49,7 @@ public enum ErrorCode {
     IMAGE_HISTORY_NOT_FOUND(HttpStatus.NOT_FOUND,40403 ,"이미지 생성 이력을 찾을 수 없습니다." ),
 
     // 도면 관련 예외
-    NOT_FOUND_HOUSE(HttpStatus.NOT_FOUND, 40403, "저장되어있는 주거 정보가 없습니다."),
+    NOT_FOUND_HOUSE(HttpStatus.NOT_FOUND, 40404, "저장되어있는 주거 정보가 없습니다."),
 
 
     /**
