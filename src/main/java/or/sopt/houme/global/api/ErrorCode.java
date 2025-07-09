@@ -43,12 +43,32 @@ public enum ErrorCode {
      */
     NOT_FOUND_URL(HttpStatus.NOT_FOUND, 40400, "지원하지 않는 URL입니다."),
 
+
+    /**
+     * 401 UNAUTHORIZED
+     */
+    // Token 관련 예외
+    ACCESS_TOKEN_BLACKLISTED(HttpStatus.UNAUTHORIZED,40101 ,"회원의 액세스 토큰이 블랙리스트 처리되었습니다" ),
+    INVALID_SIGNATURE(HttpStatus.UNAUTHORIZED,40102,"토큰의 서명이 유효하지 않습니다"),
+    INVALID_TOKEN(HttpStatus.UNAUTHORIZED,40103,"유효하지 않은 토큰입니다"),
+
+    /**
+     * 403 FORBIDDEN
+     */
+    USER_ROLE_EXCEPTION(HttpStatus.FORBIDDEN,40300 ,"회원의 권한을 찾을 수 없습니다. 서버에 문의해주세요" ),
+
+    /**
+     * 404 NOT_FOUND
+     */
+    NOT_FOUND_URL(HttpStatus.NOT_FOUND, 40400, "지원하지 않는 URL입니다."),
+
     // 회원 관련 예외
     USER_NOT_FOUND(HttpStatus.NOT_FOUND,40401 ,"회원을 찾을 수 없습니다" ),
     COOKIE_NULL(HttpStatus.NOT_FOUND,40402 ,"쿠키를 찾을 수 없습니다" ),
+    IMAGE_HISTORY_NOT_FOUND(HttpStatus.NOT_FOUND,40403 ,"이미지 생성 이력을 찾을 수 없습니다." ),
 
     // 도면 관련 예외
-    NOT_FOUND_HOUSE(HttpStatus.NOT_FOUND, 40403, "저장되어있는 주거 정보가 없습니다."),
+    NOT_FOUND_HOUSE(HttpStatus.NOT_FOUND, 40404, "저장되어있는 주거 정보가 없습니다."),
 
 
     /**
@@ -66,15 +86,16 @@ public enum ErrorCode {
      */
     KAKAO_ACCESSTOKEN_INVALID(HttpStatus.INTERNAL_SERVER_ERROR,50001 ,"액세스토큰으로 회원정보를 가져오는 중에 예외가 발생했습니다. 서버개발자에게 문의해주세요" ),
 
-    // 이미지 관련 예외
-    CHAT_GPT_CALL_EXCEPTION(HttpStatus.INTERNAL_SERVER_ERROR,50009 ,"챗 gpt 호출 중 예외가 발생하였습니다" ),
 
+
+    // 이미지 관련 예외
     IMAGE_UPLOAD_AMAZON_EXCEPTION(HttpStatus.INTERNAL_SERVER_ERROR, 50002, "이미지 업로드 중, AWS 예외가 발생하였습니다. 서버 관리자에게 문의해주세요"),
     IMAGE_UPLOAD_IO_EXCEPTION(HttpStatus.INTERNAL_SERVER_ERROR, 50003, "이미지 업로드 중, IO 예외가 발생하였습니다. 서버 관리자에게 문의해주세요"),
     IMAGE_STILL_EXIST(HttpStatus.INTERNAL_SERVER_ERROR,50005 ,"이미지가 삭제되지 않고 S3에 남아있습니다. 서버 관리자에게 문의해주세요" ),
     IMAGE_DELETE_EXCEPTION(HttpStatus.INTERNAL_SERVER_ERROR,50006 ,"이미지 삭제에 실패하였습니다. 서버관리자에게 문의해주세요" ),
     HTTP_MEDIA_TYPE_NOT_ACCEPTABLE(HttpStatus.INTERNAL_SERVER_ERROR,50007,"HTTP 리퀘스트 타입에 오류가 발생하였습니다"),
-    INCODING_EXCEPTION(HttpStatus.INTERNAL_SERVER_ERROR,50008 ,"인코딩 과정 중 예외가 발생하였습니다" );
+    INCODING_EXCEPTION(HttpStatus.INTERNAL_SERVER_ERROR,50008 ,"인코딩 과정 중 예외가 발생하였습니다" ),
+    CHAT_GPT_CALL_EXCEPTION(HttpStatus.INTERNAL_SERVER_ERROR,50009 ,"챗 gpt 호출 중 예외가 발생하였습니다" );
 
     private final HttpStatus status;
     private final int code;
