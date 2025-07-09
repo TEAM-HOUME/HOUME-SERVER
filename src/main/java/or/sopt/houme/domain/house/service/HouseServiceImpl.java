@@ -2,6 +2,7 @@ package or.sopt.houme.domain.house.service;
 
 import lombok.RequiredArgsConstructor;
 import or.sopt.houme.domain.house.dto.HouseOptionDTO;
+import or.sopt.houme.domain.house.dto.LatestHouseConditionDTO;
 import or.sopt.houme.domain.house.dto.request.HouseSelectRequest;
 import or.sopt.houme.domain.house.dto.response.HouseOptionsResponse;
 import or.sopt.houme.domain.house.entity.House;
@@ -68,6 +69,14 @@ public class HouseServiceImpl implements HouseService {
             // 잘못된 enum값들 처리
             throw new GeneralException(ErrorCode.HOUSE_NOT_ALLOWED_OPTION);
         }
+    }
+
+    // 가장 최근 등록한 House 찾기
+    @Override
+    public LatestHouseConditionDTO findLatestHouse(User user) {
+        House latestHouse = houseRepository.findLatestHouse(user);
+
+        return new LatestHouseConditionDTO(latestHouse.getForm(), latestHouse.getStructure(), latestHouse.getEquilibrium());
     }
 
     // 유효한 요청일 때 house 저장

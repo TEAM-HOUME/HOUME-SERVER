@@ -5,9 +5,11 @@ import org.springframework.http.HttpStatus;
 
 @Getter
 public enum ErrorCode {
+    /**
+     * 400 BAD_REQUEST
+     */
+    // 인증관련
     REQUEST_HEADER_EMPTY(HttpStatus.BAD_REQUEST, 40000, "요청 헤더가 누락되었습니다."),
-    NOT_FOUND_URL(HttpStatus.NOT_FOUND, 40400, "지원하지 않는 URL입니다."),
-    METHOD_NOT_ALLOWED(HttpStatus.METHOD_NOT_ALLOWED, 40500, "잘못된 HTTP method 요청입니다."),
 
     // Token 관련 예외
     ACCESS_INVALID_TYPE(HttpStatus.BAD_REQUEST,40001 ,"액세스 토큰이 존재하지 않습니다."),
@@ -15,20 +17,54 @@ public enum ErrorCode {
     REFRESH_TOKEN_NULL(HttpStatus.BAD_REQUEST,40003 ,"리프레시 토큰이 존재하지 않습니다"),
     REFRESH_TOKEN_EXPIRED(HttpStatus.BAD_REQUEST,40004 ,"리프레시 토큰이 만료되었습니다" ),
     ROLE_INVALID_TYPE(HttpStatus.BAD_REQUEST,40005,"권한이 일치하지 않습니다"),
-    ACCESS_TOKEN_BLACKLISTED(HttpStatus.UNAUTHORIZED,40401 ,"회원의 액세스 토큰이 블랙리스트 처리되었습니다" ),
-    INVALID_SIGNATURE(HttpStatus.UNAUTHORIZED,40402,"토큰의 서명이 유효하지 않습니다"),
-    INVALID_TOKEN(HttpStatus.UNAUTHORIZED,40403,"유효하지 않은 토큰입니다"),
+
+    // 소셜 예외
+    KAKAO_AUTH_CODE_INVALID(HttpStatus.BAD_REQUEST,40006 ,"카카오 인가코드가 유효하지 않습니다"),
 
     // HouseEnum 처리 예외
     HOUSE_NOT_ALLOWED_OPTION(HttpStatus.BAD_REQUEST, 40007, "유효하지 않은 집 구조 옵션입니다."),
 
+
+    /**
+     * 401 UNAUTHORIZED
+     */
+    // Token 관련 예외
+    ACCESS_TOKEN_BLACKLISTED(HttpStatus.UNAUTHORIZED,40401 ,"회원의 액세스 토큰이 블랙리스트 처리되었습니다" ),
+    INVALID_SIGNATURE(HttpStatus.UNAUTHORIZED,40402,"토큰의 서명이 유효하지 않습니다"),
+    INVALID_TOKEN(HttpStatus.UNAUTHORIZED,40403,"유효하지 않은 토큰입니다"),
+
+    /**
+     * 403 FORBIDDEN
+     */
+    USER_ROLE_EXCEPTION(HttpStatus.UNAUTHORIZED,40300 ,"회원의 권한을 찾을 수 없습니다. 서버에 문의해주세요" ),
+
+    /**
+     * 404 NOT_FOUND
+     */
+    NOT_FOUND_URL(HttpStatus.NOT_FOUND, 40400, "지원하지 않는 URL입니다."),
+
     // 회원 관련 예외
     USER_NOT_FOUND(HttpStatus.NOT_FOUND,40401 ,"회원을 찾을 수 없습니다" ),
     COOKIE_NULL(HttpStatus.NOT_FOUND,40402 ,"쿠키를 찾을 수 없습니다" ),
-    KAKAO_AUTH_CODE_INVALID(HttpStatus.BAD_REQUEST,40006 ,"카카오 인가코드가 유효하지 않습니다"),
-    KAKAO_ACCESSTOKEN_INVALID(HttpStatus.INTERNAL_SERVER_ERROR,50001 ,"액세스토큰으로 회원정보를 가져오는 중에 예외가 발생했습니다. 서버개발자에게 문의해주세요" ),
-    USER_ROLE_EXCEPTION(HttpStatus.UNAUTHORIZED,40300 ,"회원의 권한을 찾을 수 없습니다. 서버에 문의해주세요" ),
 
+    // 도면 관련 예외
+    NOT_FOUND_HOUSE(HttpStatus.NOT_FOUND, 40403, "저장되어있는 주거 정보가 없습니다."),
+
+
+    /**
+     * 405 METHOD_NOT_ALLOWED
+     */
+    METHOD_NOT_ALLOWED(HttpStatus.METHOD_NOT_ALLOWED, 40500, "잘못된 HTTP method 요청입니다."),
+
+    /**
+     * 409 CONFLICT
+     */
+
+
+    /**
+     * 500 INTERNAL_SERVER_ERROR
+     */
+    KAKAO_ACCESSTOKEN_INVALID(HttpStatus.INTERNAL_SERVER_ERROR,50001 ,"액세스토큰으로 회원정보를 가져오는 중에 예외가 발생했습니다. 서버개발자에게 문의해주세요" ),
     IMAGE_UPLOAD_AMAZON_EXCEPTION(HttpStatus.INTERNAL_SERVER_ERROR, 50002, "이미지 업로드 중, AWS 예외가 발생하였습니다. 서버 관리자에게 문의해주세요"),
     IMAGE_UPLOAD_IO_EXCEPTION(HttpStatus.INTERNAL_SERVER_ERROR, 50003, "이미지 업로드 중, IO 예외가 발생하였습니다. 서버 관리자에게 문의해주세요"),
     IMAGE_STILL_EXIST(HttpStatus.INTERNAL_SERVER_ERROR,50005 ,"이미지가 삭제되지 않고 S3에 남아있습니다. 서버 관리자에게 문의해주세요" ),

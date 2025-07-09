@@ -1,6 +1,7 @@
 package or.sopt.houme.domain.house.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import or.sopt.houme.domain.house.dto.request.HouseSelectRequest;
@@ -18,6 +19,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/v1")
 @RequiredArgsConstructor
+@Tag(name = "집 구조 API")
 public class HouseController {
 
     private final HouseService houseService;

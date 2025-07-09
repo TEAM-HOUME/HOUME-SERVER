@@ -1,5 +1,6 @@
 package or.sopt.houme.domain.house.service;
 
+import or.sopt.houme.domain.house.dto.LatestHouseConditionDTO;
 import or.sopt.houme.domain.house.dto.request.HouseSelectRequest;
 import or.sopt.houme.domain.house.dto.response.HouseOptionsResponse;
 import or.sopt.houme.domain.user.entity.User;
@@ -11,4 +12,7 @@ public interface HouseService {
 
     // 집 구조 선택 서비스
     void selectHouseOptions(User user, HouseSelectRequest houseSelectRequest);
+
+    // 가장 최근에 등록한 house 찾기
+    LatestHouseConditionDTO findLatestHouse(User user);
 }
