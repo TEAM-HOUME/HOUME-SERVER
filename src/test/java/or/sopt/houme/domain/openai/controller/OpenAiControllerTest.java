@@ -38,7 +38,8 @@ class OpenAiControllerTest {
         ImageUploadResponseDTO mockResponse = ImageUploadResponseDTO.from(
                 "generated_123.png",
                 "original_prompt.png",
-                "https://example.com/generated_123.png"
+                "https://example.com/generated_123.png",
+                "jpg"
         );
 
         Mockito.when(openAiFacade.testMakeImage())

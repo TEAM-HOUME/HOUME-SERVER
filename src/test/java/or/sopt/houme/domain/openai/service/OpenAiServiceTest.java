@@ -62,7 +62,7 @@ class OpenAiServiceTest {
 
         when(openAIImageClient.generateImage(anyString(), any(OpenAiRequest.class))).thenReturn(response);
         when(s3Util.uploadByByte(anyString(), eq(imageBytes)))
-                .thenReturn(ImageUploadResponseDTO.from("filename", "original.png", "http://mock.url"));
+                .thenReturn(ImageUploadResponseDTO.from("filename", "original.png", "http://mock.url","jpg"));
 
         // when
         ImageUploadResponseDTO result = openAiService.createImage("tree in the desert");

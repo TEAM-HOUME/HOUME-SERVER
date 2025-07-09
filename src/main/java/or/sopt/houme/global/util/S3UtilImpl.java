@@ -45,7 +45,8 @@ public class S3UtilImpl implements S3Util {
         // S3 이미지 저장에 필요한 메타데이터를 정의합니다
         ObjectMetadata metadata = new ObjectMetadata();
         metadata.setContentLength(file.getSize());
-        metadata.setContentType(file.getContentType());
+        String contentType = file.getContentType();
+        metadata.setContentType(contentType);
 
         String originalFileName = file.getOriginalFilename();
 
@@ -61,7 +62,7 @@ public class S3UtilImpl implements S3Util {
         }
 
         // 저장된 링크를 포함한 메타데이터를 반환합니다. 메타데이터는 추후 논의하고 어떤 데이터를 넣을지 얘기해보는게 좋을 것 같습니다
-        return ImageUploadResponseDTO.from(fileName,originalFileName,amazonS3.getUrl(bucket, fileName).toString());
+        return ImageUploadResponseDTO.from(fileName,originalFileName,amazonS3.getUrl(bucket, fileName).toString(),contentType);
     }
 
 
@@ -95,7 +96,8 @@ public class S3UtilImpl implements S3Util {
         return ImageUploadResponseDTO.from(
                 fileName,
                 originalFileName,
-                amazonS3.getUrl(bucket, fileName).toString()
+                amazonS3.getUrl(bucket, fileName).toString(),
+                contentType
         );
     }
 

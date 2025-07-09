@@ -50,7 +50,8 @@ class OpenAiFacadeTest {
         ImageUploadResponseDTO mockResponse = ImageUploadResponseDTO.from(
                 "file-key",
                 "original.png",
-                "https://s3.aws.com/file-key"
+                "https://s3.aws.com/file-key",
+                "jpg"
         );
 
         when(promptService.makePrompt(requestDTO)).thenReturn(generatedPrompt);
