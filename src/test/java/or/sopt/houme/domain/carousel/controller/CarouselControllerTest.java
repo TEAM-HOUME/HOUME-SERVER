@@ -2,24 +2,35 @@ package or.sopt.houme.domain.carousel.controller;
 
 import or.sopt.houme.domain.carousel.controller.dto.GetCarouselListResponseDTO;
 import or.sopt.houme.domain.carousel.controller.dto.GetCarouselResponseDTO;
+import or.sopt.houme.domain.carousel.facade.CarouselOptimisticLockFacade;
 import or.sopt.houme.domain.carousel.service.CarouselService;
 import or.sopt.houme.domain.carousel.service.CarouselServiceImpl;
+import or.sopt.houme.domain.user.controller.dto.CustomUserDetails;
+import or.sopt.houme.domain.user.entity.*;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.time.LocalDate;
 import java.util.List;
+import java.util.UUID;
 
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest
@@ -33,9 +44,40 @@ class CarouselControllerTest {
     @MockBean
     private CarouselServiceImpl carouselService;
 
+    @MockBean
+    private CarouselOptimisticLockFacade carouselOptimisticLockFacade;
+
+    private CustomUserDetails testUserDetails;
+
+
+    @BeforeEach
+    void initUser() {
+        User user = User.builder()
+                .name("테스트유저")
+                .email("test" + UUID.randomUUID() + "@example.com")
+                .password("encoded-password")
+                .birthday(LocalDate.of(1999, 1, 1))
+                .gender(Gender.MALE)
+                .socialType(SocialType.KAKAO)
+                .status(UserStatus.ACTIVE)
+                .role(Role.ROLE_USER)
+                .hasGeneratedImage(false)
+                .build();
+
+        testUserDetails = new CustomUserDetails(user);
+    }
+
+
+    private void setAuthentication(CustomUserDetails userDetails) {
+        UsernamePasswordAuthenticationToken authentication =
+                new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+    }
+
 
     @Test
     @DisplayName("GET /api/v1/carousels?page=0 요청 시 5개 이하의 캐러셀 응답을 반환한다")
+    @WithMockUser()
     void getCarousels_returnsCarouselList() throws Exception {
         // given
         List<GetCarouselResponseDTO> mockList = List.of(
@@ -57,6 +99,52 @@ class CarouselControllerTest {
                 .andExpect(jsonPath("$.data.carouselResponseDTOS[0].url").value("url1"))
                 .andExpect(jsonPath("$.data.carouselResponseDTOS[1].carouselId").value(2))
                 .andExpect(jsonPath("$.data.carouselResponseDTOS[1].url").value("url2"));
+    }
+
+
+    @Test
+    @DisplayName("POST /api/v1/carousels/like 요청으로 좋아요를 추가 할 수 있다")
+    void likeCarousel_success() throws Exception {
+        // given
+        Long carouselId = 123L;
+        setAuthentication(testUserDetails);
+
+        // when & then
+        mockMvc.perform(post("/api/v1/carousels/like")
+                        .param("carouselId", String.valueOf(carouselId))
+                        .requestAttr("userDetails", testUserDetails)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.msg").value("응답 성공"))
+                .andExpect(jsonPath("$.code").value(200))
+                .andExpect(jsonPath("$.data").value("캐러셀 좋아요가 정상적으로 저장되었습니다"));
+
+        // verify
+        Mockito.verify(carouselOptimisticLockFacade, Mockito.times(1))
+                .likeCarousel(testUserDetails.getUser(), carouselId);
+    }
+
+
+    @Test
+    @DisplayName("POST /api/v1/carousels/hate 요청으로 싫어요를 처리 할 수 있다")
+    void hateCarousel_success() throws Exception {
+        // given
+        Long carouselId = 456L;
+        setAuthentication(testUserDetails);
+
+        // when & then
+        mockMvc.perform(post("/api/v1/carousels/hate")
+                        .param("carouselId", String.valueOf(carouselId))
+                        .requestAttr("userDetails", testUserDetails)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.msg").value("응답 성공"))
+                .andExpect(jsonPath("$.code").value(200))
+                .andExpect(jsonPath("$.data").value("캐러셀 싫어요가 정상적으로 저장되었습니다"));
+
+        // verify
+        Mockito.verify(carouselOptimisticLockFacade, Mockito.times(1))
+                .hateCarousel(testUserDetails.getUser(), carouselId);
     }
 
 }
