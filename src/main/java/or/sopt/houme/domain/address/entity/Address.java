@@ -2,6 +2,7 @@ package or.sopt.houme.domain.address.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import or.sopt.houme.domain.address.dto.request.AddressRequest;
 import or.sopt.houme.domain.user.entity.User;
 
 @Entity
@@ -24,4 +25,13 @@ public class Address {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private User user;
+
+    // 생성 정적 메서드
+    public static Address create(User user, AddressRequest request) {
+        return Address.builder()
+                .sigungu(request.sigungu())
+                .roadName(request.roadName())
+                .user(user)
+                .build();
+    }
 }

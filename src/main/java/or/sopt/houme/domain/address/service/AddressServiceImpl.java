@@ -20,12 +20,8 @@ public class AddressServiceImpl implements AddressService {
     @Override
     public void createAddress(User user, AddressRequest addressRequest) {
 
-        Address build = Address.builder()
-                .user(user)
-                .sigungu(addressRequest.sigungu())
-                .roadName(addressRequest.roadName())
-                .build();
+        Address address = Address.create(user, addressRequest);
 
-        addressRepository.save(build);
+        addressRepository.save(address);
     }
 }
