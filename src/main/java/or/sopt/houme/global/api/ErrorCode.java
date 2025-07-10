@@ -24,6 +24,8 @@ public enum ErrorCode {
     // HouseEnum 처리 예외
     HOUSE_NOT_ALLOWED_OPTION(HttpStatus.BAD_REQUEST, 40007, "유효하지 않은 집 구조 옵션입니다."),
 
+    // 입력값 검증 예외
+    NOT_VALID_EXCEPTION(HttpStatus.BAD_REQUEST, 40008, "유효하지 않은 입력값입니다."),
 
     /**
      * 401 UNAUTHORIZED
