@@ -42,7 +42,7 @@ public class UserServiceImpl implements UserService {
     @Transactional(readOnly = true)
     public UserImageHistoryListResponse getUserImageHistoryList(User user) {
         User findUser = findUser(user);
-        validateImageHistoryExists(user);  // 생성된 이미지 이력이 없으면 예외터짐
+        validateImageHistoryExists(findUser);  // 생성된 이미지 이력이 없으면 예외터짐
         List<UserImageHistoryDTO> histories = userRepository.getUserImageHistory(findUser.getId());
         return UserImageHistoryListResponse.of(histories);
     }
