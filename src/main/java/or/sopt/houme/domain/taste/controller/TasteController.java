@@ -2,6 +2,7 @@ package or.sopt.houme.domain.taste.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import or.sopt.houme.domain.taste.dto.response.MoodBoardListResponse;
@@ -26,7 +27,7 @@ public class TasteController {
     @GetMapping("/moodboard-images")
     public ResponseEntity<ApiResponse<MoodBoardListResponse>> moodboardImages(
             @RequestParam(required = false) Long cursor,
-            @RequestParam(defaultValue = "10") @Min(1) int limit
+            @RequestParam(defaultValue = "10") @Valid @Min(1) int limit
     ) {
 
         MoodBoardListResponse moodboard = tasteService.getMoodboard(cursor, limit);
