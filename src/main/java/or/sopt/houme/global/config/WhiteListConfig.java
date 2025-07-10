@@ -40,7 +40,9 @@ public class WhiteListConfig {
     public static final List<String> makeHouseWhitelist() {
         return List.of(
                 "/api/v1/housing-options",
-                "/api/v1/housing-selections"
+                "/api/v1/housing-selections",
+                "/api/v1/addresses",
+                "/api/v1/moodboard-images"
         );
     }
 
