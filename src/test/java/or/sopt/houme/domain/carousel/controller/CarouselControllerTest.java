@@ -7,6 +7,7 @@ import or.sopt.houme.domain.carousel.service.CarouselService;
 import or.sopt.houme.domain.carousel.service.CarouselServiceImpl;
 import or.sopt.houme.domain.user.controller.dto.CustomUserDetails;
 import or.sopt.houme.domain.user.entity.*;
+import or.sopt.houme.global.api.ErrorCode;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -28,6 +29,9 @@ import java.util.UUID;
 
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -126,6 +130,28 @@ class CarouselControllerTest {
 
 
     @Test
+    @DisplayName("POST /api/v1/carousels/hate 요청 시 InterruptedException 발생 -> CarouselException으로 감싼다")
+    void hateCarousel_shouldThrowCarouselException_whenInterrupted() throws Exception {
+        // given
+        Long carouselId = 456L;
+        setAuthentication(testUserDetails);
+
+        // InterruptedException 발생하도록 mock 설정
+        doThrow(new InterruptedException("인터럽트 예외"))
+                .when(carouselOptimisticLockFacade).hateCarousel(any(), eq(carouselId));
+
+        // when & then
+        mockMvc.perform(post("/api/v1/carousels/hate")
+                        .param("carouselId", String.valueOf(carouselId))
+                        .requestAttr("userDetails", testUserDetails)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isInternalServerError())
+                .andExpect(jsonPath("$.code").value(ErrorCode.CAROUSEL_INTERRUPT_EXCEPTION.getCode()))
+                .andExpect(jsonPath("$.msg").value(ErrorCode.CAROUSEL_INTERRUPT_EXCEPTION.getMsg()));
+    }
+
+
+    @Test
     @DisplayName("POST /api/v1/carousels/hate 요청으로 싫어요를 처리 할 수 있다")
     void hateCarousel_success() throws Exception {
         // given
@@ -146,5 +172,28 @@ class CarouselControllerTest {
         Mockito.verify(carouselOptimisticLockFacade, Mockito.times(1))
                 .hateCarousel(testUserDetails.getUser(), carouselId);
     }
+
+
+    @Test
+    @DisplayName("POST /api/v1/carousels/like 요청 시 InterruptedException 발생 -> CarouselException으로 감싼다")
+    void likeCarousel_shouldThrowCarouselException_whenInterrupted() throws Exception {
+        // given
+        Long carouselId = 456L;
+        setAuthentication(testUserDetails);
+
+        // InterruptedException 발생하도록 mock 설정
+        doThrow(new InterruptedException("인터럽트 예외"))
+                .when(carouselOptimisticLockFacade).likeCarousel(any(), eq(carouselId));
+
+        // when & then
+        mockMvc.perform(post("/api/v1/carousels/like")
+                        .param("carouselId", String.valueOf(carouselId))
+                        .requestAttr("userDetails", testUserDetails)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isInternalServerError())
+                .andExpect(jsonPath("$.code").value(ErrorCode.CAROUSEL_INTERRUPT_EXCEPTION.getCode()))
+                .andExpect(jsonPath("$.msg").value(ErrorCode.CAROUSEL_INTERRUPT_EXCEPTION.getMsg()));
+    }
+
 
 }

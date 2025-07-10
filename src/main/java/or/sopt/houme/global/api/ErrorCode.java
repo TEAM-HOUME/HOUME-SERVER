@@ -81,7 +81,8 @@ public enum ErrorCode {
     CHAT_GPT_CALL_EXCEPTION(HttpStatus.INTERNAL_SERVER_ERROR,50009 ,"챗 gpt 호출 중 예외가 발생하였습니다" ),
 
     // 캐러셀 관련 예외
-    CAROUSEL_RETRY_EXCEPTION(HttpStatus.INTERNAL_SERVER_ERROR,50010,"캐러셀 좋아요,싫어요 시도 중 동시성 예외가 발생하였습니다, 서버 개발자에게 문의해주세요")
+    CAROUSEL_RETRY_EXCEPTION(HttpStatus.INTERNAL_SERVER_ERROR,50010,"캐러셀 좋아요,싫어요 시도 중 동시성 예외가 발생하였습니다, 서버 개발자에게 문의해주세요"),
+    CAROUSEL_INTERRUPT_EXCEPTION(HttpStatus.INTERNAL_SERVER_ERROR,50011,"캐러셀 API 실행 중, INTERRUPT_EXCEPTION 가 발생하였습니다. 서버 개발자에게 문의해주세요")
     ;
 
     private final HttpStatus status;

@@ -8,6 +8,8 @@ import or.sopt.houme.domain.carousel.facade.CarouselOptimisticLockFacade;
 import or.sopt.houme.domain.carousel.service.CarouselService;
 import or.sopt.houme.domain.user.controller.dto.CustomUserDetails;
 import or.sopt.houme.global.api.ApiResponse;
+import or.sopt.houme.global.api.ErrorCode;
+import or.sopt.houme.global.api.handler.CarouselException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -38,9 +40,13 @@ public class CarouselController {
     @Operation(summary = "캐러셀 좋아요 API")
     public ResponseEntity<ApiResponse<String>> likeCarousel(
             @AuthenticationPrincipal CustomUserDetails userDetails,
-            @RequestParam Long carouselId) throws InterruptedException {
+            @RequestParam Long carouselId) {
 
-        carouselOptimisticLockFacade.likeCarousel(userDetails.getUser(), carouselId);
+        try {
+            carouselOptimisticLockFacade.likeCarousel(userDetails.getUser(), carouselId);
+        }catch (InterruptedException e) {
+            throw new CarouselException(ErrorCode.CAROUSEL_INTERRUPT_EXCEPTION);
+        }
 
         return ResponseEntity.ok(ApiResponse.ok("캐러셀 좋아요가 정상적으로 저장되었습니다"));
     }
@@ -50,9 +56,13 @@ public class CarouselController {
     @Operation(summary = "캐러셀 싫어요 API")
     public ResponseEntity<ApiResponse<String>> hateCarousel(
             @AuthenticationPrincipal CustomUserDetails userDetails,
-            @RequestParam Long carouselId) throws InterruptedException {
+            @RequestParam Long carouselId) {
 
-        carouselOptimisticLockFacade.hateCarousel(userDetails.getUser(), carouselId);
+        try {
+            carouselOptimisticLockFacade.hateCarousel(userDetails.getUser(), carouselId);
+        }catch (InterruptedException e) {
+            throw new CarouselException(ErrorCode.CAROUSEL_INTERRUPT_EXCEPTION);
+        }
 
         return ResponseEntity.ok(ApiResponse.ok("캐러셀 싫어요가 정상적으로 저장되었습니다"));
     }
