@@ -17,4 +17,14 @@ public class Preference extends BaseEntity {
 
     @Column(name = "is_like", nullable = false)
     private boolean isLike;
+
+    public static Preference of(boolean like){
+        return Preference.builder()
+                .isLike(like)
+                .build();
+    }
+
+    public void updateLike(boolean isLike) {
+        this.isLike = isLike;
+    }
 }

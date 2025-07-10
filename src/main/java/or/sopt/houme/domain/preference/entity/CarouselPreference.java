@@ -22,4 +22,16 @@ public class CarouselPreference {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "carousel_id")
     private Carousel carousel;
+
+    @Column(name = "user_id")
+    private Long userId;
+
+    public static CarouselPreference of(Preference preference, Carousel carousel,Long userId) {
+        return CarouselPreference.builder()
+                .preference(preference)
+                .carousel(carousel)
+                .userId(userId)
+                .build();
+    }
+
 }

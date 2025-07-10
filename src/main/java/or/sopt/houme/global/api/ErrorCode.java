@@ -51,6 +51,10 @@ public enum ErrorCode {
     // 도면 관련 예외
     NOT_FOUND_HOUSE(HttpStatus.NOT_FOUND, 40404, "저장되어있는 주거 정보가 없습니다."),
 
+    // 캐러셀 관련 예외
+    CAROUSEL_NOT_FOUND(HttpStatus.NOT_FOUND,40405,"캐러셀을 찾을 수 없습니다"),
+    CAROUSEL_PREFERENCE_NOT_FOUND(HttpStatus.NOT_FOUND,40406,"캐러셀 선호도 레코드를 찾을 수 없습니다"),
+
 
     /**
      * 405 METHOD_NOT_ALLOWED

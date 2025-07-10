@@ -5,12 +5,11 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import or.sopt.houme.domain.carousel.controller.dto.GetCarouselListResponseDTO;
 import or.sopt.houme.domain.carousel.service.CarouselService;
+import or.sopt.houme.domain.user.controller.dto.CustomUserDetails;
 import or.sopt.houme.global.api.ApiResponse;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
@@ -30,5 +29,29 @@ public class CarouselController {
         GetCarouselListResponseDTO carousels = carouselService.getCarousel(page);
 
         return ResponseEntity.ok(ApiResponse.ok(carousels));
+    }
+
+
+    @PostMapping("/carousels/like")
+    @Operation(summary = "캐러셀 좋아요 API")
+    public ResponseEntity<ApiResponse<String>> likeCarousel(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @RequestParam Long carouselId){
+
+        carouselService.likeCarousel(userDetails.getUser(), carouselId);
+
+        return ResponseEntity.ok(ApiResponse.ok("캐러셀 좋아요가 정상적으로 저장되었습니다"));
+    }
+
+
+    @PostMapping("/carousels/hate")
+    @Operation(summary = "캐러셀 싫어요 API")
+    public ResponseEntity<ApiResponse<String>> hateCarousel(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @RequestParam Long carouselId){
+
+        carouselService.hateCarousel(userDetails.getUser(), carouselId);
+
+        return ResponseEntity.ok(ApiResponse.ok("캐러셀 싫어요가 정상적으로 저장되었습니다"));
     }
 }
