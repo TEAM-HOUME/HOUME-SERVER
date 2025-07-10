@@ -14,11 +14,15 @@ public class CookieUtil {
         return cookie;
     }
 
-    public static void addSameSiteCookie(HttpServletResponse response, String name, String value, int maxAgeSeconds) {
+    public static void addSameSiteCookie(HttpServletResponse response, String name, String value, int maxAgeSeconds, boolean secure) {
         String cookieValue = String.format(
-                "%s=%s; Path=/; Max-Age=%d; HttpOnly; Secure; SameSite=None",
-                name, value, maxAgeSeconds
+                "%s=%s; Path=/; Max-Age=%d; HttpOnly%s; SameSite=None",
+                name,
+                value,
+                maxAgeSeconds,
+                secure ? "; Secure" : ""
         );
+
         response.addHeader("Set-Cookie", cookieValue);
     }
 

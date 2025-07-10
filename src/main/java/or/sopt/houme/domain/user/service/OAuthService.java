@@ -130,7 +130,8 @@ public class OAuthService {
                 response,
                 "refresh-token",
                 refresh,
-                jwtConfig.getRefreshTokenValidityInSeconds().intValue()
+                jwtConfig.getRefreshTokenValidityInSeconds().intValue(),
+                true
         );
 
         return isNewUser;
