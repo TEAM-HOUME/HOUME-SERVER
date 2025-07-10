@@ -27,6 +27,7 @@ import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import static or.sopt.houme.global.util.constant.OptimisticLockConstant.MAX_RETRIES;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -120,7 +121,10 @@ class CarouselOptimisticLockFacadeTest {
         }
 
         latch.await();
-        Thread.sleep(100);
+        latch.await();
+        // 모든 스레드가 실제로 완료될 때까지 대기
+        executor.shutdown();
+        executor.awaitTermination(5, TimeUnit.SECONDS);
 
         // then: Join Fetch로 즉시 로딩
         List<CarouselPreference> prefs = carouselPreferenceRepository.findAllWithPreference();
