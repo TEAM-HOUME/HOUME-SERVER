@@ -53,9 +53,18 @@ public enum ErrorCode {
     // 도면 관련 예외
     NOT_FOUND_HOUSE(HttpStatus.NOT_FOUND, 40404, "저장되어있는 주거 정보가 없습니다."),
 
+    // 집 엔티티 관련 예외
+    NOT_FOUND_HOUSE_ENTITY(HttpStatus.NOT_FOUND, 40405, "집 객체를 찾을 수 없습니다." ),
+
+    // 태그 엔티티 관련 예외
+    NOT_FOUND_TAG_ENTITY(HttpStatus.NOT_FOUND, 40406, "태그 객체를 찾을 수 없습니다." ),
+
+    // 생성된 이미지 엔티티 관련 예외
+    NOT_FOUND_GENERATE_IMAGE_ENTITY(HttpStatus.NOT_FOUND, 40407, "생성된 이미지 객체를 찾을 수 없습니다." ),
+
     // 캐러셀 관련 예외
-    CAROUSEL_NOT_FOUND(HttpStatus.NOT_FOUND,40405,"캐러셀을 찾을 수 없습니다"),
-    CAROUSEL_PREFERENCE_NOT_FOUND(HttpStatus.NOT_FOUND,40406,"캐러셀 선호도 레코드를 찾을 수 없습니다"),
+    CAROUSEL_NOT_FOUND(HttpStatus.NOT_FOUND,40408,"캐러셀을 찾을 수 없습니다"),
+    CAROUSEL_PREFERENCE_NOT_FOUND(HttpStatus.NOT_FOUND,40409,"캐러셀 선호도 레코드를 찾을 수 없습니다"),
 
 
     /**

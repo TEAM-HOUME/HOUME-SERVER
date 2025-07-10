@@ -2,7 +2,7 @@ package or.sopt.houme.domain.house.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-import or.sopt.houme.domain.generatedImage.entity.GenerateImage;
+import or.sopt.houme.domain.generateImage.entity.GenerateImage;
 import or.sopt.houme.domain.house.entity.enums.Activity;
 import or.sopt.houme.domain.house.entity.enums.Equilibrium;
 import or.sopt.houme.domain.house.entity.enums.Form;
