@@ -24,6 +24,8 @@ public enum ErrorCode {
     // HouseEnum 처리 예외
     HOUSE_NOT_ALLOWED_OPTION(HttpStatus.BAD_REQUEST, 40007, "유효하지 않은 집 구조 옵션입니다."),
 
+    // 입력값 검증 예외
+    NOT_VALID_EXCEPTION(HttpStatus.BAD_REQUEST, 40008, "유효하지 않은 입력값입니다."),
 
     /**
      * 401 UNAUTHORIZED
@@ -59,6 +61,10 @@ public enum ErrorCode {
 
     // 생성된 이미지 엔티티 관련 예외
     NOT_FOUND_GENERATE_IMAGE_ENTITY(HttpStatus.NOT_FOUND, 40407, "생성된 이미지 객체를 찾을 수 없습니다." ),
+    // 캐러셀 관련 예외
+    CAROUSEL_NOT_FOUND(HttpStatus.NOT_FOUND,40408,"캐러셀을 찾을 수 없습니다"),
+    CAROUSEL_PREFERENCE_NOT_FOUND(HttpStatus.NOT_FOUND,40409,"캐러셀 선호도 레코드를 찾을 수 없습니다"),
+
 
     /**
      * 405 METHOD_NOT_ALLOWED
@@ -75,8 +81,6 @@ public enum ErrorCode {
      */
     KAKAO_ACCESSTOKEN_INVALID(HttpStatus.INTERNAL_SERVER_ERROR,50001 ,"액세스토큰으로 회원정보를 가져오는 중에 예외가 발생했습니다. 서버개발자에게 문의해주세요" ),
 
-
-
     // 이미지 관련 예외
     IMAGE_UPLOAD_AMAZON_EXCEPTION(HttpStatus.INTERNAL_SERVER_ERROR, 50002, "이미지 업로드 중, AWS 예외가 발생하였습니다. 서버 관리자에게 문의해주세요"),
     IMAGE_UPLOAD_IO_EXCEPTION(HttpStatus.INTERNAL_SERVER_ERROR, 50003, "이미지 업로드 중, IO 예외가 발생하였습니다. 서버 관리자에게 문의해주세요"),
@@ -84,7 +88,12 @@ public enum ErrorCode {
     IMAGE_DELETE_EXCEPTION(HttpStatus.INTERNAL_SERVER_ERROR,50006 ,"이미지 삭제에 실패하였습니다. 서버관리자에게 문의해주세요" ),
     HTTP_MEDIA_TYPE_NOT_ACCEPTABLE(HttpStatus.INTERNAL_SERVER_ERROR,50007,"HTTP 리퀘스트 타입에 오류가 발생하였습니다"),
     INCODING_EXCEPTION(HttpStatus.INTERNAL_SERVER_ERROR,50008 ,"인코딩 과정 중 예외가 발생하였습니다" ),
-    CHAT_GPT_CALL_EXCEPTION(HttpStatus.INTERNAL_SERVER_ERROR,50009 ,"챗 gpt 호출 중 예외가 발생하였습니다" );
+    CHAT_GPT_CALL_EXCEPTION(HttpStatus.INTERNAL_SERVER_ERROR,50009 ,"챗 gpt 호출 중 예외가 발생하였습니다" ),
+
+    // 캐러셀 관련 예외
+    CAROUSEL_RETRY_EXCEPTION(HttpStatus.INTERNAL_SERVER_ERROR,50010,"캐러셀 좋아요,싫어요 시도 중 동시성 예외가 발생하였습니다, 서버 개발자에게 문의해주세요"),
+    CAROUSEL_INTERRUPT_EXCEPTION(HttpStatus.INTERNAL_SERVER_ERROR,50011,"캐러셀 API 실행 중, INTERRUPT_EXCEPTION 가 발생하였습니다. 서버 개발자에게 문의해주세요")
+    ;
 
     private final HttpStatus status;
     private final int code;
