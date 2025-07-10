@@ -15,7 +15,6 @@ import or.sopt.houme.global.util.S3Util;
 import or.sopt.houme.global.util.constant.S3DirNameConstant;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
 
 import java.util.Base64;
 
