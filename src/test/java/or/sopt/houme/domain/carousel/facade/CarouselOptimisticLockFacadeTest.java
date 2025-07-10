@@ -3,26 +3,36 @@ package or.sopt.houme.domain.carousel.facade;
 import jakarta.persistence.Column;
 import or.sopt.houme.domain.carousel.entity.Carousel;
 import or.sopt.houme.domain.carousel.repository.CarouselRepository;
+import or.sopt.houme.domain.carousel.service.CarouselServiceImpl;
 import or.sopt.houme.domain.preference.entity.CarouselPreference;
 import or.sopt.houme.domain.preference.repository.CarouselPreferenceRepository;
 import or.sopt.houme.domain.user.entity.*;
 import or.sopt.houme.domain.user.repository.UserRepository;
+import or.sopt.houme.global.api.ErrorCode;
+import or.sopt.houme.global.api.handler.CarouselException;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.test.annotation.Commit;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import static or.sopt.houme.global.util.constant.OptimisticLockConstant.MAX_RETRIES;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.anyLong;
+
+import static org.mockito.Mockito.*;
 
 @SpringBootTest
 @ActiveProfiles("test")
@@ -40,18 +50,20 @@ class CarouselOptimisticLockFacadeTest {
     @Autowired
     private UserRepository userRepository;
 
+    @SpyBean // 이 부분 추가
+    private CarouselServiceImpl carouselServiceImpl;
+
     private User savedUser;
     private Carousel savedCarousel;
 
     @BeforeEach
     @Transactional
-    @Commit
     void setUp() {
         // 유저 저장
         savedUser = userRepository.save(
                 User.builder()
                         .name("테스트유저")
-                        .email("test@example.com")
+                        .email("test" + UUID.randomUUID() + "@example.com")
                         .password("encoded-password")
                         .birthday(LocalDate.of(1999, 1, 1))
                         .gender(Gender.MALE)
@@ -114,5 +126,24 @@ class CarouselOptimisticLockFacadeTest {
         List<CarouselPreference> prefs = carouselPreferenceRepository.findAllWithPreference();
         assertThat(prefs).hasSize(1);
         assertThat(prefs.get(0).getPreference().isLike()).isTrue();
+    }
+
+
+    @Test
+    @DisplayName("재시도 초과 시 CarouselException 발생 테스트")
+    void testRetryExceeded_throwsCarouselException() throws InterruptedException {
+
+        // given: 항상 예외 발생하도록 스텁 설정
+        doThrow(new jakarta.persistence.OptimisticLockException("강제 예외"))
+                .when(carouselServiceImpl)
+                .likeCarousel(any(User.class), anyLong());
+
+        // when & then
+        CarouselException thrown = org.junit.jupiter.api.Assertions.assertThrows(
+                CarouselException.class,
+                () -> carouselOptimisticLockFacade.likeCarousel(savedUser, savedCarousel.getId())
+        );
+
+        assertThat(thrown.getErrorCode()).isEqualTo(ErrorCode.CAROUSEL_RETRY_EXCEPTION);
     }
 }
