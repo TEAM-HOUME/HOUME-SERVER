@@ -4,7 +4,7 @@ import or.sopt.houme.domain.user.controller.dto.CustomUserDetails;
 import or.sopt.houme.domain.user.controller.dto.MyPageInfoResponse;
 import or.sopt.houme.domain.user.entity.*;
 import or.sopt.houme.domain.user.repository.BlacklistTokenRepository;
-import or.sopt.houme.domain.user.service.UserServiceImpl;
+import or.sopt.houme.domain.user.service.UserService;
 import or.sopt.houme.global.config.JWTConfig;
 import or.sopt.houme.global.jwt.JWTUtil;
 import org.junit.jupiter.api.BeforeEach;
@@ -46,7 +46,7 @@ class UserControllerTest {
     private MockMvc mockMvc;
 
     @MockBean
-    private UserServiceImpl userService;
+    private UserService userService;
 
     @MockBean
     private JWTConfig jwtConfig;
