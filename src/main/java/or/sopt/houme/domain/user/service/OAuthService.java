@@ -62,7 +62,10 @@ public class OAuthService {
     }
 
 
-    public void kakaoLogin(String accessCode, HttpServletResponse response) {
+    public Boolean kakaoLogin(String accessCode, HttpServletResponse response) {
+
+        // 신규회원인지 검증하는 필드
+        Boolean isNewUser = false;
 
         // 인가코드가 비어있다면 예외발생
         if (accessCode == null || accessCode.isEmpty()) {
@@ -103,6 +106,8 @@ public class OAuthService {
                     .build();
 
             userRepository.save(newUser);
+
+            isNewUser = true;
         }
 
         // 그리고 회원 정보를 기반으로 액세스토큰을 발급하여 헤더에 넣습니다
@@ -121,7 +126,15 @@ public class OAuthService {
                 jwtConfig.getRefreshTokenValidityInSeconds().intValue(),
                 false);
 
-        response.addCookie(refreshCookie);
+        CookieUtil.addSameSiteCookie(
+                response,
+                "refresh-token",
+                refresh,
+                jwtConfig.getRefreshTokenValidityInSeconds().intValue(),
+                true
+        );
+
+        return isNewUser;
     }
 
 
