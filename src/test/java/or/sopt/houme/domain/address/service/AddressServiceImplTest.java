@@ -1,8 +1,8 @@
-package or.sopt.houme.domain.addrese.service;
+package or.sopt.houme.domain.address.service;
 
-import or.sopt.houme.domain.addrese.dto.request.AddressRequest;
-import or.sopt.houme.domain.addrese.entity.Address;
-import or.sopt.houme.domain.addrese.repository.AddressRepository;
+import or.sopt.houme.domain.address.dto.request.AddressRequest;
+import or.sopt.houme.domain.address.entity.Address;
+import or.sopt.houme.domain.address.repository.AddressRepository;
 import or.sopt.houme.domain.user.entity.*;
 import or.sopt.houme.domain.user.repository.UserRepository;
 import org.junit.jupiter.api.DisplayName;
@@ -16,7 +16,6 @@ import java.time.LocalDate;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
 @ActiveProfiles("test")

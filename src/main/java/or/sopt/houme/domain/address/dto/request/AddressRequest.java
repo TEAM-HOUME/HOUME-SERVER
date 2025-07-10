@@ -1,4 +1,4 @@
-package or.sopt.houme.domain.addrese.dto.request;
+package or.sopt.houme.domain.address.dto.request;
 
 import jakarta.validation.constraints.NotBlank;
 

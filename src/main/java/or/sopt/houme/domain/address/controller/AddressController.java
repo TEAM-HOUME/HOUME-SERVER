@@ -1,11 +1,11 @@
-package or.sopt.houme.domain.addrese.controller;
+package or.sopt.houme.domain.address.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import or.sopt.houme.domain.addrese.dto.request.AddressRequest;
-import or.sopt.houme.domain.addrese.service.AddressService;
+import or.sopt.houme.domain.address.dto.request.AddressRequest;
+import or.sopt.houme.domain.address.service.AddressService;
 import or.sopt.houme.domain.user.controller.dto.CustomUserDetails;
 import or.sopt.houme.domain.user.entity.User;
 import or.sopt.houme.global.api.ApiResponse;

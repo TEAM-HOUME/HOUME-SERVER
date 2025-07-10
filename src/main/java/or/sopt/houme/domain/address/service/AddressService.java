@@ -1,6 +1,6 @@
-package or.sopt.houme.domain.addrese.service;
+package or.sopt.houme.domain.address.service;
 
-import or.sopt.houme.domain.addrese.dto.request.AddressRequest;
+import or.sopt.houme.domain.address.dto.request.AddressRequest;
 import or.sopt.houme.domain.user.entity.User;
 
 public interface AddressService {
