@@ -4,7 +4,7 @@ import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import or.sopt.houme.domain.credit.entity.CreditStatus;
-import or.sopt.houme.domain.generatedImage.entity.GenerateImage;
+import or.sopt.houme.domain.generateImage.entity.GenerateImage;
 import or.sopt.houme.domain.house.entity.QHouse;
 import or.sopt.houme.domain.house.entity.mapping.QHouseTaste;
 import or.sopt.houme.domain.taste.entity.QTag;
@@ -12,7 +12,7 @@ import or.sopt.houme.domain.taste.entity.QTaste;
 import or.sopt.houme.domain.taste.entity.QTasteTag;
 import or.sopt.houme.domain.user.controller.dto.UserImageHistoryDTO;
 import or.sopt.houme.domain.user.entity.QUser;
-import or.sopt.houme.domain.generatedImage.entity.QGenerateImage;
+import or.sopt.houme.domain.generateImage.entity.QGenerateImage;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -26,7 +26,7 @@ public class UserRepositoryImpl implements UserRepositoryCustom {
     private final JPAQueryFactory queryFactory;
 
     @Override
-    public long countByMemberIdAndStatus(Long userId) {
+    public Long countByMemberIdAndStatus(Long userId) {
         return queryFactory
                 .select(credit.count())
                 .from(credit)

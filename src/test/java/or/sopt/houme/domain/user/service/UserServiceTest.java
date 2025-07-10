@@ -1,6 +1,9 @@
 package or.sopt.houme.domain.user.service;
 
-import or.sopt.houme.domain.generatedImage.entity.GenerateImage;
+import or.sopt.houme.domain.generateImage.entity.GenerateImage;
+import or.sopt.houme.domain.generateImage.repository.GenerateImageRepository;
+import or.sopt.houme.domain.house.repository.HouseRepository;
+import or.sopt.houme.domain.taste.repository.TagRepository;
 import or.sopt.houme.domain.user.controller.dto.MyPageInfoResponse;
 import or.sopt.houme.domain.user.controller.dto.UserImageHistoryDTO;
 import or.sopt.houme.domain.user.controller.dto.UserImageHistoryListResponse;
@@ -21,7 +24,11 @@ import static org.mockito.BDDMockito.*;
 class UserServiceTest {
 
     private final UserRepository userRepository = mock(UserRepository.class);
-    private final UserService userService = new UserService(userRepository);
+    private final HouseRepository houseRepository = mock(HouseRepository.class);
+    private final TagRepository tagRepository = mock(TagRepository.class);
+    private final GenerateImageRepository generateImageRepository = mock(GenerateImageRepository.class);
+
+    private final UserServiceImpl userService = new UserServiceImpl(userRepository, houseRepository, tagRepository, generateImageRepository);
 
     @Test
     @DisplayName("✅ 마이페이지 유저 정보 조회 성공")
