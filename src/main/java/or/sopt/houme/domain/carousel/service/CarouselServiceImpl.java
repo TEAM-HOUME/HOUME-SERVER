@@ -53,65 +53,39 @@ public class CarouselServiceImpl implements CarouselService {
      * */
     @Override
     @Transactional
-    public void likeCarousel(User user, Long carouselId){
-
-        Carousel findCarousel = findCarousel(carouselId);
-
-        // 회원과 캐러셀에 해당하는 선호도 레코드가 존재하는지 확인
-        boolean exists = carouselPreferenceRepository.existsByUserIdAndCarouselId(user.getId(), carouselId);
-
-        if(exists){
-
-            // 존재한다면 객체를 가져와서 좋아요를 업데이트 함
-            CarouselPreference carouselPreference = carouselPreferenceRepository
-                    .findByUserIdAndCarouselId(user.getId(), carouselId)
-                    .orElseThrow(() -> new CarouselException(ErrorCode.CAROUSEL_PREFERENCE_NOT_FOUND));
-
-            Preference preference = carouselPreference.getPreference();
-
-            if (!preference.isLike()) {
-                preference.updateLike(true);
-            }
-
-            return;
-        }
-
-        // 존재하지 않는다면 새로운 객체를 생성함
-        Preference preference = Preference.of(true);
-        CarouselPreference carouselPreference = CarouselPreference.of(preference,findCarousel,user.getId());
-        preferenceRepository.save(preference);
-        carouselPreferenceRepository.save(carouselPreference);
+    public void likeCarousel(User user, Long carouselId) {
+        updateLike(user.getId(), carouselId, true);
     }
 
 
     @Override
     @Transactional
     public void hateCarousel(User user, Long carouselId) {
-        Carousel findCarousel = findCarousel(carouselId);
-        boolean exists = carouselPreferenceRepository.existsByUserIdAndCarouselId(user.getId(), carouselId);
+        updateLike(user.getId(), carouselId, false);
+    }
+
+
+    private void updateLike(Long userId, Long carouselId, boolean isLike) {
+        Carousel carousel = findCarousel(carouselId);
+        boolean exists = carouselPreferenceRepository.existsByUserIdAndCarouselId(userId, carouselId);
 
         if (exists) {
             CarouselPreference carouselPreference = carouselPreferenceRepository
-                    .findByUserIdAndCarouselId(user.getId(), carouselId)
+                    .findByUserIdAndCarouselId(userId, carouselId)
                     .orElseThrow(() -> new CarouselException(ErrorCode.CAROUSEL_PREFERENCE_NOT_FOUND));
 
             Preference preference = carouselPreference.getPreference();
-
-            if (preference.isLike()) {
-                preference.updateLike(false);
+            if (preference.isLike() != isLike) {
+                preference.updateLike(isLike);
             }
-
             return;
         }
 
-        // 존재하지 않는다면 새로운 '싫어요' 선호도 객체를 생성
-        Preference preference = Preference.of(false);
-        CarouselPreference carouselPreference = CarouselPreference.of(preference, findCarousel, user.getId());
-
+        Preference preference = Preference.of(isLike);
         preferenceRepository.save(preference);
+        CarouselPreference carouselPreference = CarouselPreference.of(preference, carousel, userId);
         carouselPreferenceRepository.save(carouselPreference);
     }
-
 
 
 

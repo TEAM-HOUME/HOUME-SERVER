@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import or.sopt.houme.domain.carousel.controller.dto.GetCarouselListResponseDTO;
+import or.sopt.houme.domain.carousel.facade.CarouselOptimisticLockFacade;
 import or.sopt.houme.domain.carousel.service.CarouselService;
 import or.sopt.houme.domain.user.controller.dto.CustomUserDetails;
 import or.sopt.houme.global.api.ApiResponse;
@@ -18,6 +19,7 @@ import org.springframework.web.bind.annotation.*;
 public class CarouselController {
 
     private final CarouselService carouselService;
+    private final CarouselOptimisticLockFacade carouselOptimisticLockFacade;
 
     @GetMapping("/carousels")
     @Operation(summary = "캐러셀 조회 API",
@@ -36,9 +38,9 @@ public class CarouselController {
     @Operation(summary = "캐러셀 좋아요 API")
     public ResponseEntity<ApiResponse<String>> likeCarousel(
             @AuthenticationPrincipal CustomUserDetails userDetails,
-            @RequestParam Long carouselId){
+            @RequestParam Long carouselId) throws InterruptedException {
 
-        carouselService.likeCarousel(userDetails.getUser(), carouselId);
+        carouselOptimisticLockFacade.likeCarousel(userDetails.getUser(), carouselId);
 
         return ResponseEntity.ok(ApiResponse.ok("캐러셀 좋아요가 정상적으로 저장되었습니다"));
     }
@@ -48,9 +50,9 @@ public class CarouselController {
     @Operation(summary = "캐러셀 싫어요 API")
     public ResponseEntity<ApiResponse<String>> hateCarousel(
             @AuthenticationPrincipal CustomUserDetails userDetails,
-            @RequestParam Long carouselId){
+            @RequestParam Long carouselId) throws InterruptedException {
 
-        carouselService.hateCarousel(userDetails.getUser(), carouselId);
+        carouselOptimisticLockFacade.hateCarousel(userDetails.getUser(), carouselId);
 
         return ResponseEntity.ok(ApiResponse.ok("캐러셀 싫어요가 정상적으로 저장되었습니다"));
     }

@@ -3,6 +3,7 @@ package or.sopt.houme.domain.carousel.controller;
 import or.sopt.houme.domain.carousel.controller.dto.GetCarouselListResponseDTO;
 import or.sopt.houme.domain.carousel.controller.dto.GetCarouselResponseDTO;
 import or.sopt.houme.domain.carousel.service.CarouselService;
+import or.sopt.houme.domain.carousel.service.CarouselServiceImpl;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,7 +31,7 @@ class CarouselControllerTest {
     private MockMvc mockMvc;
 
     @MockBean
-    private CarouselService carouselService;
+    private CarouselServiceImpl carouselService;
 
 
     @Test
