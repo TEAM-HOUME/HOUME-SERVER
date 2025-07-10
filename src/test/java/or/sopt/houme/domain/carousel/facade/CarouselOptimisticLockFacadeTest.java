@@ -121,7 +121,6 @@ class CarouselOptimisticLockFacadeTest {
         }
 
         latch.await();
-        latch.await();
         // 모든 스레드가 실제로 완료될 때까지 대기
         executor.shutdown();
         executor.awaitTermination(5, TimeUnit.SECONDS);
