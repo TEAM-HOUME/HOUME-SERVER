@@ -89,7 +89,6 @@ class CarouselServiceImplTest {
     @DisplayName("likeCarousel()은 carouselPreference 객체가 존재하면 새로운 preference와 관계를 생성한다")
     void likeCarousel_createsNew() {
         when(carouselRepository.findById(10L)).thenReturn(Optional.of(carousel));
-        when(carouselPreferenceRepository.existsByUserIdAndCarouselId(1L, 10L)).thenReturn(false);
 
         carouselService.likeCarousel(user, 10L);
 
@@ -106,7 +105,6 @@ class CarouselServiceImplTest {
         CarouselPreference cp = CarouselPreference.of(pref, carousel, 1L);
 
         when(carouselRepository.findById(10L)).thenReturn(Optional.of(carousel));
-        when(carouselPreferenceRepository.existsByUserIdAndCarouselId(1L, 10L)).thenReturn(true);
         when(carouselPreferenceRepository.findByUserIdAndCarouselId(1L, 10L)).thenReturn(Optional.of(cp));
 
         carouselService.likeCarousel(user, 10L);
@@ -136,7 +134,6 @@ class CarouselServiceImplTest {
         CarouselPreference cp = CarouselPreference.of(pref, carousel, 1L);
 
         when(carouselRepository.findById(10L)).thenReturn(Optional.of(carousel));
-        when(carouselPreferenceRepository.existsByUserIdAndCarouselId(1L, 10L)).thenReturn(true);
         when(carouselPreferenceRepository.findByUserIdAndCarouselId(1L, 10L)).thenReturn(Optional.of(cp));
 
         carouselService.likeCarousel(user, 10L);
@@ -146,29 +143,9 @@ class CarouselServiceImplTest {
 
 
     @Test
-    @DisplayName("존재하지 않는 CarouselPreference 접근 시 예외 발생")
-    void likeCarousel_shouldThrowException_whenCarouselPreferenceNotFound() {
-        // given
-        Long carouselId = 10L;
-        Carousel carousel = Carousel.builder().id(carouselId).build();
-
-        when(carouselRepository.findById(carouselId)).thenReturn(Optional.of(carousel));
-        when(carouselPreferenceRepository.existsByUserIdAndCarouselId(user.getId(), carouselId)).thenReturn(true);
-        when(carouselPreferenceRepository.findByUserIdAndCarouselId(user.getId(), carouselId))
-                .thenReturn(Optional.empty());
-
-        // when & then
-        CarouselException exception = assertThrows(CarouselException.class, () ->
-                carouselService.likeCarousel(user, carouselId));
-        assertEquals(ErrorCode.CAROUSEL_PREFERENCE_NOT_FOUND, exception.getErrorCode());
-    }
-
-
-    @Test
     @DisplayName("hateCarousel()은 carouselPreference 객체가 존재하지 않으면 새로운 preference를 false로 생성한다")
     void hateCarousel_createsNewFalse() {
         when(carouselRepository.findById(10L)).thenReturn(Optional.of(carousel));
-        when(carouselPreferenceRepository.existsByUserIdAndCarouselId(1L, 10L)).thenReturn(false);
 
         carouselService.hateCarousel(user, 10L);
 
@@ -185,7 +162,6 @@ class CarouselServiceImplTest {
         CarouselPreference cp = CarouselPreference.of(pref, carousel, 1L);
 
         when(carouselRepository.findById(10L)).thenReturn(Optional.of(carousel));
-        when(carouselPreferenceRepository.existsByUserIdAndCarouselId(1L, 10L)).thenReturn(true);
         when(carouselPreferenceRepository.findByUserIdAndCarouselId(1L, 10L)).thenReturn(Optional.of(cp));
 
         carouselService.hateCarousel(user, 10L);
@@ -201,7 +177,6 @@ class CarouselServiceImplTest {
         CarouselPreference cp = CarouselPreference.of(pref, carousel, 1L);
 
         when(carouselRepository.findById(10L)).thenReturn(Optional.of(carousel));
-        when(carouselPreferenceRepository.existsByUserIdAndCarouselId(1L, 10L)).thenReturn(true);
         when(carouselPreferenceRepository.findByUserIdAndCarouselId(1L, 10L)).thenReturn(Optional.of(cp));
 
         carouselService.hateCarousel(user, 10L);
@@ -221,25 +196,6 @@ class CarouselServiceImplTest {
         CarouselException exception = assertThrows(CarouselException.class, () ->
                 carouselService.hateCarousel(user, carouselId));
         assertEquals(ErrorCode.CAROUSEL_NOT_FOUND, exception.getErrorCode());
-    }
-
-
-    @Test
-    @DisplayName("싫어요에서 CarouselPreference 조회 실패 시 예외 발생")
-    void hateCarousel_shouldThrowException_whenCarouselPreferenceNotFound() {
-        // given
-        Long carouselId = 88L;
-        Carousel carousel = Carousel.builder().id(carouselId).build();
-
-        when(carouselRepository.findById(carouselId)).thenReturn(Optional.of(carousel));
-        when(carouselPreferenceRepository.existsByUserIdAndCarouselId(user.getId(), carouselId)).thenReturn(true);
-        when(carouselPreferenceRepository.findByUserIdAndCarouselId(user.getId(), carouselId))
-                .thenReturn(Optional.empty());
-
-        // when & then
-        CarouselException exception = assertThrows(CarouselException.class, () ->
-                carouselService.hateCarousel(user, carouselId));
-        assertEquals(ErrorCode.CAROUSEL_PREFERENCE_NOT_FOUND, exception.getErrorCode());
     }
 
 

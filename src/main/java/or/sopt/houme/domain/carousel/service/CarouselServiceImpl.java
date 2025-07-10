@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -67,25 +68,24 @@ public class CarouselServiceImpl implements CarouselService {
 
     private void updateLike(Long userId, Long carouselId, boolean isLike) {
         Carousel carousel = findCarousel(carouselId);
-        boolean exists = carouselPreferenceRepository.existsByUserIdAndCarouselId(userId, carouselId);
 
-        if (exists) {
-            CarouselPreference carouselPreference = carouselPreferenceRepository
-                    .findByUserIdAndCarouselId(userId, carouselId)
-                    .orElseThrow(() -> new CarouselException(ErrorCode.CAROUSEL_PREFERENCE_NOT_FOUND));
+        Optional<CarouselPreference> optional = carouselPreferenceRepository.findByUserIdAndCarouselId(userId, carouselId);
 
-            Preference preference = carouselPreference.getPreference();
+        if (optional.isPresent()) {
+            Preference preference = optional.get().getPreference();
             if (preference.isLike() != isLike) {
                 preference.updateLike(isLike);
             }
-            return;
-        }
+        } else {
+            Preference preference = Preference.of(isLike);
+            preferenceRepository.save(preference);
+            preferenceRepository.flush();
 
-        Preference preference = Preference.of(isLike);
-        preferenceRepository.save(preference);
-        CarouselPreference carouselPreference = CarouselPreference.of(preference, carousel, userId);
-        carouselPreferenceRepository.save(carouselPreference);
+            CarouselPreference carouselPreference = CarouselPreference.of(preference, carousel, userId);
+            carouselPreferenceRepository.save(carouselPreference);
+        }
     }
+
 
 
 
