@@ -130,8 +130,8 @@ class CarouselOptimisticLockFacadeTest {
 
 
     @Test
-    @DisplayName("재시도 초과 시 CarouselException 발생 테스트")
-    void testRetryExceeded_throwsCarouselException() throws InterruptedException {
+    @DisplayName("likeCarousel()은 재시도 초과 시 CarouselException 예외를 발생시킨다")
+    void testRetryExceeded_throwsCarouselException_like() throws InterruptedException {
 
         // given: 항상 예외 발생하도록 스텁 설정
         doThrow(new jakarta.persistence.OptimisticLockException("강제 예외"))
@@ -142,6 +142,25 @@ class CarouselOptimisticLockFacadeTest {
         CarouselException thrown = org.junit.jupiter.api.Assertions.assertThrows(
                 CarouselException.class,
                 () -> carouselOptimisticLockFacade.likeCarousel(savedUser, savedCarousel.getId())
+        );
+
+        assertThat(thrown.getErrorCode()).isEqualTo(ErrorCode.CAROUSEL_RETRY_EXCEPTION);
+    }
+
+
+    @Test
+    @DisplayName("hateCarousel()은 재시도 초과 시 CarouselException 예외를 발생시킨다")
+    void testRetryExceeded_throwsCarouselException_hate() throws InterruptedException {
+
+        // given: 항상 예외 발생하도록 스텁 설정
+        doThrow(new jakarta.persistence.OptimisticLockException("강제 예외"))
+                .when(carouselServiceImpl)
+                .hateCarousel(any(User.class), anyLong());
+
+        // when & then
+        CarouselException thrown = org.junit.jupiter.api.Assertions.assertThrows(
+                CarouselException.class,
+                () -> carouselOptimisticLockFacade.hateCarousel(savedUser, savedCarousel.getId())
         );
 
         assertThat(thrown.getErrorCode()).isEqualTo(ErrorCode.CAROUSEL_RETRY_EXCEPTION);
