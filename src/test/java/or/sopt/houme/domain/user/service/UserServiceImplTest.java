@@ -15,8 +15,12 @@ import or.sopt.houme.domain.user.controller.dto.UserImageHistoryListResponse;
 import or.sopt.houme.domain.user.entity.User;
 import or.sopt.houme.domain.user.repository.UserRepository;
 import or.sopt.houme.global.api.ErrorCode;
+import or.sopt.houme.global.api.handler.GenerateImageException;
+import or.sopt.houme.global.api.handler.HouseException;
+import or.sopt.houme.global.api.handler.TagException;
 import or.sopt.houme.global.api.handler.UserException;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -35,15 +39,39 @@ class UserServiceImplTest {
 
     private final UserServiceImpl userService = new UserServiceImpl(userRepository, houseRepository, tagRepository, generateImageRepository);
 
-    @Test
-    @DisplayName("✅ 마이페이지 유저 정보 조회 성공")
-    void getMyPageInfo_success() {
-        // given
-        User user = User.builder()
+    private User user;
+    private House house;
+    private Tag tag;
+    private GenerateImage generateImage;
+
+    @BeforeEach
+    void setUp() {
+        user = User.builder()
                 .id(1L)
                 .name("테스트유저")
                 .build();
 
+        house = House.builder()
+                .user(user)
+                .form(Form.APARTMENT)
+                .equilibrium(Equilibrium.UNDER_5)
+                .build();
+
+        tag = Tag.builder()
+                .tagName("모던")
+                .build();
+
+        generateImage = GenerateImage.builder()
+                .id(100L)
+                .url("https://cdn.com/image.png")
+                .house(house)
+                .build();
+    }
+
+    @Test
+    @DisplayName("✅ 마이페이지 유저 정보 조회 성공")
+    void getMyPageInfo_success() {
+        // given
         given(userRepository.findById(1L)).willReturn(Optional.of(user));
         given(userRepository.countByMemberIdAndStatus(1L)).willReturn(10L);
 
@@ -140,5 +168,53 @@ class UserServiceImplTest {
         assertThat(response.tasteTag()).isEqualTo("모던");
         assertThat(response.name()).isEqualTo("테스트유저");
         assertThat(response.generatedImageUrl()).isEqualTo("https://example.com/image.png");
+    }
+
+    @Test
+    @DisplayName("❌ house를 찾을 수 없는 경우 예외 발생")
+    void getImageHistoryResultPage_notFoundHouse() {
+        // given
+        given(userRepository.findById(1L)).willReturn(Optional.of(user));
+        given(houseRepository.findHouseByUserIdAndImageId(user.getId(), generateImage.getId()))
+                .willReturn(Optional.empty());
+
+        // when & then
+        assertThatThrownBy(() -> userService.getImageHistoryResultPage(user, generateImage.getId()))
+                .isInstanceOf(HouseException.class)
+                .hasMessageContaining("집 객체를 찾을 수 없습니다.");
+    }
+
+    @Test
+    @DisplayName("❌ tag를 찾을 수 없는 경우 예외 발생")
+    void getImageHistoryResultPage_notFoundTag() {
+        // given
+        given(userRepository.findById(1L)).willReturn(Optional.of(user));
+        given(houseRepository.findHouseByUserIdAndImageId(user.getId(), generateImage.getId()))
+                .willReturn(Optional.of(house));
+        given(tagRepository.findTagByUserIdAndImageId(user.getId(), generateImage.getId()))
+                .willReturn(Optional.empty());
+
+        // when & then
+        assertThatThrownBy(() -> userService.getImageHistoryResultPage(user, generateImage.getId()))
+                .isInstanceOf(TagException.class)
+                .hasMessageContaining("태그 객체를 찾을 수 없습니다.");
+    }
+
+    @Test
+    @DisplayName("❌ generateImage를 찾을 수 없는 경우 예외 발생")
+    void getImageHistoryResultPage_notFoundGenerateImage() {
+        // given
+        given(userRepository.findById(1L)).willReturn(Optional.of(user));
+        given(houseRepository.findHouseByUserIdAndImageId(user.getId(), generateImage.getId()))
+                .willReturn(Optional.of(house));
+        given(tagRepository.findTagByUserIdAndImageId(user.getId(), generateImage.getId()))
+                .willReturn(Optional.of(tag));
+        given(generateImageRepository.findGenerateImageByUserIdAndImageId(user.getId(), generateImage.getId()))
+                .willReturn(Optional.empty());
+
+        // when & then
+        assertThatThrownBy(() -> userService.getImageHistoryResultPage(user, generateImage.getId()))
+                .isInstanceOf(GenerateImageException.class)
+                .hasMessageContaining("생성된 이미지 객체를 찾을 수 없습니다.");
     }
 }
