@@ -7,15 +7,14 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 
-@Getter
+@Data
 @JsonIgnoreProperties(ignoreUnknown = true)
 @AllArgsConstructor
 @NoArgsConstructor
 public class OpenAiResponse {
     private List<ImageData> data;
 
-    @Getter
-    @Setter
+    @Data
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static class ImageData {
         private String url;
