@@ -92,6 +92,12 @@ dependencies {
     annotationProcessor "com.querydsl:querydsl-apt:5.0.0:jakarta"
     annotationProcessor "jakarta.annotation:jakarta.annotation-api"
     annotationProcessor "jakarta.persistence:jakarta.persistence-api"
+
+    // Bean Validation Provider
+    testImplementation 'org.hibernate.validator:hibernate-validator:8.0.1.Final'
+
+    // EL (Expression Language) 구현체
+    testImplementation 'org.glassfish:jakarta.el:4.0.2'
 }
 
 def querydslDir = 'src/main/generated'
