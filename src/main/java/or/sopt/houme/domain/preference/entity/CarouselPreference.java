@@ -9,7 +9,8 @@ import or.sopt.houme.domain.carousel.entity.Carousel;
 @Getter
 @AllArgsConstructor
 @Builder
-@Table(name = "carousel_preferences")
+@Table(name = "carousel_preferences",
+        uniqueConstraints = @UniqueConstraint(columnNames = {"user_id", "carousel_id"}))
 public class CarouselPreference {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -22,4 +23,16 @@ public class CarouselPreference {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "carousel_id")
     private Carousel carousel;
+
+    @Column(name = "user_id")
+    private Long userId;
+
+    public static CarouselPreference of(Preference preference, Carousel carousel,Long userId) {
+        return CarouselPreference.builder()
+                .preference(preference)
+                .carousel(carousel)
+                .userId(userId)
+                .build();
+    }
+
 }
