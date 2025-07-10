@@ -2,8 +2,13 @@ package or.sopt.houme.domain.user.service;
 
 import or.sopt.houme.domain.generateImage.entity.GenerateImage;
 import or.sopt.houme.domain.generateImage.repository.GenerateImageRepository;
+import or.sopt.houme.domain.house.entity.House;
+import or.sopt.houme.domain.house.entity.enums.Equilibrium;
+import or.sopt.houme.domain.house.entity.enums.Form;
 import or.sopt.houme.domain.house.repository.HouseRepository;
+import or.sopt.houme.domain.taste.entity.Tag;
 import or.sopt.houme.domain.taste.repository.TagRepository;
+import or.sopt.houme.domain.user.controller.dto.ImageHistoryResultPageResponse;
 import or.sopt.houme.domain.user.controller.dto.MyPageInfoResponse;
 import or.sopt.houme.domain.user.controller.dto.UserImageHistoryDTO;
 import or.sopt.houme.domain.user.controller.dto.UserImageHistoryListResponse;
@@ -21,7 +26,7 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.BDDMockito.*;
 
-class UserServiceTest {
+class UserServiceImplTest {
 
     private final UserRepository userRepository = mock(UserRepository.class);
     private final HouseRepository houseRepository = mock(HouseRepository.class);
@@ -94,5 +99,46 @@ class UserServiceTest {
         assertThat(response).isNotNull();
         assertThat(response.histories()).hasSize(2);
         assertThat(response.histories().get(0).generatedImageUrl()).isEqualTo("url1.png");
+    }
+
+    @Test
+    @DisplayName("✅ 마이페이지 이미지 히스토리 결과 페이지 조회 성공")
+    void getImageHistoryResultPage_success() {
+        // given
+        Long userId = 1L;
+        Long imageId = 10L;
+
+        User user = User.builder()
+                .id(userId)
+                .name("테스트유저")
+                .build();
+
+        House house = House.builder()
+                .form(Form.OFFICETEL)
+                .equilibrium(Equilibrium.UNDER_5)
+                .build();
+
+        Tag tag = Tag.builder()
+                .tagName("모던")
+                .build();
+
+        GenerateImage generateImage = GenerateImage.builder()
+                .url("https://example.com/image.png")
+                .build();
+
+        given(userRepository.findById(anyLong())).willReturn(Optional.of(user));
+        given(houseRepository.findHouseByUserIdAndImageId(userId, imageId)).willReturn(Optional.of(house));
+        given(tagRepository.findTagByUserIdAndImageId(userId, imageId)).willReturn(Optional.of(tag));
+        given(generateImageRepository.findGenerateImageByUserIdAndImageId(userId, imageId)).willReturn(Optional.of(generateImage));
+
+        // when
+        ImageHistoryResultPageResponse response = userService.getImageHistoryResultPage(user, imageId);
+
+        // then
+        assertThat(response.equilibrium()).isEqualTo("UNDER_5");
+        assertThat(response.houseForm()).isEqualTo("OFFICETEL");
+        assertThat(response.tasteTag()).isEqualTo("모던");
+        assertThat(response.name()).isEqualTo("테스트유저");
+        assertThat(response.generatedImageUrl()).isEqualTo("https://example.com/image.png");
     }
 }
