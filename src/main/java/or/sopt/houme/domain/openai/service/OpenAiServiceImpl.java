@@ -68,6 +68,7 @@ public class OpenAiServiceImpl implements OpenAiService {
 
     @Override
     public byte[] getGptImage(OpenAiRequest request) {
+
         OpenAiResponse response = openAIImageClient.generateImage("Bearer " + apiKey, request);
 
         if (response.getData() == null || response.getData().isEmpty()) {
