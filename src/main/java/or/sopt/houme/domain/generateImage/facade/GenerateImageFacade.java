@@ -16,6 +16,7 @@ import or.sopt.houme.domain.prompt.dto.PromptFurnitureListDTO;
 import or.sopt.houme.domain.prompt.dto.PromptRequestDTO;
 import or.sopt.houme.domain.user.entity.User;
 import or.sopt.houme.global.api.ErrorCode;
+import or.sopt.houme.global.api.GeneralException;
 import or.sopt.houme.global.api.handler.GenerateImageException;
 import or.sopt.houme.global.dto.ImageUploadResponseDTO;
 import org.springframework.stereotype.Component;
@@ -44,18 +45,30 @@ public class GenerateImageFacade {
             // 크레딧 감소
             creditService.decreaseCredit(user);
 
-            // update Activity
-            House house = houseService.updateHouseActivity
-                    (generateImageRequest.houseId(), Activity.valueOf(generateImageRequest.activity()));
+            Activity activity;
+            try {
+                    activity = Activity.valueOf(generateImageRequest.activity());
+            } catch (IllegalArgumentException e){
+                    throw new GeneralException(ErrorCode.NOT_VALID_EXCEPTION);
+            }
+            // 주요 활동 업데이트
+            House house = houseService.updateHouseActivity(generateImageRequest.houseId(), activity);
 
             // 가구 식별자 ID
             PromptFurnitureListDTO promptFurnitureListDTO = PromptFurnitureListDTO.of(generateImageRequest.selectiveIds());
+
+            Equilibrium equilibrium;
+            try {
+                equilibrium = Equilibrium.valueOf(generateImageRequest.equilibrium());
+            } catch (IllegalArgumentException e){
+                throw new GeneralException(ErrorCode.NOT_VALID_EXCEPTION);
+            }
 
             PromptRequestDTO promptRequestDTO = PromptRequestDTO.of(
                     generateImageRequest.floorPlan().floorPlanId(),
                     generateImageRequest.floorPlan().isMirror(),
                     generateImageRequest.moodBoardId(),
-                    Equilibrium.valueOf(generateImageRequest.equilibrium()),
+                    equilibrium,
                     promptFurnitureListDTO
             );
 
@@ -71,6 +84,8 @@ public class GenerateImageFacade {
             user.updateHasGeneratedImage();
 
             return ImageInfoResponse.of(generateImage.getId(), generateImage.getUrl());
+        } catch (GenerateImageException e) {
+          throw e;
         } catch (Exception e){
             log.info("Image 생성 중 오류 발생 {}", e.getMessage());
             throw new GenerateImageException(ErrorCode.GENERATED_IMAGE_EXCEPTION);
