@@ -2,6 +2,7 @@ package or.sopt.houme.domain.preference.service;
 
 import or.sopt.houme.domain.preference.entity.Preference;
 import or.sopt.houme.domain.preference.repository.PreferenceRepository;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +22,13 @@ class PreferenceServiceImplTest {
     @Autowired
     PreferenceServiceImpl preferenceService;
 
+    @Autowired
+    PreferenceRepository preferenceRepository;
+
+    @BeforeEach
+    void setUp() {
+        preferenceRepository.deleteAll();
+    }
     @Test
     @DisplayName("좋아요 객체를 저장 할 수 있다.")
     void createPreference() {
