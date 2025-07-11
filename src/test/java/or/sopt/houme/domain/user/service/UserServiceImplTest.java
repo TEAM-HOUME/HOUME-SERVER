@@ -69,7 +69,7 @@ class UserServiceImplTest {
     }
 
     @Test
-    @DisplayName("✅ 마이페이지 유저 정보 조회 성공")
+    @DisplayName("마이페이지 유저 정보 조회 성공")
     void getMyPageInfo_success() {
         // given
         given(userRepository.findById(1L)).willReturn(Optional.of(user));
@@ -83,7 +83,7 @@ class UserServiceImplTest {
     }
 
     @Test
-    @DisplayName("❌ 유저 정보가 없을 경우 예외 발생")
+    @DisplayName("유저 정보가 없을 경우 예외 발생")
     void getMyPageInfo_userNotFound() {
         // given
         User user = User.builder().id(99L).build();
@@ -96,7 +96,7 @@ class UserServiceImplTest {
     }
 
     @Test
-    @DisplayName("✅ 유저의 이미지 생성 이력 조회 성공")
+    @DisplayName("유저의 이미지 생성 이력 조회 성공")
     void getUserImageHistoryList_Success() {
         // given
         User mockUser = User.builder().id(1L).build();
@@ -130,7 +130,7 @@ class UserServiceImplTest {
     }
 
     @Test
-    @DisplayName("✅ 마이페이지 이미지 히스토리 결과 페이지 조회 성공")
+    @DisplayName("마이페이지 이미지 히스토리 결과 페이지 조회 성공")
     void getImageHistoryResultPage_success() {
         // given
         Long userId = 1L;
@@ -171,7 +171,7 @@ class UserServiceImplTest {
     }
 
     @Test
-    @DisplayName("❌ house를 찾을 수 없는 경우 예외 발생")
+    @DisplayName("house를 찾을 수 없는 경우 예외 발생")
     void getImageHistoryResultPage_notFoundHouse() {
         // given
         given(userRepository.findById(1L)).willReturn(Optional.of(user));
@@ -185,7 +185,7 @@ class UserServiceImplTest {
     }
 
     @Test
-    @DisplayName("❌ tag를 찾을 수 없는 경우 예외 발생")
+    @DisplayName("tag를 찾을 수 없는 경우 예외 발생")
     void getImageHistoryResultPage_notFoundTag() {
         // given
         given(userRepository.findById(1L)).willReturn(Optional.of(user));
@@ -201,7 +201,7 @@ class UserServiceImplTest {
     }
 
     @Test
-    @DisplayName("❌ generateImage를 찾을 수 없는 경우 예외 발생")
+    @DisplayName("generateImage를 찾을 수 없는 경우 예외 발생")
     void getImageHistoryResultPage_notFoundGenerateImage() {
         // given
         given(userRepository.findById(1L)).willReturn(Optional.of(user));
