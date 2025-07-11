@@ -50,4 +50,9 @@ public class House {
     // 완성된 프롬프트를 저장합니다
     @Column(name = "house_prompt", columnDefinition = "TEXT", nullable = true)
     private String housePrompt;
+
+    // Activity 업데이트 하기
+    public void updateActivity(Activity activity) {
+        this.activity = activity;
+    }
 }

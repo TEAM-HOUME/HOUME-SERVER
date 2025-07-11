@@ -4,7 +4,6 @@ import jakarta.persistence.EntityManager;
 import or.sopt.houme.domain.credit.entity.Credit;
 import or.sopt.houme.domain.credit.entity.CreditStatus;
 import or.sopt.houme.domain.generateImage.entity.GenerateImage;
-import or.sopt.houme.domain.generateImage.entity.Type;
 import or.sopt.houme.domain.house.entity.House;
 import or.sopt.houme.domain.house.entity.enums.Activity;
 import or.sopt.houme.domain.house.entity.enums.Equilibrium;
@@ -83,7 +82,6 @@ class UserRepositoryImplTest {
                 .filename("image.png")
                 .originalFilename("original-image.png")
                 .fileExtension("png")
-                .type(Type.PNG) // 예: Type은 ENUM이니 실제 enum 값에 맞게 수정
                 .house(mockHouse) // 이미 생성된 House mock 객체
                 .build();
         em.persist(mockGenerateImage);

@@ -2,7 +2,6 @@ package or.sopt.houme.domain.generateImage.repository;
 
 import jakarta.persistence.EntityManager;
 import or.sopt.houme.domain.generateImage.entity.GenerateImage;
-import or.sopt.houme.domain.generateImage.entity.Type;
 import or.sopt.houme.domain.house.entity.House;
 import or.sopt.houme.domain.house.entity.enums.Activity;
 import or.sopt.houme.domain.house.entity.enums.Equilibrium;
@@ -22,7 +21,6 @@ import java.time.LocalDate;
 import java.util.Optional;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
 
 @DataJpaTest
 @Import({GenerateImageRepositoryImpl.class, QuerydslConfig.class})
@@ -67,7 +65,6 @@ class GenerateImageRepositoryImplTest {
                 .filename("image.png")
                 .originalFilename("origin-image.png")
                 .fileExtension("png")
-                .type(Type.PNG)
                 .house(house)
                 .build();
         em.persist(generateImage);

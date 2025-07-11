@@ -45,9 +45,11 @@ class PromptServiceImplTest {
         Long floorPlanId = 1L;
         Long tasteId = 2L;
         List<Long> furnitureIds = List.of(10L, 20L);
+        boolean isMirror = false;
 
         PromptRequestDTO requestDTO = PromptRequestDTO.of(
                 floorPlanId,
+                isMirror,
                 tasteId,
                 Equilibrium.UNDER_5,
                 new PromptFurnitureListDTO(furnitureIds)

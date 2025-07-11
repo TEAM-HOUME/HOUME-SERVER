@@ -7,6 +7,7 @@ import or.sopt.houme.domain.house.dto.request.HouseSelectRequest;
 import or.sopt.houme.domain.house.dto.response.HouseOptionsResponse;
 import or.sopt.houme.domain.house.entity.House;
 import or.sopt.houme.domain.house.entity.InvalidHouseRequest;
+import or.sopt.houme.domain.house.entity.enums.Activity;
 import or.sopt.houme.domain.house.entity.enums.Equilibrium;
 import or.sopt.houme.domain.house.entity.enums.Form;
 import or.sopt.houme.domain.house.entity.enums.Structure;
@@ -91,6 +92,18 @@ public class HouseServiceImpl implements HouseService {
                 .user(user)
                 .build();
         houseRepository.save(house);
+    }
+
+    // house activity 업데이트
+    @Transactional
+    @Override
+    public House updateHouseActivity(Long houseId, Activity activity) {
+
+        House house = houseRepository.findById(houseId)
+                .orElseThrow(() -> new GeneralException(ErrorCode.NOT_FOUND_HOUSE));
+
+        house.updateActivity(activity);
+        return houseRepository.save(house);
     }
 
     // 유효하지 않은 요청일 때 log 저장

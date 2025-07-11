@@ -2,7 +2,6 @@ package or.sopt.houme.domain.taste.repository;
 
 import jakarta.persistence.EntityManager;
 import or.sopt.houme.domain.generateImage.entity.GenerateImage;
-import or.sopt.houme.domain.generateImage.entity.Type;
 import or.sopt.houme.domain.house.entity.House;
 import or.sopt.houme.domain.house.entity.enums.Activity;
 import or.sopt.houme.domain.house.entity.enums.Equilibrium;
@@ -26,7 +25,6 @@ import java.time.LocalDate;
 import java.util.Optional;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
 
 @DataJpaTest
 @Import({TagRepositoryImpl.class, QuerydslConfig.class})
@@ -79,7 +77,6 @@ class TagRepositoryImplTest {
                 .filename("image.png")
                 .originalFilename("origin.png")
                 .fileExtension("png")
-                .type(Type.PNG)
                 .house(mockHouse)
                 .build();
         em.persist(mockGenerateImage);
@@ -119,7 +116,7 @@ class TagRepositoryImplTest {
     }
 
     @Test
-    @DisplayName("✅ userId와 imageId로 tag 조회 성공")
+    @DisplayName("userId와 imageId로 tag 조회 성공")
     void findTagByUserIdAndImageId_success() {
         // when
         Optional<Tag> result = tagRepositoryImpl.findTagByUserIdAndImageId(mockUser.getId(), mockGenerateImage.getId());
@@ -131,7 +128,7 @@ class TagRepositoryImplTest {
     }
 
     @Test
-    @DisplayName("❌ 존재하지 않는 imageId 조회 시 empty 반환")
+    @DisplayName("존재하지 않는 imageId 조회 시 empty 반환")
     void findTagByUserIdAndImageId_invalidImage() {
         // when
         Optional<Tag> result = tagRepositoryImpl.findTagByUserIdAndImageId(mockUser.getId(), 999L);

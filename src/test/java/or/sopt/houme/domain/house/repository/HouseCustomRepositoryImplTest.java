@@ -2,7 +2,6 @@ package or.sopt.houme.domain.house.repository;
 
 import jakarta.persistence.EntityManager;
 import or.sopt.houme.domain.generateImage.entity.GenerateImage;
-import or.sopt.houme.domain.generateImage.entity.Type;
 import or.sopt.houme.domain.house.entity.House;
 import or.sopt.houme.domain.house.entity.enums.Activity;
 import or.sopt.houme.domain.house.entity.enums.Equilibrium;
@@ -18,13 +17,10 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-
 import java.time.LocalDate;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 @DataJpaTest
 @Import({HouseCustomRepositoryImpl.class, QuerydslConfig.class})
@@ -73,7 +69,6 @@ class HouseCustomRepositoryImplTest {
                 .filename("image.png")
                 .originalFilename("origin.png")
                 .fileExtension("png")
-                .type(Type.PNG)
                 .house(mockHouse)
                 .build();
         em.persist(mockGenerateImage);
