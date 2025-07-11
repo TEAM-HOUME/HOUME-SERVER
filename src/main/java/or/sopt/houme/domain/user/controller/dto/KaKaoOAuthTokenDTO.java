@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 /**
  * JSON 역직렬화 과정에서의
@@ -11,6 +12,7 @@ import lombok.NoArgsConstructor;
  * */
 @Getter
 @NoArgsConstructor
+@Setter
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class KaKaoOAuthTokenDTO {
 

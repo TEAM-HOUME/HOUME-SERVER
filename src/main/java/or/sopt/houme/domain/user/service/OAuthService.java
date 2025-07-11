@@ -24,8 +24,6 @@ import or.sopt.houme.global.config.JWTConfig;
 import or.sopt.houme.global.config.KaKaoConfig;
 import or.sopt.houme.global.jwt.JWTUtil;
 import or.sopt.houme.global.util.CookieUtil;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 
