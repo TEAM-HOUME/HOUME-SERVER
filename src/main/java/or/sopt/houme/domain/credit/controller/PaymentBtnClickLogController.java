@@ -1,5 +1,6 @@
 package or.sopt.houme.domain.credit.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import or.sopt.houme.domain.credit.service.PaymentBtnClickLogService;
@@ -17,6 +18,7 @@ public class PaymentBtnClickLogController {
     private final PaymentBtnClickLogService paymentBtnClickLogService;
 
     @PostMapping(value = "/credits/logs")
+    @Operation(summary = "충전하기 모달창에서 버튼 클릭시 로그 저장 api")
     public ResponseEntity<ApiResponse<Void>> createPaymentBtnClickLog(@AuthenticationPrincipal CustomUserDetails userDetails) {
         paymentBtnClickLogService.createPaymentBtnClickLog(userDetails.getUser());
         return ResponseEntity.ok(ApiResponse.ok(null));
