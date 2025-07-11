@@ -1,19 +1,14 @@
 package or.sopt.houme.domain.user.controller;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import or.sopt.houme.domain.user.controller.dto.CustomUserDetails;
-import or.sopt.houme.domain.user.controller.dto.ImageHistoryResultPageResponse;
-import or.sopt.houme.domain.user.controller.dto.MyPageInfoResponse;
-import or.sopt.houme.domain.user.controller.dto.UserImageHistoryListResponse;
+import or.sopt.houme.domain.user.controller.dto.*;
 import or.sopt.houme.domain.user.service.UserService;
 import or.sopt.houme.domain.user.service.UserServiceImpl;
 import or.sopt.houme.global.api.ApiResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
@@ -40,5 +35,12 @@ public class UserController {
         ImageHistoryResultPageResponse imageHistoryResultPageResponse = userService.getImageHistoryResultPage(userDetails.getUser(), imageId);
 
         return ResponseEntity.ok(ApiResponse.ok(imageHistoryResultPageResponse));
+    }
+
+    @PutMapping(value = "/signup")
+    public ResponseEntity<ApiResponse<Void>> updateUser(@AuthenticationPrincipal CustomUserDetails userDetails, @RequestBody @Valid CreateUserRequest createUserRequest) {
+        userService.updateUser(userDetails.getUser(), createUserRequest);
+
+        return ResponseEntity.ok(ApiResponse.ok(null));
     }
 }

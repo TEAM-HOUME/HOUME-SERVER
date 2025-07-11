@@ -7,10 +7,7 @@ import or.sopt.houme.domain.house.entity.House;
 import or.sopt.houme.domain.house.repository.HouseRepository;
 import or.sopt.houme.domain.taste.entity.Tag;
 import or.sopt.houme.domain.taste.repository.TagRepository;
-import or.sopt.houme.domain.user.controller.dto.ImageHistoryResultPageResponse;
-import or.sopt.houme.domain.user.controller.dto.MyPageInfoResponse;
-import or.sopt.houme.domain.user.controller.dto.UserImageHistoryDTO;
-import or.sopt.houme.domain.user.controller.dto.UserImageHistoryListResponse;
+import or.sopt.houme.domain.user.controller.dto.*;
 import or.sopt.houme.domain.user.entity.User;
 import or.sopt.houme.domain.user.repository.UserRepository;
 import or.sopt.houme.global.api.ErrorCode;
@@ -25,12 +22,14 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final HouseRepository houseRepository;
     private final TagRepository tagRepository;
     private final GenerateImageRepository generateImageRepository;
 
+    @Override
     @Transactional(readOnly = true)
     public MyPageInfoResponse getMyPageInfo(User user) {
         User findUser = findUser(user);
@@ -39,6 +38,7 @@ public class UserServiceImpl implements UserService {
         return MyPageInfoResponse.of(name, creditCount);
     }
 
+    @Override
     @Transactional(readOnly = true)
     public UserImageHistoryListResponse getUserImageHistoryList(User user) {
         User findUser = findUser(user);
@@ -47,6 +47,7 @@ public class UserServiceImpl implements UserService {
         return UserImageHistoryListResponse.of(histories);
     }
 
+    @Override
     @Transactional(readOnly = true)
     public ImageHistoryResultPageResponse getImageHistoryResultPage(User user, Long imageId) {
         User findUser = findUser(user);
@@ -55,6 +56,12 @@ public class UserServiceImpl implements UserService {
         GenerateImage generateImage = generateImageRepository.findGenerateImageByUserIdAndImageId(findUser.getId(), imageId).orElseThrow(() -> new GenerateImageException(ErrorCode.NOT_FOUND_GENERATE_IMAGE_ENTITY));
 
         return ImageHistoryResultPageResponse.of(house.getEquilibrium().toString(), house.getForm().toString(), tag.getTagName(), findUser.getName(), generateImage.getUrl());
+    }
+
+    @Override
+    public void updateUser(User user, CreateUserRequest createUserRequest) {
+        User findUser = findUser(user);
+        findUser.updateUserFromSignUp(createUserRequest.name(), createUserRequest.birthday(), createUserRequest.gender());
     }
 
     private User findUser(User user) {
