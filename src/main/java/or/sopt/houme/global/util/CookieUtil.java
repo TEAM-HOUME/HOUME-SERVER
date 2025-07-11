@@ -16,7 +16,7 @@ public class CookieUtil {
 
     public static void addSameSiteCookie(HttpServletResponse response, String name, String value, int maxAgeSeconds, boolean secure) {
         String cookieValue = String.format(
-                "%s=%s; Path=/; Max-Age=%d; HttpOnly%s; SameSite=None",
+                "%s=%s; Path=/; Max-Age=%d; Domain=.houme.kr; HttpOnly%s; SameSite=None",
                 name,
                 value,
                 maxAgeSeconds,
@@ -25,5 +25,6 @@ public class CookieUtil {
 
         response.addHeader("Set-Cookie", cookieValue);
     }
+
 
 }
