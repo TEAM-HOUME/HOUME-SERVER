@@ -36,10 +36,10 @@ public class HouseController {
     @Operation(summary = "집 구조 선택 API",
             description = "집 구조를 선택받고 저장합니다. (주거형태, 공간구조, 평형) 옵션들을 저장합니다.")
     @PostMapping("/housing-selections")
-    public ResponseEntity<ApiResponse<Void>>  housingSelections(@AuthenticationPrincipal CustomUserDetails userDetails,
+    public ResponseEntity<ApiResponse<Long>>  housingSelections(@AuthenticationPrincipal CustomUserDetails userDetails,
                                                                 @Valid @RequestBody HouseSelectRequest houseSelectRequest) {
 
-        houseService.selectHouseOptions(userDetails.getUser(), houseSelectRequest);
-        return ResponseEntity.ok(ApiResponse.ok(null));
+        Long houseId = houseService.selectHouseOptions(userDetails.getUser(), houseSelectRequest);
+        return ResponseEntity.ok(ApiResponse.ok(houseId));
     }
 }

@@ -13,7 +13,7 @@ public interface HouseService {
     HouseOptionsResponse getHouseOptionsResponse();
 
     // 집 구조 선택 서비스
-    void selectHouseOptions(User user, HouseSelectRequest houseSelectRequest);
+    Long selectHouseOptions(User user, HouseSelectRequest houseSelectRequest);
 
     // 가장 최근에 등록한 house 찾기
     LatestHouseConditionDTO findLatestHouse(User user);
