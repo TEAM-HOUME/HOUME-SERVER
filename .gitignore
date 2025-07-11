@@ -42,3 +42,6 @@ src/main/resources/application.yml
 src/main/resources/application-blue.yml
 src/main/resources/application-green.yml
 src/main/generated
+
+### initialize 무시 ###
+**/*initialize*.java
