@@ -1,10 +1,9 @@
 package or.sopt.houme.domain.user.entity;
+
 import jakarta.persistence.*;
 import lombok.*;
 import or.sopt.houme.domain.credit.entity.Credit;
 import or.sopt.houme.domain.house.entity.House;
-import or.sopt.houme.global.api.ErrorCode;
-import or.sopt.houme.global.api.handler.UserException;
 import or.sopt.houme.global.entity.BaseEntity;
 
 import java.time.LocalDate;
@@ -65,5 +64,10 @@ public class User extends BaseEntity {
         this.name = name;
         this.birthday = birthday;
         this.gender = gender;
+    }
+
+    // 이미지 생성 여부 update
+    public void updateHasGeneratedImage() {
+        if (!this.hasGeneratedImage) this.hasGeneratedImage = true;
     }
 }

@@ -2,7 +2,9 @@ package or.sopt.houme.domain.generateImage.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import or.sopt.houme.domain.generateImage.dto.request.GenerateImageRequest;
 import or.sopt.houme.domain.house.entity.House;
+import or.sopt.houme.global.dto.ImageUploadResponseDTO;
 import or.sopt.houme.global.entity.BaseEntity;
 
 @Entity
@@ -28,11 +30,18 @@ public class GenerateImage extends BaseEntity {
     @Column(name = "file_extension", nullable = false)
     private String fileExtension;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "type", nullable = false)
-    private Type type;
-
     @OneToOne
     @JoinColumn(name = "house_id")
     private House house;
+
+    // 정적 메서드
+    public static GenerateImage createGenerateImage(ImageUploadResponseDTO request, House house) {
+        return GenerateImage.builder()
+                .url(request.getImageLink())
+                .filename(request.getFilename())
+                .originalFilename(request.getOriginalFilename())
+                .fileExtension(request.getContentType())
+                .house(house)
+                .build();
+    }
 }

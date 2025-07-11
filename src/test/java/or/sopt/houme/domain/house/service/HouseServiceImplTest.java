@@ -4,6 +4,7 @@ import or.sopt.houme.domain.house.dto.HouseOptionDTO;
 import or.sopt.houme.domain.house.dto.LatestHouseConditionDTO;
 import or.sopt.houme.domain.house.dto.response.HouseOptionsResponse;
 import or.sopt.houme.domain.house.entity.House;
+import or.sopt.houme.domain.house.entity.enums.Activity;
 import or.sopt.houme.domain.house.entity.enums.Equilibrium;
 import or.sopt.houme.domain.house.entity.enums.Form;
 import or.sopt.houme.domain.house.entity.enums.Structure;
@@ -12,6 +13,7 @@ import or.sopt.houme.domain.user.entity.*;
 import or.sopt.houme.domain.user.repository.UserRepository;
 import or.sopt.houme.global.api.ErrorCode;
 import or.sopt.houme.global.api.GeneralException;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,6 +42,36 @@ class HouseServiceImplTest {
 
     @Autowired
     private HouseRepository houseRepository;
+
+    private User savedUser;
+    private House savedHouse;
+
+    @BeforeEach
+    void setUp() {
+        savedUser = userRepository.save(
+                User.builder()
+                        .name("test_user")
+                        .birthday(LocalDate.of(2001, 1, 10))
+                        .gender(Gender.MALE)
+                        .email("example.com")
+                        .password(null)
+                        .hasGeneratedImage(false)
+                        .socialType(SocialType.KAKAO)
+                        .status(UserStatus.ACTIVE)
+                        .role(Role.ROLE_USER)
+                        .build()
+        );
+
+        savedHouse = houseRepository.save(
+                House.builder()
+                        .form(Form.OFFICETEL)
+                        .structure(Structure.OPEN_ONE_ROOM)
+                        .equilibrium(Equilibrium.UNDER_5)
+                        .isValid(true)
+                        .user(savedUser)
+                        .build()
+        );
+    }
 
     @Test
     @DisplayName("Enum → DTO 변환: housingTypes, roomTypes, areaTypes가 모두 Enum 기준으로 정확하게 반환된다.")
@@ -77,33 +109,9 @@ class HouseServiceImplTest {
     @Test
     @DisplayName("User를 받아서 최근에 입력한 House 조건들을 받을 수 있다.")
     void getHouseOptionsResponse_ShouldReturnValidHouse() {
-        // Given
-        User user = User.builder()
-                .name("test_user")
-                .birthday(LocalDate.of(2001, 1, 10))
-                .gender(Gender.MALE)
-                .email("example.com")
-                .password(null)
-                .hasGeneratedImage(false)
-                .socialType(SocialType.KAKAO)
-                .status(UserStatus.ACTIVE)
-                .role(Role.ROLE_USER)
-                .build();
-
-        userRepository.save(user);
-
-        House house = House.builder()
-                .form(Form.OFFICETEL)
-                .structure(Structure.OPEN_ONE_ROOM)
-                .equilibrium(Equilibrium.UNDER_5)
-                .isValid(true)
-                .user(user)
-                .build();
-
-        houseRepository.save(house);
 
         // When
-        LatestHouseConditionDTO latestHouse = houseService.findLatestHouse(user);
+        LatestHouseConditionDTO latestHouse = houseService.findLatestHouse(savedUser);
 
         // Then
         assertThat(latestHouse).isNotNull();
@@ -117,22 +125,24 @@ class HouseServiceImplTest {
     void getHousingPlanNoHouse() {
         // Given
         User user = User.builder()
-                .name("test_user")
-                .birthday(LocalDate.of(2001, 1, 10))
-                .gender(Gender.MALE)
-                .email("example.com")
-                .password(null)
-                .hasGeneratedImage(false)
-                .socialType(SocialType.KAKAO)
-                .status(UserStatus.ACTIVE)
-                .role(Role.ROLE_USER)
+                .id(2L)
                 .build();
-
-        userRepository.save(user);
 
         // When // Then
         assertThatThrownBy(() -> houseService.findLatestHouse(user))
                 .isInstanceOf(GeneralException.class)
                 .hasMessageContaining(ErrorCode.NOT_FOUND_HOUSE.getMsg());
+    }
+
+    @Test
+    @DisplayName("house activity 업데이트")
+    void updateHouseActivity() {
+
+        // When
+        House house = houseService.updateHouseActivity(savedHouse.getId(), Activity.RELAXING);
+
+        // Then
+        assertThat(house).isNotNull();
+        assertThat(house.getActivity()).isEqualTo(Activity.RELAXING);
     }
 }
