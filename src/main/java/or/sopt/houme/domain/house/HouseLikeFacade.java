@@ -30,7 +30,7 @@ public class HouseLikeFacade {
         House house = generateImage.getHouse();
 
         // 본인이 생성한 이미지가 아니라면 에러 처리
-        if (house.getUser().getId().equals(user.getId())) {
+        if (!house.getUser().getId().equals(user.getId())) {
             throw new UserException(ErrorCode.USER_ROLE_EXCEPTION);
         }
         // 좋아요 생성

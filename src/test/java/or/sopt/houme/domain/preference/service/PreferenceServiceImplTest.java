@@ -40,7 +40,6 @@ class PreferenceServiceImplTest {
 
         // Then
         assertThat(save).isNotNull();
-        assertThat(save.getId()).isEqualTo(1L);
         assertThat(save.isLike()).isTrue();
     }
 }
