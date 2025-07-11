@@ -66,7 +66,8 @@ public enum ErrorCode {
     CAROUSEL_NOT_FOUND(HttpStatus.NOT_FOUND,40408,"캐러셀을 찾을 수 없습니다"),
     CAROUSEL_PREFERENCE_NOT_FOUND(HttpStatus.NOT_FOUND,40409,"캐러셀 선호도 레코드를 찾을 수 없습니다"),
 
-
+    // 크레딧 관련 예외
+    CREDIT_NOT_FOUND(HttpStatus.NOT_FOUND, 40410, "크레딧을 찾을 수 없습니다."),
     /**
      * 405 METHOD_NOT_ALLOWED
      */
@@ -96,8 +97,10 @@ public enum ErrorCode {
     CAROUSEL_INTERRUPT_EXCEPTION(HttpStatus.INTERNAL_SERVER_ERROR,50011,"캐러셀 API 실행 중, INTERRUPT_EXCEPTION 가 발생하였습니다. 서버 개발자에게 문의해주세요"),
 
     // 크레딧 생성 관련 예외
-    CREDIT_CREATE_EXCEPTION(HttpStatus.INTERNAL_SERVER_ERROR,50012,"크레딧 생성 과정 중 예외가 발생하였습니다.")
-    ;
+    CREDIT_CREATE_EXCEPTION(HttpStatus.INTERNAL_SERVER_ERROR,50012,"크레딧 생성 과정 중 예외가 발생하였습니다."),
+
+    // 이미지 생성 중
+    GENERATED_IMAGE_EXCEPTION(HttpStatus.INTERNAL_SERVER_ERROR, 50013, "이미지 생성 중 예외가 발생하였습니다.");
 
     private final HttpStatus status;
     private final int code;

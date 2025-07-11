@@ -65,4 +65,9 @@ public class User extends BaseEntity {
         this.birthday = birthday;
         this.gender = gender;
     }
+
+    // 이미지 생성 여부 update
+    public void updateHasGeneratedImage() {
+        if (!this.hasGeneratedImage) this.hasGeneratedImage = true;
+    }
 }

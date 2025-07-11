@@ -26,9 +26,10 @@ public class GenerateImageController {
             description = "사용자가 요청한 내용을 기반으로 새로운 이미지를 생성합니다. 생성된 이미지는 저장되며, 별도의 조회 API를 통해 확인할 수 있습니다.")
     @PostMapping("/generated-images/generate")
     public ResponseEntity<ApiResponse<ImageInfoResponse>> generateImage(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
             @RequestBody @Valid GenerateImageRequest request){
 
-        ImageInfoResponse imageInfoResponse = generateImageFacade.generateImage(request);
+        ImageInfoResponse imageInfoResponse = generateImageFacade.generateImage(userDetails.getUser(), request);
 
         return ResponseEntity.ok(ApiResponse.ok(imageInfoResponse));
     }
