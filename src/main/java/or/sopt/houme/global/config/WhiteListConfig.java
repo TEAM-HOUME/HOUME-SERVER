@@ -33,7 +33,7 @@ public class WhiteListConfig {
         return List.of(
                 "/actuator/health",
                 "/api/v1/env",
-                "image/generate"
+                "/image/generate"
         );
     }
 
