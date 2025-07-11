@@ -8,10 +8,8 @@ import or.sopt.houme.domain.house.entity.enums.Form;
 import or.sopt.houme.domain.house.repository.HouseRepository;
 import or.sopt.houme.domain.taste.entity.Tag;
 import or.sopt.houme.domain.taste.repository.TagRepository;
-import or.sopt.houme.domain.user.controller.dto.ImageHistoryResultPageResponse;
-import or.sopt.houme.domain.user.controller.dto.MyPageInfoResponse;
-import or.sopt.houme.domain.user.controller.dto.UserImageHistoryDTO;
-import or.sopt.houme.domain.user.controller.dto.UserImageHistoryListResponse;
+import or.sopt.houme.domain.user.controller.dto.*;
+import or.sopt.houme.domain.user.entity.Gender;
 import or.sopt.houme.domain.user.entity.User;
 import or.sopt.houme.domain.user.repository.UserRepository;
 import or.sopt.houme.global.api.ErrorCode;
@@ -24,10 +22,12 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.BDDMockito.*;
 
 class UserServiceImplTest {
@@ -69,7 +69,7 @@ class UserServiceImplTest {
     }
 
     @Test
-    @DisplayName("✅ 마이페이지 유저 정보 조회 성공")
+    @DisplayName("마이페이지 유저 정보 조회 성공")
     void getMyPageInfo_success() {
         // given
         given(userRepository.findById(1L)).willReturn(Optional.of(user));
@@ -83,7 +83,7 @@ class UserServiceImplTest {
     }
 
     @Test
-    @DisplayName("❌ 유저 정보가 없을 경우 예외 발생")
+    @DisplayName("유저 정보가 없을 경우 예외 발생")
     void getMyPageInfo_userNotFound() {
         // given
         User user = User.builder().id(99L).build();
@@ -96,7 +96,7 @@ class UserServiceImplTest {
     }
 
     @Test
-    @DisplayName("✅ 유저의 이미지 생성 이력 조회 성공")
+    @DisplayName("유저의 이미지 생성 이력 조회 성공")
     void getUserImageHistoryList_Success() {
         // given
         User mockUser = User.builder().id(1L).build();
@@ -130,7 +130,7 @@ class UserServiceImplTest {
     }
 
     @Test
-    @DisplayName("✅ 마이페이지 이미지 히스토리 결과 페이지 조회 성공")
+    @DisplayName("마이페이지 이미지 히스토리 결과 페이지 조회 성공")
     void getImageHistoryResultPage_success() {
         // given
         Long userId = 1L;
@@ -171,7 +171,7 @@ class UserServiceImplTest {
     }
 
     @Test
-    @DisplayName("❌ house를 찾을 수 없는 경우 예외 발생")
+    @DisplayName("house를 찾을 수 없는 경우 예외 발생")
     void getImageHistoryResultPage_notFoundHouse() {
         // given
         given(userRepository.findById(1L)).willReturn(Optional.of(user));
@@ -185,7 +185,7 @@ class UserServiceImplTest {
     }
 
     @Test
-    @DisplayName("❌ tag를 찾을 수 없는 경우 예외 발생")
+    @DisplayName("tag를 찾을 수 없는 경우 예외 발생")
     void getImageHistoryResultPage_notFoundTag() {
         // given
         given(userRepository.findById(1L)).willReturn(Optional.of(user));
@@ -201,7 +201,7 @@ class UserServiceImplTest {
     }
 
     @Test
-    @DisplayName("❌ generateImage를 찾을 수 없는 경우 예외 발생")
+    @DisplayName("generateImage를 찾을 수 없는 경우 예외 발생")
     void getImageHistoryResultPage_notFoundGenerateImage() {
         // given
         given(userRepository.findById(1L)).willReturn(Optional.of(user));
@@ -216,5 +216,39 @@ class UserServiceImplTest {
         assertThatThrownBy(() -> userService.getImageHistoryResultPage(user, generateImage.getId()))
                 .isInstanceOf(GenerateImageException.class)
                 .hasMessageContaining("생성된 이미지 객체를 찾을 수 없습니다.");
+    }
+
+    @Test
+    @DisplayName("성공적으로_유저정보를_업데이트한다")
+    void updateUser_success() {
+        // given
+        // 요청한 유저의 Id
+        User inputUser = User.builder().id(1L).build();
+
+        // DB에 있는 유저의 필드 값들
+        User dbUser = User.builder()
+                .id(1L)
+                .name(null)
+                .birthday(null)
+                .gender(null)
+                .build();
+
+        // 요청
+        CreateUserRequest request = CreateUserRequest.of(
+                "New Name",
+                Gender.MALE,
+                LocalDate.of(2000, 5, 15)
+        );
+
+        // 유저 모킹
+        given(userRepository.findById(1L)).willReturn(Optional.of(dbUser));
+
+        // when
+        userService.updateUser(inputUser, request);
+
+        // then
+        assertEquals("New Name", dbUser.getName());
+        assertEquals(Gender.MALE, dbUser.getGender());
+        assertEquals(LocalDate.of(2000, 5, 15), dbUser.getBirthday());
     }
 }

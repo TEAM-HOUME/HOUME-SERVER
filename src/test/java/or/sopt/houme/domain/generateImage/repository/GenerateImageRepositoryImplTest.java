@@ -40,7 +40,6 @@ class GenerateImageRepositoryImplTest {
 
     @BeforeEach
     void setUp() {
-        // 👤 유저
         user = User.builder()
                 .name("테스트유저")
                 .email("test@email.com")
@@ -53,7 +52,6 @@ class GenerateImageRepositoryImplTest {
                 .build();
         em.persist(user);
 
-        // 🏠 하우스
         house = House.builder()
                 .user(user)
                 .form(Form.OFFICETEL)
@@ -64,7 +62,6 @@ class GenerateImageRepositoryImplTest {
                 .build();
         em.persist(house);
 
-        // 🖼️ 생성 이미지
         generateImage = GenerateImage.builder()
                 .url("https://cdn.com/image.png")
                 .filename("image.png")
@@ -80,7 +77,7 @@ class GenerateImageRepositoryImplTest {
     }
 
     @Test
-    @DisplayName("✅ userId와 imageId로 GenerateImage 조회 성공")
+    @DisplayName("userId와 imageId로 GenerateImage 조회 성공")
     void findGenerateImageByUserIdAndImageId_success() {
         // when
         Optional<GenerateImage> result = generateImageRepositoryImpl
@@ -93,7 +90,7 @@ class GenerateImageRepositoryImplTest {
     }
 
     @Test
-    @DisplayName("❌ 존재하지 않는 imageId 조회 시 empty 반환")
+    @DisplayName("존재하지 않는 imageId 조회 시 empty 반환")
     void findGenerateImageByUserIdAndImageId_notFound() {
         // when
         Optional<GenerateImage> result = generateImageRepositoryImpl

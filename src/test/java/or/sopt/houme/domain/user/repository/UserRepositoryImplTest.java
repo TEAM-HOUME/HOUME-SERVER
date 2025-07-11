@@ -143,7 +143,7 @@ class UserRepositoryImplTest {
     }
 
     @Test
-    @DisplayName("✅ 사용자 이미지 히스토리 조회 성공")
+    @DisplayName("사용자 이미지 히스토리 조회 성공")
     void getUserImageHistory_Success() {
         // when
         List<UserImageHistoryDTO> result = userRepositoryImpl.getUserImageHistory(mockUser.getId());
@@ -158,7 +158,7 @@ class UserRepositoryImplTest {
     }
 
     @Test
-    @DisplayName("✅ 유저 ID로 이미지 히스토리 1건 조회 성공")
+    @DisplayName("유저 ID로 이미지 히스토리 1건 조회 성공")
     void findImageHistoryById_Success() {
         // when
         Optional<GenerateImage> result = userRepositoryImpl.findImageHistoryById(mockUser.getId());

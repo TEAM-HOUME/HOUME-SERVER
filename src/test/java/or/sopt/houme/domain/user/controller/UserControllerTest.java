@@ -29,7 +29,6 @@ import static org.mockito.BDDMockito.given;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-// ✅ 보안 설정 무시 + TestProfile 사용
 @WebMvcTest(
         controllers = UserController.class,
         excludeAutoConfiguration = {
@@ -81,16 +80,16 @@ class UserControllerTest {
     }
 
     @Test
-    @DisplayName("✅ 마이페이지 유저 정보 조회 성공")
-    @WithMockUser(username = "test@example.com", roles = "USER") // ✅ 요거 추가
+    @DisplayName("마이페이지 유저 정보 조회 성공")
+    @WithMockUser(username = "test@example.com", roles = "USER")
     void getMyPageInfo_Success() throws Exception {
         // Given
         User mockUser = mockUserDetails.getUser();
 
-        // ✅ 정확히 동일한 객체를 넘겨서 mock 동작 유도
+        // 정확히 동일한 객체를 넘겨서 mock 동작 유도
         given(userService.getMyPageInfo(mockUser)).willReturn(mockResponse);
 
-        // ✅ SecurityContext에 수동 주입
+        // SecurityContext에 수동 주입
         UsernamePasswordAuthenticationToken auth =
                 new UsernamePasswordAuthenticationToken(mockUser, null, mockUserDetails.getAuthorities());
         SecurityContextHolder.getContext().setAuthentication(auth);
