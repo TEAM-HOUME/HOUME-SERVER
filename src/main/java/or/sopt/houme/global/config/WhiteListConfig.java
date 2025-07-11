@@ -32,7 +32,8 @@ public class WhiteListConfig {
     public static final List<String> serverWhitelist() {
         return List.of(
                 "/actuator/health",
-                "/api/v1/env"
+                "/api/v1/env",
+                "image/generate"
         );
     }
 
