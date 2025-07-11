@@ -1,0 +1,39 @@
+package or.sopt.houme.domain.furniture.controller;
+
+import io.swagger.v3.oas.annotations.Operation;
+import lombok.RequiredArgsConstructor;
+import or.sopt.houme.domain.furniture.dto.response.FurnitureAndActivityResponse;
+import or.sopt.houme.domain.furniture.service.FurnitureService;
+import or.sopt.houme.global.api.ApiResponse;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
+@RequestMapping("/api/v1")
+@RequiredArgsConstructor
+public class FurnitureController {
+
+    private final FurnitureService furnitureService;
+
+    // 주요활동, 가구들 제공 API
+    @Operation(summary = "주요 활동, 가구 리스트 제공 API",
+            description = "- 주요 활동 (휴식형, 재택근무형, 영화 감상형, 홈카페형)\n" +
+                    "- 가구\n" +
+                    "    - 침대 (싱글, 슈퍼싱글, 더블, 퀸 이상)\n" +
+                    "- 그 외\n" +
+                    "    - 책상\n" +
+                    "    - 이동식 TV\n" +
+                    "    - 서랍장\n" +
+                    "    - 식탁, 의자\n" +
+                    "    - 옷장\n" +
+                    "    - 소파")
+    @GetMapping("/dashboard-info")
+    public ResponseEntity<ApiResponse<FurnitureAndActivityResponse>> getFurnitureAndActivity() {
+
+        FurnitureAndActivityResponse furnitureAndActivity = furnitureService.getFurnitureAndActivity();
+
+        return ResponseEntity.ok(ApiResponse.ok(furnitureAndActivity));
+    }
+}

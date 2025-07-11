@@ -17,21 +17,19 @@ public class Furniture {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "is_required", nullable = false)
-    private boolean isRequired;
-
-    @Enumerated(EnumType.STRING)
-    @Column(name = "bed_type", nullable = false)
-    private BedType bedType;
-
-    @Enumerated(EnumType.STRING)
-    @Column(name = "closet_type", nullable = false)
-    private ClosetType closetType;
-
+    // 가구 프롬프트
     @Column(name = "furniture_prompt", nullable = false)
     private String furniturePrompt;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "selective_furniture_type", nullable = false)
-    private SelectiveFurnitureType selectiveFurnitureType;
+    // 가구 이름 (영어)
+    @Column(name = "furniture_name_eng", nullable = false)
+    private String furnitureNameEng;
+
+    // 가구 이름 (한글)
+    @Column(name = "furniture_name_kr", nullable = false)
+    private String furnitureNameKr;
+    // 가구 타입
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "furniture_type_id", nullable = false)
+    private FurnitureType furnitureType;
 }

@@ -27,18 +27,4 @@ public abstract class BaseEntity {
     @LastModifiedDate
     protected LocalDateTime updatedAt;
 
-    @CreatedBy
-    @Column(updatable = false)
-    protected String createdBy;
-
-    @LastModifiedBy
-    protected String updatedBy;
-
-    // 상태 값을 바꾸는 soft delete 로 사용
-    @Column
-    protected LocalDateTime deletedAt;
-
-    public void softDelete() {
-        this.deletedAt = LocalDateTime.now();
-    }
 }
