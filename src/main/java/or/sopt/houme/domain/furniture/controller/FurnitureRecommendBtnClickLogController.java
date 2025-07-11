@@ -8,7 +8,7 @@ import or.sopt.houme.domain.user.controller.dto.CustomUserDetails;
 import or.sopt.houme.global.api.ApiResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class FurnitureRecommendBtnClickLogController {
     private final FurnitureRecommendBtnClickLogService furnitureRecommendBtnClickLogService;
 
-    @PatchMapping(value = "/furnitures/logs")
+    @PostMapping(value = "/furnitures/logs")
     @Operation(summary = "가구 추천받기 버튼 클릭시 로그 저장 api")
     public ResponseEntity<ApiResponse<Void>> createFurnitureRecommendBtnClickLog(@AuthenticationPrincipal CustomUserDetails userDetails) {
         furnitureRecommendBtnClickLogService.createFurnitureRecommendBtnClickLog(userDetails.getUser());
