@@ -40,8 +40,6 @@ public class OpenAiServiceImpl implements OpenAiService {
     @Override
     public ImageUploadResponseDTO createImage(String prompt) {
 
-        log.info("apiKey: " + apiKey);
-
         // 요청을 위한 객체를 생성
         OpenAiRequest request = OpenAiRequest.of(
                 openAiImageConfig.getModel(),
@@ -70,8 +68,6 @@ public class OpenAiServiceImpl implements OpenAiService {
 
     @Override
     public byte[] getGptImage(OpenAiRequest request) {
-
-        log.info("이미지 출력 시작");
 
         OpenAiResponse response = openAIImageClient.generateImage("Bearer " + apiKey, request);
 
