@@ -16,10 +16,7 @@ import or.sopt.houme.domain.user.entity.Gender;
 import or.sopt.houme.domain.user.entity.User;
 import or.sopt.houme.domain.user.repository.UserRepository;
 import or.sopt.houme.global.api.ErrorCode;
-import or.sopt.houme.global.api.handler.GenerateImageException;
-import or.sopt.houme.global.api.handler.HouseException;
-import or.sopt.houme.global.api.handler.TagException;
-import or.sopt.houme.global.api.handler.UserException;
+import or.sopt.houme.global.api.handler.*;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -296,6 +293,39 @@ class UserServiceImplTest {
         assertEquals(LocalDate.of(2000, 5, 15), dbUser.getBirthday());
 
         verify(creditRepository, times(1)).save(any(Credit.class));
-
     }
+
+
+    @Test
+    @DisplayName("크레딧 저장 중 예외가 발생하면 CreditException을 던진다")
+    void updateUser_credit_create_fail() {
+        // given
+        User inputUser = User.builder().id(1L).build();
+
+        User dbUser = User.builder()
+                .id(1L)
+                .name(null)
+                .birthday(null)
+                .gender(null)
+                .build();
+
+        CreateUserRequest request = CreateUserRequest.of(
+                "New Name",
+                Gender.MALE,
+                LocalDate.of(2000, 5, 15)
+        );
+
+        // 유저 조회는 정상적으로 동작
+        given(userRepository.findById(1L)).willReturn(Optional.of(dbUser));
+
+        // 크레딧 저장 시 RuntimeException 발생하도록 설정
+        willThrow(new RuntimeException("DB error"))
+                .given(creditRepository).save(any(Credit.class));
+
+        // when & then
+        assertThatThrownBy(() -> userService.updateUser(inputUser, request))
+                .isInstanceOf(CreditException.class)
+                .hasMessageContaining("크레딧 생성 과정 중 예외가 발생하였습니다.");
+    }
+
 }
