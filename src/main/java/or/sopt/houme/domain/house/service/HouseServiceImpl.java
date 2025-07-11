@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import or.sopt.houme.domain.house.dto.HouseOptionDTO;
 import or.sopt.houme.domain.house.dto.LatestHouseConditionDTO;
 import or.sopt.houme.domain.house.dto.request.HouseSelectRequest;
+import or.sopt.houme.domain.house.dto.request.IsLikeRequest;
 import or.sopt.houme.domain.house.dto.response.HouseOptionsResponse;
 import or.sopt.houme.domain.house.entity.House;
 import or.sopt.houme.domain.house.entity.InvalidHouseRequest;
@@ -13,9 +14,12 @@ import or.sopt.houme.domain.house.entity.enums.Form;
 import or.sopt.houme.domain.house.entity.enums.Structure;
 import or.sopt.houme.domain.house.repository.HouseRepository;
 import or.sopt.houme.domain.house.repository.InvalidHouseRequestRepository;
+import or.sopt.houme.domain.preference.entity.Preference;
+import or.sopt.houme.domain.preference.entity.PromptPreference;
 import or.sopt.houme.domain.user.entity.User;
 import or.sopt.houme.global.api.ErrorCode;
 import or.sopt.houme.global.api.GeneralException;
+import or.sopt.houme.global.api.handler.HouseException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -104,6 +108,14 @@ public class HouseServiceImpl implements HouseService {
 
         house.updateActivity(activity);
         return houseRepository.save(house);
+    }
+
+
+    // 생성된 이미지 선호도
+    @Override
+    public House findHouseById(long houseId) {
+        return houseRepository.findById(houseId)
+                .orElseThrow(() -> new HouseException(ErrorCode.NOT_FOUND_HOUSE));
     }
 
     // 유효하지 않은 요청일 때 log 저장

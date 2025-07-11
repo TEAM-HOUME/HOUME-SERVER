@@ -1,6 +1,7 @@
 package or.sopt.houme.domain.generateImage.service;
 
 import or.sopt.houme.domain.generateImage.entity.GenerateImage;
+import or.sopt.houme.domain.generateImage.repository.GenerateImageRepository;
 import or.sopt.houme.domain.house.entity.House;
 import or.sopt.houme.domain.house.entity.enums.Equilibrium;
 import or.sopt.houme.domain.house.entity.enums.Form;
@@ -30,6 +31,9 @@ class GenerateImageServiceImplTest {
 
     @Autowired
     private GenerateImageService generateImageService;
+
+    @Autowired
+    private GenerateImageRepository generateImageRepository;
 
     @Autowired
     private HouseRepository houseRepository;
@@ -86,5 +90,35 @@ class GenerateImageServiceImplTest {
         assertThat(generateImage.getFilename()).isEqualTo(fileName);
         assertThat(generateImage.getFileExtension()).isEqualTo(contentType);
         assertThat(generateImage.getOriginalFilename()).isEqualTo(originalFilename);
+    }
+
+    @Test
+    @DisplayName("도면 ID로 조회 할 수 있다.")
+    void findGenerateImageById() {
+        // Given
+        String fileName = "fileName";
+        String originalFilename = "originalFilename";
+        String imageLink = "imageLink";
+        String contentType = "JPG";
+        Long imageId = 1L;
+
+        GenerateImage generateImage = GenerateImage.builder()
+                .filename(fileName)
+                .originalFilename(originalFilename)
+                .url(imageLink)
+                .fileExtension(contentType)
+                .build();
+
+        generateImageRepository.save(generateImage);
+
+        // When
+        GenerateImage generateImage1 = generateImageService.findGenerateImage(imageId);
+
+        // Then
+        assertThat(generateImage1).isNotNull();
+        assertThat(generateImage1.getFilename()).isEqualTo(fileName);
+        assertThat(generateImage1.getFileExtension()).isEqualTo(contentType);
+        assertThat(generateImage1.getOriginalFilename()).isEqualTo(originalFilename);
+        assertThat(generateImage1.getUrl()).isEqualTo(imageLink);
     }
 }
