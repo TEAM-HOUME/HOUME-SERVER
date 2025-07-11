@@ -20,7 +20,6 @@ public class BirthdayValidator implements ConstraintValidator<ValidBirthday, Loc
         }
 
         // 만 14세 이하는 false
-        LocalDate minimumDate = today.minusYears(14);
-        return !birthday.isAfter(minimumDate);
+        return birthday.isBefore(today.minusYears(14)) || birthday.isEqual(today.minusYears(14));
     }
 }
