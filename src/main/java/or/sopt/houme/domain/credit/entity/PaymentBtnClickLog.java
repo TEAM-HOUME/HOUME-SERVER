@@ -19,4 +19,10 @@ public class PaymentBtnClickLog extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private User user;
+
+    public static PaymentBtnClickLog of(User user) {
+        return PaymentBtnClickLog.builder()
+                .user(user)
+                .build();
+    }
 }
