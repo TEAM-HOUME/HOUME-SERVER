@@ -1,0 +1,107 @@
+package or.sopt.houme.domain.user.service;
+
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import or.sopt.houme.domain.user.entity.Role;
+import or.sopt.houme.domain.user.entity.User;
+import or.sopt.houme.domain.user.repository.RefreshTokenRepository;
+import or.sopt.houme.domain.user.repository.UserRepository;
+import or.sopt.houme.domain.user.valid.RefreshTokenValidator;
+import or.sopt.houme.global.config.JWTConfig;
+import or.sopt.houme.global.jwt.JWTUtil;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.*;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+import java.util.Optional;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
+
+@ExtendWith(MockitoExtension.class)
+class JWTServiceTest {
+
+    @InjectMocks
+    private JWTService jwtService;
+
+    @Mock
+    private JWTUtil jwtUtil;
+    @Mock
+    private JWTConfig jwtConfig;
+    @Mock
+    private UserRepository userRepository;
+    @Mock
+    private RefreshTokenRepository refreshTokenRepository;
+    @Mock
+    private RefreshTokenValidator refreshTokenValidator;
+
+    @Mock
+    private HttpServletRequest request;
+    @Mock
+    private HttpServletResponse response;
+
+    @BeforeEach
+    void setUp() {
+    }
+
+    @Test
+    @DisplayName("createToken()은 access-token을 응답 헤더에 설정한다")
+    void createToken_setsAccessTokenInHeader() {
+        // given
+        when(jwtUtil.createJwt(eq("access"), anyLong(), anyString(), anyLong()))
+                .thenReturn("accessToken");
+
+        // when
+        jwtService.createToken(response);
+
+        // then
+        verify(response).setHeader("access-token", "accessToken");
+    }
+
+
+    @Test
+    @DisplayName("refreshRotate()는 리프레시 토큰을 검증하고 새 토큰을 발급 및 저장한다")
+    void refreshRotate_success() {
+        // given
+        Long userId = 1L;
+        User user = User.builder().id(userId).role(Role.ROLE_USER).build();
+
+
+        when(jwtConfig.getAccessTokenValidityInSeconds()).thenReturn(3600L);
+        when(jwtConfig.getRefreshTokenValidityInSeconds()).thenReturn(86400L);
+        when(refreshTokenValidator.validateRefreshToken(request)).thenReturn(userId);
+        when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+
+        when(jwtUtil.createJwt("access", userId, "ROLE_USER", 3600L)).thenReturn("newAccessToken");
+        when(jwtUtil.createJwt("refresh", userId, "ROLE_USER", 86400L)).thenReturn("newRefreshToken");
+
+        // when
+        jwtService.refreshRotate(request, response);
+
+        // then
+        verify(refreshTokenRepository).deleteById(userId);
+        verify(refreshTokenRepository).saveRefreshToken(userId, "newRefreshToken", 86400L);
+        verify(response).setHeader("access-token", "newAccessToken");
+        verify(response).addCookie(argThat(cookie ->
+                cookie.getName().equals("refresh-token") &&
+                        cookie.getValue().equals("newRefreshToken") &&
+                        cookie.getMaxAge() == 86400
+        ));
+    }
+
+
+    @Test
+    @DisplayName("refreshRotate() 중 사용자가 존재하지 않으면 예외 발생")
+    void refreshRotate_userNotFound() {
+        // given
+        when(refreshTokenValidator.validateRefreshToken(request)).thenReturn(99L);
+        when(userRepository.findById(99L)).thenReturn(Optional.empty());
+
+        // then
+        assertThrows(RuntimeException.class, () -> jwtService.refreshRotate(request, response));
+    }
+}

@@ -163,6 +163,8 @@ jacocoTestReport {
         classDirectories.setFrom(
                 files(classDirectories.files.collect {
                     fileTree(dir: it, excludes: [
+                            "or/sopt/houme/global/**",
+                            "**/Q*.class"
                             // 여기에 제외할 테스트 영역을 설정 할 수 있습니다. 이 부분은 논의 후 설정하면 좋을 것 같습니다
                     ])
                 })
