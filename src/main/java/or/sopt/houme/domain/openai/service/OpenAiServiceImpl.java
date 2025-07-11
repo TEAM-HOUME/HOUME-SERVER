@@ -40,6 +40,8 @@ public class OpenAiServiceImpl implements OpenAiService {
     @Override
     public ImageUploadResponseDTO createImage(String prompt) {
 
+        log.info("apiKey: " + apiKey);
+
         // 요청을 위한 객체를 생성
         OpenAiRequest request = OpenAiRequest.of(
                 openAiImageConfig.getModel(),
