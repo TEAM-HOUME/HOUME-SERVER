@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.*;
 
 
 class OpenAiResponseTest {
@@ -72,5 +73,75 @@ class OpenAiResponseTest {
         assertThat(imageData.getUrl()).isEqualTo("https://test.com");
         assertThat(imageData.getRevised_prompt()).isEqualTo("test prompt");
         assertThat(imageData.getB64_json()).isEqualTo("base64test");
+    }
+
+
+    @Test
+    @DisplayName("ImageData equals, hashCode, toString 메서드 테스트")
+    void testEqualsHashCodeToString() {
+        // given
+        OpenAiResponse.ImageData image1 = new OpenAiResponse.ImageData(
+                "https://example.com", "prompt", "base64"
+        );
+        OpenAiResponse.ImageData image2 = new OpenAiResponse.ImageData(
+                "https://example.com", "prompt", "base64"
+        );
+        OpenAiResponse.ImageData image3 = new OpenAiResponse.ImageData(
+                "https://another.com", "different", "zzz"
+        );
+
+        // equals
+        assertEquals(image1, image2);
+        assertNotEquals(image1, image3);
+
+        // hashCode
+        assertEquals(image1.hashCode(), image2.hashCode());
+        assertNotEquals(image1.hashCode(), image3.hashCode());
+
+        // toString (간단히 null 아님만 확인)
+        assertNotNull(image1.toString());
+        assertTrue(image1.toString().contains("url"));
+        assertTrue(image1.toString().contains("prompt"));
+    }
+
+
+    @Test
+    @DisplayName("canEqual(Object) 테스트")
+    void testCanEqual() {
+        OpenAiResponse.ImageData imageData = new OpenAiResponse.ImageData();
+        assertTrue(imageData.canEqual(new OpenAiResponse.ImageData()));
+        assertFalse(imageData.canEqual("not an ImageData"));
+    }
+
+
+    @Test
+    @DisplayName("OpenAiResponse equals, hashCode, toString 테스트")
+    void testEqualsHashCodeToString_success() {
+        // given
+        OpenAiResponse.ImageData image = new OpenAiResponse.ImageData("url", "prompt", "b64");
+        OpenAiResponse response1 = new OpenAiResponse(List.of(image));
+        OpenAiResponse response2 = new OpenAiResponse(List.of(image));
+        OpenAiResponse response3 = new OpenAiResponse(List.of(
+                new OpenAiResponse.ImageData("other", "different", "xxx")
+        ));
+
+        // when & then
+        assertEquals(response1, response2);
+        assertNotEquals(response1, response3);
+
+        assertEquals(response1.hashCode(), response2.hashCode());
+        assertNotEquals(response1.hashCode(), response3.hashCode());
+
+        assertNotNull(response1.toString());
+        assertTrue(response1.toString().contains("data"));
+    }
+
+
+    @Test
+    @DisplayName("OpenAiResponse canEqual(Object) 테스트")
+    void testCanEqual_success() {
+        OpenAiResponse response = new OpenAiResponse();
+        assertTrue(response.canEqual(new OpenAiResponse()));
+        assertFalse(response.canEqual("not a response"));
     }
 }

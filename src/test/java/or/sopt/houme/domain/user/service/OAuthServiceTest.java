@@ -1,9 +1,11 @@
 package or.sopt.houme.domain.user.service;
 
 import feign.FeignException;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import or.sopt.houme.domain.user.client.KaKaoOAuthClient;
 import or.sopt.houme.domain.user.client.KaKaoUserInfoClient;
+import or.sopt.houme.domain.user.controller.dto.CustomUserDetails;
 import or.sopt.houme.domain.user.controller.dto.KaKaoOAuthTokenDTO;
 import or.sopt.houme.domain.user.controller.dto.KaKaoUserInfoResponse;
 import or.sopt.houme.domain.user.entity.Role;
@@ -27,8 +29,7 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class OAuthServiceTest {
@@ -56,6 +57,20 @@ class OAuthServiceTest {
     @Mock
     private HttpServletResponse response;
 
+
+    @Test
+    @DisplayName("카카오 인증 요청 URL을 생성한다")
+    void requestRedirectTest() {
+        when(kaKaoConfig.getClientId()).thenReturn("client-id");
+        when(kaKaoConfig.getRedirectUri()).thenReturn("http://localhost:3000/oauth/kakao/callback");
+
+        String result = oAuthService.requestRedirect();
+
+        assertEquals(
+                "https://kauth.kakao.com/oauth/authorize?client_id=client-id&redirect_uri=http://localhost:3000/oauth/kakao/callback&response_type=code",
+                result
+        );
+    }
 
 
     @Test
@@ -135,5 +150,50 @@ class OAuthServiceTest {
                 .thenThrow(FeignException.class);
 
         assertThrows(UserException.class, () -> oAuthService.kakaoLogin(accessCode, response));
+    }
+
+
+    @Test
+    @DisplayName("logout()은 RefreshToken을 삭제하고, AccessToken을 블랙리스트에 저장해야 한다")
+    void logout_success() {
+        // given
+        User mockUser = User.builder().id(1L).role(Role.ROLE_USER).build();
+        CustomUserDetails userDetails = new CustomUserDetails(mockUser);
+
+        HttpServletRequest request = mock(HttpServletRequest.class);
+        String token = "Bearer mock.jwt.token";
+
+        when(request.getHeader(anyString())).thenReturn(token);
+        when(jwtConfig.getHeader()).thenReturn("Authorization");
+        when(jwtUtil.getJti(anyString())).thenReturn("jti-123");
+        when(jwtUtil.getRemainingExpiration(anyString())).thenReturn(12345L);
+
+        // when
+        oAuthService.logout(userDetails, request);
+
+        // then
+        verify(refreshTokenRepository).deleteById(eq(1L));
+        verify(blacklistTokenRepository).save(eq("jti-123"), eq(12345L));
+    }
+
+
+    @Test
+    @DisplayName("logout()은 Authorization 헤더가 비정상일 경우 아무 작업도 하지 않는다")
+    void logout_invalidHeader() {
+        // given
+        User mockUser = User.builder().id(1L).build();
+        CustomUserDetails userDetails = new CustomUserDetails(mockUser);
+
+        HttpServletRequest request = mock(HttpServletRequest.class);
+        when(request.getHeader(anyString())).thenReturn(null); // null or not "Bearer "
+
+        when(jwtConfig.getHeader()).thenReturn("Authorization");
+
+        // when
+        oAuthService.logout(userDetails, request);
+
+        // then
+        verify(refreshTokenRepository).deleteById(eq(1L));
+        verify(blacklistTokenRepository, never()).save(anyString(), anyLong());
     }
 }

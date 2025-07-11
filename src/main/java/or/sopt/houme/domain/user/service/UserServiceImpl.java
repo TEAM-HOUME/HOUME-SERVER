@@ -1,6 +1,9 @@
 package or.sopt.houme.domain.user.service;
 
 import lombok.RequiredArgsConstructor;
+import or.sopt.houme.domain.credit.entity.Credit;
+import or.sopt.houme.domain.credit.entity.CreditStatus;
+import or.sopt.houme.domain.credit.repository.CreditRepository;
 import or.sopt.houme.domain.generateImage.entity.GenerateImage;
 import or.sopt.houme.domain.generateImage.repository.GenerateImageRepository;
 import or.sopt.houme.domain.house.entity.House;
@@ -28,6 +31,7 @@ public class UserServiceImpl implements UserService {
     private final HouseRepository houseRepository;
     private final TagRepository tagRepository;
     private final GenerateImageRepository generateImageRepository;
+    private final CreditRepository creditRepository;
 
     @Override
     @Transactional(readOnly = true)
@@ -60,8 +64,16 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void updateUser(User user, CreateUserRequest createUserRequest) {
+
         User findUser = findUser(user);
         findUser.updateUserFromSignUp(createUserRequest.name(), createUserRequest.birthday(), createUserRequest.gender());
+
+        Credit newCredit = Credit.builder()
+                .status(CreditStatus.ACTIVE)
+                .user(findUser)
+                .build();
+
+        creditRepository.save(newCredit);
     }
 
     private User findUser(User user) {

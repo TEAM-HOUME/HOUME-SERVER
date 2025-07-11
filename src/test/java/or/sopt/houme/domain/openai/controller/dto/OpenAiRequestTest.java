@@ -37,6 +37,7 @@ class OpenAiRequestTest {
         assertThat(request.getOutput_format()).isEqualTo(outputFormat);
     }
 
+
     @Test
     @DisplayName("Builder를 사용해 OpenAiRequest 객체 생성이 가능해야 한다")
     void testBuilderMethod() {

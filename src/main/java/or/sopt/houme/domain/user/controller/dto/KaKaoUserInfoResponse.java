@@ -35,6 +35,7 @@ public class KaKaoUserInfoResponse {
         private Profile profile;
 
         @Getter
+        @Setter
         public static class Profile {
             private String nickname;
             private Boolean is_default_nickname;

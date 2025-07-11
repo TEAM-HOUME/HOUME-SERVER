@@ -1,5 +1,8 @@
 package or.sopt.houme.domain.user.service;
 
+import or.sopt.houme.domain.credit.entity.Credit;
+import or.sopt.houme.domain.credit.entity.CreditStatus;
+import or.sopt.houme.domain.credit.repository.CreditRepository;
 import or.sopt.houme.domain.generateImage.entity.GenerateImage;
 import or.sopt.houme.domain.generateImage.repository.GenerateImageRepository;
 import or.sopt.houme.domain.house.entity.House;
@@ -36,8 +39,14 @@ class UserServiceImplTest {
     private final HouseRepository houseRepository = mock(HouseRepository.class);
     private final TagRepository tagRepository = mock(TagRepository.class);
     private final GenerateImageRepository generateImageRepository = mock(GenerateImageRepository.class);
+    private final CreditRepository creditRepository = mock(CreditRepository.class);
 
-    private final UserServiceImpl userService = new UserServiceImpl(userRepository, houseRepository, tagRepository, generateImageRepository);
+    private final UserServiceImpl userService = new UserServiceImpl(
+            userRepository,
+            houseRepository,
+            tagRepository,
+            generateImageRepository,
+            creditRepository);
 
     private User user;
     private House house;
@@ -250,5 +259,43 @@ class UserServiceImplTest {
         assertEquals("New Name", dbUser.getName());
         assertEquals(Gender.MALE, dbUser.getGender());
         assertEquals(LocalDate.of(2000, 5, 15), dbUser.getBirthday());
+    }
+
+
+    @Test
+    @DisplayName("성공적으로_유저정보를_업데이트하면_크레딧을 신규로 생성한다")
+    void updateUser_credit_create() {
+        // given
+        // 요청한 유저의 Id
+        User inputUser = User.builder().id(1L).build();
+
+        // DB에 있는 유저의 필드 값들
+        User dbUser = User.builder()
+                .id(1L)
+                .name(null)
+                .birthday(null)
+                .gender(null)
+                .build();
+
+        // 요청
+        CreateUserRequest request = CreateUserRequest.of(
+                "New Name",
+                Gender.MALE,
+                LocalDate.of(2000, 5, 15)
+        );
+
+        // 유저 모킹
+        given(userRepository.findById(1L)).willReturn(Optional.of(dbUser));
+
+        // when
+        userService.updateUser(inputUser, request);
+
+        // then
+        assertEquals("New Name", dbUser.getName());
+        assertEquals(Gender.MALE, dbUser.getGender());
+        assertEquals(LocalDate.of(2000, 5, 15), dbUser.getBirthday());
+
+        verify(creditRepository, times(1)).save(any(Credit.class));
+
     }
 }
