@@ -1,6 +1,9 @@
 package or.sopt.houme.domain.user.service;
 
 import lombok.RequiredArgsConstructor;
+import or.sopt.houme.domain.credit.entity.Credit;
+import or.sopt.houme.domain.credit.entity.CreditStatus;
+import or.sopt.houme.domain.credit.repository.CreditRepository;
 import or.sopt.houme.domain.generateImage.entity.GenerateImage;
 import or.sopt.houme.domain.generateImage.repository.GenerateImageRepository;
 import or.sopt.houme.domain.house.entity.House;
@@ -11,13 +14,11 @@ import or.sopt.houme.domain.user.controller.dto.*;
 import or.sopt.houme.domain.user.entity.User;
 import or.sopt.houme.domain.user.repository.UserRepository;
 import or.sopt.houme.global.api.ErrorCode;
-import or.sopt.houme.global.api.handler.GenerateImageException;
-import or.sopt.houme.global.api.handler.HouseException;
-import or.sopt.houme.global.api.handler.TagException;
-import or.sopt.houme.global.api.handler.UserException;
+import or.sopt.houme.global.api.handler.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.security.auth.login.CredentialException;
 import java.util.List;
 
 @Service
@@ -28,6 +29,7 @@ public class UserServiceImpl implements UserService {
     private final HouseRepository houseRepository;
     private final TagRepository tagRepository;
     private final GenerateImageRepository generateImageRepository;
+    private final CreditRepository creditRepository;
 
     @Override
     @Transactional(readOnly = true)
@@ -60,8 +62,20 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void updateUser(User user, CreateUserRequest createUserRequest) {
+
         User findUser = findUser(user);
         findUser.updateUserFromSignUp(createUserRequest.name(), createUserRequest.birthday(), createUserRequest.gender());
+
+        try {
+            Credit newCredit = Credit.builder()
+                    .status(CreditStatus.ACTIVE)
+                    .user(findUser)
+                    .build();
+
+            creditRepository.save(newCredit);
+        }catch (Exception e) {
+            throw new CreditException(ErrorCode.CREDIT_CREATE_EXCEPTION);
+        }
     }
 
     private User findUser(User user) {

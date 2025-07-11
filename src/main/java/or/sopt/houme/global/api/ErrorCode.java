@@ -93,7 +93,10 @@ public enum ErrorCode {
 
     // 캐러셀 관련 예외
     CAROUSEL_RETRY_EXCEPTION(HttpStatus.INTERNAL_SERVER_ERROR,50010,"캐러셀 좋아요,싫어요 시도 중 동시성 예외가 발생하였습니다, 서버 개발자에게 문의해주세요"),
-    CAROUSEL_INTERRUPT_EXCEPTION(HttpStatus.INTERNAL_SERVER_ERROR,50011,"캐러셀 API 실행 중, INTERRUPT_EXCEPTION 가 발생하였습니다. 서버 개발자에게 문의해주세요")
+    CAROUSEL_INTERRUPT_EXCEPTION(HttpStatus.INTERNAL_SERVER_ERROR,50011,"캐러셀 API 실행 중, INTERRUPT_EXCEPTION 가 발생하였습니다. 서버 개발자에게 문의해주세요"),
+
+    // 크레딧 생성 관련 예외
+    CREDIT_CREATE_EXCEPTION(HttpStatus.INTERNAL_SERVER_ERROR,50012,"크레딧 생성 과정 중 예외가 발생하였습니다.")
     ;
 
     private final HttpStatus status;
