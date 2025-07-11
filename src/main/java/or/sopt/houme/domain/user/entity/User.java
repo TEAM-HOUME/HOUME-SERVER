@@ -3,6 +3,8 @@ import jakarta.persistence.*;
 import lombok.*;
 import or.sopt.houme.domain.credit.entity.Credit;
 import or.sopt.houme.domain.house.entity.House;
+import or.sopt.houme.global.api.ErrorCode;
+import or.sopt.houme.global.api.handler.UserException;
 import or.sopt.houme.global.entity.BaseEntity;
 
 import java.time.LocalDate;
@@ -58,5 +60,10 @@ public class User extends BaseEntity {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<House> houses = new ArrayList<>();
 
-    // 회원의 정적팩터링 메서드는 아직 구현하지 않았습니다
+    // 자체 회원가입시 사용되는 유저 업데이트 메서드
+    public void updateUserFromSignUp(String name, LocalDate birthday, Gender gender) {
+        this.name = name;
+        this.birthday = birthday;
+        this.gender = gender;
+    }
 }

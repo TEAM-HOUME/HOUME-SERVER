@@ -97,7 +97,7 @@ public class OAuthService {
 
         if (userExist == Boolean.FALSE) {
             User newUser = User.builder()
-                    .name(userInfo.getProperties().getNickname())
+//                  이름은 자체 회원가입시 입력 받습니다.
                     .password(null)
                     .email(userInfo.getKakao_account().getEmail())
                     .role(Role.ROLE_USER)
