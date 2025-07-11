@@ -43,7 +43,7 @@ public class UserController {
         return ResponseEntity.ok(ApiResponse.ok(imageHistoryResultPageResponse));
     }
 
-    @PutMapping(value = "/signup")
+    @PatchMapping(value = "/sign-up")
     @Operation(summary = "자체 회원가입 API")
     public ResponseEntity<ApiResponse<Void>> updateUser(@AuthenticationPrincipal CustomUserDetails userDetails, @RequestBody @Valid CreateUserRequest createUserRequest) {
         userService.updateUser(userDetails.getUser(), createUserRequest);
