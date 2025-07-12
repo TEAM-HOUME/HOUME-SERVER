@@ -100,7 +100,6 @@ class GenerateImageServiceImplTest {
         String originalFilename = "originalFilename";
         String imageLink = "imageLink";
         String contentType = "JPG";
-        Long imageId = 1L;
 
         GenerateImage generateImage = GenerateImage.builder()
                 .filename(fileName)
@@ -109,10 +108,10 @@ class GenerateImageServiceImplTest {
                 .fileExtension(contentType)
                 .build();
 
-        generateImageRepository.save(generateImage);
+        GenerateImage saveImage = generateImageRepository.save(generateImage);
 
         // When
-        GenerateImage generateImage1 = generateImageService.findGenerateImage(imageId);
+        GenerateImage generateImage1 = generateImageService.findGenerateImage(saveImage.getId());
 
         // Then
         assertThat(generateImage1).isNotNull();

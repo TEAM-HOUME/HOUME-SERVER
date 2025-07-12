@@ -104,7 +104,7 @@ public class HouseServiceImpl implements HouseService {
     public House updateHouseActivity(Long houseId, Activity activity) {
 
         House house = houseRepository.findById(houseId)
-                .orElseThrow(() -> new GeneralException(ErrorCode.NOT_FOUND_HOUSE));
+                .orElseThrow(() -> new HouseException(ErrorCode.NOT_FOUND_HOUSE));
 
         house.updateActivity(activity);
         return houseRepository.save(house);
