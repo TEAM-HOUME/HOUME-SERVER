@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import or.sopt.houme.domain.house.dto.request.HouseSelectRequest;
+import or.sopt.houme.domain.house.dto.response.HouseIdResponse;
 import or.sopt.houme.domain.house.dto.response.HouseOptionsResponse;
 import or.sopt.houme.domain.house.service.HouseService;
 import or.sopt.houme.domain.user.controller.dto.CustomUserDetails;
@@ -36,10 +37,10 @@ public class HouseController {
     @Operation(summary = "집 구조 선택 API",
             description = "집 구조를 선택받고 저장합니다. (주거형태, 공간구조, 평형) 옵션들을 저장합니다.")
     @PostMapping("/housing-selections")
-    public ResponseEntity<ApiResponse<Long>>  housingSelections(@AuthenticationPrincipal CustomUserDetails userDetails,
-                                                                @Valid @RequestBody HouseSelectRequest houseSelectRequest) {
+    public ResponseEntity<ApiResponse<HouseIdResponse>>  housingSelections(@AuthenticationPrincipal CustomUserDetails userDetails,
+                                                                           @Valid @RequestBody HouseSelectRequest houseSelectRequest) {
 
-        Long houseId = houseService.selectHouseOptions(userDetails.getUser(), houseSelectRequest);
+        HouseIdResponse houseId = houseService.selectHouseOptions(userDetails.getUser(), houseSelectRequest);
         return ResponseEntity.ok(ApiResponse.ok(houseId));
     }
 }

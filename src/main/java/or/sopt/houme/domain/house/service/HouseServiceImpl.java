@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import or.sopt.houme.domain.house.dto.HouseOptionDTO;
 import or.sopt.houme.domain.house.dto.LatestHouseConditionDTO;
 import or.sopt.houme.domain.house.dto.request.HouseSelectRequest;
+import or.sopt.houme.domain.house.dto.response.HouseIdResponse;
 import or.sopt.houme.domain.house.dto.response.HouseOptionsResponse;
 import or.sopt.houme.domain.house.entity.House;
 import or.sopt.houme.domain.house.entity.InvalidHouseRequest;
@@ -55,14 +56,14 @@ public class HouseServiceImpl implements HouseService {
     // 집 구조 선택 서비스
     @Transactional
     @Override
-    public Long selectHouseOptions(User user, HouseSelectRequest houseSelectRequest) {
+    public HouseIdResponse selectHouseOptions(User user, HouseSelectRequest houseSelectRequest) {
         try {
             Form form = Form.valueOf(houseSelectRequest.housingType());
             Structure structure = Structure.valueOf(houseSelectRequest.roomType());
             Equilibrium equilibrium = Equilibrium.valueOf(houseSelectRequest.areaType());
 
             if (houseSelectRequest.isValid()){
-                 return saveValidHouse(user, form, structure, equilibrium);
+                 return HouseIdResponse.of(saveValidHouse(user, form, structure, equilibrium));
             } else {    // 유효하지 않은 요청일 시에 로그 남기기
                 logInvalidHouseRequest(user, form, structure, equilibrium);
                 return null;
