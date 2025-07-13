@@ -84,3 +84,13 @@ sentry:
   send-default-pii: true
   traces-sample-rate: 1.0
   environment: local
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus,metrics,env
+
+  metrics:
+    tags:
+      application: houme
