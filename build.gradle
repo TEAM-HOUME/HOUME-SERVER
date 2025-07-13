@@ -98,6 +98,9 @@ dependencies {
 
     // EL (Expression Language) 구현체
     implementation 'org.glassfish:jakarta.el:4.0.2'
+
+    // sentry
+    implementation 'io.sentry:sentry-spring-boot-starter-jakarta:7.9.0'
 }
 
 def querydslDir = 'src/main/generated'
