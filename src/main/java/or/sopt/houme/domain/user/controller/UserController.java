@@ -9,6 +9,9 @@ import or.sopt.houme.domain.user.entity.Gender;
 import or.sopt.houme.domain.user.service.UserService;
 import or.sopt.houme.domain.user.service.UserServiceImpl;
 import or.sopt.houme.global.api.ApiResponse;
+import or.sopt.houme.global.api.ErrorCode;
+import or.sopt.houme.global.api.GeneralException;
+import org.apache.coyote.BadRequestException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -49,8 +52,19 @@ public class UserController {
     @PatchMapping(value = "/sign-up")
     @Operation(summary = "자체 회원가입 API")
     public ResponseEntity<ApiResponse<Void>> updateUser(@AuthenticationPrincipal CustomUserDetails userDetails, @RequestBody @Valid CreateUserRequest createUserRequest) {
-        Gender gender = Gender.valueOf(createUserRequest.gender());
-        LocalDate birthday = LocalDate.parse(createUserRequest.birthday());
+        Gender gender;
+        LocalDate birthday;
+
+        try {
+            gender = Gender.valueOf(createUserRequest.gender());
+        } catch (IllegalArgumentException e){
+            throw new GeneralException(ErrorCode.NOT_VALID_EXCEPTION);
+        }
+        try {
+            birthday = LocalDate.parse(createUserRequest.birthday());
+        } catch (IllegalArgumentException e){
+            throw new GeneralException(ErrorCode.NOT_VALID_EXCEPTION);
+        }
 
         userService.updateUser(userDetails.getUser(), createUserRequest.name(), gender, birthday);
 
