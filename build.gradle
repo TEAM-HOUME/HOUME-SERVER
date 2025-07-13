@@ -101,6 +101,9 @@ dependencies {
 
     // sentry
     implementation 'io.sentry:sentry-spring-boot-starter-jakarta:7.9.0'
+
+    // prometheus
+    implementation 'io.micrometer:micrometer-registry-prometheus'
 }
 
 def querydslDir = 'src/main/generated'
