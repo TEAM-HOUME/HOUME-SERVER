@@ -2,6 +2,7 @@ package or.sopt.houme.domain.house.service;
 
 import or.sopt.houme.domain.house.dto.LatestHouseConditionDTO;
 import or.sopt.houme.domain.house.dto.request.HouseSelectRequest;
+import or.sopt.houme.domain.house.dto.request.IsLikeRequest;
 import or.sopt.houme.domain.house.dto.response.HouseOptionsResponse;
 import or.sopt.houme.domain.house.entity.House;
 import or.sopt.houme.domain.house.entity.enums.Activity;
@@ -20,4 +21,7 @@ public interface HouseService {
 
     // house에 주요활동 저장하기
     House updateHouseActivity(Long houseId, Activity activity);
+
+    // 생성된 이미지 선호도
+    House findHouseById(long houseId);
 }
