@@ -57,7 +57,8 @@ public class WhiteListConfig {
     // 모니터링 관련 인가 설정
     public static final List<String> monitoringWhiteList() {
         return List.of(
-                "/actuator/prometheus"
+                "/actuator/prometheus",
+                "/actuator/**"
         );
     }
 }
