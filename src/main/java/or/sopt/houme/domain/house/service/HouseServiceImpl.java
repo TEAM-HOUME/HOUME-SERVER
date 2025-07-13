@@ -17,6 +17,7 @@ import or.sopt.houme.domain.house.repository.InvalidHouseRequestRepository;
 import or.sopt.houme.domain.user.entity.User;
 import or.sopt.houme.global.api.ErrorCode;
 import or.sopt.houme.global.api.GeneralException;
+import or.sopt.houme.global.api.handler.HouseException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -104,10 +105,18 @@ public class HouseServiceImpl implements HouseService {
     public House updateHouseActivity(Long houseId, Activity activity) {
 
         House house = houseRepository.findById(houseId)
-                .orElseThrow(() -> new GeneralException(ErrorCode.NOT_FOUND_HOUSE));
+                .orElseThrow(() -> new HouseException(ErrorCode.NOT_FOUND_HOUSE));
 
         house.updateActivity(activity);
         return houseRepository.save(house);
+    }
+
+
+    // 생성된 이미지 선호도
+    @Override
+    public House findHouseById(long houseId) {
+        return houseRepository.findById(houseId)
+                .orElseThrow(() -> new HouseException(ErrorCode.NOT_FOUND_HOUSE));
     }
 
     // 유효하지 않은 요청일 때 log 저장
