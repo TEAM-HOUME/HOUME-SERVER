@@ -228,6 +228,8 @@ class UserServiceImplTest {
     @DisplayName("성공적으로_유저정보를_업데이트한다")
     void updateUser_success() {
         // given
+        String male = "MALE";
+
         // 요청한 유저의 Id
         User inputUser = User.builder().id(1L).build();
 
@@ -242,15 +244,15 @@ class UserServiceImplTest {
         // 요청
         CreateUserRequest request = CreateUserRequest.of(
                 "New Name",
-                Gender.MALE,
-                LocalDate.of(2000, 5, 15)
+                male,
+                LocalDate.of(2000, 5, 15).toString()
         );
 
         // 유저 모킹
         given(userRepository.findById(1L)).willReturn(Optional.of(dbUser));
 
         // when
-        userService.updateUser(inputUser, request);
+        userService.updateUser(inputUser, request.name(), Gender.MALE, LocalDate.of(2000, 5, 15));
 
         // then
         assertEquals("New Name", dbUser.getName());
@@ -263,6 +265,7 @@ class UserServiceImplTest {
     @DisplayName("성공적으로_유저정보를_업데이트하면_크레딧을 신규로 생성한다")
     void updateUser_credit_create() {
         // given
+        String male = "MALE";
         // 요청한 유저의 Id
         User inputUser = User.builder().id(1L).build();
 
@@ -277,15 +280,15 @@ class UserServiceImplTest {
         // 요청
         CreateUserRequest request = CreateUserRequest.of(
                 "New Name",
-                Gender.MALE,
-                LocalDate.of(2000, 5, 15)
+                male,
+                LocalDate.of(2000, 5, 15).toString()
         );
 
         // 유저 모킹
         given(userRepository.findById(1L)).willReturn(Optional.of(dbUser));
 
         // when
-        userService.updateUser(inputUser, request);
+        userService.updateUser(inputUser, request.name(), Gender.MALE, LocalDate.of(2000, 5, 15));
 
         // then
         assertEquals("New Name", dbUser.getName());
@@ -300,6 +303,7 @@ class UserServiceImplTest {
     @DisplayName("크레딧 저장 중 예외가 발생하면 CreditException을 던진다")
     void updateUser_credit_create_fail() {
         // given
+        String male = "MALE";
         User inputUser = User.builder().id(1L).build();
 
         User dbUser = User.builder()
@@ -311,8 +315,8 @@ class UserServiceImplTest {
 
         CreateUserRequest request = CreateUserRequest.of(
                 "New Name",
-                Gender.MALE,
-                LocalDate.of(2000, 5, 15)
+                male,
+                LocalDate.of(2000, 5, 15).toString()
         );
 
         // 유저 조회는 정상적으로 동작
@@ -323,7 +327,8 @@ class UserServiceImplTest {
                 .given(creditRepository).save(any(Credit.class));
 
         // when & then
-        assertThatThrownBy(() -> userService.updateUser(inputUser, request))
+        assertThatThrownBy(() -> userService.updateUser(inputUser, request.name(), Gender.MALE, LocalDate.of(2000, 5, 15)
+        ))
                 .isInstanceOf(CreditException.class)
                 .hasMessageContaining("크레딧 생성 과정 중 예외가 발생하였습니다.");
     }

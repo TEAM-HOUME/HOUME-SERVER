@@ -29,7 +29,8 @@ class CreateUserRequestTest {
     @DisplayName("유효한 회원가입 요청인 경우면 성공")
     void validCreateUserRequest_shouldPassValidation() {
         // given
-        CreateUserRequest request = new CreateUserRequest("홍길동", Gender.MALE, LocalDate.now().minusYears(20));
+        String male = "MALE";
+        CreateUserRequest request = new CreateUserRequest("홍길동", male, LocalDate.now().minusYears(20).toString());
 
         // when
         Set<ConstraintViolation<CreateUserRequest>> violations = validator.validate(request);
@@ -42,7 +43,8 @@ class CreateUserRequestTest {
     @DisplayName("이름이 빈문자열인 경우 에러 발생")
     void blankName_shouldFailValidation() {
         // given
-        CreateUserRequest request = new CreateUserRequest("", Gender.MALE, LocalDate.now().minusYears(20));
+        String male = "MALE";
+        CreateUserRequest request = new CreateUserRequest("", male, LocalDate.now().minusYears(20).toString());
 
         // when
         Set<ConstraintViolation<CreateUserRequest>> violations = validator.validate(request);
@@ -59,7 +61,8 @@ class CreateUserRequestTest {
     @DisplayName("이름에 특수문자가 포함된 경우 에러 발생")
     void nameWithSpecialCharacters_shouldFailValidation() {
         // given
-        CreateUserRequest request = new CreateUserRequest("홍*길동", Gender.MALE, LocalDate.now().minusYears(20));
+        String male = "MALE";
+        CreateUserRequest request = new CreateUserRequest("홍*길동", male, LocalDate.now().minusYears(20).toString());
 
         // when
         Set<ConstraintViolation<CreateUserRequest>> violations = validator.validate(request);
@@ -76,7 +79,8 @@ class CreateUserRequestTest {
     @DisplayName("이름에 숫자가 포함된 경우 에러 발생")
     void nameWithNumber_shouldFailValidation() {
         // given
-        CreateUserRequest request = new CreateUserRequest("홍1길2동", Gender.MALE, LocalDate.now().minusYears(20));
+        String male = "MALE";
+        CreateUserRequest request = new CreateUserRequest("홍1길2동", male, LocalDate.now().minusYears(20).toString());
 
         // when
         Set<ConstraintViolation<CreateUserRequest>> violations = validator.validate(request);
@@ -92,7 +96,7 @@ class CreateUserRequestTest {
     @DisplayName("성별이 null인 경우 에러 발생")
     void genderIsNull_shouldFailValidation() {
         // given
-        CreateUserRequest request = new CreateUserRequest("홍길동", null, LocalDate.now().minusYears(20));
+        CreateUserRequest request = new CreateUserRequest("홍길동", null, LocalDate.now().minusYears(20).toString());
 
         // when
         Set<ConstraintViolation<CreateUserRequest>> violations = validator.validate(request);
@@ -108,7 +112,8 @@ class CreateUserRequestTest {
     @DisplayName("생년월일이 null인 경우 에러 발생")
     void birthdayIsNull_shouldFailValidation() {
         // given
-        CreateUserRequest request = new CreateUserRequest("홍길동", Gender.MALE, null);
+        String male = "MALE";
+        CreateUserRequest request = new CreateUserRequest("홍길동", male, null);
 
         // when
         Set<ConstraintViolation<CreateUserRequest>> violations = validator.validate(request);
@@ -124,7 +129,8 @@ class CreateUserRequestTest {
     @DisplayName("나이가 만 14세 이하인 경우 에러 발생")
     void bunderFourteenYearsOld_shouldFailValidation() {
         // given
-        CreateUserRequest request = new CreateUserRequest("홍길동", Gender.MALE, LocalDate.now().minusYears(14).plusDays(1));
+        String male = "MALE";
+        CreateUserRequest request = new CreateUserRequest("홍길동", male, LocalDate.now().minusYears(14).plusDays(1).toString());
 
         // when
         Set<ConstraintViolation<CreateUserRequest>> violations = validator.validate(request);
@@ -140,7 +146,8 @@ class CreateUserRequestTest {
     @DisplayName("생년월일이 1900년 미만일 경우 에러 발생")
     void birthdayBefore1900_shouldFailValidation() {
         // given
-        CreateUserRequest request = new CreateUserRequest("홍길동", Gender.MALE, LocalDate.of(1899, 12, 31));
+        String male = "MALE";
+        CreateUserRequest request = new CreateUserRequest("홍길동", male, LocalDate.of(1899, 12, 31).toString());
 
         // when
         Set<ConstraintViolation<CreateUserRequest>> violations = validator.validate(request);

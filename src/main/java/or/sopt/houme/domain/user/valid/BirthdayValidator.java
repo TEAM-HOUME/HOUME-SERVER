@@ -4,22 +4,25 @@ import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
 
 import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
 
-public class BirthdayValidator implements ConstraintValidator<ValidBirthday, LocalDate> {
+public class BirthdayValidator implements ConstraintValidator<ValidBirthday, String> {
 
     @Override
-    public boolean isValid(LocalDate birthday, ConstraintValidatorContext context) {
-        // 생년월일 비어있으면 false
-        if (birthday == null) return false;
+    public boolean isValid(String birthdayStr, ConstraintValidatorContext context) {
+        if (birthdayStr == null || birthdayStr.isBlank()) return false;
 
-        LocalDate today = LocalDate.now();
-
-        // 1900년보다 이전이거나 오늘 이후면 false
-        if (birthday.getYear() < 1900 || birthday.isAfter(today)) {
+        LocalDate birthday;
+        try {
+            birthday = LocalDate.parse(birthdayStr);
+        } catch (DateTimeParseException e) {
             return false;
         }
 
-        // 만 14세 이하는 false
+        LocalDate today = LocalDate.now();
+
+        if (birthday.getYear() < 1900 || birthday.isAfter(today)) return false;
+
         return birthday.isBefore(today.minusYears(14)) || birthday.isEqual(today.minusYears(14));
     }
 }
