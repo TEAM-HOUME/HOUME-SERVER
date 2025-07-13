@@ -24,7 +24,7 @@ public class GenerateImage extends BaseEntity {
     @Column(name = "filename", nullable = false)
     private String filename;
 
-    @Column(name = "original_file_name", nullable = false)
+    @Column(name = "original_filename", nullable = false)
     private String originalFilename;
 
     @Column(name = "file_extension", nullable = false)
