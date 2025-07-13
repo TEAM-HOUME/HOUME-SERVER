@@ -64,7 +64,8 @@ public class SecurityConfig {
                         configuration.setAllowedOrigins(Arrays.asList(
                                 "http://localhost:5173",
                                 "http://localhost:5174",
-                                "https://dev.houme.kr"
+                                "https://dev.houme.kr",
+                                "https://www.houme.kr"
                         ));
                         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
                         configuration.setAllowCredentials(true);
