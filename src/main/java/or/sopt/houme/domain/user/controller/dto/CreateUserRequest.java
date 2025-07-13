@@ -2,10 +2,7 @@ package or.sopt.houme.domain.user.controller.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
-import or.sopt.houme.domain.user.entity.Gender;
 import or.sopt.houme.domain.user.valid.ValidBirthday;
-
-import java.time.LocalDate;
 
 public record CreateUserRequest(
         @NotBlank(message = "이름은 필수 입력값입니다.")
@@ -13,13 +10,17 @@ public record CreateUserRequest(
         String name,
 
         @NotBlank(message = "성별은 필수 입력값입니다.")
-        Gender gender,
+        @Pattern(
+                regexp = "MALE|FEMALE|NONBINARY",
+                message = "성별은 MALE, FEMALE, NONBINARY 중 하나여야 해요."
+        )
+        String gender,
 
         @NotBlank(message = "생년월일은 필수 입력값입니다.")
         @ValidBirthday
-        LocalDate birthday
+        String birthday
 ) {
-    public static CreateUserRequest of(String name, Gender gender, LocalDate birthday) {
+    public static CreateUserRequest of(String name, String gender, String birthday) {
         return new CreateUserRequest(name, gender, birthday);
     }
 }

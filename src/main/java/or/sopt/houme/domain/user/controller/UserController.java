@@ -5,12 +5,15 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import or.sopt.houme.domain.user.controller.dto.*;
+import or.sopt.houme.domain.user.entity.Gender;
 import or.sopt.houme.domain.user.service.UserService;
 import or.sopt.houme.domain.user.service.UserServiceImpl;
 import or.sopt.houme.global.api.ApiResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+
+import java.time.LocalDate;
 
 @RestController
 @RequiredArgsConstructor
@@ -46,7 +49,10 @@ public class UserController {
     @PatchMapping(value = "/sign-up")
     @Operation(summary = "자체 회원가입 API")
     public ResponseEntity<ApiResponse<Void>> updateUser(@AuthenticationPrincipal CustomUserDetails userDetails, @RequestBody @Valid CreateUserRequest createUserRequest) {
-        userService.updateUser(userDetails.getUser(), createUserRequest);
+        Gender gender = Gender.valueOf(createUserRequest.gender());
+        LocalDate birthday = LocalDate.parse(createUserRequest.birthday());
+
+        userService.updateUser(userDetails.getUser(), createUserRequest.name(), gender, birthday);
 
         return ResponseEntity.ok(ApiResponse.ok(null));
     }

@@ -11,6 +11,7 @@ import or.sopt.houme.domain.house.repository.HouseRepository;
 import or.sopt.houme.domain.taste.entity.Tag;
 import or.sopt.houme.domain.taste.repository.TagRepository;
 import or.sopt.houme.domain.user.controller.dto.*;
+import or.sopt.houme.domain.user.entity.Gender;
 import or.sopt.houme.domain.user.entity.User;
 import or.sopt.houme.domain.user.repository.UserRepository;
 import or.sopt.houme.global.api.ErrorCode;
@@ -19,6 +20,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.security.auth.login.CredentialException;
+import java.time.LocalDate;
 import java.util.List;
 
 @Service
@@ -61,10 +63,10 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void updateUser(User user, CreateUserRequest createUserRequest) {
+    public void updateUser(User user, String name, Gender gender, LocalDate birthday) {
 
         User findUser = findUser(user);
-        findUser.updateUserFromSignUp(createUserRequest.name(), createUserRequest.birthday(), createUserRequest.gender());
+        findUser.updateUserFromSignUp(name, birthday, gender);
 
         try {
             Credit newCredit = Credit.builder()
