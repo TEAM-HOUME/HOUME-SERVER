@@ -75,7 +75,7 @@ class FurnitureServiceImplTest {
 
         // Then
         assertThat(furnitureAndActivity).isNotNull();
-        assertThat(furnitureAndActivity.activities().get(0).type()).isEqualTo(Activity.RELAXING.toString());
+        assertThat(furnitureAndActivity.activities().get(0).code()).isEqualTo(Activity.RELAXING.toString());
         assertThat(furnitureAndActivity.beds().isRequired()).isTrue();
         assertThat(furnitureAndActivity.selectives().isRequired()).isFalse();
         assertThat(furnitureAndActivity.beds().items()).isNotEmpty();
