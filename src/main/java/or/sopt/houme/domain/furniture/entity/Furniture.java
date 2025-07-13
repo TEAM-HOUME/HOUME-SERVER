@@ -18,7 +18,7 @@ public class Furniture {
     private Long id;
 
     // 가구 프롬프트
-    @Column(name = "furniture_prompt", nullable = false)
+    @Column(name = "furniture_prompt", columnDefinition = "TEXT", nullable = false)
     private String furniturePrompt;
 
     // 가구 이름 (영어)
