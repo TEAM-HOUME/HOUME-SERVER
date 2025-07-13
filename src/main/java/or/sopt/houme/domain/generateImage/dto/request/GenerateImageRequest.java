@@ -1,21 +1,32 @@
 package or.sopt.houme.domain.generateImage.dto.request;
 
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+
 import java.util.List;
 
 // 이미지 생성 Request
 public record GenerateImageRequest(
+        @NotNull(message = "houseId는 필수입니다.")
         Long houseId,
+        @NotBlank(message = "평형 입력은 필수입니다.")
         String equilibrium,
+        @NotNull(message = "도면 정보는 필수입니다.")
         FloorPlanInfo floorPlan,
+        @NotNull(message = "moodBoardId는 필수입니다.")
         Long moodBoardId,
+        @NotBlank(message = "주요 활동은 필수입니다.")
         String activity,
+        @NotNull(message = "bedId는 필수입니다.")
         Long bedId,
-        Long closetId,
+        // 선택 가구들 아이디
         List<Long> selectiveIds
 ) {
 
     public record FloorPlanInfo(
+            @NotNull(message = "도면 식별자는 필수입니다.")
             Long floorPlanId,
-            boolean isMirror
+            @NotNull(message = "좌우반전 여부는 필수입니다.")
+            Boolean isMirror
     ) {}
 }
