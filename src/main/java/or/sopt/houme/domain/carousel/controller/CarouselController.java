@@ -10,6 +10,7 @@ import or.sopt.houme.domain.user.controller.dto.CustomUserDetails;
 import or.sopt.houme.global.api.ApiResponse;
 import or.sopt.houme.global.api.ErrorCode;
 import or.sopt.houme.global.api.handler.CarouselException;
+import org.springframework.boot.context.properties.bind.DefaultValue;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -26,9 +27,9 @@ public class CarouselController {
     @GetMapping("/carousels")
     @Operation(summary = "캐러셀 조회 API",
     description = "한 번 조회 시, 다섯개의 캐러셀을 반환합니다. <br><br>" +
-            "**page는 0부터** 넣어주세요")
+            "**page는 0부터** 넣어주세요 (null일시 0이 기본)")
     public ResponseEntity<ApiResponse<GetCarouselListResponseDTO>> getCarousels(
-            @RequestParam Integer page) {
+            @RequestParam(value = "page", required = false, defaultValue = "0") Integer page) {
 
         GetCarouselListResponseDTO carousels = carouselService.getCarousel(page);
 

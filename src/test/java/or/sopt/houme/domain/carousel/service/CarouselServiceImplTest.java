@@ -2,6 +2,7 @@ package or.sopt.houme.domain.carousel.service;
 
 import or.sopt.houme.domain.carousel.controller.dto.GetCarouselListResponseDTO;
 import or.sopt.houme.domain.carousel.entity.Carousel;
+import or.sopt.houme.domain.carousel.entity.CarouselType;
 import or.sopt.houme.domain.carousel.repository.CarouselRepository;
 import or.sopt.houme.domain.preference.entity.CarouselPreference;
 import or.sopt.houme.domain.preference.entity.Preference;
@@ -64,24 +65,23 @@ class CarouselServiceImplTest {
     void getCarousel_returnsCorrectCarouselList() {
         // given
         int page = 0;
-        Pageable pageable = PageRequest.of(page, 5);
+        CarouselType dummyType = CarouselType.builder().id(1L).build();
 
         List<Carousel> mockCarousels = List.of(
-                Carousel.builder().id(1L).url("url1").filename("file1").originalFilename("origin1").fileExtension("png").build(),
-                Carousel.builder().id(2L).url("url2").filename("file2").originalFilename("origin2").fileExtension("jpg").build()
+                Carousel.builder().id(1L).url("url1").filename("file1").originalFilename("origin1").fileExtension("png").carouselType(dummyType).build(),
+                Carousel.builder().id(2L).url("url2").filename("file2").originalFilename("origin2").fileExtension("jpg").carouselType(dummyType).build()
         );
 
-        when(carouselRepository.findAll(pageable)).thenReturn(new PageImpl<>(mockCarousels));
+        when(carouselRepository.findAll()).thenReturn(mockCarousels);
 
         // when
         GetCarouselListResponseDTO result = carouselService.getCarousel(page);
 
         // then
         assertThat(result.carouselResponseDTOS()).hasSize(2);
-        assertThat(result.carouselResponseDTOS().get(0).carouselId()).isEqualTo(1L);
-        assertThat(result.carouselResponseDTOS().get(0).url()).isEqualTo("url1");
-        assertThat(result.carouselResponseDTOS().get(1).carouselId()).isEqualTo(2L);
-        assertThat(result.carouselResponseDTOS().get(1).url()).isEqualTo("url2");
+        assertThat(result.carouselResponseDTOS())
+                .extracting("carouselId")
+                .containsExactlyInAnyOrder(1L, 2L);
     }
 
 

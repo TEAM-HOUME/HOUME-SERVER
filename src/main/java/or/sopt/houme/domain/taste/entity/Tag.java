@@ -16,4 +16,8 @@ public class Tag {
 
     @Column(name = "tag_name", nullable = false)
     private String tagName;
+
+    // 우선순위
+    @Column(name = "priority", nullable = false)
+    private int priority;
 }
