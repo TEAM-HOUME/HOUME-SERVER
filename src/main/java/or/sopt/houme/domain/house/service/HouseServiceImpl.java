@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import or.sopt.houme.domain.house.dto.HouseOptionDTO;
 import or.sopt.houme.domain.house.dto.LatestHouseConditionDTO;
 import or.sopt.houme.domain.house.dto.request.HouseSelectRequest;
+import or.sopt.houme.domain.house.dto.response.HouseIdResponse;
 import or.sopt.houme.domain.house.dto.response.HouseOptionsResponse;
 import or.sopt.houme.domain.house.entity.House;
 import or.sopt.houme.domain.house.entity.InvalidHouseRequest;
@@ -16,6 +17,7 @@ import or.sopt.houme.domain.house.repository.InvalidHouseRequestRepository;
 import or.sopt.houme.domain.user.entity.User;
 import or.sopt.houme.global.api.ErrorCode;
 import or.sopt.houme.global.api.GeneralException;
+import or.sopt.houme.global.api.handler.HouseException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -55,16 +57,17 @@ public class HouseServiceImpl implements HouseService {
     // 집 구조 선택 서비스
     @Transactional
     @Override
-    public void selectHouseOptions(User user, HouseSelectRequest houseSelectRequest) {
+    public HouseIdResponse selectHouseOptions(User user, HouseSelectRequest houseSelectRequest) {
         try {
             Form form = Form.valueOf(houseSelectRequest.housingType());
             Structure structure = Structure.valueOf(houseSelectRequest.roomType());
             Equilibrium equilibrium = Equilibrium.valueOf(houseSelectRequest.areaType());
 
             if (houseSelectRequest.isValid()){
-                saveValidHouse(user, form, structure, equilibrium);
+                 return HouseIdResponse.of(saveValidHouse(user, form, structure, equilibrium));
             } else {    // 유효하지 않은 요청일 시에 로그 남기기
                 logInvalidHouseRequest(user, form, structure, equilibrium);
+                return null;
             }
         } catch (IllegalArgumentException e) {
             // 잘못된 enum값들 처리
@@ -84,14 +87,16 @@ public class HouseServiceImpl implements HouseService {
     }
 
     // 유효한 요청일 때 house 저장
-    private void saveValidHouse(User user, Form form, Structure structure, Equilibrium equilibrium) {
+    private Long saveValidHouse(User user, Form form, Structure structure, Equilibrium equilibrium) {
         House house = House.builder()
                 .form(form)
                 .structure(structure)
                 .equilibrium(equilibrium)
                 .user(user)
                 .build();
-        houseRepository.save(house);
+        House save = houseRepository.save(house);
+
+        return save.getId();
     }
 
     // house activity 업데이트
@@ -100,10 +105,18 @@ public class HouseServiceImpl implements HouseService {
     public House updateHouseActivity(Long houseId, Activity activity) {
 
         House house = houseRepository.findById(houseId)
-                .orElseThrow(() -> new GeneralException(ErrorCode.NOT_FOUND_HOUSE));
+                .orElseThrow(() -> new HouseException(ErrorCode.NOT_FOUND_HOUSE));
 
         house.updateActivity(activity);
         return houseRepository.save(house);
+    }
+
+
+    // 생성된 이미지 선호도
+    @Override
+    public House findHouseById(long houseId) {
+        return houseRepository.findById(houseId)
+                .orElseThrow(() -> new HouseException(ErrorCode.NOT_FOUND_HOUSE));
     }
 
     // 유효하지 않은 요청일 때 log 저장
