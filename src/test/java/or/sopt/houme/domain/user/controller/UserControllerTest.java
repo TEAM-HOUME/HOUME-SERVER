@@ -1,6 +1,7 @@
 package or.sopt.houme.domain.user.controller;
 
 import or.sopt.houme.domain.user.controller.dto.CustomUserDetails;
+import or.sopt.houme.domain.user.controller.dto.CustomUserDetailsService;
 import or.sopt.houme.domain.user.controller.dto.MyPageInfoResponse;
 import or.sopt.houme.domain.user.entity.*;
 import or.sopt.houme.domain.user.repository.BlacklistTokenRepository;
@@ -54,6 +55,9 @@ class UserControllerTest {
     private JWTUtil jwtUtil;
 
     @MockBean
+    private CustomUserDetailsService customUserDetailsService;
+
+    @MockBean
     private BlacklistTokenRepository blacklistTokenRepository;
 
     private CustomUserDetails mockUserDetails;
@@ -84,9 +88,11 @@ class UserControllerTest {
     @WithMockUser(username = "test@example.com", roles = "USER")
     void getMyPageInfo_Success() throws Exception {
         // Given
+        Long id = 1L;
         User mockUser = mockUserDetails.getUser();
 
         // 정확히 동일한 객체를 넘겨서 mock 동작 유도
+        given(customUserDetailsService.loadUserById(id)).willReturn(mockUserDetails);
         given(userService.getMyPageInfo(mockUser)).willReturn(mockResponse);
 
         // SecurityContext에 수동 주입

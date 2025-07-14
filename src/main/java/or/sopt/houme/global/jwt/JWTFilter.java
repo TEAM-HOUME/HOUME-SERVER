@@ -7,7 +7,9 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import or.sopt.houme.domain.user.controller.dto.CustomUserDetails;
+import or.sopt.houme.domain.user.controller.dto.CustomUserDetailsService;
 import or.sopt.houme.domain.user.entity.Role;
 import or.sopt.houme.domain.user.entity.User;
 import or.sopt.houme.domain.user.repository.BlacklistTokenRepository;
@@ -16,6 +18,7 @@ import or.sopt.houme.global.config.JWTConfig;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -36,6 +39,7 @@ public class JWTFilter extends OncePerRequestFilter{
     private final JWTUtil jwtUtil;
     private final JWTConfig jwtConfig;
     private final BlacklistTokenRepository blacklistTokenRepository;
+    private final CustomUserDetailsService customUserDetailsService;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
@@ -95,17 +99,13 @@ public class JWTFilter extends OncePerRequestFilter{
                 return;
             }
 
-        User user = User.builder()
-                .id(id)
-                .role(role)
-                .build();
 
         /**
          * UserDetails에 회원 정보 객체 담아서 요청에 회원정보가 필요한 경우 가져다 쓴다
          *
          *  해당 객체의 생명주기는 한 요청이기 때문에 세션유지와는 차이가 존재한다
          * */
-        CustomUserDetails customUserDetails = new CustomUserDetails(user);
+        CustomUserDetails customUserDetails = customUserDetailsService.loadUserById(id);
 
         //스프링 시큐리티 인증 토큰 생성
         Authentication authToken = new UsernamePasswordAuthenticationToken(customUserDetails, null, customUserDetails.getAuthorities());
