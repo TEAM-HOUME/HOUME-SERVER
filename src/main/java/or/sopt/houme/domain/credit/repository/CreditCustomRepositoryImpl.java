@@ -3,6 +3,7 @@ package or.sopt.houme.domain.credit.repository;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import or.sopt.houme.domain.credit.entity.Credit;
+import or.sopt.houme.domain.credit.entity.CreditStatus;
 import or.sopt.houme.domain.credit.entity.QCredit;
 import or.sopt.houme.domain.user.entity.User;
 import org.springframework.stereotype.Repository;
@@ -21,9 +22,8 @@ public class CreditCustomRepositoryImpl implements CreditCustomRepository {
         QCredit credit = QCredit.credit;
 
         return queryFactory.selectFrom(credit)
-                .where(credit.user.eq(user))
+                .where(credit.user.eq(user).and(credit.status.eq(CreditStatus.ACTIVE)))
                 .orderBy(credit.createdAt.asc())
-                .limit(1L)
-                .stream().findAny();
+                .stream().findFirst();
     }
 }
