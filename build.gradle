@@ -42,9 +42,6 @@ dependencies {
     // JPA
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 
-    // mysql
-    runtimeOnly 'com.mysql:mysql-connector-j'
-
     // lombok
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
@@ -130,8 +127,7 @@ jib {
         image = 'openjdk:17-oracle' // 베이스 이미지 지정
     }
     to {
-        image = '528350874585.dkr.ecr.ap-northeast-2.amazonaws.com/houme'
-//        image = project.hasProperty('jibToImage') ? project.getProperty('jibToImage') : 'default/image'
+        image = project.hasProperty('jibToImage') ? project.getProperty('jibToImage') : 'default/image'
 // 배포전용
 //        if (!project.hasProperty('jibToImage')){
 //            throw new GradleException("'-PjibToImage=xxx' 프로퍼티가 필요합니다.")
