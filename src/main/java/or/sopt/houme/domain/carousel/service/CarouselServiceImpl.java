@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import or.sopt.houme.domain.carousel.controller.dto.GetCarouselListResponseDTO;
 import or.sopt.houme.domain.carousel.controller.dto.GetCarouselResponseDTO;
 import or.sopt.houme.domain.carousel.entity.Carousel;
+import or.sopt.houme.domain.carousel.entity.CarouselType;
 import or.sopt.houme.domain.carousel.repository.CarouselRepository;
 import or.sopt.houme.domain.preference.entity.CarouselPreference;
 import or.sopt.houme.domain.preference.entity.Preference;
@@ -17,8 +18,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -31,16 +32,40 @@ public class CarouselServiceImpl implements CarouselService {
 
     @Override
     public GetCarouselListResponseDTO getCarousel(int page) {
+        int pageSize = 5;
 
-        // pageable 객체를 만들어서 한 번에 세 개의 레코드를 조회하도록 설정
-        Pageable pageable = PageRequest.of(page, 5);
+        // 1. 모든 캐러셀 불러오기
+        List<Carousel> allCarousels = carouselRepository.findAll();
 
-        List<GetCarouselResponseDTO> list = carouselRepository.findAll(pageable)
-                .stream()
+        // 2. 타입별로 그룹화
+        Map<CarouselType, Queue<Carousel>> grouped = allCarousels.stream()
+                .collect(Collectors.groupingBy(
+                        Carousel::getCarouselType,
+                        Collectors.toCollection(LinkedList::new)
+                ));
+
+        // 3. 라운드로빈 방식으로 타입 섞기
+        List<Carousel> shuffled = new ArrayList<>();
+        while (!grouped.values().stream().allMatch(Queue::isEmpty)) {
+            for (Queue<Carousel> queue : grouped.values()) {
+                if (!queue.isEmpty()) {
+                    shuffled.add(queue.poll());
+                }
+            }
+        }
+
+        // 4. 페이지네이션 적용
+        int fromIndex = page * pageSize;
+        int toIndex = Math.min(fromIndex + pageSize, shuffled.size());
+        if (fromIndex >= shuffled.size()) {
+            return GetCarouselListResponseDTO.of(List.of());
+        }
+
+        List<GetCarouselResponseDTO> result = shuffled.subList(fromIndex, toIndex).stream()
                 .map(GetCarouselResponseDTO::from)
                 .toList();
 
-        return GetCarouselListResponseDTO.of(list);
+        return GetCarouselListResponseDTO.of(result);
     }
 
 
@@ -86,11 +111,9 @@ public class CarouselServiceImpl implements CarouselService {
         }
     }
 
-
-
-
     private Carousel findCarousel(Long carouselId) {
         return carouselRepository.findById(carouselId)
                 .orElseThrow(() -> new CarouselException(ErrorCode.CAROUSEL_NOT_FOUND));
     }
+
 }

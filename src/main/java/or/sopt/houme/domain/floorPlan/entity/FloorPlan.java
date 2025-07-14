@@ -17,7 +17,7 @@ public class FloorPlan {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "url", nullable = false)
+    @Column(name = "url", nullable = false, length = 2048)
     private String url;
 
     @Column(name = "filename", nullable = false)
