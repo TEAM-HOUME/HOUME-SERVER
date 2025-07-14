@@ -65,10 +65,10 @@ class HouseControllerTest {
                 .andExpect(jsonPath("$.data.roomTypes").isArray())
                 .andExpect(jsonPath("$.data.areaTypes").isArray())
                 .andExpect(jsonPath("$.data.housingTypes[0].code").value("OFFICETEL"))
-                .andExpect(jsonPath("$.data.housingTypes[0].description").value("오피스텔"))
+                .andExpect(jsonPath("$.data.housingTypes[0].label").value("오피스텔"))
                 .andExpect(jsonPath("$.data.roomTypes[0].code").value("OPEN_ONE_ROOM"))
-                .andExpect(jsonPath("$.data.roomTypes[0].description").value("오픈형 원룸"))
+                .andExpect(jsonPath("$.data.roomTypes[0].label").value("오픈형 원룸"))
                 .andExpect(jsonPath("$.data.areaTypes[0].code").value("UNDER_5"))
-                .andExpect(jsonPath("$.data.areaTypes[0].description").value("5평 이하"));
+                .andExpect(jsonPath("$.data.areaTypes[0].label").value("5평 이하"));
     }
 }
