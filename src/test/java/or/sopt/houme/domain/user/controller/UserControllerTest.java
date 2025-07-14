@@ -90,10 +90,9 @@ class UserControllerTest {
         // Given
         Long id = 1L;
         User mockUser = mockUserDetails.getUser();
-        CustomUserDetails userDetails = new CustomUserDetails(mockUser);
 
         // 정확히 동일한 객체를 넘겨서 mock 동작 유도
-        given(customUserDetailsService.loadUserById(id)).willReturn(userDetails);
+        given(customUserDetailsService.loadUserById(id)).willReturn(mockUserDetails);
         given(userService.getMyPageInfo(mockUser)).willReturn(mockResponse);
 
         // SecurityContext에 수동 주입
