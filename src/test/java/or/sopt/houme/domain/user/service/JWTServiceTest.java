@@ -8,6 +8,7 @@ import or.sopt.houme.domain.user.entity.User;
 import or.sopt.houme.domain.user.repository.RefreshTokenRepository;
 import or.sopt.houme.domain.user.repository.UserRepository;
 import or.sopt.houme.domain.user.valid.RefreshTokenValidator;
+import or.sopt.houme.global.config.CookieConfig;
 import or.sopt.houme.global.config.JWTConfig;
 import or.sopt.houme.global.jwt.JWTUtil;
 import org.junit.jupiter.api.BeforeEach;
@@ -38,6 +39,8 @@ class JWTServiceTest {
     private RefreshTokenRepository refreshTokenRepository;
     @Mock
     private RefreshTokenValidator refreshTokenValidator;
+    @Mock
+    private CookieConfig cookieConfig;
 
     @Mock
     private HttpServletRequest request;
@@ -79,6 +82,9 @@ class JWTServiceTest {
         when(jwtUtil.createJwt("access", userId, "ROLE_USER", 3600L)).thenReturn("newAccessToken");
         when(jwtUtil.createJwt("refresh", userId, "ROLE_USER", 86400L)).thenReturn("newRefreshToken");
 
+        when(cookieConfig.getDomain()).thenReturn("domain");
+        when(cookieConfig.getSameSite()).thenReturn("true");
+
         // when
         jwtService.refreshRotate(request, response);
 
@@ -86,11 +92,18 @@ class JWTServiceTest {
         verify(refreshTokenRepository).deleteById(userId);
         verify(refreshTokenRepository).saveRefreshToken(userId, "newRefreshToken", 86400L);
         verify(response).setHeader("access-token", "newAccessToken");
-        verify(response).addCookie(argThat(cookie ->
-                cookie.getName().equals("refresh-token") &&
-                        cookie.getValue().equals("newRefreshToken") &&
-                        cookie.getMaxAge() == 86400
-        ));
+
+
+        verify(response).addHeader(
+                eq("Set-Cookie"),
+                argThat(value ->
+                        value.startsWith("refresh-token=newRefreshToken") &&
+                                value.contains("Max-Age=86400") &&
+                                value.contains("SameSite=true") &&      // sameSite 모킹 값
+                                value.contains("Domain=domain")
+                )
+        );
+
     }
 
 

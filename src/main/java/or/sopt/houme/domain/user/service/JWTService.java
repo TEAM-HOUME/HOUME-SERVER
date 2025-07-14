@@ -12,9 +12,13 @@ import or.sopt.houme.domain.user.valid.RefreshTokenValidator;
 import or.sopt.houme.global.api.ErrorCode;
 import or.sopt.houme.global.api.handler.TokenException;
 import or.sopt.houme.global.api.handler.UserException;
+import or.sopt.houme.global.config.CookieConfig;
 import or.sopt.houme.global.config.JWTConfig;
 import or.sopt.houme.global.jwt.JWTUtil;
 import or.sopt.houme.global.util.CookieUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -22,11 +26,13 @@ import org.springframework.stereotype.Service;
 public class JWTService {
 
 
+    private static final Logger log = LoggerFactory.getLogger(JWTService.class);
     private final JWTUtil jwtUtil;
     private final JWTConfig jwtConfig;
     private final UserRepository userRepository;
     private final RefreshTokenRepository refreshTokenRedisTemplateUtil;
     private final RefreshTokenValidator refreshTokenValidator;
+    private final CookieConfig cookieConfig;
 
 
     // 토큰 발급기를 위한 메서드입니다
@@ -70,12 +76,17 @@ public class JWTService {
 
         response.setHeader("access-token", access);
 
-        Cookie refreshCookie = CookieUtil.createSecureCookie("refresh-token",
+        log.info("new refresh: {}", newRefresh);
+        CookieUtil.addSameSiteCookie(
+                response,
+                "refresh-token",
                 newRefresh,
                 jwtConfig.getRefreshTokenValidityInSeconds().intValue(),
-                false);
+                cookieConfig.getDomain(),
+                cookieConfig.isSecure(),
+                cookieConfig.getSameSite()
+        );
 
-        response.addCookie(refreshCookie);
 
     }
 }
