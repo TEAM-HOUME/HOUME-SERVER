@@ -1,6 +1,7 @@
 package or.sopt.houme.domain.user.service;
 
 import feign.FeignException;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import or.sopt.houme.domain.user.client.KaKaoOAuthClient;
@@ -14,6 +15,7 @@ import or.sopt.houme.domain.user.repository.BlacklistTokenRepository;
 import or.sopt.houme.domain.user.repository.RefreshTokenRepository;
 import or.sopt.houme.domain.user.repository.UserRepository;
 import or.sopt.houme.global.api.handler.UserException;
+import or.sopt.houme.global.config.CookieConfig;
 import or.sopt.houme.global.config.JWTConfig;
 import or.sopt.houme.global.config.KaKaoConfig;
 import or.sopt.houme.global.jwt.JWTUtil;
@@ -53,6 +55,8 @@ class OAuthServiceTest {
     private BlacklistTokenRepository blacklistTokenRepository;
     @Mock
     private KaKaoConfig kaKaoConfig;
+    @Mock
+    private CookieConfig cookieConfig;
 
     @Mock
     private HttpServletResponse response;
@@ -104,6 +108,8 @@ class OAuthServiceTest {
 
         when(jwtConfig.getAccessTokenValidityInSeconds()).thenReturn(3600L);
         when(jwtConfig.getRefreshTokenValidityInSeconds()).thenReturn(86400L);
+        when(cookieConfig.getDomain()).thenReturn("domain");
+        when(cookieConfig.getSameSite()).thenReturn("true");
 
         // When
         Boolean result = oAuthService.kakaoLogin(code, response);
@@ -169,7 +175,7 @@ class OAuthServiceTest {
         when(jwtUtil.getRemainingExpiration(anyString())).thenReturn(12345L);
 
         // when
-        oAuthService.logout(userDetails, request);
+        oAuthService.logout(userDetails, request,response);
 
         // then
         verify(refreshTokenRepository).deleteById(eq(1L));
@@ -190,7 +196,7 @@ class OAuthServiceTest {
         when(jwtConfig.getHeader()).thenReturn("Authorization");
 
         // when
-        oAuthService.logout(userDetails, request);
+        oAuthService.logout(userDetails, request,response);
 
         // then
         verify(refreshTokenRepository).deleteById(eq(1L));

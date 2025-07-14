@@ -20,6 +20,7 @@ import or.sopt.houme.domain.user.repository.RefreshTokenRepository;
 import or.sopt.houme.domain.user.repository.UserRepository;
 import or.sopt.houme.global.api.ErrorCode;
 import or.sopt.houme.global.api.handler.UserException;
+import or.sopt.houme.global.config.CookieConfig;
 import or.sopt.houme.global.config.JWTConfig;
 import or.sopt.houme.global.config.KaKaoConfig;
 import or.sopt.houme.global.jwt.JWTUtil;
@@ -42,6 +43,7 @@ public class OAuthService {
     private final BlacklistTokenRepository blacklistTokenRepository;
 
     private final KaKaoConfig kaKaoConfig;
+    private final CookieConfig cookieConfig;
 
 
     /**
@@ -120,17 +122,14 @@ public class OAuthService {
 
         response.setHeader("access-token", access);
 
-        Cookie refreshCookie = CookieUtil.createSecureCookie("refresh-token",
-                refresh,
-                jwtConfig.getRefreshTokenValidityInSeconds().intValue(),
-                false);
-
         CookieUtil.addSameSiteCookie(
                 response,
                 "refresh-token",
                 refresh,
                 jwtConfig.getRefreshTokenValidityInSeconds().intValue(),
-                true
+                cookieConfig.getDomain(),
+                cookieConfig.isSecure(),
+                cookieConfig.getSameSite()
         );
 
         return isNewUser;
@@ -148,7 +147,7 @@ public class OAuthService {
      * 2-1. 이때 남은 액세스 토큰의 만료기간을 TTL로 설정합니다
      * 3. JWTFilter 에서 블랙리스트에 해당 토큰이 있는지 탐색하고 있다면 그에 맞는 예외를 반환합니다
      * */
-    public void logout(CustomUserDetails userDetails, HttpServletRequest request) {
+    public void logout(CustomUserDetails userDetails, HttpServletRequest request,HttpServletResponse response) {
 
         Long id = userDetails.getUser().getId();
         refreshTokenRepository.deleteById(id);
@@ -165,6 +164,14 @@ public class OAuthService {
         long expiration = jwtUtil.getRemainingExpiration(accessToken);
 
         blacklistTokenRepository.save(jti, expiration);
+
+        CookieUtil.deleteCookie(
+                response,
+                "refresh-token",
+                cookieConfig.getDomain(),
+                cookieConfig.isSecure(),
+                cookieConfig.getSameSite()
+        );
     }
 
 

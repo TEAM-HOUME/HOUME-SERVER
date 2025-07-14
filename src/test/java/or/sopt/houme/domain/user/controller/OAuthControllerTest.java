@@ -91,7 +91,7 @@ class OAuthControllerTest {
     void testLogout() throws Exception {
         // given
         setAuthentication(testUserDetails);
-        doNothing().when(oAuthService).logout(any(CustomUserDetails.class), any(HttpServletRequest.class));
+        doNothing().when(oAuthService).logout(any(CustomUserDetails.class), any(HttpServletRequest.class),any(HttpServletResponse.class));
 
         // when & then
         mockMvc.perform(post("/logout"))
