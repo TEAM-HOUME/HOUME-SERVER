@@ -68,7 +68,7 @@ public class SecurityConfig {
                                 "https://dev.houme.kr",
                                 "https://www.houme.kr"
                         ));
-                        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+                        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
                         configuration.setAllowCredentials(true);
                         configuration.setAllowedHeaders(Collections.singletonList("*"));
                         configuration.setMaxAge(3600L);
@@ -97,7 +97,6 @@ public class SecurityConfig {
 
         // 인가 경로 설정
         http.authorizeHttpRequests((auth)->auth
-                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                 .requestMatchers(WhiteListConfig.swaggerWhitelist().toArray(new String[0])).permitAll()
                 .requestMatchers(WhiteListConfig.oauthWhitelist().toArray(new String[0])).permitAll()
                 .requestMatchers(WhiteListConfig.serverWhitelist().toArray(new String[0])).permitAll()
