@@ -6,11 +6,10 @@ import or.sopt.houme.domain.floorPlan.repository.FloorPlanRepository;
 import or.sopt.houme.domain.furniture.entity.Furniture;
 import or.sopt.houme.domain.furniture.repository.FurnitureRepository;
 import or.sopt.houme.domain.house.entity.enums.Equilibrium;
-import or.sopt.houme.domain.openai.service.OpenAiService;
 import or.sopt.houme.domain.prompt.dto.PromptFurnitureListDTO;
 import or.sopt.houme.domain.prompt.dto.PromptRequestDTO;
 import or.sopt.houme.domain.taste.entity.Taste;
-import or.sopt.houme.domain.taste.repository.TasteRepository;
+import or.sopt.houme.domain.taste.repository.taste.TasteRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;

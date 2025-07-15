@@ -2,6 +2,7 @@ package or.sopt.houme.domain.generateImage.dto.request;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 
 import java.util.List;
 
@@ -14,7 +15,8 @@ public record GenerateImageRequest(
         @NotNull(message = "도면 정보는 필수입니다.")
         FloorPlanInfo floorPlan,
         @NotNull(message = "moodBoardId는 필수입니다.")
-        Long moodBoardId,
+        @Size(min = 1, max = 5, message = "무드보드는 최소 1개에서 5개까지 입력 가능합니다.")
+        List<Long> moodBoardIds,
         @NotBlank(message = "주요 활동은 필수입니다.")
         String activity,
         @NotNull(message = "bedId는 필수입니다.")

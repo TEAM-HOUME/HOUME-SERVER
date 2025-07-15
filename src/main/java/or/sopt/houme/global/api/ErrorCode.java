@@ -68,6 +68,9 @@ public enum ErrorCode {
 
     // 크레딧 관련 예외
     CREDIT_NOT_FOUND(HttpStatus.NOT_FOUND, 40410, "크레딧을 찾을 수 없습니다."),
+
+    // 무드보드 (taste)
+    NOT_FOUND_TASTE(HttpStatus.NOT_FOUND, 40411, "제공된 무드보드 ID에 해당하는 취향을 찾을 수 없습니다."),
     /**
      * 405 METHOD_NOT_ALLOWED
      */

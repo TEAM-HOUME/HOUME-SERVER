@@ -8,7 +8,7 @@ import or.sopt.houme.domain.house.entity.enums.Equilibrium;
 import or.sopt.houme.domain.prompt.dto.PromptFurnitureListDTO;
 import or.sopt.houme.domain.prompt.dto.PromptRequestDTO;
 import or.sopt.houme.domain.taste.entity.Taste;
-import or.sopt.houme.domain.taste.repository.TasteRepository;
+import or.sopt.houme.domain.taste.repository.taste.TasteRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

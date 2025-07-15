@@ -3,7 +3,7 @@ package or.sopt.houme.domain.taste.service;
 import or.sopt.houme.domain.taste.dto.response.MoodBoardListResponse;
 import or.sopt.houme.domain.taste.dto.response.MoodBoardResponse;
 import or.sopt.houme.domain.taste.entity.Taste;
-import or.sopt.houme.domain.taste.repository.TasteRepository;
+import or.sopt.houme.domain.taste.repository.taste.TasteRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,7 +14,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
 @ActiveProfiles("test")
