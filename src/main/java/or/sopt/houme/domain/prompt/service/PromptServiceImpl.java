@@ -4,7 +4,9 @@ import lombok.RequiredArgsConstructor;
 import or.sopt.houme.domain.floorPlan.entity.FloorPlan;
 import or.sopt.houme.domain.floorPlan.repository.FloorPlanRepository;
 import or.sopt.houme.domain.furniture.entity.Furniture;
+import or.sopt.houme.domain.furniture.entity.FurnitureTag;
 import or.sopt.houme.domain.furniture.repository.FurnitureRepository;
+import or.sopt.houme.domain.furniture.repository.FurnitureTagRepository;
 import or.sopt.houme.domain.house.entity.enums.Equilibrium;
 import or.sopt.houme.domain.prompt.dto.PromptFurnitureListDTO;
 import or.sopt.houme.domain.prompt.dto.PromptRequestDTO;
@@ -21,6 +23,7 @@ public class PromptServiceImpl implements PromptService {
     private final FloorPlanRepository floorPlanRepository;
     private final TasteRepository tasteRepository;
     private final FurnitureRepository furnitureRepository;
+    private final FurnitureTagRepository furnitureTagRepository;
 
     @Override
     public String makePrompt(PromptRequestDTO requestDTO) {
@@ -41,8 +44,8 @@ public class PromptServiceImpl implements PromptService {
         PromptFurnitureListDTO promptFurnitureListDTO = requestDTO.promptFurnitureListDTO();
         List<Long> furnitureIds = promptFurnitureListDTO.furnitureIds();
 
-        List<String> furniturePrompts = furnitureRepository.findAllById(furnitureIds).stream()
-                .map(Furniture::getFurniturePrompt)
+        List<String> furniturePrompts = furnitureTagRepository.findAllById(furnitureIds).stream()
+                .map(FurnitureTag::getFurniturePrompt)
                 .toList();
 
         // 줄바꿈으로 이어붙이기

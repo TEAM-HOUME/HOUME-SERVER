@@ -84,7 +84,6 @@ class FurnitureServiceImplTest {
 
     private Furniture createFurniture(String eng, String kr, FurnitureType type) {
         return Furniture.builder()
-                .furniturePrompt(eng + "_PROMPT") // 프롬프트는 일단 임의로 지정
                 .furnitureNameEng(eng)
                 .furnitureNameKr(kr)
                 .furnitureType(type)

@@ -3,7 +3,9 @@ package or.sopt.houme.domain.prompt.service;
 import or.sopt.houme.domain.floorPlan.entity.FloorPlan;
 import or.sopt.houme.domain.floorPlan.repository.FloorPlanRepository;
 import or.sopt.houme.domain.furniture.entity.Furniture;
+import or.sopt.houme.domain.furniture.entity.FurnitureTag;
 import or.sopt.houme.domain.furniture.repository.FurnitureRepository;
+import or.sopt.houme.domain.furniture.repository.FurnitureTagRepository;
 import or.sopt.houme.domain.house.entity.enums.Equilibrium;
 import or.sopt.houme.domain.prompt.dto.PromptFurnitureListDTO;
 import or.sopt.houme.domain.prompt.dto.PromptRequestDTO;
@@ -34,6 +36,9 @@ class PromptServiceImplTest {
     @Mock
     private FurnitureRepository furnitureRepository;
 
+    @Mock
+    private FurnitureTagRepository furnitureTagRepository;
+
     @InjectMocks
     private PromptServiceImpl promptService;
 
@@ -61,11 +66,11 @@ class PromptServiceImplTest {
         when(tasteRepository.getReferenceById(tasteId))
                 .thenReturn(Taste.builder().tastePrompt("취향 프롬프트").build());
 
-        Furniture furniture1 = Furniture.builder().furniturePrompt("침대").build();
-        Furniture furniture2 = Furniture.builder().furniturePrompt("책상").build();
+        FurnitureTag furnitureTag1 = FurnitureTag.builder().furniturePrompt("침대").build();
+        FurnitureTag furnitureTag2 = FurnitureTag.builder().furniturePrompt("책상").build();
 
-        when(furnitureRepository.findAllById(furnitureIds))
-                .thenReturn(List.of(furniture1, furniture2));
+        when(furnitureTagRepository.findAllById(furnitureIds))
+                .thenReturn(List.of(furnitureTag1, furnitureTag2));
 
         // when
         String result = promptService.makePrompt(requestDTO);
