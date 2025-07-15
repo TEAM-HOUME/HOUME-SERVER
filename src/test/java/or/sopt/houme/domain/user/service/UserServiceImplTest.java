@@ -1,7 +1,6 @@
 package or.sopt.houme.domain.user.service;
 
 import or.sopt.houme.domain.credit.entity.Credit;
-import or.sopt.houme.domain.credit.entity.CreditStatus;
 import or.sopt.houme.domain.credit.repository.CreditRepository;
 import or.sopt.houme.domain.generateImage.entity.GenerateImage;
 import or.sopt.houme.domain.generateImage.repository.GenerateImageRepository;
@@ -10,7 +9,7 @@ import or.sopt.houme.domain.house.entity.enums.Equilibrium;
 import or.sopt.houme.domain.house.entity.enums.Form;
 import or.sopt.houme.domain.house.repository.HouseRepository;
 import or.sopt.houme.domain.taste.entity.Tag;
-import or.sopt.houme.domain.taste.repository.TagRepository;
+import or.sopt.houme.domain.taste.repository.tag.TagRepository;
 import or.sopt.houme.domain.user.controller.dto.*;
 import or.sopt.houme.domain.user.entity.Gender;
 import or.sopt.houme.domain.user.entity.User;

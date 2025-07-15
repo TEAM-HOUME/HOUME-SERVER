@@ -11,6 +11,7 @@ import or.sopt.houme.domain.house.entity.mapping.HouseTaste;
 import or.sopt.houme.domain.taste.entity.Tag;
 import or.sopt.houme.domain.taste.entity.Taste;
 import or.sopt.houme.domain.taste.entity.TasteTag;
+import or.sopt.houme.domain.taste.repository.tag.TagRepositoryImpl;
 import or.sopt.houme.domain.user.entity.*;
 import or.sopt.houme.global.config.QuerydslConfig;
 import org.junit.jupiter.api.BeforeEach;

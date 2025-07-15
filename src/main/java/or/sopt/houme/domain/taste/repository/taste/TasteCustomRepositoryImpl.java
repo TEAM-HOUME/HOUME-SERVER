@@ -1,4 +1,4 @@
-package or.sopt.houme.domain.taste.repository;
+package or.sopt.houme.domain.taste.repository.taste;
 
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;

@@ -3,7 +3,7 @@ package or.sopt.houme.domain.taste.service;
 import lombok.RequiredArgsConstructor;
 import or.sopt.houme.domain.taste.dto.response.MoodBoardListResponse;
 import or.sopt.houme.domain.taste.dto.response.MoodBoardResponse;
-import or.sopt.houme.domain.taste.repository.TasteRepository;
+import or.sopt.houme.domain.taste.repository.taste.TasteRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;

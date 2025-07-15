@@ -1,4 +1,4 @@
-package or.sopt.houme.domain.taste.repository;
+package or.sopt.houme.domain.taste.repository.tag;
 
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;

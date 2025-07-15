@@ -14,6 +14,7 @@ import or.sopt.houme.domain.house.service.HouseService;
 import or.sopt.houme.domain.openai.facade.OpenAiFacade;
 import or.sopt.houme.domain.prompt.dto.PromptFurnitureListDTO;
 import or.sopt.houme.domain.prompt.dto.PromptRequestDTO;
+import or.sopt.houme.domain.taste.service.TasteTagService;
 import or.sopt.houme.domain.user.entity.User;
 import or.sopt.houme.global.api.ErrorCode;
 import or.sopt.houme.global.api.GeneralException;
@@ -31,6 +32,7 @@ public class GenerateImageFacade {
     private final OpenAiFacade openAiFacade;
     private final HouseService houseService;
     private final CreditService creditService;
+    private final TasteTagService tasteTagService;
 
     // 이미지 생성
     @Transactional
@@ -64,10 +66,12 @@ public class GenerateImageFacade {
                 throw new GeneralException(ErrorCode.NOT_VALID_EXCEPTION);
             }
 
-            PromptRequestDTO promptRequestDTO = PromptRequestDTO.of(
+        Long tasteId = tasteTagService.getPriorityId(generateImageRequest.moodBoardIds());
+
+        PromptRequestDTO promptRequestDTO = PromptRequestDTO.of(
                     generateImageRequest.floorPlan().floorPlanId(),
                     generateImageRequest.floorPlan().isMirror(),
-                    generateImageRequest.moodBoardId(),
+                    tasteId,
                     equilibrium,
                     promptFurnitureListDTO
             );

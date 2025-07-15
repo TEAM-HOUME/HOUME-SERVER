@@ -9,7 +9,7 @@ import or.sopt.houme.domain.generateImage.repository.GenerateImageRepository;
 import or.sopt.houme.domain.house.entity.House;
 import or.sopt.houme.domain.house.repository.HouseRepository;
 import or.sopt.houme.domain.taste.entity.Tag;
-import or.sopt.houme.domain.taste.repository.TagRepository;
+import or.sopt.houme.domain.taste.repository.tag.TagRepository;
 import or.sopt.houme.domain.user.controller.dto.*;
 import or.sopt.houme.domain.user.entity.Gender;
 import or.sopt.houme.domain.user.entity.User;
@@ -19,7 +19,6 @@ import or.sopt.houme.global.api.handler.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.security.auth.login.CredentialException;
 import java.time.LocalDate;
 import java.util.List;
 
