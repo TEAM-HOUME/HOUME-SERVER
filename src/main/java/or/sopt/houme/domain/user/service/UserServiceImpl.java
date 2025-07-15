@@ -62,7 +62,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void updateUser(User user, String name, Gender gender, LocalDate birthday) {
+    public String updateUser(User user, String name, Gender gender, LocalDate birthday) {
 
         User findUser = findUser(user);
         findUser.updateUserFromSignUp(name, birthday, gender);
@@ -77,6 +77,8 @@ public class UserServiceImpl implements UserService {
         }catch (Exception e) {
             throw new CreditException(ErrorCode.CREDIT_CREATE_EXCEPTION);
         }
+
+        return findUser.getName();
     }
 
     private User findUser(User user) {
