@@ -8,6 +8,7 @@ import or.sopt.houme.domain.user.service.OAuthService;
 import or.sopt.houme.global.jwt.JWTFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -96,6 +97,7 @@ public class SecurityConfig {
 
         // 인가 경로 설정
         http.authorizeHttpRequests((auth)->auth
+                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                 .requestMatchers(WhiteListConfig.swaggerWhitelist().toArray(new String[0])).permitAll()
                 .requestMatchers(WhiteListConfig.oauthWhitelist().toArray(new String[0])).permitAll()
                 .requestMatchers(WhiteListConfig.serverWhitelist().toArray(new String[0])).permitAll()
