@@ -1,3 +1,4 @@
+/*
 package or.sopt.houme.domain.openai.client;
 
 import or.sopt.houme.domain.prompt.dto.PromptRequestDTO;
@@ -19,3 +20,4 @@ public interface FastApiImageClient {
     )
     byte[] generateImage(@RequestBody PromptRequestDTO request);
 }
+*/
