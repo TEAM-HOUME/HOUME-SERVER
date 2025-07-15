@@ -50,7 +50,6 @@ class FloorPlanServiceImplTest {
                 .filename(filename)
                 .originalFilename(originalFilename)
                 .fileExtension(fileExtension)
-                .reversePrompt("reversePrompt1")
                 .build();
         FloorPlan floorPlan2 = FloorPlan.builder()
                 .form(Form.ETC)
@@ -60,7 +59,6 @@ class FloorPlanServiceImplTest {
                 .filename(filename)
                 .originalFilename(originalFilename)
                 .fileExtension(fileExtension)
-                .reversePrompt("reversePrompt2")
                 .build();
         FloorPlan floorPlan3 = FloorPlan.builder()
                 .form(Form.OFFICETEL)
@@ -70,7 +68,6 @@ class FloorPlanServiceImplTest {
                 .filename(filename)
                 .originalFilename(originalFilename)
                 .fileExtension(fileExtension)
-                .reversePrompt("reversePrompt3")
                 .build();
 
         floorPlanRepository.saveAll(List.of(floorPlan1, floorPlan2, floorPlan3));

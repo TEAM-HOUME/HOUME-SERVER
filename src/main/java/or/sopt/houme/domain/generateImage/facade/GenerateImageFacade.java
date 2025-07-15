@@ -70,7 +70,6 @@ public class GenerateImageFacade {
 
         PromptRequestDTO promptRequestDTO = PromptRequestDTO.of(
                     generateImageRequest.floorPlan().floorPlanId(),
-                    generateImageRequest.floorPlan().isMirror(),
                     tasteId,
                     equilibrium,
                     promptFurnitureListDTO
@@ -87,7 +86,7 @@ public class GenerateImageFacade {
             // 이미지 생성 여부 업데이트
             user.updateHasGeneratedImage();
 
-            return ImageInfoResponse.of(generateImage.getId(), generateImage.getUrl());
+            return ImageInfoResponse.of(generateImage.getId(), generateImage.getUrl(), generateImageRequest.floorPlan().isMirror());
         } catch (GenerateImageException e) {
           throw e;
         } catch (Exception e){
