@@ -40,7 +40,6 @@ class OpenAiFacadeTest {
         PromptFurnitureListDTO furnitureListDTO = PromptFurnitureListDTO.of(List.of(1L, 2L, 3L));
         PromptRequestDTO requestDTO = PromptRequestDTO.of(
                 1L,
-                false,
                 2L,
                 Equilibrium.UNDER_5,
                 furnitureListDTO

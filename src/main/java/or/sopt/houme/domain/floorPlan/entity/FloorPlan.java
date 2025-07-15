@@ -39,8 +39,5 @@ public class FloorPlan {
 
     @Column(name = "floor_plan_prompt", columnDefinition = "TEXT", nullable = false)
     private String floorPlanPrompt;
-
-    @Column(name = "reverse_prompt", columnDefinition = "TEXT", nullable = false)
-    private String reversePrompt;
 }
 
