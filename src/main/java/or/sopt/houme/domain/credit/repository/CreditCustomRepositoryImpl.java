@@ -24,6 +24,8 @@ public class CreditCustomRepositoryImpl implements CreditCustomRepository {
         return queryFactory.selectFrom(credit)
                 .where(credit.user.eq(user).and(credit.status.eq(CreditStatus.ACTIVE)))
                 .orderBy(credit.createdAt.asc())
-                .stream().findFirst();
+                .limit(1L)
+                .stream()
+                .findFirst();
     }
 }

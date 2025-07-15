@@ -45,7 +45,7 @@ public class CarouselController {
 
         try {
             carouselOptimisticLockFacade.likeCarousel(userDetails.getUser(), carouselId);
-        }catch (InterruptedException e) {
+        } catch (InterruptedException e) {
             throw new CarouselException(ErrorCode.CAROUSEL_INTERRUPT_EXCEPTION);
         }
 
