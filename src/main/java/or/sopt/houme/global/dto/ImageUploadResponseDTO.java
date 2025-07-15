@@ -1,9 +1,6 @@
 package or.sopt.houme.global.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Getter
 @NoArgsConstructor
@@ -15,6 +12,9 @@ public class ImageUploadResponseDTO {
     private String originalFilename;
     private String imageLink;
     private String contentType;
+
+    @Setter
+    private String pullPrompt;
 
     public static ImageUploadResponseDTO from(String filename, String originalFilename, String imagePath, String contentType) {
         return ImageUploadResponseDTO.builder()

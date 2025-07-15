@@ -55,7 +55,10 @@ public class OpenAiServiceImpl implements OpenAiService {
             byte[] image = getGptImage(request);
 
             // S3에 이미지 저장하고 메타데이터를 반환
-            return s3Util.uploadByByte(S3DirNameConstant.CHAT_GPT_DIRNAME, image);
+            ImageUploadResponseDTO responseDTO = s3Util.uploadByByte(S3DirNameConstant.CHAT_GPT_DIRNAME, image);
+            responseDTO.setPullPrompt(prompt);
+
+            return responseDTO;
 
         } catch (FeignException e) {
             log.info(e.getMessage());

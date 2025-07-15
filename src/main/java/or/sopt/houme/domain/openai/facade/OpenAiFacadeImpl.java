@@ -1,6 +1,7 @@
 package or.sopt.houme.domain.openai.facade;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import or.sopt.houme.domain.openai.service.OpenAiService;
 import or.sopt.houme.domain.prompt.dto.PromptRequestDTO;
 import or.sopt.houme.domain.prompt.service.PromptService;
@@ -42,8 +43,8 @@ public class OpenAiFacadeImpl implements OpenAiFacade {
      * 테스트 메서드입니다
      * */
     @Override
-    public ImageUploadResponseDTO testMakeImage(){
+    public ImageUploadResponseDTO testMakeImage(String prompt){
 
-        return openAiService.createImage("웃는 남자 이미지 만들어줘");
+        return openAiService.createImage(prompt);
     }
 }

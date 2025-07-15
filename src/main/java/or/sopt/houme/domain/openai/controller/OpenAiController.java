@@ -21,9 +21,9 @@ public class OpenAiController {
     @Operation(summary = "chatgpt-image-1 을 활용한 이미지 저장 API",
         description = "실제 성능 테스트를 위한 메서드입니다. **호출 시, 서버 전재연에게 반드시 문의해주세요**")
     @PostMapping(value = "/generate")
-    public ResponseEntity<ApiResponse<String>> generate() {
+    public ResponseEntity<ApiResponse<String>> generate(@RequestParam String prompt) {
 
-        ImageUploadResponseDTO responseDTO = openAiFacade.testMakeImage();
+        ImageUploadResponseDTO responseDTO = openAiFacade.testMakeImage(prompt);
 
         return ResponseEntity.ok().body(ApiResponse.ok(responseDTO.getImageLink()));
     }
