@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/image")
+@RequestMapping("api/v1/image")
 @Tag(name = "LLM 호출로직 테스트 API")
 public class OpenAiController {
 
