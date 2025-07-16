@@ -21,7 +21,7 @@ public record GenerateImageRequest(
         String activity,
         @NotNull(message = "bedId는 필수입니다.")
         Long bedId,
-        @Size(max = 4, message = "최대 3개까지만 입력 가능합니다.")
+        @Size(max = 4, message = "최대 4개까지만 입력 가능합니다.")
         // 선택 가구들 아이디
         List<Long> selectiveIds
 ) {
