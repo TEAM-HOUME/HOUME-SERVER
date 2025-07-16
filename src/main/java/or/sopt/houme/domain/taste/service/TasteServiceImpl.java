@@ -7,7 +7,9 @@ import or.sopt.houme.domain.taste.repository.taste.TasteRepository;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -23,7 +25,10 @@ public class TasteServiceImpl implements TasteService {
         List<MoodBoardResponse> list = tasteRepository.findTasteByCursor(cursorId, size)
                 .stream()
                 .map(MoodBoardResponse::from)
-                .toList();
+                .collect(Collectors.toList());
+
+        // 리스트 섞기
+        Collections.shuffle(list);
 
         return MoodBoardListResponse.of(list);
     }
