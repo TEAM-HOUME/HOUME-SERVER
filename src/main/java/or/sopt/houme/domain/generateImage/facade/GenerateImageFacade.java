@@ -10,10 +10,12 @@ import or.sopt.houme.domain.generateImage.service.GenerateImageService;
 import or.sopt.houme.domain.house.entity.House;
 import or.sopt.houme.domain.house.entity.enums.Activity;
 import or.sopt.houme.domain.house.entity.enums.Equilibrium;
+import or.sopt.houme.domain.house.entity.enums.Structure;
 import or.sopt.houme.domain.house.service.HouseService;
 import or.sopt.houme.domain.openai.facade.OpenAiFacade;
 import or.sopt.houme.domain.prompt.dto.PromptFurnitureListDTO;
 import or.sopt.houme.domain.prompt.dto.PromptRequestDTO;
+import or.sopt.houme.domain.taste.entity.Tag;
 import or.sopt.houme.domain.taste.service.TasteTagService;
 import or.sopt.houme.domain.user.entity.User;
 import or.sopt.houme.global.api.ErrorCode;
@@ -56,6 +58,10 @@ public class GenerateImageFacade {
             // 주요 활동 업데이트
             House house = houseService.updateHouseActivity(generateImageRequest.houseId(), activity);
 
+            if (!house.getStructure().equals(Structure.DUPLEX)){
+                generateImageRequest.selectiveIds().add(generateImageRequest.bedId());
+            }
+
             // 가구 식별자 ID
             PromptFurnitureListDTO promptFurnitureListDTO = PromptFurnitureListDTO.of(generateImageRequest.selectiveIds());
 
@@ -66,11 +72,12 @@ public class GenerateImageFacade {
                 throw new GeneralException(ErrorCode.NOT_VALID_EXCEPTION);
             }
 
-        Long tasteId = tasteTagService.getPriorityId(generateImageRequest.moodBoardIds());
+            // 가장 우선순위가 높은 무드보드 id 제공
+            Tag tag = tasteTagService.getPriorityId(generateImageRequest.moodBoardIds());
 
-        PromptRequestDTO promptRequestDTO = PromptRequestDTO.of(
+            PromptRequestDTO promptRequestDTO = PromptRequestDTO.of(
                     generateImageRequest.floorPlan().floorPlanId(),
-                    tasteId,
+                    tag.getId(),
                     equilibrium,
                     promptFurnitureListDTO
             );
@@ -86,7 +93,10 @@ public class GenerateImageFacade {
             // 이미지 생성 여부 업데이트
             user.updateHasGeneratedImage();
 
-            return ImageInfoResponse.of(generateImage.getId(), generateImage.getUrl(), generateImageRequest.floorPlan().isMirror());
+            return ImageInfoResponse.of(generateImage.getId(), generateImage.getUrl(),
+                    generateImageRequest.floorPlan().isMirror(),
+                    generateImageRequest.equilibrium(), house.getForm().getDescription(),
+                    tag.getTagNameKr(), user.getName());
         } catch (GenerateImageException e) {
           throw e;
         } catch (Exception e){
