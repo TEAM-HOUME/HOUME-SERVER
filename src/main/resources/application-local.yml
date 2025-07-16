@@ -100,3 +100,7 @@ app:
     domain: ""
     same-site: Lax
     secure: false
+
+external:
+  image-api:
+    base-url: http://3.38.226.162:80
