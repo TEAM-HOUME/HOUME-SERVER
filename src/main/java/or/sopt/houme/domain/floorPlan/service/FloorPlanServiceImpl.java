@@ -29,7 +29,7 @@ public class FloorPlanServiceImpl implements FloorPlanService {
     public List<FloorPlanResponse> getHousingPlan(Form form, Structure structure) {
 
         List<FloorPlan> allByStructureAndType =
-                floorPlanRepository.findAllByFormAndStructure(form, structure);
+                floorPlanRepository.findAllByStructure(structure);
 
         return allByStructureAndType.stream()
                 .map(FloorPlanResponse::of)
