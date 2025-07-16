@@ -25,7 +25,4 @@ public class Taste {
 
     @Column(name = "file_extension", nullable = false)
     private String fileExtension;
-
-    @Column(name = "taste_prompt", nullable = false)
-    private String tastePrompt;
 }

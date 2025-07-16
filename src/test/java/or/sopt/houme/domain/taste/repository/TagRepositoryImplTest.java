@@ -88,7 +88,6 @@ class TagRepositoryImplTest {
                 .filename("taste.png")
                 .originalFilename("origin-taste.png")
                 .fileExtension("png")
-                .tastePrompt("모던 인테리어")
                 .build();
         em.persist(mockTaste);
 
@@ -102,6 +101,8 @@ class TagRepositoryImplTest {
         // 🔖 태그 생성
         mockTag = Tag.builder()
                 .tagName("모던")
+                .tagNameKr("모던 인테리어")
+                .tagPrompt("프롬프트")
                 .build();
         em.persist(mockTag);
 

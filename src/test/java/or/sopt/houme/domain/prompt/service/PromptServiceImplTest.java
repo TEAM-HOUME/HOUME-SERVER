@@ -2,15 +2,13 @@ package or.sopt.houme.domain.prompt.service;
 
 import or.sopt.houme.domain.floorPlan.entity.FloorPlan;
 import or.sopt.houme.domain.floorPlan.repository.FloorPlanRepository;
-import or.sopt.houme.domain.furniture.entity.Furniture;
 import or.sopt.houme.domain.furniture.entity.FurnitureTag;
-import or.sopt.houme.domain.furniture.repository.FurnitureRepository;
 import or.sopt.houme.domain.furniture.repository.FurnitureTagRepository;
 import or.sopt.houme.domain.house.entity.enums.Equilibrium;
 import or.sopt.houme.domain.prompt.dto.PromptFurnitureListDTO;
 import or.sopt.houme.domain.prompt.dto.PromptRequestDTO;
-import or.sopt.houme.domain.taste.entity.Taste;
-import or.sopt.houme.domain.taste.repository.taste.TasteRepository;
+import or.sopt.houme.domain.taste.entity.Tag;
+import or.sopt.houme.domain.taste.repository.tag.TagRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -19,6 +17,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
@@ -31,10 +30,7 @@ class PromptServiceImplTest {
     private FloorPlanRepository floorPlanRepository;
 
     @Mock
-    private TasteRepository tasteRepository;
-
-    @Mock
-    private FurnitureRepository furnitureRepository;
+    private TagRepository tagRepository;
 
     @Mock
     private FurnitureTagRepository furnitureTagRepository;
@@ -58,11 +54,11 @@ class PromptServiceImplTest {
                 new PromptFurnitureListDTO(furnitureIds)
         );
 
-        when(floorPlanRepository.getReferenceById(floorPlanId))
-                .thenReturn(FloorPlan.builder().floorPlanPrompt("도면 프롬프트").build());
+        when(floorPlanRepository.findById(floorPlanId))
+                .thenReturn(Optional.of(FloorPlan.builder().floorPlanPrompt("도면 프롬프트").build()));
 
-        when(tasteRepository.getReferenceById(tasteId))
-                .thenReturn(Taste.builder().tastePrompt("취향 프롬프트").build());
+        when(tagRepository.findById(tasteId))
+                .thenReturn(Optional.of(Tag.builder().tagPrompt("취향 프롬프트").build()));
 
         FurnitureTag furnitureTag1 = FurnitureTag.builder().furniturePrompt("침대").build();
         FurnitureTag furnitureTag2 = FurnitureTag.builder().furniturePrompt("책상").build();

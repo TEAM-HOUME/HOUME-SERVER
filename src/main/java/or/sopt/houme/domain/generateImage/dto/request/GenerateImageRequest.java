@@ -16,7 +16,7 @@ public record GenerateImageRequest(
         FloorPlanInfo floorPlan,
         @NotNull(message = "moodBoardId는 필수입니다.")
         @Size(min = 1, max = 5, message = "무드보드는 최소 1개에서 5개까지 입력 가능합니다.")
-        List<Long> moodBoardIds,
+        List<Long> moodBoardIds,        // tasteId
         @NotBlank(message = "주요 활동은 필수입니다.")
         String activity,
         @NotNull(message = "bedId는 필수입니다.")

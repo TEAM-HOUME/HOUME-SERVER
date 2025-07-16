@@ -20,4 +20,13 @@ public class Tag {
     // 우선순위
     @Column(name = "priority", nullable = false)
     private int priority;
+
+    // 태그(취향) 이름 한글
+    @Column(name = "tag_name_kr", nullable = false)
+    private String tagNameKr;
+
+    // 태그(취향) 프롬프트
+    @Column(name = "tag_prompt", nullable = false, columnDefinition = "TEXT")
+    private  String tagPrompt;
+
 }
