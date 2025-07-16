@@ -91,12 +91,13 @@ class UserRepositoryImplTest {
                 .filename("taste-image.png")
                 .originalFilename("original-taste-image.png")
                 .fileExtension("png")
-                .tastePrompt("깔끔한 화이트톤의 거실 인테리어") // 예시 프롬프트
                 .build();
         em.persist(mockTaste);
 
         Tag mockTag = Tag.builder()
                 .tagName("모던")
+                .tagPrompt("깔끔한 화이트톤의 거실 인테리어") // 예시 프롬프트
+                .tagNameKr("모던")
                 .build();
         em.persist(mockTag);
 

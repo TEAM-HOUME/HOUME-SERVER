@@ -66,6 +66,9 @@ public enum ErrorCode {
     CAROUSEL_NOT_FOUND(HttpStatus.NOT_FOUND,40408,"캐러셀을 찾을 수 없습니다"),
     CAROUSEL_PREFERENCE_NOT_FOUND(HttpStatus.NOT_FOUND,40409,"캐러셀 선호도 레코드를 찾을 수 없습니다"),
 
+    // 도면 관련 예외
+    NOT_FOUND_FLOOR_PLAN(HttpStatus.NOT_FOUND, 40410, "도면을 찾을 수 없습니다."),
+
     // 크레딧 관련 예외
     CREDIT_NOT_FOUND(HttpStatus.NOT_FOUND, 40410, "크레딧을 찾을 수 없습니다."),
 

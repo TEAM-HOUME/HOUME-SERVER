@@ -35,7 +35,6 @@ class TasteServiceImplTest {
         String fileName = "fileName";
         String originalFilename = "originalFilename";
         String fileExtension = "jpg";
-        String prompt = "prompt";
 
         List<Taste> tastes = new ArrayList<>();
 
@@ -46,7 +45,6 @@ class TasteServiceImplTest {
                     .filename(fileName + i)
                     .originalFilename(originalFilename + i)
                     .fileExtension(fileExtension)
-                    .tastePrompt(prompt + i)
                     .build());
         }
 
@@ -74,7 +72,6 @@ class TasteServiceImplTest {
         String fileName = "fileName";
         String originalFilename = "originalFilename";
         String fileExtension = "jpg";
-        String prompt = "prompt";
 
         List<Taste> tastes = new ArrayList<>();
 
@@ -85,7 +82,6 @@ class TasteServiceImplTest {
                     .filename(fileName + i)
                     .originalFilename(originalFilename + i)
                     .fileExtension(fileExtension)
-                    .tastePrompt(prompt + i)
                     .build());
         }
 
