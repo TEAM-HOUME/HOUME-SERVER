@@ -72,7 +72,7 @@ class FloorPlanServiceImplTest {
                 .fileExtension(fileExtension)
                 .build();
 
-        when(floorPlanRepository.findAllByFormAndStructure(officetel, openOneRoom)).thenReturn(List.of(floorPlan1, floorPlan3));
+        when(floorPlanRepository.findAllByStructure(openOneRoom)).thenReturn(List.of(floorPlan1, floorPlan3));
 
         // When
         List<FloorPlanResponse> housingPlan = floorPlanService.getHousingPlan(officetel, openOneRoom);
