@@ -95,7 +95,7 @@ public class GenerateImageFacade {
 
             return ImageInfoResponse.of(generateImage.getId(), generateImage.getUrl(),
                     generateImageRequest.floorPlan().isMirror(),
-                    generateImageRequest.equilibrium(), house.getForm().getDescription(),
+                    house.getEquilibrium().getDescription(), house.getForm().getDescription(),
                     tag.getTagNameKr(), user.getName());
         } catch (GenerateImageException e) {
           throw e;

@@ -168,7 +168,7 @@ class UserServiceImplTest {
         ImageHistoryResultPageResponse response = userService.getImageHistoryResultPage(user, imageId);
 
         // then
-        assertThat(response.equilibrium()).isEqualTo("UNDER_5");
+        assertThat(response.equilibrium()).isEqualTo("5평 이하");
         assertThat(response.houseForm()).isEqualTo("OFFICETEL");
         assertThat(response.tasteTag()).isEqualTo("모던");
         assertThat(response.name()).isEqualTo("테스트유저");
