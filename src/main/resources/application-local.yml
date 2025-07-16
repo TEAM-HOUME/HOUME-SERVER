@@ -103,4 +103,4 @@ app:
 
 external:
   image-api:
-    base-url: http://3.38.226.162:80
+    base-url: ${IMAGE_BASE_URL}
