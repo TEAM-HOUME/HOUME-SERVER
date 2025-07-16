@@ -46,12 +46,11 @@ class OpenAiControllerTest {
                 .thenReturn(mockResponse);
 
         // when & then
-        mockMvc.perform(post("/image/generate")
+        mockMvc.perform(post("/api/v1/image/generate")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.code").value(200))
                 .andExpect(jsonPath("$.msg").value("응답 성공"))
-                .andExpect(jsonPath("$.data").value("https://example.com/generated_123.png"))
                 .andExpect(jsonPath("$.data").value("https://example.com/generated_123.png"));
     }
 }

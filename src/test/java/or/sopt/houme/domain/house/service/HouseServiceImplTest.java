@@ -16,31 +16,30 @@ import or.sopt.houme.global.api.GeneralException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.transaction.annotation.Transactional;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDate;
 import java.util.Arrays;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.mockito.Mockito.when;
 
-@ActiveProfiles("test")
-@SpringBootTest
+@ExtendWith(MockitoExtension.class)
 @DisplayName("[House Service Test]")
-@Transactional
 class HouseServiceImplTest {
 
-    @Autowired
-    private HouseService houseService;
+    @InjectMocks
+    private HouseServiceImpl houseService;
 
-    @Autowired
+    @Mock
     private UserRepository userRepository;
 
-    @Autowired
+    @Mock
     private HouseRepository houseRepository;
 
     private User savedUser;
@@ -48,8 +47,8 @@ class HouseServiceImplTest {
 
     @BeforeEach
     void setUp() {
-        savedUser = userRepository.save(
-                User.builder()
+        savedUser = User.builder()
+                .id(1L)
                         .name("test_user")
                         .birthday(LocalDate.of(2001, 1, 10))
                         .gender(Gender.MALE)
@@ -59,18 +58,16 @@ class HouseServiceImplTest {
                         .socialType(SocialType.KAKAO)
                         .status(UserStatus.ACTIVE)
                         .role(Role.ROLE_USER)
-                        .build()
-        );
+                        .build();
 
-        savedHouse = houseRepository.save(
-                House.builder()
+        savedHouse = House.builder()
+                .id(1L)
                         .form(Form.OFFICETEL)
                         .structure(Structure.OPEN_ONE_ROOM)
                         .equilibrium(Equilibrium.UNDER_5)
                         .isValid(true)
                         .user(savedUser)
-                        .build()
-        );
+                        .build();
     }
 
     @Test
@@ -109,6 +106,8 @@ class HouseServiceImplTest {
     @Test
     @DisplayName("User를 받아서 최근에 입력한 House 조건들을 받을 수 있다.")
     void getHouseOptionsResponse_ShouldReturnValidHouse() {
+        // Given
+        when(houseRepository.findLatestHouse(savedUser)).thenReturn(savedHouse);
 
         // When
         LatestHouseConditionDTO latestHouse = houseService.findLatestHouse(savedUser);
@@ -137,6 +136,9 @@ class HouseServiceImplTest {
     @Test
     @DisplayName("house activity 업데이트")
     void updateHouseActivity() {
+        // Given
+        when(houseRepository.findById(savedHouse.getId())).thenReturn(Optional.of(savedHouse));
+        when(houseRepository.save(savedHouse)).thenReturn(savedHouse);
 
         // When
         House house = houseService.updateHouseActivity(savedHouse.getId(), Activity.RELAXING);

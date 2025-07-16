@@ -28,4 +28,16 @@ public class FloorPlanCustomRepositoryImpl implements FloorPlanCustomRepository 
                 )
                 .fetch();
     }
+
+    // 구조에 따른 도면 조회
+    @Override
+    public List<FloorPlan> findAllByStructure(Structure structure) {
+
+        return queryFactory
+                .selectFrom(floorPlan)
+                .where(
+                        floorPlan.structure.eq(structure)
+                )
+                .fetch();
+    }
 }

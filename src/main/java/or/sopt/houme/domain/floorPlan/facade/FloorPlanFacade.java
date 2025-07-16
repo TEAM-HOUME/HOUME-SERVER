@@ -9,6 +9,7 @@ import or.sopt.houme.domain.house.service.HouseService;
 import or.sopt.houme.domain.user.entity.User;
 import or.sopt.houme.global.api.ErrorCode;
 import or.sopt.houme.global.api.GeneralException;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Component;
 
 import java.util.List;

@@ -7,6 +7,7 @@ import or.sopt.houme.domain.floorPlan.repository.FloorPlanRepository;
 import or.sopt.houme.domain.house.entity.enums.Equilibrium;
 import or.sopt.houme.domain.house.entity.enums.Form;
 import or.sopt.houme.domain.house.entity.enums.Structure;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,11 +21,15 @@ public class FloorPlanServiceImpl implements FloorPlanService {
     private final FloorPlanRepository floorPlanRepository;
 
     // 집 구조 도면 제공 서비스 (조건에 받아서)
+    @Cacheable(
+            value = "floorPlanListCache",
+            key = "'structure:' + #structure.name()"
+    )
     @Override
     public List<FloorPlanResponse> getHousingPlan(Form form, Structure structure) {
 
         List<FloorPlan> allByStructureAndType =
-                floorPlanRepository.findAllByFormAndStructure(form, structure);
+                floorPlanRepository.findAllByStructure(structure);
 
         return allByStructureAndType.stream()
                 .map(FloorPlanResponse::of)
