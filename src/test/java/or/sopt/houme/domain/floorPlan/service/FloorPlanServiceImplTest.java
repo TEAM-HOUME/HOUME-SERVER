@@ -8,26 +8,25 @@ import or.sopt.houme.domain.house.entity.enums.Form;
 import or.sopt.houme.domain.house.entity.enums.Structure;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.ActiveProfiles;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
-
 import static org.assertj.core.api.AssertionsForClassTypes.tuple;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.when;
 
-@SpringBootTest
-@ActiveProfiles("test")
+@ExtendWith(MockitoExtension.class)
 @DisplayName("[FloorPlan Service Test]")
 class FloorPlanServiceImplTest {
 
-    @Autowired
-    FloorPlanService floorPlanService;
+    @InjectMocks
+    FloorPlanServiceImpl floorPlanService;
 
-    @Autowired
+    @Mock
     FloorPlanRepository floorPlanRepository;
 
     @Test
@@ -43,6 +42,7 @@ class FloorPlanServiceImplTest {
         String fileExtension = "jps";
 
         FloorPlan floorPlan1 = FloorPlan.builder()
+                .id(1L)
                 .form(Form.OFFICETEL)
                 .structure(Structure.OPEN_ONE_ROOM)
                 .floorPlanPrompt("prompt1")
@@ -52,6 +52,7 @@ class FloorPlanServiceImplTest {
                 .fileExtension(fileExtension)
                 .build();
         FloorPlan floorPlan2 = FloorPlan.builder()
+                .id(2L)
                 .form(Form.ETC)
                 .structure(Structure.DUPLEX)
                 .floorPlanPrompt("prompt2")
@@ -61,6 +62,7 @@ class FloorPlanServiceImplTest {
                 .fileExtension(fileExtension)
                 .build();
         FloorPlan floorPlan3 = FloorPlan.builder()
+                .id(3L)
                 .form(Form.OFFICETEL)
                 .structure(Structure.OPEN_ONE_ROOM)
                 .floorPlanPrompt("prompt3")
@@ -70,7 +72,7 @@ class FloorPlanServiceImplTest {
                 .fileExtension(fileExtension)
                 .build();
 
-        floorPlanRepository.saveAll(List.of(floorPlan1, floorPlan2, floorPlan3));
+        when(floorPlanRepository.findAllByFormAndStructure(officetel, openOneRoom)).thenReturn(List.of(floorPlan1, floorPlan3));
 
         // When
         List<FloorPlanResponse> housingPlan = floorPlanService.getHousingPlan(officetel, openOneRoom);
