@@ -1,6 +1,7 @@
 package or.sopt.houme.domain.openai.facade;
 
 import lombok.RequiredArgsConstructor;
+import or.sopt.houme.domain.openai.service.FastApiServiceImpl;
 import or.sopt.houme.domain.openai.service.OpenAiService;
 import or.sopt.houme.domain.prompt.dto.PromptRequestDTO;
 import or.sopt.houme.domain.prompt.service.PromptService;
@@ -13,6 +14,7 @@ public class OpenAiFacadeImpl implements OpenAiFacade {
 
     private final OpenAiService openAiService;
     private final PromptService promptService;
+    private final FastApiServiceImpl fastApiService;
 
     /**
      * 1. DTO 를 통해서 이미지 생성에 필요한 데이터를 받습니다
@@ -35,6 +37,11 @@ public class OpenAiFacadeImpl implements OpenAiFacade {
         String prompt = promptService.makePrompt(promptRequestDTO);
 
         return openAiService.createImage(prompt);
+    }
+
+    @Override
+    public ImageUploadResponseDTO makeImageByFastApi(PromptRequestDTO promptRequestDTO){
+        return fastApiService.getImageByFastApi(promptRequestDTO);
     }
 
 

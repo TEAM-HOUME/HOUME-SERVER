@@ -34,7 +34,7 @@ public class GenerateImageFacade {
     private final CreditService creditService;
     private final TasteTagService tasteTagService;
 
-    // 이미지 생성
+    // 스프링을 이용한 이미지 생성
     @Transactional
     public ImageInfoResponse generateImage(User user, GenerateImageRequest generateImageRequest){
 
@@ -89,6 +89,67 @@ public class GenerateImageFacade {
             return ImageInfoResponse.of(generateImage.getId(), generateImage.getUrl(), generateImageRequest.floorPlan().isMirror());
         } catch (GenerateImageException e) {
           throw e;
+        } catch (Exception e){
+            log.info("Image 생성 중 오류 발생 {}", e.getMessage());
+            throw new GenerateImageException(ErrorCode.GENERATED_IMAGE_EXCEPTION);
+        }
+    }
+
+
+    @Transactional
+    public ImageInfoResponse generateImageByFastApi(User user, GenerateImageRequest generateImageRequest){
+
+        /**
+         * redis 저장 (user랑 상태값)
+         * 재요청시 user 조회 (상태값은 이미지 받았는지 판단)
+         * 상태값이 요청 후 받았다( -> 재요청 가능 )
+         */
+
+        // 크레딧 감소
+        creditService.decreaseCredit(user);
+
+        Activity activity;
+        try {
+            activity = Activity.valueOf(generateImageRequest.activity());
+        } catch (IllegalArgumentException e){
+            throw new GeneralException(ErrorCode.NOT_VALID_EXCEPTION);
+        }
+        // 주요 활동 업데이트
+        House house = houseService.updateHouseActivity(generateImageRequest.houseId(), activity);
+
+        // 가구 식별자 ID
+        PromptFurnitureListDTO promptFurnitureListDTO = PromptFurnitureListDTO.of(generateImageRequest.selectiveIds());
+
+        Equilibrium equilibrium;
+        try {
+            equilibrium = Equilibrium.valueOf(generateImageRequest.equilibrium());
+        } catch (IllegalArgumentException e){
+            throw new GeneralException(ErrorCode.NOT_VALID_EXCEPTION);
+        }
+
+        Long tasteId = tasteTagService.getPriorityId(generateImageRequest.moodBoardIds());
+
+        PromptRequestDTO promptRequestDTO = PromptRequestDTO.of(
+                generateImageRequest.floorPlan().floorPlanId(),
+                tasteId,
+                equilibrium,
+                promptFurnitureListDTO
+        );
+
+        try {
+
+            // OpenAI로 image 생성
+            ImageUploadResponseDTO imageUploadResponseDTO = openAiFacade.makeImageByFastApi(promptRequestDTO);
+
+            // 도면 이미지 생성
+            GenerateImage generateImage = generateImageService.createGenerateImage(imageUploadResponseDTO, house);
+
+            // 이미지 생성 여부 업데이트
+            user.updateHasGeneratedImage();
+
+            return ImageInfoResponse.of(generateImage.getId(), generateImage.getUrl(), generateImageRequest.floorPlan().isMirror());
+        } catch (GenerateImageException e) {
+            throw e;
         } catch (Exception e){
             log.info("Image 생성 중 오류 발생 {}", e.getMessage());
             throw new GenerateImageException(ErrorCode.GENERATED_IMAGE_EXCEPTION);

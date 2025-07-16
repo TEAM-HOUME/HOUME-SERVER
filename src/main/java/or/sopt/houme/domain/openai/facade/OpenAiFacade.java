@@ -6,5 +6,7 @@ import or.sopt.houme.global.dto.ImageUploadResponseDTO;
 public interface OpenAiFacade {
     ImageUploadResponseDTO makeImage(PromptRequestDTO promptRequestDTO);
 
+    ImageUploadResponseDTO makeImageByFastApi(PromptRequestDTO promptRequestDTO);
+
     ImageUploadResponseDTO testMakeImage();
 }
