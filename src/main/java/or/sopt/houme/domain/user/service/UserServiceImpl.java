@@ -80,6 +80,15 @@ public class UserServiceImpl implements UserService {
         return findUser.getName();
     }
 
+    // 이미지 생성 이력 저장
+    @Transactional
+    @Override
+    public void updateHasGeneratedImage(User user) {
+        user.updateHasGeneratedImage();
+
+        userRepository.save(user);
+    }
+
     private User findUser(User user) {
         return userRepository.findById(user.getId()).orElseThrow(() -> new UserException(ErrorCode.USER_NOT_FOUND));
     }

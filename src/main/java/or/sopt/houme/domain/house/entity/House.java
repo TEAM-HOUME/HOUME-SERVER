@@ -55,4 +55,9 @@ public class House {
     public void updateActivity(Activity activity) {
         this.activity = activity;
     }
+
+    // 프롬프트 저장하기
+    public void updatePrompt(String prompt) {
+        this.housePrompt = prompt;
+    }
 }

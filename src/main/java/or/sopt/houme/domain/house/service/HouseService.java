@@ -25,4 +25,7 @@ public interface HouseService {
 
     // 생성된 이미지 선호도
     House findHouseById(long houseId);
+
+    // 생성된 이미지 프롬프트 저장
+    void saveHousePrompt(House house, String prompt);
 }

@@ -18,6 +18,7 @@ import or.sopt.houme.domain.prompt.dto.PromptRequestDTO;
 import or.sopt.houme.domain.taste.entity.Tag;
 import or.sopt.houme.domain.taste.service.TasteTagService;
 import or.sopt.houme.domain.user.entity.User;
+import or.sopt.houme.domain.user.service.UserService;
 import or.sopt.houme.global.api.ErrorCode;
 import or.sopt.houme.global.api.GeneralException;
 import or.sopt.houme.global.api.handler.GenerateImageException;
@@ -35,6 +36,7 @@ public class GenerateImageFacade {
     private final HouseService houseService;
     private final CreditService creditService;
     private final TasteTagService tasteTagService;
+    private final UserService userService;
 
     // 스프링을 이용한 이미지 생성
     @Transactional
@@ -58,7 +60,9 @@ public class GenerateImageFacade {
             // 주요 활동 업데이트
             House house = houseService.updateHouseActivity(generateImageRequest.houseId(), activity);
 
+            // 복층일 경우 침대 제외
             if (!house.getStructure().equals(Structure.DUPLEX)){
+                log.info("복층이 아닌 경우 침대 추가");
                 generateImageRequest.selectiveIds().add(generateImageRequest.bedId());
             }
 
@@ -87,11 +91,14 @@ public class GenerateImageFacade {
             // OpenAI로 image 생성
             ImageUploadResponseDTO imageUploadResponseDTO = openAiFacade.makeImage(promptRequestDTO);
 
+            // house에 프롬프트 저장
+            houseService.saveHousePrompt(house, imageUploadResponseDTO.getPullPrompt());
+
             // 도면 이미지 생성
             GenerateImage generateImage = generateImageService.createGenerateImage(imageUploadResponseDTO, house);
 
             // 이미지 생성 여부 업데이트
-            user.updateHasGeneratedImage();
+            userService.updateHasGeneratedImage(user);
 
             return ImageInfoResponse.of(generateImage.getId(), generateImage.getUrl(),
                     generateImageRequest.floorPlan().isMirror(),
@@ -127,6 +134,12 @@ public class GenerateImageFacade {
         // 주요 활동 업데이트
         House house = houseService.updateHouseActivity(generateImageRequest.houseId(), activity);
 
+        // 복층일 경우 침대 제외
+        if (!house.getStructure().equals(Structure.DUPLEX)){
+            log.info("복층이 아닌 경우 침대 추가");
+            generateImageRequest.selectiveIds().add(generateImageRequest.bedId());
+        }
+
         // 가구 식별자 ID
         PromptFurnitureListDTO promptFurnitureListDTO = PromptFurnitureListDTO.of(generateImageRequest.selectiveIds());
 
@@ -151,11 +164,14 @@ public class GenerateImageFacade {
             // OpenAI로 image 생성
             ImageUploadResponseDTO imageUploadResponseDTO = openAiFacade.makeImageByFastApi(promptRequestDTO);
 
+            // house에 프롬프트 저장
+            houseService.saveHousePrompt(house, imageUploadResponseDTO.getPullPrompt());
+
             // 도면 이미지 생성
             GenerateImage generateImage = generateImageService.createGenerateImage(imageUploadResponseDTO, house);
 
             // 이미지 생성 여부 업데이트
-            user.updateHasGeneratedImage();
+            userService.updateHasGeneratedImage(user);
 
             return ImageInfoResponse.of(generateImage.getId(), generateImage.getUrl(),
                     generateImageRequest.floorPlan().isMirror(),
