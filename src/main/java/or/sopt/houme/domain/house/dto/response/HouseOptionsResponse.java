@@ -5,7 +5,7 @@ import or.sopt.houme.domain.house.dto.HouseOptionDTO;
 import java.util.List;
 
 public record HouseOptionsResponse(
-        List<HouseOptionDTO> housingTypes,  // 주거형태
+        List<HouseOptionDTO> houseTypes,  // 주거형태
         List<HouseOptionDTO> roomTypes,     // 공간구조
         List<HouseOptionDTO> areaTypes      // 평형
 ) {

@@ -61,7 +61,7 @@ public class HouseServiceImpl implements HouseService {
     @Override
     public HouseIdResponse selectHouseOptions(User user, HouseSelectRequest houseSelectRequest) {
         try {
-            Form form = Form.valueOf(houseSelectRequest.housingType());
+            Form form = Form.valueOf(houseSelectRequest.houseType());
             Structure structure = Structure.valueOf(houseSelectRequest.roomType());
             Equilibrium equilibrium = Equilibrium.valueOf(houseSelectRequest.areaType());
 
