@@ -45,7 +45,6 @@ public class UserServiceImpl implements UserService {
     @Transactional(readOnly = true)
     public UserImageHistoryListResponse getUserImageHistoryList(User user) {
         User findUser = findUser(user);
-        validateImageHistoryExists(findUser);  // 생성된 이미지 이력이 없으면 예외터짐
         List<UserImageHistoryDTO> histories = userRepository.getUserImageHistory(findUser.getId());
         return UserImageHistoryListResponse.of(histories);
     }
@@ -81,9 +80,5 @@ public class UserServiceImpl implements UserService {
 
     private User findUser(User user) {
         return userRepository.findById(user.getId()).orElseThrow(() -> new UserException(ErrorCode.USER_NOT_FOUND));
-    }
-
-    private void validateImageHistoryExists(User user) {
-        userRepository.findImageHistoryById(user.getId()).orElseThrow(() -> new UserException(ErrorCode.IMAGE_HISTORY_NOT_FOUND));
     }
 }
