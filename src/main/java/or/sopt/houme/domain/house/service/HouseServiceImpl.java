@@ -18,6 +18,7 @@ import or.sopt.houme.domain.user.entity.User;
 import or.sopt.houme.global.api.ErrorCode;
 import or.sopt.houme.global.api.GeneralException;
 import or.sopt.houme.global.api.handler.HouseException;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -33,6 +34,7 @@ public class HouseServiceImpl implements HouseService {
     private final InvalidHouseRequestRepository invalidHouseRequestRepository;
 
     // 집구조 리스트 반환 서비스
+    @Cacheable(value = "houseOptionsCache")
     @Override
     public HouseOptionsResponse getHouseOptionsResponse() {
         // 주거 형태 리스트
