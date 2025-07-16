@@ -88,6 +88,15 @@ public class HouseServiceImpl implements HouseService {
         return new LatestHouseConditionDTO(latestHouse.getForm(), latestHouse.getStructure(), latestHouse.getEquilibrium());
     }
 
+    // house prompt 저장
+    @Transactional
+    @Override
+    public void saveHousePrompt(House house, String prompt) {
+        house.updatePrompt(prompt);
+
+        houseRepository.save(house);
+    }
+
     // 유효한 요청일 때 house 저장
     private Long saveValidHouse(User user, Form form, Structure structure, Equilibrium equilibrium) {
         House house = House.builder()
