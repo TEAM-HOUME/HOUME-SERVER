@@ -16,5 +16,5 @@ public interface UserService {
 
     ImageHistoryResultPageResponse getImageHistoryResultPage(User user, Long imageId);
 
-    void updateUser(User user, String name, Gender gender, LocalDate birthday);
+    String updateUser(User user, String name, Gender gender, LocalDate birthday);
 }

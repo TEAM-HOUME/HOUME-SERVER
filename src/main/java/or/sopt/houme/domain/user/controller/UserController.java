@@ -51,7 +51,7 @@ public class UserController {
 
     @PatchMapping(value = "/sign-up")
     @Operation(summary = "자체 회원가입 API")
-    public ResponseEntity<ApiResponse<Void>> updateUser(@AuthenticationPrincipal CustomUserDetails userDetails, @RequestBody @Valid CreateUserRequest createUserRequest) {
+    public ResponseEntity<ApiResponse<String>> updateUser(@AuthenticationPrincipal CustomUserDetails userDetails, @RequestBody @Valid CreateUserRequest createUserRequest) {
         Gender gender;
         LocalDate birthday;
 
@@ -66,8 +66,8 @@ public class UserController {
             throw new GeneralException(ErrorCode.NOT_VALID_EXCEPTION);
         }
 
-        userService.updateUser(userDetails.getUser(), createUserRequest.name(), gender, birthday);
+        String username = userService.updateUser(userDetails.getUser(), createUserRequest.name(), gender, birthday);
 
-        return ResponseEntity.ok(ApiResponse.ok(null));
+        return ResponseEntity.ok(ApiResponse.ok(username));
     }
 }
