@@ -18,11 +18,10 @@ public class TasteServiceImpl implements TasteService {
     private final TasteRepository tasteRepository;
 
     // 무드보드 제공 (cursor 기반 페이지네이션)
-    @Cacheable(value = "moodBoardListCache", key = "'cursor:' + #cursorId + ':size:' + #size")
     @Override
     public MoodBoardListResponse getMoodboard(Long cursorId, int size) {
 
-        List<MoodBoardResponse> list = tasteRepository.findTasteByCursor(cursorId, size)
+        List<MoodBoardResponse> list = tasteRepository.findAll()
                 .stream()
                 .map(MoodBoardResponse::from)
                 .collect(Collectors.toList());

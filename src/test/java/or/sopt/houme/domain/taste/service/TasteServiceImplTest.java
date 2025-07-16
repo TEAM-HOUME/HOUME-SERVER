@@ -51,7 +51,7 @@ class TasteServiceImplTest {
         Long cursorId = 15L;
         int limit = 14;
 
-        when(tasteRepository.findTasteByCursor(cursorId, limit)).thenReturn(tastes);
+        when(tasteRepository.findAll()).thenReturn(tastes);
 
         // When
         MoodBoardListResponse moodboard = tasteService.getMoodboard(cursorId, limit);
@@ -87,23 +87,16 @@ class TasteServiceImplTest {
 
         Long cursorId = null;
         int limit = 10;
+        int size = 30;
 
-        when(tasteRepository.findTasteByCursor(cursorId, limit)).thenReturn(tastes.subList(0, limit));
+        when(tasteRepository.findAll()).thenReturn(tastes);
 
         // When
         MoodBoardListResponse moodboard = tasteService.getMoodboard(cursorId, limit);
 
         // Then
-        assertThat(moodboard.moodBoardResponseList()).hasSize(limit);
-        assertThat(moodboard.moodBoardResponseList().get(0).id()).isEqualTo(30L);
-
-        // 모든 ID가 내림차순으로 정렬되어야 함
-        var ids = moodboard.moodBoardResponseList().stream()
-                .map(MoodBoardResponse::id)
-                .toList();
-        for (int i = 0; i < ids.size() - 1; i++) {
-            assertThat(ids.get(i)).isGreaterThan(ids.get(i + 1));
-        }
+        assertThat(moodboard.moodBoardResponseList()).hasSize(size);
+        assertThat(moodboard.moodBoardResponseList()).isNotNull();
 
     }
 }
