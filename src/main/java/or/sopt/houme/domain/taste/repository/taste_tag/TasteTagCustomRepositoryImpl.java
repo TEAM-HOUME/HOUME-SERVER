@@ -27,7 +27,14 @@ public class TasteTagCustomRepositoryImpl implements TasteTagCustomRepository {
                 .from(tasteTag)
                 .join(tasteTag.tag, tag)
                 .where(tasteTag.taste.id.in(tasteIds))
-                .groupBy(tasteTag.taste.id)
+                .groupBy(
+                        tasteTag.taste.id,
+                        tag.id,
+                        tag.priority,
+                        tag.tagName,
+                        tag.tagNameKr,
+                        tag.tagPrompt
+                )
                 .orderBy(
                         tasteTag.count().desc(),
                         tag.priority.max().desc()
