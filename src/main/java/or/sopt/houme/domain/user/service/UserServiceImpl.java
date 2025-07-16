@@ -45,7 +45,6 @@ public class UserServiceImpl implements UserService {
     @Transactional(readOnly = true)
     public UserImageHistoryListResponse getUserImageHistoryList(User user) {
         User findUser = findUser(user);
-        validateImageHistoryExists(findUser);  // 생성된 이미지 이력이 없으면 예외터짐
         List<UserImageHistoryDTO> histories = userRepository.getUserImageHistory(findUser.getId());
         return UserImageHistoryListResponse.of(histories);
     }
@@ -58,11 +57,11 @@ public class UserServiceImpl implements UserService {
         Tag tag = tagRepository.findTagByUserIdAndImageId(findUser.getId(), imageId).orElseThrow(() -> new TagException(ErrorCode.NOT_FOUND_TAG_ENTITY));
         GenerateImage generateImage = generateImageRepository.findGenerateImageByUserIdAndImageId(findUser.getId(), imageId).orElseThrow(() -> new GenerateImageException(ErrorCode.NOT_FOUND_GENERATE_IMAGE_ENTITY));
 
-        return ImageHistoryResultPageResponse.of(house.getEquilibrium().toString(), house.getForm().toString(), tag.getTagName(), findUser.getName(), generateImage.getUrl());
+        return ImageHistoryResultPageResponse.of(house.getEquilibrium().getDescription(), house.getForm().toString(), tag.getTagName(), findUser.getName(), generateImage.getUrl());
     }
 
     @Override
-    public void updateUser(User user, String name, Gender gender, LocalDate birthday) {
+    public String updateUser(User user, String name, Gender gender, LocalDate birthday) {
 
         User findUser = findUser(user);
         findUser.updateUserFromSignUp(name, birthday, gender);
@@ -77,13 +76,11 @@ public class UserServiceImpl implements UserService {
         }catch (Exception e) {
             throw new CreditException(ErrorCode.CREDIT_CREATE_EXCEPTION);
         }
+
+        return findUser.getName();
     }
 
     private User findUser(User user) {
         return userRepository.findById(user.getId()).orElseThrow(() -> new UserException(ErrorCode.USER_NOT_FOUND));
-    }
-
-    private void validateImageHistoryExists(User user) {
-        userRepository.findImageHistoryById(user.getId()).orElseThrow(() -> new UserException(ErrorCode.IMAGE_HISTORY_NOT_FOUND));
     }
 }

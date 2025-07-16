@@ -104,6 +104,7 @@ public class OAuthService {
                     .role(Role.ROLE_USER)
                     .socialType(SocialType.KAKAO)
                     .status(UserStatus.ACTIVE)
+                    .hasGeneratedImage(Boolean.FALSE)
                     .build();
 
             userRepository.save(newUser);

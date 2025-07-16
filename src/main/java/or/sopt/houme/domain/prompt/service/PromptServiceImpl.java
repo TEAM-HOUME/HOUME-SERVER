@@ -47,7 +47,7 @@ public class PromptServiceImpl implements PromptService {
 
         // 가구 프롬프트 가져오기
         PromptFurnitureListDTO promptFurnitureListDTO = requestDTO.promptFurnitureListDTO();
-        List<Long> furnitureIds = promptFurnitureListDTO.furnitureIds();
+        List<Long> furnitureIds = promptFurnitureListDTO.furnitureTagIds();
 
         List<String> furniturePrompts = furnitureTagRepository.findAllById(furnitureIds).stream()
                 .map(FurnitureTag::getFurniturePrompt)
