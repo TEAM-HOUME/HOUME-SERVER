@@ -7,6 +7,8 @@ import or.sopt.houme.domain.openai.service.FastApiService;
 import or.sopt.houme.domain.prompt.dto.PromptRequestDTO;
 import or.sopt.houme.global.api.ApiResponse;
 import or.sopt.houme.global.dto.ImageUploadResponseDTO;
+import or.sopt.houme.global.util.constant.S3Constant;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -24,6 +26,10 @@ public class FastApiController {
     public ResponseEntity<ApiResponse<String>> generate(@RequestBody PromptRequestDTO promptRequestDTO) {
 
         ImageUploadResponseDTO responseDTO = fastApiService.getImageByFastApi(promptRequestDTO);
+
+        if (responseDTO.getImageLink().equals(S3Constant.FALL_BACK_IMAGE)){
+            return ResponseEntity.badRequest().body(ApiResponse.fail(500,responseDTO.getImageLink(),"이미지 생성 중 예외가 발생하였습니다"));
+        }
 
         return ResponseEntity.ok().body(ApiResponse.ok(responseDTO.getImageLink()));
     }

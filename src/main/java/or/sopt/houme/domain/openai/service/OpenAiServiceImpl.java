@@ -12,7 +12,7 @@ import or.sopt.houme.global.api.handler.S3Exception;
 import or.sopt.houme.global.config.OpenAiImageConfig;
 import or.sopt.houme.global.dto.ImageUploadResponseDTO;
 import or.sopt.houme.global.util.S3Util;
-import or.sopt.houme.global.util.constant.S3DirNameConstant;
+import or.sopt.houme.global.util.constant.S3Constant;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -55,7 +55,7 @@ public class OpenAiServiceImpl implements OpenAiService {
             byte[] image = getGptImage(request);
 
             // S3에 이미지 저장하고 메타데이터를 반환
-            ImageUploadResponseDTO responseDTO = s3Util.uploadByByte(S3DirNameConstant.CHAT_GPT_DIRNAME, image);
+            ImageUploadResponseDTO responseDTO = s3Util.uploadByByte(S3Constant.CHAT_GPT_DIRNAME, image);
             responseDTO.setPullPrompt(prompt);
 
             return responseDTO;

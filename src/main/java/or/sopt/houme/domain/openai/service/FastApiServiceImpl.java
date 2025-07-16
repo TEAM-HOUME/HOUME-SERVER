@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import or.sopt.houme.domain.openai.client.FastApiImageClient;
 import or.sopt.houme.domain.prompt.dto.PromptRequestDTO;
 import or.sopt.houme.global.dto.ImageUploadResponseDTO;
+import or.sopt.houme.global.util.constant.S3Constant;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -27,7 +28,7 @@ public class FastApiServiceImpl implements FastApiService {
         return ImageUploadResponseDTO.builder()
                 .filename("LLM_FAIL_FILE")
                 .originalFilename("LLM_FAIL_FILE")
-                .imageLink("https://houme-bucket.s3.ap-northeast-2.amazonaws.com/feign_fallback/fallback_image.png")
+                .imageLink(S3Constant.FALL_BACK_IMAGE)
                 .contentType("image/png")
                 .build();
     }
