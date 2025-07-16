@@ -104,6 +104,13 @@ dependencies {
 
     // cache
     implementation 'org.springframework.boot:spring-boot-starter-cache'
+
+    // fallback
+    implementation 'io.github.resilience4j:resilience4j-spring-boot2'
+    implementation 'io.github.resilience4j:resilience4j-feign'
+
+    // circuit-breaker
+    implementation 'io.github.resilience4j:resilience4j-circuitbreaker'
 }
 
 def querydslDir = 'src/main/generated'

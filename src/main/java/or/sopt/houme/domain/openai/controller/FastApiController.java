@@ -1,6 +1,7 @@
 package or.sopt.houme.domain.openai.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import or.sopt.houme.domain.openai.service.FastApiService;
 import or.sopt.houme.domain.prompt.dto.PromptRequestDTO;
@@ -12,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("api/v2/image")
+@Tag(name = "LLM 호출로직 테스트 API")
 public class FastApiController {
 
     private final FastApiService fastApiService;
