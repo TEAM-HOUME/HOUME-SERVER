@@ -81,7 +81,7 @@ class HouseServiceImplTest {
         var formCodes = Arrays.stream(Form.values())
                 .map(Enum::name)
                 .toList();
-        assertThat(response.housingTypes())
+        assertThat(response.houseTypes())
                 .hasSize(formCodes.size())
                 .extracting(HouseOptionDTO::code)
                 .containsExactlyElementsOf(formCodes);
