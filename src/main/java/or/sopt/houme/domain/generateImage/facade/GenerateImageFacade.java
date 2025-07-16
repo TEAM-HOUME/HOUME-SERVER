@@ -137,11 +137,11 @@ public class GenerateImageFacade {
             throw new GeneralException(ErrorCode.NOT_VALID_EXCEPTION);
         }
 
-        Long tasteId = tasteTagService.getPriorityId(generateImageRequest.moodBoardIds());
+        Tag tag = tasteTagService.getPriorityId(generateImageRequest.moodBoardIds());
 
         PromptRequestDTO promptRequestDTO = PromptRequestDTO.of(
                 generateImageRequest.floorPlan().floorPlanId(),
-                tasteId,
+                tag.getId(),
                 equilibrium,
                 promptFurnitureListDTO
         );
@@ -157,7 +157,10 @@ public class GenerateImageFacade {
             // 이미지 생성 여부 업데이트
             user.updateHasGeneratedImage();
 
-            return ImageInfoResponse.of(generateImage.getId(), generateImage.getUrl(), generateImageRequest.floorPlan().isMirror());
+            return ImageInfoResponse.of(generateImage.getId(), generateImage.getUrl(),
+                    generateImageRequest.floorPlan().isMirror(),
+                    generateImageRequest.equilibrium(), house.getForm().getDescription(),
+                    tag.getTagNameKr(), user.getName());
         } catch (GenerateImageException e) {
             throw e;
         } catch (Exception e){
