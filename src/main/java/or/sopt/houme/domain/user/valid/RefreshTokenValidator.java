@@ -35,6 +35,8 @@ public class RefreshTokenValidator {
         log.info("old refresh token: {}", refresh);
         if (refresh == null) throw new TokenException(ErrorCode.REFRESH_TOKEN_NULL);
 
+        log.info(refresh);
+
         try {
 
             jwtUtil.isExpired(refresh);
