@@ -57,7 +57,7 @@ public class UserServiceImpl implements UserService {
         Tag tag = tagRepository.findTagByUserIdAndImageId(findUser.getId(), imageId).orElseThrow(() -> new TagException(ErrorCode.NOT_FOUND_TAG_ENTITY));
         GenerateImage generateImage = generateImageRepository.findGenerateImageByUserIdAndImageId(findUser.getId(), imageId).orElseThrow(() -> new GenerateImageException(ErrorCode.NOT_FOUND_GENERATE_IMAGE_ENTITY));
 
-        return ImageHistoryResultPageResponse.of(house.getEquilibrium().toString(), house.getForm().toString(), tag.getTagName(), findUser.getName(), generateImage.getUrl());
+        return ImageHistoryResultPageResponse.of(house.getEquilibrium().getDescription(), house.getForm().toString(), tag.getTagName(), findUser.getName(), generateImage.getUrl());
     }
 
     @Override
