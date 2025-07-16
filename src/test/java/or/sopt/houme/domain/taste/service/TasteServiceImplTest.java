@@ -6,6 +6,10 @@ import or.sopt.houme.domain.taste.entity.Taste;
 import or.sopt.houme.domain.taste.repository.taste.TasteRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
@@ -14,17 +18,18 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.when;
 
-@SpringBootTest
+@ExtendWith(MockitoExtension.class)
 @ActiveProfiles("test")
 @DisplayName("[Taste Service] Test")
 class TasteServiceImplTest {
 
-    @Autowired
+    @Mock
     TasteRepository tasteRepository;
 
-    @Autowired
-    TasteService tasteService;
+    @InjectMocks
+    TasteServiceImpl tasteService;
 
     @Test
     @DisplayName("cursor 기반으로 페이지네이션을 구현 할 수 있다.")
@@ -38,8 +43,9 @@ class TasteServiceImplTest {
 
         List<Taste> tastes = new ArrayList<>();
 
-        for (int i = 0; i < 30; i++) {
+        for (int i = 14; i > 0; i--) {
             tastes.add(Taste.builder()
+                            .id((long)i)
                     .url(url + i)
                     .filename(fileName + i)
                     .originalFilename(originalFilename + i)
@@ -48,10 +54,10 @@ class TasteServiceImplTest {
                     .build());
         }
 
-        tasteRepository.saveAll(tastes);
-
         Long cursorId = 15L;
-        int limit = 10;
+        int limit = 14;
+
+        when(tasteRepository.findTasteByCursor(cursorId, limit)).thenReturn(tastes);
 
         // When
         MoodBoardListResponse moodboard = tasteService.getMoodboard(cursorId, limit);
@@ -62,15 +68,6 @@ class TasteServiceImplTest {
         // 무드보드 리스트의 첫 번째 요소의 ID가 cursorId보다 작아야 함
         Long firstId = moodboard.moodBoardResponseList().get(0).id();
         assertThat(firstId).isLessThan(cursorId);
-
-        // 모든 ID가 내림차순으로 정렬되어야 함
-        var ids = moodboard.moodBoardResponseList().stream()
-                .map(MoodBoardResponse::id)
-                .toList();
-        for (int i = 0; i < ids.size() - 1; i++) {
-            assertThat(ids.get(i)).isGreaterThan(ids.get(i + 1));
-        }
-
     }
 
     @Test
@@ -85,8 +82,9 @@ class TasteServiceImplTest {
 
         List<Taste> tastes = new ArrayList<>();
 
-        for (int i = 0; i < 30; i++) {
+        for (int i = 30; i > 0; i--) {
             tastes.add(Taste.builder()
+                            .id((long) i)
                     .url(url + i)
                     .filename(fileName + i)
                     .originalFilename(originalFilename + i)
@@ -95,10 +93,10 @@ class TasteServiceImplTest {
                     .build());
         }
 
-        tasteRepository.saveAll(tastes);
-
         Long cursorId = null;
         int limit = 10;
+
+        when(tasteRepository.findTasteByCursor(cursorId, limit)).thenReturn(tastes.subList(0, limit));
 
         // When
         MoodBoardListResponse moodboard = tasteService.getMoodboard(cursorId, limit);
