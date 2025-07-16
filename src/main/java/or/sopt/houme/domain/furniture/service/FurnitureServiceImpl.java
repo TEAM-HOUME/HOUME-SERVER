@@ -10,6 +10,7 @@ import or.sopt.houme.domain.furniture.entity.FurnitureType;
 import or.sopt.houme.domain.furniture.entity.FurnitureTypes;
 import or.sopt.houme.domain.furniture.repository.FurnitureRepository;
 import or.sopt.houme.domain.house.entity.enums.Activity;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,6 +24,7 @@ public class FurnitureServiceImpl implements FurnitureService {
     private final FurnitureRepository furnitureRepository;
 
     // 가구 반환
+    @Cacheable(value = "furnitureAndActivityCache")
     @Override
     public FurnitureAndActivityResponse getFurnitureAndActivity() {
 

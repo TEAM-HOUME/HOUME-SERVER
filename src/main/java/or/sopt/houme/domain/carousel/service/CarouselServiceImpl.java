@@ -13,6 +13,7 @@ import or.sopt.houme.domain.preference.repository.PreferenceRepository;
 import or.sopt.houme.domain.user.entity.User;
 import or.sopt.houme.global.api.ErrorCode;
 import or.sopt.houme.global.api.handler.CarouselException;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -29,7 +30,7 @@ public class CarouselServiceImpl implements CarouselService {
     private final PreferenceRepository preferenceRepository;
     private final CarouselPreferenceRepository carouselPreferenceRepository;
 
-
+    @Cacheable(value = "getCarouselListCache", key = "'page:' + #page")
     @Override
     public GetCarouselListResponseDTO getCarousel(int page) {
         int pageSize = 5;

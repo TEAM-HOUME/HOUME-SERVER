@@ -101,6 +101,9 @@ dependencies {
 
     // prometheus
     implementation 'io.micrometer:micrometer-registry-prometheus'
+
+    // cache
+    implementation 'org.springframework.boot:spring-boot-starter-cache'
 }
 
 def querydslDir = 'src/main/generated'
