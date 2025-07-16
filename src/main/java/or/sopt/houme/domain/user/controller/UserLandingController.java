@@ -5,7 +5,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import or.sopt.houme.domain.user.service.UserLandingService;
 import or.sopt.houme.global.api.ApiResponse;
 import org.springframework.http.ResponseEntity;
@@ -17,7 +16,6 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/v1")
 @RequiredArgsConstructor
 @Tag(name = "회원 랜딩페이지 관련 API")
-@Slf4j
 public class UserLandingController {
 
     private final UserLandingService userLandingService;
@@ -29,7 +27,6 @@ public class UserLandingController {
     public ResponseEntity<ApiResponse<Boolean>> checkHasGeneratedImage(HttpServletRequest request) {
 
         Boolean result = userLandingService.getHasGeneratedImage(request);
-        System.out.println(result);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 }

@@ -20,7 +20,6 @@ import java.util.Optional;
 public class UserLandingServiceImpl implements UserLandingService {
 
     private final UserRepository userRepository;
-    private final RefreshTokenValidator refreshTokenValidator;
     private final JWTUtil jwtUtil;
     private final RefreshTokenRepository refreshTokenRepository;
 
@@ -50,6 +49,7 @@ public class UserLandingServiceImpl implements UserLandingService {
         if (refresh == null) {
             return Boolean.TRUE;
         }
+
 
 
         Long userId = jwtUtil.getId(refresh);

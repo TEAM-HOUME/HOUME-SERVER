@@ -1,12 +1,16 @@
 package or.sopt.houme.domain.user.service;
 
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import or.sopt.houme.domain.user.entity.User;
+import or.sopt.houme.domain.user.repository.RefreshTokenRepository;
 import or.sopt.houme.domain.user.repository.UserRepository;
 import or.sopt.houme.domain.user.service.UserLandingServiceImpl;
 import or.sopt.houme.domain.user.valid.RefreshTokenValidator;
 import or.sopt.houme.global.api.ErrorCode;
+import or.sopt.houme.global.api.handler.TokenException;
 import or.sopt.houme.global.api.handler.UserException;
+import or.sopt.houme.global.jwt.JWTUtil;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -28,46 +32,110 @@ class UserLandingServiceImplTest {
     @Mock
     private RefreshTokenValidator refreshTokenValidator;
 
+    @Mock
+    private JWTUtil jwtUtil;
+
+    @Mock
+    private RefreshTokenRepository refreshTokenRepository;
+
     @InjectMocks
     private UserLandingServiceImpl userLandingService;
 
     @Test
-    @DisplayName("getHasGeneratedImage()는 회원의 이미지 생성이력을 Boolean 타입으로 반환 할 수 있다")
-    void getHasGeneratedImage_success() {
-        // given
+    @DisplayName("쿠키가 없으면 true 반환")
+    void getHasGeneratedImage_noCookies_returnsTrue() {
         HttpServletRequest request = mock(HttpServletRequest.class);
-        Long mockUserId = 1L;
+        when(request.getCookies()).thenReturn(null);
 
-        User mockUser = User.builder()
-                .id(mockUserId)
-                .hasGeneratedImage(true)
-                .build();
-
-        when(refreshTokenValidator.validateRefreshToken(request)).thenReturn(mockUserId);
-        when(userRepository.findById(mockUserId)).thenReturn(Optional.of(mockUser));
-
-        // when
         Boolean result = userLandingService.getHasGeneratedImage(request);
 
-        // then
         assertTrue(result);
     }
 
     @Test
-    @DisplayName("getHasGeneratedImage() 는 회원을 찾을 수 없으면 정해진 예외를 반환한다")
-    void getHasGeneratedImage_userNotFound() {
-        // given
+    @DisplayName("리프레시 토큰이 없으면 true 반환")
+    void getHasGeneratedImage_noRefreshToken_returnsTrue() {
         HttpServletRequest request = mock(HttpServletRequest.class);
-        Long mockUserId = 999L;
+        Cookie[] cookies = {new Cookie("other-cookie", "value")};
+        when(request.getCookies()).thenReturn(cookies);
 
-        when(refreshTokenValidator.validateRefreshToken(request)).thenReturn(mockUserId);
-        when(userRepository.findById(mockUserId)).thenReturn(Optional.empty());
+        Boolean result = userLandingService.getHasGeneratedImage(request);
 
-        // when & then
+        assertTrue(result);
+    }
+
+    @Test
+    @DisplayName("리프레시 토큰이 존재하지 않으면 예외 발생")
+    void getHasGeneratedImage_invalidRefreshToken_throwsException() {
+        HttpServletRequest request = mock(HttpServletRequest.class);
+        Cookie[] cookies = {new Cookie("refresh-token", "fakeToken")};
+        when(request.getCookies()).thenReturn(cookies);
+        when(jwtUtil.getId("fakeToken")).thenReturn(1L);
+        when(refreshTokenRepository.existsById(1L)).thenReturn(false);
+
+        TokenException e = assertThrows(TokenException.class, () ->
+                userLandingService.getHasGeneratedImage(request)
+        );
+
+        assertEquals(ErrorCode.REFRESH_TOKEN_NULL, e.getErrorCode());
+    }
+
+    @Test
+    @DisplayName("유저가 없으면 USER_NOT_FOUND 예외 발생")
+    void getHasGeneratedImage_userNotFound_throwsException() {
+        HttpServletRequest request = mock(HttpServletRequest.class);
+        Cookie[] cookies = {new Cookie("refresh-token", "token")};
+        when(request.getCookies()).thenReturn(cookies);
+        when(jwtUtil.getId("token")).thenReturn(99L);
+        when(refreshTokenRepository.existsById(99L)).thenReturn(true);
+        when(userRepository.findById(99L)).thenReturn(Optional.empty());
+
         UserException e = assertThrows(UserException.class, () ->
                 userLandingService.getHasGeneratedImage(request)
         );
 
         assertEquals(ErrorCode.USER_NOT_FOUND, e.getErrorCode());
+    }
+
+    @Test
+    @DisplayName("유저가 이미 이미지를 생성한 경우 false 반환")
+    void getHasGeneratedImage_userHasImage_returnsFalse() {
+        HttpServletRequest request = mock(HttpServletRequest.class);
+        Cookie[] cookies = {new Cookie("refresh-token", "token")};
+        when(request.getCookies()).thenReturn(cookies);
+
+        User mockUser = User.builder()
+                .id(1L)
+                .hasGeneratedImage(true)
+                .build();
+
+        when(jwtUtil.getId("token")).thenReturn(1L);
+        when(refreshTokenRepository.existsById(1L)).thenReturn(true);
+        when(userRepository.findById(1L)).thenReturn(Optional.of(mockUser));
+
+        Boolean result = userLandingService.getHasGeneratedImage(request);
+
+        assertFalse(result);
+    }
+
+    @Test
+    @DisplayName("유저가 이미지를 생성하지 않은 경우 true 반환")
+    void getHasGeneratedImage_userHasNotImage_returnsTrue() {
+        HttpServletRequest request = mock(HttpServletRequest.class);
+        Cookie[] cookies = {new Cookie("refresh-token", "token")};
+        when(request.getCookies()).thenReturn(cookies);
+
+        User mockUser = User.builder()
+                .id(1L)
+                .hasGeneratedImage(false)
+                .build();
+
+        when(jwtUtil.getId("token")).thenReturn(1L);
+        when(refreshTokenRepository.existsById(1L)).thenReturn(true);
+        when(userRepository.findById(1L)).thenReturn(Optional.of(mockUser));
+
+        Boolean result = userLandingService.getHasGeneratedImage(request);
+
+        assertTrue(result);
     }
 }
