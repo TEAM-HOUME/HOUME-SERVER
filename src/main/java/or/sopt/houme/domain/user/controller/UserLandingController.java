@@ -23,7 +23,7 @@ public class UserLandingController {
     @GetMapping("/check-has-generated-image")
     @Operation(summary = "회원 이미지 생성 이력 조회 API",
     description = "회원의 리프레시 토큰의 유효성과 이미지 생성 이력을 조회합니다 <br><br>" +
-            "이미지 생성 이력이 없으면 **false** 있다면 **true** 를 반환합니다")
+            "이미지 생성 이력이 존재하면 **false** 이미지 생성 이력이 존재하지 않거나 리프레시 토큰이 없다면 **true** 를 반환합니다")
     public ResponseEntity<ApiResponse<Boolean>> checkHasGeneratedImage(HttpServletRequest request) {
 
         Boolean result = userLandingService.getHasGeneratedImage(request);
