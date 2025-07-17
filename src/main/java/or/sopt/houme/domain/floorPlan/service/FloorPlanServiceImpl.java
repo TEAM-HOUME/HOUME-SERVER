@@ -1,7 +1,6 @@
 package or.sopt.houme.domain.floorPlan.service;
 
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import or.sopt.houme.domain.floorPlan.dto.response.FloorPlanListResponse;
 import or.sopt.houme.domain.floorPlan.dto.response.FloorPlanResponse;
 import or.sopt.houme.domain.floorPlan.entity.FloorPlan;
@@ -14,7 +13,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
-@Slf4j
 @Service
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
@@ -30,11 +28,9 @@ public class FloorPlanServiceImpl implements FloorPlanService {
     @Override
     public FloorPlanListResponse getHousingPlan(Form form, Structure structure) {
 
-        log.info("structure123 {}", structure.toString());
         List<FloorPlan> allByStructureAndType =
                 floorPlanRepository.findAllByStructure(structure);
 
-        log.info("allByStructureAndType {}", allByStructureAndType);
         List<FloorPlanResponse> list = allByStructureAndType.stream()
                 .map(FloorPlanResponse::of)
                 .toList();

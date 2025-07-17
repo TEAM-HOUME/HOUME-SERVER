@@ -1,6 +1,7 @@
 package or.sopt.houme.domain.generateImage.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import or.sopt.houme.domain.generateImage.dto.request.GenerateImageRequest;
@@ -8,6 +9,7 @@ import or.sopt.houme.domain.generateImage.dto.response.ImageInfoResponse;
 import or.sopt.houme.domain.generateImage.facade.GenerateImageFacade;
 import or.sopt.houme.domain.user.controller.dto.CustomUserDetails;
 import or.sopt.houme.global.api.ApiResponse;
+import or.sopt.houme.global.util.constant.S3Constant;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -18,6 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api")
 @RequiredArgsConstructor
+@Tag(name = "이미지 생성 API")
 public class GenerateImageController {
 
     private final GenerateImageFacade generateImageFacade;
@@ -44,6 +47,12 @@ public class GenerateImageController {
             @RequestBody @Valid GenerateImageRequest request){
 
         ImageInfoResponse imageInfoResponse = generateImageFacade.generateImageByFastApi(userDetails.getUser(), request);
+
+        if (imageInfoResponse.imageUrl().equals(S3Constant.FALL_BACK_IMAGE)){
+            {
+                return ResponseEntity.internalServerError().body(ApiResponse.fail(500,imageInfoResponse,"이미지 생성 중 예외가 발생하였습니다"));
+            }
+        }
 
         return ResponseEntity.ok(ApiResponse.ok(imageInfoResponse));
     }

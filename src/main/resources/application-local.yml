@@ -17,7 +17,6 @@ spring:
       host: localhost
       port: 6379
 
-
   jpa:
     hibernate:
       ddl-auto: update
@@ -66,8 +65,8 @@ cloud:
     s3:
       bucket: houme-bucket
     credentials:
-      access-Key: ${S3_ACCESS}
-      secret-Key: ${S3_SECRET}
+      access-key: ${S3_ACCESS}
+      secret-key: ${S3_SECRET}
     region:
       static: ap-northeast-2
       auto: false
@@ -104,3 +103,27 @@ app:
 external:
   image-api:
     base-url: ${IMAGE_BASE_URL}
+
+resilience4j:
+  circuitbreaker:
+    instances:
+      imageClient:
+        registerHealthIndicator: true
+        slidingWindowSize: 10
+        minimumNumberOfCalls: 5
+        failureRateThreshold: 50
+        waitDurationInOpenState: 10s
+        permittedNumberOfCallsInHalfOpenState: 3
+        automaticTransitionFromOpenToHalfOpenEnabled: true
+
+feign:
+  client:
+    config:
+      default:
+        connectTimeout: 2000
+        readTimeout: 3000
+
+
+logging:
+  level:
+    or.sopt.houme.global.aop: INFO

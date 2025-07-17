@@ -68,8 +68,10 @@ class FloorPlanFacadeTest {
                 new FloorPlanResponse(2L, officetel, openOneRoom, floorPlanImage),
                 new FloorPlanResponse(4L, officetel, openOneRoom, floorPlanImage));
 
+        FloorPlanListResponse floorPlanListResponse = new FloorPlanListResponse(floorPlanResponses);
+
         when(houseService.findLatestHouse(user)).thenReturn(houseConditionDTO);
-//        when(floorPlanService.getHousingPlan(houseConditionDTO.form(), houseConditionDTO.structure())).thenReturn(floorPlanResponses);
+        when(floorPlanService.getHousingPlan(houseConditionDTO.form(), houseConditionDTO.structure())).thenReturn(floorPlanListResponse);
 
         // When
         FloorPlanListResponse floorPlan = floorPlanFacade.getFloorPlan(user);
