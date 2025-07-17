@@ -122,3 +122,8 @@ feign:
       default:
         connectTimeout: 2000
         readTimeout: 3000
+
+
+logging:
+  level:
+    or.sopt.houme.global.aop: INFO

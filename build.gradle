@@ -111,6 +111,12 @@ dependencies {
 
     // circuit-breaker
     implementation 'io.github.resilience4j:resilience4j-circuitbreaker'
+    implementation 'io.github.resilience4j:resilience4j-core'
+
+
+    // spring AOP
+    implementation 'org.springframework.boot:spring-boot-starter-aop'
+
 }
 
 def querydslDir = 'src/main/generated'
