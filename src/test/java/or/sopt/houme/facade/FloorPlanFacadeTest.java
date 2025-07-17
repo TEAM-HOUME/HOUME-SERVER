@@ -10,8 +10,6 @@ import or.sopt.houme.domain.house.entity.enums.Form;
 import or.sopt.houme.domain.house.entity.enums.Structure;
 import or.sopt.houme.domain.house.service.HouseService;
 import or.sopt.houme.domain.user.entity.*;
-import or.sopt.houme.global.api.ErrorCode;
-import or.sopt.houme.global.api.GeneralException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,7 +21,6 @@ import java.time.LocalDate;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.mockito.Mockito.when;
 
 @SpringBootTest
@@ -68,8 +65,10 @@ class FloorPlanFacadeTest {
                 new FloorPlanResponse(2L, officetel, openOneRoom, floorPlanImage),
                 new FloorPlanResponse(4L, officetel, openOneRoom, floorPlanImage));
 
+        FloorPlanListResponse floorPlanListResponse = new FloorPlanListResponse(floorPlanResponses);
+
         when(houseService.findLatestHouse(user)).thenReturn(houseConditionDTO);
-        when(floorPlanService.getHousingPlan(houseConditionDTO.form(), houseConditionDTO.structure())).thenReturn(floorPlanResponses);
+        when(floorPlanService.getHousingPlan(houseConditionDTO.form(), houseConditionDTO.structure())).thenReturn(floorPlanListResponse);
 
         // When
         FloorPlanListResponse floorPlan = floorPlanFacade.getFloorPlan(user);

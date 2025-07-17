@@ -1,6 +1,6 @@
 package or.sopt.houme.domain.floorPlan.service;
 
-import or.sopt.houme.domain.floorPlan.dto.response.FloorPlanResponse;
+import or.sopt.houme.domain.floorPlan.dto.response.FloorPlanListResponse;
 import or.sopt.houme.domain.floorPlan.entity.FloorPlan;
 import or.sopt.houme.domain.floorPlan.repository.FloorPlanRepository;
 import or.sopt.houme.domain.house.entity.enums.Equilibrium;
@@ -75,15 +75,15 @@ class FloorPlanServiceImplTest {
         when(floorPlanRepository.findAllByStructure(openOneRoom)).thenReturn(List.of(floorPlan1, floorPlan3));
 
         // When
-        List<FloorPlanResponse> housingPlan = floorPlanService.getHousingPlan(officetel, openOneRoom);
+        FloorPlanListResponse housingPlan = floorPlanService.getHousingPlan(officetel, openOneRoom);
 
         // Then
         assertThat(housingPlan).isNotNull();
-        assertThat(housingPlan.size()).isEqualTo(2);
-        assertThat(housingPlan.get(0))
+        assertThat(housingPlan.floorPlanList().size()).isEqualTo(2);
+        assertThat(housingPlan.floorPlanList().get(0))
                 .extracting("id", "form", "structure", "floorPlanImage")
                 .contains(1L, officetel, openOneRoom, url);
-        assertThat(housingPlan).hasSize(2)
+        assertThat(housingPlan.floorPlanList()).hasSize(2)
                 .extracting("form", "structure", "floorPlanImage")
                 .containsExactlyInAnyOrder(
                         tuple(officetel, openOneRoom, url),
