@@ -110,8 +110,8 @@ class UserServiceImplTest {
                 .url("test.png")
                 .build();
         List<UserImageHistoryDTO> mockHistories = List.of(
-                new UserImageHistoryDTO("url1.png", "모던", "5평 이하", "원룸"),
-                new UserImageHistoryDTO("url2.png", "빈티지", "6~10평", "단독주택")
+                new UserImageHistoryDTO(1L, "url1.png", "모던", "5평 이하", "원룸"),
+                new UserImageHistoryDTO(2L, "url2.png", "빈티지", "6~10평", "단독주택")
         );
 
         // 유저조회 -> mockUser반환

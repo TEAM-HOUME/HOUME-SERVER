@@ -50,6 +50,7 @@ public class UserRepositoryImpl implements UserRepositoryCustom {
         return queryFactory
                 .select(Projections.constructor(
                         UserImageHistoryDTO.class,
+                        generateImage.id,
                         generateImage.url,
                         tag.tagName,
                         house.equilibrium,
