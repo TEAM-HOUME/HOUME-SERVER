@@ -23,7 +23,7 @@ public class FloorPlanServiceImpl implements FloorPlanService {
     // 집 구조 도면 제공 서비스 (조건에 받아서)
     @Cacheable(
             value = "floorPlanListCache",
-            key = "'structure:' + #structure.toString()"
+            key = "'structure:' + #structure.name()"
     )
     @Override
     public FloorPlanListResponse getHousingPlan(Form form, Structure structure) {
