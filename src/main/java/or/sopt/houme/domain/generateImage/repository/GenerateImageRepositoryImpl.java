@@ -30,4 +30,13 @@ public class GenerateImageRepositoryImpl implements GenerateImageRepositoryCusto
                         .fetchOne()
         );
     }
+    @Override
+    public GenerateImage findByHouseId(Long houseId) {
+        QGenerateImage generateImage = QGenerateImage.generateImage;
+
+        return queryFactory
+                .selectFrom(generateImage)
+                .where(generateImage.house.id.eq(houseId))
+                .fetchOne();
+    }
 }

@@ -8,6 +8,7 @@ import or.sopt.houme.domain.house.entity.QHouse;
 import or.sopt.houme.domain.user.entity.User;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -44,5 +45,18 @@ public class HouseCustomRepositoryImpl implements HouseCustomRepository {
                         )
                         .fetchOne()
         );
+    }
+
+    @Override
+    public List<House> findValidHouseByUserId(Long userId) {
+        QHouse house = QHouse.house;
+
+        return queryFactory
+                .selectFrom(house)
+                .where(
+                        house.user.id.eq(userId),
+                        house.isValid.isTrue()
+                )
+                .fetch();
     }
 }
