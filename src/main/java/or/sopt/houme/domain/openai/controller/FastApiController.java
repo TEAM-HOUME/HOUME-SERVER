@@ -28,7 +28,7 @@ public class FastApiController {
         ImageUploadResponseDTO responseDTO = fastApiService.getImageByFastApi(promptRequestDTO);
 
         if (responseDTO.getImageLink().equals(S3Constant.FALL_BACK_IMAGE)){
-            return ResponseEntity.badRequest().body(ApiResponse.fail(500,responseDTO.getImageLink(),"이미지 생성 중 예외가 발생하였습니다"));
+            return ResponseEntity.internalServerError().body(ApiResponse.fail(500,responseDTO.getImageLink(),"이미지 생성 중 예외가 발생하였습니다"));
         }
 
         return ResponseEntity.ok().body(ApiResponse.ok(responseDTO.getImageLink()));
