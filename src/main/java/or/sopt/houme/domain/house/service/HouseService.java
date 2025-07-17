@@ -9,6 +9,8 @@ import or.sopt.houme.domain.house.entity.House;
 import or.sopt.houme.domain.house.entity.enums.Activity;
 import or.sopt.houme.domain.user.entity.User;
 
+import java.util.List;
+
 public interface HouseService {
 
     // 집구조(주거형태, 공간구조, 평형옵션) 선택지 제공
@@ -28,4 +30,13 @@ public interface HouseService {
 
     // 생성된 이미지 프롬프트 저장
     void saveHousePrompt(House house, String prompt);
+
+    // houseId와 floorPlan 저장
+    void saveHouseFloorPlan(House house, Long floorPlanId);
+
+    // house와 furniture wjwkd
+    void saveHouseFurniture(House house, List<Long> furnitureIds);
+
+    // house와 무드보드(taste) 저장
+    void saveHouseTaste(House house, List<Long> tasteIds);
 }

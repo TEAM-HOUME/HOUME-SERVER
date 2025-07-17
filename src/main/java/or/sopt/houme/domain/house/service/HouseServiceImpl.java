@@ -2,6 +2,10 @@ package or.sopt.houme.domain.house.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import or.sopt.houme.domain.floorPlan.entity.FloorPlan;
+import or.sopt.houme.domain.floorPlan.repository.FloorPlanRepository;
+import or.sopt.houme.domain.furniture.entity.Furniture;
+import or.sopt.houme.domain.furniture.repository.FurnitureRepository;
 import or.sopt.houme.domain.house.dto.HouseOptionDTO;
 import or.sopt.houme.domain.house.dto.LatestHouseConditionDTO;
 import or.sopt.houme.domain.house.dto.request.HouseSelectRequest;
@@ -13,8 +17,12 @@ import or.sopt.houme.domain.house.entity.enums.Activity;
 import or.sopt.houme.domain.house.entity.enums.Equilibrium;
 import or.sopt.houme.domain.house.entity.enums.Form;
 import or.sopt.houme.domain.house.entity.enums.Structure;
-import or.sopt.houme.domain.house.repository.HouseRepository;
-import or.sopt.houme.domain.house.repository.InvalidHouseRequestRepository;
+import or.sopt.houme.domain.house.entity.mapping.HouseFloorPlan;
+import or.sopt.houme.domain.house.entity.mapping.HouseFurniture;
+import or.sopt.houme.domain.house.entity.mapping.HouseTaste;
+import or.sopt.houme.domain.house.repository.*;
+import or.sopt.houme.domain.taste.entity.Taste;
+import or.sopt.houme.domain.taste.repository.taste.TasteRepository;
 import or.sopt.houme.domain.user.entity.User;
 import or.sopt.houme.global.api.ErrorCode;
 import or.sopt.houme.global.api.GeneralException;
@@ -34,6 +42,12 @@ public class HouseServiceImpl implements HouseService {
 
     private final HouseRepository houseRepository;
     private final InvalidHouseRequestRepository invalidHouseRequestRepository;
+    private final HouseFloorPlanRepository houseFloorPlanRepository;
+    private final FloorPlanRepository floorPlanRepository;
+    private final HouseFurnitureRepository houseFurnitureRepository;
+    private final FurnitureRepository furnitureRepository;
+    private final TasteRepository tasteRepository;
+    private final HouseTasteRepository houseTasteRepository;
 
     // 집구조 리스트 반환 서비스
     @Cacheable(value = "houseOptionsCache")
@@ -99,19 +113,6 @@ public class HouseServiceImpl implements HouseService {
         houseRepository.save(house);
     }
 
-    // 유효한 요청일 때 house 저장
-    private Long saveValidHouse(User user, Form form, Structure structure, Equilibrium equilibrium) {
-        House house = House.builder()
-                .form(form)
-                .structure(structure)
-                .equilibrium(equilibrium)
-                .user(user)
-                .build();
-        House save = houseRepository.save(house);
-
-        return save.getId();
-    }
-
     // house activity 업데이트
     @Transactional
     @Override
@@ -124,12 +125,56 @@ public class HouseServiceImpl implements HouseService {
         return houseRepository.save(house);
     }
 
+    // 집 도면 매핑 테이블 저장
+    @Transactional
+    @Override
+    public void saveHouseFloorPlan(House house, Long floorPlanId) {
 
-    // 생성된 이미지 선호도
+        FloorPlan floorPlan = floorPlanRepository.findById(floorPlanId)
+                .orElseThrow(() -> new HouseException(ErrorCode.NOT_FOUND_FLOOR_PLAN));
+
+        HouseFloorPlan houseFloorPlan = HouseFloorPlan.builder()
+                .house(house)
+                .floorPlan(floorPlan)
+                .build();
+
+        houseFloorPlanRepository.save(houseFloorPlan);
+    }
+
     @Override
     public House findHouseById(long houseId) {
         return houseRepository.findById(houseId)
                 .orElseThrow(() -> new HouseException(ErrorCode.NOT_FOUND_HOUSE));
+    }
+
+    // house와 furniture 저장
+    @Override
+    public void saveHouseFurniture(House house, List<Long> furnitureIds) {
+
+        List<Furniture> furnitures = furnitureRepository.findAllById(furnitureIds);
+
+        for (Furniture furniture : furnitures) {
+            HouseFurniture houseFurniture = HouseFurniture.builder()
+                    .house(house)
+                    .furniture(furniture)
+                    .build();
+            houseFurnitureRepository.save(houseFurniture);
+        }
+    }
+
+    // house와 무드보드(taste) 저장
+    @Override
+    public void saveHouseTaste(House house, List<Long> tasteIds) {
+
+        List<Taste> tastes = tasteRepository.findAllById(tasteIds);
+
+        for (Taste taste : tastes) {
+            HouseTaste houseTaste = HouseTaste.builder()
+                    .house(house)
+                    .taste(taste)
+                    .build();
+            houseTasteRepository.save(houseTaste);
+        }
     }
 
     // 유효하지 않은 요청일 때 log 저장
@@ -141,5 +186,18 @@ public class HouseServiceImpl implements HouseService {
                 .user(user)
                 .build();
         invalidHouseRequestRepository.save(invalidRequest);
+    }
+
+    // 유효한 요청일 때 house 저장
+    private Long saveValidHouse(User user, Form form, Structure structure, Equilibrium equilibrium) {
+        House house = House.builder()
+                .form(form)
+                .structure(structure)
+                .equilibrium(equilibrium)
+                .user(user)
+                .build();
+        House save = houseRepository.save(house);
+
+        return save.getId();
     }
 }
