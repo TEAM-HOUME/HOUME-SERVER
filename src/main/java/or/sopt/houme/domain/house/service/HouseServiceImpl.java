@@ -34,6 +34,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.Arrays;
 import java.util.List;
 
+import static or.sopt.houme.domain.taste.entity.QTaste.taste;
+
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -153,13 +155,14 @@ public class HouseServiceImpl implements HouseService {
 
         List<Furniture> furnitures = furnitureRepository.findAllById(furnitureIds);
 
-        for (Furniture furniture : furnitures) {
-            HouseFurniture houseFurniture = HouseFurniture.builder()
-                    .house(house)
-                    .furniture(furniture)
-                    .build();
-            houseFurnitureRepository.save(houseFurniture);
-        }
+        List<HouseFurniture> list = furnitures.stream()
+                .map(furniture -> HouseFurniture.builder()
+                        .house(house)
+                        .furniture(furniture)
+                        .build())
+                .toList();
+
+        houseFurnitureRepository.saveAll(list);
     }
 
     // house와 무드보드(taste) 저장
@@ -168,13 +171,14 @@ public class HouseServiceImpl implements HouseService {
 
         List<Taste> tastes = tasteRepository.findAllById(tasteIds);
 
-        for (Taste taste : tastes) {
-            HouseTaste houseTaste = HouseTaste.builder()
-                    .house(house)
-                    .taste(taste)
-                    .build();
-            houseTasteRepository.save(houseTaste);
-        }
+        List<HouseTaste> list = tastes.stream()
+                .map(taste -> HouseTaste.builder()
+                        .house(house)
+                        .taste(taste)
+                        .build())
+                .toList();
+
+        houseTasteRepository.saveAll(list);
     }
 
     // 유효하지 않은 요청일 때 log 저장
