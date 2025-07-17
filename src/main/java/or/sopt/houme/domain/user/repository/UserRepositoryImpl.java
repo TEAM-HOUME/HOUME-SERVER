@@ -47,6 +47,23 @@ public class UserRepositoryImpl implements UserRepositoryCustom {
         QTasteTag tasteTag = QTasteTag.tasteTag;
         QTag tag = QTag.tag;
 
+        Long mostFrequentTagId = queryFactory
+                .select(tag.id)
+                .from(user)
+                .join(user.houses, house)
+                .join(houseTaste).on(houseTaste.house.eq(house))
+                .join(houseTaste.taste, taste)
+                .join(tasteTag).on(tasteTag.taste.eq(taste))
+                .join(tasteTag.tag, tag)
+                .where(user.id.eq(userId))
+                .groupBy(tag.id, tag.priority)
+                .orderBy(
+                        tag.id.count().desc(),    // 1️⃣ 등장 횟수 기준 내림차순
+                        tag.priority.asc()        // 2️⃣ 동률이면 우선순위 낮은 tag 먼저
+                )
+                .limit(1)
+                .fetchFirst();
+
         return queryFactory
                 .select(Projections.constructor(
                         UserImageHistoryDTO.class,
@@ -63,7 +80,10 @@ public class UserRepositoryImpl implements UserRepositoryCustom {
                 .join(houseTaste.taste, taste)
                 .join(tasteTag).on(tasteTag.taste.eq(taste))
                 .join(tasteTag.tag, tag)
-                .where(user.id.eq(userId))
+                .where(
+                        user.id.eq(userId),
+                        tag.id.eq(mostFrequentTagId) // ⭐ 우선순위 조건 반영된 태그
+                )
                 .fetch();
     }
 
