@@ -17,4 +17,7 @@ public interface UserService {
     ImageHistoryResultPageResponse getImageHistoryResultPage(User user, Long imageId);
 
     String updateUser(User user, String name, Gender gender, LocalDate birthday);
+
+    // 사용자 이미지 생성 여부 저장
+    void updateHasGeneratedImage(User user);
 }
