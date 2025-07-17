@@ -18,7 +18,7 @@ public class CircuitBreakerLogger {
         registry.circuitBreaker("imageClient")
                 .getEventPublisher()
                 .onStateTransition(event ->
-                        log.warn("[FALLBACK] CircuitBreaker '{}' 상태가 전이되었습니다: {} -> {}",
+                        log.warn("[FAST_API_IMAGE_CLIENT] CircuitBreaker '{}' 상태가 전이되었습니다: {} -> {}",
                                 event.getCircuitBreakerName(),
                                 event.getStateTransition().getFromState(),
                                 event.getStateTransition().getToState())
