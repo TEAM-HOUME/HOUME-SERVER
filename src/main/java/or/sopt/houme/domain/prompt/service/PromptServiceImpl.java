@@ -1,6 +1,7 @@
 package or.sopt.houme.domain.prompt.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import or.sopt.houme.domain.floorPlan.entity.FloorPlan;
 import or.sopt.houme.domain.floorPlan.repository.FloorPlanRepository;
 import or.sopt.houme.domain.furniture.entity.FurnitureTag;
@@ -19,6 +20,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class PromptServiceImpl implements PromptService {
 
     private final FloorPlanRepository floorPlanRepository;
@@ -67,6 +69,8 @@ public class PromptServiceImpl implements PromptService {
                 + equilibriumPrompt + "\n"
                 + tastePrompt + "\n"
                 + joinedFurniturePrompt;
+
+        log.info("입력 프롬프트: {}", finalPrompt);
 
         return finalPrompt;
     }

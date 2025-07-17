@@ -5,6 +5,7 @@ import org.springframework.http.HttpStatus;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public record ApiResponse<T>(int code, String msg, T data) {
+
     public static <T> ApiResponse<T> ok(T data, String msg) {
         return new ApiResponse<T>(HttpStatus.OK.value(), msg, data);
     }
@@ -19,5 +20,9 @@ public record ApiResponse<T>(int code, String msg, T data) {
 
     public static <T> ApiResponse<T> fail(int code, String msg) {
         return new ApiResponse<T>(code, msg, null);
+    }
+
+    public static <T> ApiResponse<T> fail(int code,T data, String msg) {
+        return new ApiResponse<T>(code,msg,data);
     }
 }

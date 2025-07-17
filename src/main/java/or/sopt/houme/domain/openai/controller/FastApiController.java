@@ -1,17 +1,21 @@
 package or.sopt.houme.domain.openai.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import or.sopt.houme.domain.openai.service.FastApiService;
 import or.sopt.houme.domain.prompt.dto.PromptRequestDTO;
 import or.sopt.houme.global.api.ApiResponse;
 import or.sopt.houme.global.dto.ImageUploadResponseDTO;
+import or.sopt.houme.global.util.constant.S3Constant;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("api/v2/image")
+@Tag(name = "LLM 호출로직 테스트 API")
 public class FastApiController {
 
     private final FastApiService fastApiService;
@@ -22,6 +26,10 @@ public class FastApiController {
     public ResponseEntity<ApiResponse<String>> generate(@RequestBody PromptRequestDTO promptRequestDTO) {
 
         ImageUploadResponseDTO responseDTO = fastApiService.getImageByFastApi(promptRequestDTO);
+
+        if (responseDTO.getImageLink().equals(S3Constant.FALL_BACK_IMAGE)){
+            return ResponseEntity.internalServerError().body(ApiResponse.fail(500,responseDTO.getImageLink(),"이미지 생성 중 예외가 발생하였습니다"));
+        }
 
         return ResponseEntity.ok().body(ApiResponse.ok(responseDTO.getImageLink()));
     }
