@@ -3,17 +3,11 @@ package or.sopt.houme.domain.floorPlan.facade;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import or.sopt.houme.domain.floorPlan.dto.response.FloorPlanListResponse;
-import or.sopt.houme.domain.floorPlan.dto.response.FloorPlanResponse;
 import or.sopt.houme.domain.floorPlan.service.FloorPlanService;
 import or.sopt.houme.domain.house.dto.LatestHouseConditionDTO;
 import or.sopt.houme.domain.house.service.HouseService;
 import or.sopt.houme.domain.user.entity.User;
-import or.sopt.houme.global.api.ErrorCode;
-import or.sopt.houme.global.api.GeneralException;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Component;
-
-import java.util.List;
 
 @Component
 @RequiredArgsConstructor
@@ -32,9 +26,9 @@ public class FloorPlanFacade {
         log.info("structure {}", latestHouse.structure().toString());
 
         // 관련 도면 조회하기
-        List<FloorPlanResponse> housingPlan = floorPlanService.getHousingPlan(latestHouse.form(), latestHouse.structure());
+        FloorPlanListResponse housingPlan = floorPlanService.getHousingPlan(latestHouse.form(), latestHouse.structure());
 
-        return new FloorPlanListResponse(housingPlan);
+        return housingPlan;
     }
 
 }
