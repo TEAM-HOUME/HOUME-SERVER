@@ -3,6 +3,7 @@ package or.sopt.houme.domain.generateImage.facade;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import or.sopt.houme.domain.credit.service.CreditService;
+import or.sopt.houme.domain.furniture.service.FurnitureService;
 import or.sopt.houme.domain.generateImage.dto.request.GenerateImageRequest;
 import or.sopt.houme.domain.generateImage.dto.response.ImageInfoResponse;
 import or.sopt.houme.domain.generateImage.entity.GenerateImage;
@@ -60,11 +61,17 @@ public class GenerateImageFacade {
             // 주요 활동 업데이트
             House house = houseService.updateHouseActivity(generateImageRequest.houseId(), activity);
 
+            // house_floor_plan 생성 및 저장
+            houseService.saveHouseFloorPlan(house, generateImageRequest.floorPlan().floorPlanId());
+
             // 복층일 경우 침대 제외
             if (!house.getStructure().equals(Structure.DUPLEX)){
                 log.info("복층이 아닌 경우 침대 추가");
                 generateImageRequest.selectiveIds().add(generateImageRequest.bedId());
             }
+
+            // house furniture 저장
+            houseService.saveHouseFurniture(house, generateImageRequest.selectiveIds());
 
             // 가구 식별자 ID
             PromptFurnitureListDTO promptFurnitureListDTO = PromptFurnitureListDTO.of(generateImageRequest.selectiveIds());
@@ -75,6 +82,9 @@ public class GenerateImageFacade {
             } catch (IllegalArgumentException e){
                 throw new GeneralException(ErrorCode.NOT_VALID_EXCEPTION);
             }
+
+            // House와 무드보드들 저장
+            houseService.saveHouseTaste(house, generateImageRequest.moodBoardIds());
 
             // 가장 우선순위가 높은 무드보드 id 제공
             Tag tag = tasteTagService.getPriorityId(generateImageRequest.moodBoardIds());
@@ -134,11 +144,17 @@ public class GenerateImageFacade {
         // 주요 활동 업데이트
         House house = houseService.updateHouseActivity(generateImageRequest.houseId(), activity);
 
+        // house_floor_plan 생성 및 저장
+        houseService.saveHouseFloorPlan(house, generateImageRequest.floorPlan().floorPlanId());
+
         // 복층일 경우 침대 제외
         if (!house.getStructure().equals(Structure.DUPLEX)){
             log.info("복층이 아닌 경우 침대 추가");
             generateImageRequest.selectiveIds().add(generateImageRequest.bedId());
         }
+
+        // house furniture 저장
+        houseService.saveHouseFurniture(house, generateImageRequest.selectiveIds());
 
         // 가구 식별자 ID
         PromptFurnitureListDTO promptFurnitureListDTO = PromptFurnitureListDTO.of(generateImageRequest.selectiveIds());
@@ -150,6 +166,10 @@ public class GenerateImageFacade {
             throw new GeneralException(ErrorCode.NOT_VALID_EXCEPTION);
         }
 
+        // House와 무드보드들 저장
+        houseService.saveHouseTaste(house, generateImageRequest.moodBoardIds());
+
+        // 최고 순위 찾기
         Tag tag = tasteTagService.getPriorityId(generateImageRequest.moodBoardIds());
 
         PromptRequestDTO promptRequestDTO = PromptRequestDTO.of(
