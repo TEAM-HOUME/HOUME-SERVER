@@ -1,6 +1,7 @@
 package or.sopt.houme.domain.credit.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import or.sopt.houme.domain.credit.entity.Credit;
 import or.sopt.houme.domain.credit.repository.CreditRepository;
 import or.sopt.houme.domain.user.entity.User;
@@ -12,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
+@Slf4j
 public class CreditServiceImpl implements CreditService{
 
     private final CreditRepository creditRepository;
