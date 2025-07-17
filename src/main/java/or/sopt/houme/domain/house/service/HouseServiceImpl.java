@@ -150,6 +150,7 @@ public class HouseServiceImpl implements HouseService {
     }
 
     // house와 furniture 저장
+    @Transactional
     @Override
     public void saveHouseFurniture(House house, List<Long> furnitureIds) {
 
@@ -166,6 +167,7 @@ public class HouseServiceImpl implements HouseService {
     }
 
     // house와 무드보드(taste) 저장
+    @Transactional
     @Override
     public void saveHouseTaste(House house, List<Long> tasteIds) {
 
