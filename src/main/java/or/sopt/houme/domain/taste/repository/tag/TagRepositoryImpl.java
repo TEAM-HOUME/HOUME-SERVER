@@ -52,7 +52,7 @@ public class TagRepositoryImpl implements TagRepositoryCustom {
                                 house.user.id.eq(userId),
                                 generateImage.id.eq(imageId)
                         )
-                        .groupBy(tag.id)
+                        .groupBy(tag.id, tag.priority)
                         .orderBy(
                                 tasteTag.count().desc(),
                                 tag.priority.asc()
@@ -76,7 +76,7 @@ public class TagRepositoryImpl implements TagRepositoryCustom {
                 .join(taste).on(tasteTag.taste.eq(taste))
                 .join(houseTaste).on(houseTaste.taste.eq(taste))
                 .where(houseTaste.house.id.eq(houseId))
-                .groupBy(tag.id)
+                .groupBy(tag.id, tag.priority)
                 .orderBy(
                         tasteTag.count().desc(),
                         tag.priority.asc()
