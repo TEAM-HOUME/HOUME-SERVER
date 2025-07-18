@@ -30,6 +30,9 @@ public class GenerateImage extends BaseEntity {
     @Column(name = "file_extension", nullable = false)
     private String fileExtension;
 
+    @Column(name = "clip_score", nullable = false)
+    private Float clipScore;
+
     @OneToOne
     @JoinColumn(name = "house_id")
     private House house;
@@ -41,6 +44,7 @@ public class GenerateImage extends BaseEntity {
                 .filename(request.getFilename())
                 .originalFilename(request.getOriginalFilename())
                 .fileExtension(request.getContentType())
+                .clipScore(request.getClipScore())
                 .house(house)
                 .build();
     }
