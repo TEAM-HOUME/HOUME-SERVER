@@ -38,56 +38,6 @@ public class UserRepositoryImpl implements UserRepositoryCustom {
     }
 
     @Override
-    public List<UserImageHistoryDTO> getUserImageHistory(Long userId) {
-        QUser user = QUser.user;
-        QHouse house = QHouse.house;
-        QGenerateImage generateImage = QGenerateImage.generateImage;
-        QHouseTaste houseTaste = QHouseTaste.houseTaste;
-        QTaste taste = QTaste.taste;
-        QTasteTag tasteTag = QTasteTag.tasteTag;
-        QTag tag = QTag.tag;
-
-        Long mostFrequentTagId = queryFactory
-                .select(tag.id)
-                .from(house)
-                .join(user).on(house.user.id.eq(user.id))
-                .join(houseTaste).on(houseTaste.house.eq(house))
-                .join(houseTaste.taste, taste)
-                .join(tasteTag).on(tasteTag.taste.eq(taste))
-                .join(tasteTag.tag, tag)
-                .where(user.id.eq(userId))
-                .groupBy(tag.id, tag.priority)
-                .orderBy(
-                        tag.id.count().desc(),    // 1️⃣ 등장 횟수 기준 내림차순
-                        tag.priority.asc()        // 2️⃣ 동률이면 우선순위 낮은 tag 먼저
-                )
-                .limit(1)
-                .fetchFirst();
-
-        return queryFactory
-                .select(Projections.constructor(
-                        UserImageHistoryDTO.class,
-                        generateImage.id,
-                        generateImage.url,
-                        tag.tagName,
-                        house.equilibrium,
-                        house.form
-                ))
-                .from(house)
-                .join(house.generateImage, generateImage)
-                .join(house.user, user)
-                .join(houseTaste).on(houseTaste.house.eq(house))
-                .join(houseTaste.taste, taste)
-                .join(tasteTag).on(tasteTag.taste.eq(taste))
-                .join(tasteTag.tag, tag)
-                .where(
-                        user.id.eq(userId),
-                        tag.id.eq(mostFrequentTagId) // ⭐ 우선순위 조건 반영된 태그
-                )
-                .fetch();
-    }
-
-    @Override
     public Optional<GenerateImage> findImageHistoryById(Long userId) {
         QUser user = QUser.user;
         QHouse house = QHouse.house;

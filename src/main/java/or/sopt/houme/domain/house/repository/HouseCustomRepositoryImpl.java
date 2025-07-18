@@ -54,8 +54,7 @@ public class HouseCustomRepositoryImpl implements HouseCustomRepository {
         return queryFactory
                 .selectFrom(house)
                 .where(
-                        house.user.id.eq(userId),
-                        house.isValid.isTrue()
+                        house.user.id.eq(userId)
                 )
                 .fetch();
     }

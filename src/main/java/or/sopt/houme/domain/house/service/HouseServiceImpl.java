@@ -201,6 +201,7 @@ public class HouseServiceImpl implements HouseService {
                 .structure(structure)
                 .equilibrium(equilibrium)
                 .user(user)
+                .isValid(true)
                 .build();
         House save = houseRepository.save(house);
 
