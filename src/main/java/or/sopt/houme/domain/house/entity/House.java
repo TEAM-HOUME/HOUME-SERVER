@@ -51,6 +51,15 @@ public class House {
     @Column(name = "house_prompt", columnDefinition = "TEXT", nullable = true)
     private String housePrompt;
 
+    // 프롬프트 선호도
+    @Column(name = "is_like", nullable = true)
+    private boolean isLike;
+
+    // house 좋아요 업데이트
+    public void setIsLike(boolean isLike) {
+        this.isLike = isLike;
+    }
+
     // Activity 업데이트 하기
     public void updateActivity(Activity activity) {
         this.activity = activity;
@@ -60,4 +69,5 @@ public class House {
     public void updatePrompt(String prompt) {
         this.housePrompt = prompt;
     }
+
 }

@@ -89,17 +89,18 @@ public class UserServiceImpl implements UserService {
         House house = houseRepository.findHouseByUserIdAndImageId(findUser.getId(), imageId).orElseThrow(() -> new HouseException(ErrorCode.NOT_FOUND_HOUSE_ENTITY));
         Tag tag = tagRepository.findTagByUserIdAndImageId(findUser.getId(), imageId).orElseThrow(() -> new TagException(ErrorCode.NOT_FOUND_TAG_ENTITY));
         GenerateImage generateImage = generateImageRepository.findGenerateImageByUserIdAndImageId(findUser.getId(), imageId).orElseThrow(() -> new GenerateImageException(ErrorCode.NOT_FOUND_GENERATE_IMAGE_ENTITY));
-        Optional<PromptPreference> optionalPreference =
-                promptPreferenceRepository.findTopByHouseIdOrderByIdDesc(house.getId());
+//        Optional<PromptPreference> optionalPreference =
+//                promptPreferenceRepository.findTopByHouseIdOrderByIdDesc(house.getId());
 
         boolean isLike;
-        if (optionalPreference.isEmpty()) {
+        if (house.isLike()) {
             // null이면 true인 로직
             isLike = true;
         } else {
-            PromptPreference preference = optionalPreference.get();
+//            PromptPreference preference = optionalPreference.get();
             // 있으면 PromptPreference를 활용
-            isLike = preference.getPreference().isLike();
+//            isLike = preference.getPreference().isLike();
+            isLike = false;
         }
 
         return ImageHistoryResultPageResponse.of(house.getEquilibrium().getDescription(), house.getForm().toString(), tag.getTagNameKr(), findUser.getName(), generateImage.getUrl(), isLike);
