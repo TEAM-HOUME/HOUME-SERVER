@@ -66,7 +66,7 @@ public class UserServiceImpl implements UserService {
             UserImageHistoryDTO dto = new UserImageHistoryDTO(
                     generateImage.get().getId(),
                     generateImage.get().getUrl(),
-                    representativeTag.get().getTagName(),
+                    representativeTag.get().getTagNameKr(),
                     house.getEquilibrium(),
                     house.getForm()
             );
