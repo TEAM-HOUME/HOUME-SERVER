@@ -45,7 +45,7 @@ public class House {
 
     // 입력값이 유효한지에 대한 여부 (true = 유효한 값)
     @Column(name = "is_valid", nullable = false)
-    private boolean isValid;
+    private boolean isValid = true;
 
     // 완성된 프롬프트를 저장합니다
     @Column(name = "house_prompt", columnDefinition = "TEXT", nullable = true)
