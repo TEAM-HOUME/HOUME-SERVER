@@ -63,7 +63,7 @@ class UserServiceImplTest {
                 .build();
 
         tag = Tag.builder()
-                .tagName("모던")
+                .tagNameKr("모던")
                 .build();
 
         generateImage = GenerateImage.builder()
