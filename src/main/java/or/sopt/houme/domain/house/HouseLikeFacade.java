@@ -12,7 +12,6 @@ import or.sopt.houme.domain.user.entity.User;
 import or.sopt.houme.global.api.ErrorCode;
 import or.sopt.houme.global.api.handler.UserException;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 
 @Component
 @RequiredArgsConstructor
@@ -23,7 +22,6 @@ public class HouseLikeFacade {
     private final PromptPreferenceService promptPreferenceService;
 
     // 생성된 이미지 선호도
-    @Transactional
     public void isLike(User user, Long generatedImageId, IsLikeRequest request) {
 
         // 도면 이미지 조회
@@ -35,13 +33,10 @@ public class HouseLikeFacade {
         if (!house.getUser().getId().equals(user.getId())) {
             throw new UserException(ErrorCode.USER_ROLE_EXCEPTION);
         }
-
-        house.setIsLike(request.isLike());
-
         // 좋아요 생성
-//        Preference preference = preferenceService.createPreference(request.isLike());
+        Preference preference = preferenceService.createPreference(request.isLike());
 
         // 집 프롬프트 좋아요 생성
-//        promptPreferenceService.createPromptPreference(house, preference);
+        promptPreferenceService.createPromptPreference(house, preference);
     }
 }

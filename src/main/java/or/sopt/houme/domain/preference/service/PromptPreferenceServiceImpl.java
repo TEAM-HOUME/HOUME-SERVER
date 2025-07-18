@@ -19,8 +19,12 @@ public class PromptPreferenceServiceImpl implements PromptPreferenceService {
     @Transactional
     @Override
     public void createPromptPreference(House house, Preference preference) {
-        PromptPreference promptPreference = PromptPreference.generatePreference(preference, house);
+        PromptPreference promptPreference = PromptPreference.builder()
+                .house(house)
+                .preference(preference)
+                .build();
 
         promptPreferenceRepository.save(promptPreference);
     }
+
 }
