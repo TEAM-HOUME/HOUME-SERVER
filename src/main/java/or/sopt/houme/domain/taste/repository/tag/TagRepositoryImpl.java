@@ -44,13 +44,13 @@ public class TagRepositoryImpl implements TagRepositoryCustom {
     }
 
     @Override
-    public Tag findMostFrequentTagByHouseId(Long houseId) {
+    public Optional<Tag> findMostFrequentTagByHouseId(Long houseId) {
         QTag tag = QTag.tag;
         QTasteTag tasteTag = QTasteTag.tasteTag;
         QTaste taste = QTaste.taste;
         QHouseTaste houseTaste = QHouseTaste.houseTaste;
 
-        return queryFactory
+        return Optional.ofNullable(queryFactory
                 .select(tag)
                 .from(tag)
                 .join(tasteTag).on(tasteTag.tag.eq(tag))
@@ -63,6 +63,6 @@ public class TagRepositoryImpl implements TagRepositoryCustom {
                         tag.priority.asc()
                 )
                 .limit(1)
-                .fetchOne();
+                .fetchOne());
     }
 }

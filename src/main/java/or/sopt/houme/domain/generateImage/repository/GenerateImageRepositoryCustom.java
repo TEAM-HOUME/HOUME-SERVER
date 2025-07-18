@@ -7,5 +7,5 @@ import java.util.Optional;
 public interface GenerateImageRepositoryCustom {
     Optional<GenerateImage> findGenerateImageByUserIdAndImageId(Long userId, Long imageId);
 
-    GenerateImage findByHouseId(Long houseId);
+    Optional<GenerateImage> findByHouseId(Long houseId);
 }

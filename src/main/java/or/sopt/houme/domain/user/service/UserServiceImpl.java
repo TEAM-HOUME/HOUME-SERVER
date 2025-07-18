@@ -22,6 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -54,18 +55,18 @@ public class UserServiceImpl implements UserService {
 
         for (House house : houses) {
             // 2. 각 house에 연결된 이미지가 없으면 skip
-            GenerateImage generateImage = generateImageRepository.findByHouseId(house.getId());
-            if (generateImage == null) continue;
+            Optional<GenerateImage> generateImage = generateImageRepository.findByHouseId(house.getId());
+            if (generateImage.isEmpty()) continue;
 
             // 3. 해당 house에서 가장 많이 등장한 태그 가져오기
-            Tag representativeTag = tagRepository.findMostFrequentTagByHouseId(house.getId());
-            if (representativeTag == null) continue;
+            Optional<Tag> representativeTag = tagRepository.findMostFrequentTagByHouseId(house.getId());
+            if (representativeTag.isEmpty()) continue;
 
             // 4. DTO 생성
             UserImageHistoryDTO dto = new UserImageHistoryDTO(
-                    generateImage.getId(),
-                    generateImage.getUrl(),
-                    representativeTag.getTagName(),
+                    generateImage.get().getId(),
+                    generateImage.get().getUrl(),
+                    representativeTag.get().getTagName(),
                     house.getEquilibrium(),
                     house.getForm()
             );

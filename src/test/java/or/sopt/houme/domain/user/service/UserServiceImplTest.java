@@ -115,11 +115,11 @@ class UserServiceImplTest {
 
         // 2. 각 house의 이미지 반환
         given(generateImageRepository.findByHouseId(house.getId()))
-                .willReturn(generateImage);
+                .willReturn(Optional.ofNullable(generateImage));
 
         // 3. 대표 태그 반환
         given(tagRepository.findMostFrequentTagByHouseId(house.getId()))
-                .willReturn(tag);
+                .willReturn(Optional.ofNullable(tag));
 
         // when
         UserImageHistoryListResponse response = userService.getUserImageHistoryList(user);
