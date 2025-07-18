@@ -2,6 +2,8 @@ package or.sopt.houme.domain.preference.repository;
 
 import or.sopt.houme.domain.preference.entity.Preference;
 
+import java.util.Optional;
+
 public interface PreferenceRepositoryCustom {
-    Preference findPreferenceByUserIdAndImageId(Long userId, Long imageId);
+    Optional<Preference> findPreferenceByUserIdAndImageId(Long userId, Long imageId);
 }

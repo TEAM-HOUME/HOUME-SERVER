@@ -86,9 +86,9 @@ public class UserServiceImpl implements UserService {
         House house = houseRepository.findHouseByUserIdAndImageId(findUser.getId(), imageId).orElseThrow(() -> new HouseException(ErrorCode.NOT_FOUND_HOUSE_ENTITY));
         Tag tag = tagRepository.findTagByUserIdAndImageId(findUser.getId(), imageId).orElseThrow(() -> new TagException(ErrorCode.NOT_FOUND_TAG_ENTITY));
         GenerateImage generateImage = generateImageRepository.findGenerateImageByUserIdAndImageId(findUser.getId(), imageId).orElseThrow(() -> new GenerateImageException(ErrorCode.NOT_FOUND_GENERATE_IMAGE_ENTITY));
-        Preference preference = preferenceRepository.findPreferenceByUserIdAndImageId(findUser.getId(), imageId);
+        Optional<Preference> preference = preferenceRepository.findPreferenceByUserIdAndImageId(findUser.getId(), imageId);
 
-        return ImageHistoryResultPageResponse.of(house.getEquilibrium().getDescription(), house.getForm().toString(), tag.getTagNameKr(), findUser.getName(), generateImage.getUrl(), preference.isLike());
+        return ImageHistoryResultPageResponse.of(house.getEquilibrium().getDescription(), house.getForm().toString(), tag.getTagNameKr(), findUser.getName(), generateImage.getUrl(), preference.get().isLike());
     }
 
     @Override

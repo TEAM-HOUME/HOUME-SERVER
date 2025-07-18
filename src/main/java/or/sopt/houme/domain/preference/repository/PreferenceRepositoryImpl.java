@@ -9,19 +9,21 @@ import or.sopt.houme.domain.preference.entity.QPreference;
 import or.sopt.houme.domain.preference.entity.QPromptPreference;
 import org.springframework.stereotype.Repository;
 
+import java.util.Optional;
+
 @Repository
 @RequiredArgsConstructor
 public class PreferenceRepositoryImpl implements PreferenceRepositoryCustom {
     private final JPAQueryFactory queryFactory;
 
     @Override
-    public Preference findPreferenceByUserIdAndImageId(Long userId, Long imageId) {
+    public Optional<Preference> findPreferenceByUserIdAndImageId(Long userId, Long imageId) {
         QPreference preference = QPreference.preference;
         QPromptPreference promptPreference = QPromptPreference.promptPreference;
         QHouse house = QHouse.house;
         QGenerateImage generateImage = QGenerateImage.generateImage;
 
-        return queryFactory
+        return Optional.ofNullable(queryFactory
                 .selectFrom(preference)
                 .join(promptPreference).on(promptPreference.preference.eq(preference))
                 .join(house).on(promptPreference.house.eq(house))
@@ -29,6 +31,6 @@ public class PreferenceRepositoryImpl implements PreferenceRepositoryCustom {
                 .where(
                         house.user.id.eq(userId),
                         generateImage.id.eq(imageId)
-                ).fetchOne();
+                ).fetchOne());
     }
 }
