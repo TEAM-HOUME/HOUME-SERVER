@@ -174,7 +174,7 @@ class UserServiceImplTest {
         given(houseRepository.findHouseByUserIdAndImageId(userId, imageId)).willReturn(Optional.of(house));
         given(tagRepository.findTagByUserIdAndImageId(userId, imageId)).willReturn(Optional.of(tag));
         given(generateImageRepository.findGenerateImageByUserIdAndImageId(userId, imageId)).willReturn(Optional.of(generateImage));
-        given(preferenceRepository.findPreferenceByUserIdAndImageId(userId, imageId)).willReturn(preference);
+        given(preferenceRepository.findPreferenceByUserIdAndImageId(userId, imageId)).willReturn(Optional.ofNullable(preference));
 
         // when
         ImageHistoryResultPageResponse response = userService.getImageHistoryResultPage(user, imageId);
