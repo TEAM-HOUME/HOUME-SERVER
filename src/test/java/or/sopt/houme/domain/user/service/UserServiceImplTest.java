@@ -184,7 +184,7 @@ class UserServiceImplTest {
         given(tagRepository.findTagByUserIdAndImageId(userId, imageId)).willReturn(Optional.of(tag));
         given(generateImageRepository.findGenerateImageByUserIdAndImageId(userId, imageId)).willReturn(Optional.of(generateImage));
         given(preferenceRepository.findPreferenceByUserIdAndImageId(userId, imageId)).willReturn(Optional.ofNullable(preference));
-        given(promptPreferenceRepository.findTopByHouseIdOrderByIdDesc(house.getId())).willReturn(promptPreference);
+        given(promptPreferenceRepository.findTopByHouseIdOrderByIdDesc(house.getId())).willReturn(Optional.of(promptPreference));
 
         // when
         ImageHistoryResultPageResponse response = userService.getImageHistoryResultPage(user, imageId);
