@@ -55,11 +55,11 @@ public class UserServiceImpl implements UserService {
 
         for (House house : houses) {
             // 2. 각 house에 연결된 이미지가 없으면 skip
-            Optional<GenerateImage> generateImage = generateImageRepository.findByHouseId(house.getId());
+            Optional<GenerateImage> generateImage = Optional.ofNullable(generateImageRepository.findByHouseId(house.getId()).orElseThrow(() -> new GenerateImageException(ErrorCode.NOT_FOUND_GENERATE_IMAGE_ENTITY)));
             if (generateImage.isEmpty()) continue;
 
             // 3. 해당 house에서 가장 많이 등장한 태그 가져오기
-            Optional<Tag> representativeTag = tagRepository.findMostFrequentTagByHouseId(house.getId());
+            Optional<Tag> representativeTag = Optional.ofNullable(tagRepository.findMostFrequentTagByHouseId(house.getId()).orElseThrow(() -> new TagException(ErrorCode.NOT_FOUND_TAG_ENTITY)));
             if (representativeTag.isEmpty()) continue;
 
             // 4. DTO 생성
