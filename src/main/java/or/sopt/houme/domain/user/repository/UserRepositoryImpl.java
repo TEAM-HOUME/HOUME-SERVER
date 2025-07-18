@@ -56,9 +56,9 @@ public class UserRepositoryImpl implements UserRepositoryCustom {
                         house.equilibrium,
                         house.form
                 ))
-                .from(user)
-
+                .from(house)
                 .join(house.generateImage, generateImage)
+                .join(house.user, user)
                 .join(houseTaste).on(houseTaste.house.eq(house))
                 .join(houseTaste.taste, taste)
                 .join(tasteTag).on(tasteTag.taste.eq(taste))
