@@ -42,4 +42,27 @@ public class TagRepositoryImpl implements TagRepositoryCustom {
                         .fetchOne()
         );
     }
+
+    @Override
+    public Optional<Tag> findMostFrequentTagByHouseId(Long houseId) {
+        QTag tag = QTag.tag;
+        QTasteTag tasteTag = QTasteTag.tasteTag;
+        QTaste taste = QTaste.taste;
+        QHouseTaste houseTaste = QHouseTaste.houseTaste;
+
+        return Optional.ofNullable(queryFactory
+                .select(tag)
+                .from(tag)
+                .join(tasteTag).on(tasteTag.tag.eq(tag))
+                .join(taste).on(tasteTag.taste.eq(taste))
+                .join(houseTaste).on(houseTaste.taste.eq(taste))
+                .where(houseTaste.house.id.eq(houseId))
+                .groupBy(tag.id)
+                .orderBy(
+                        tasteTag.count().desc(),
+                        tag.priority.asc()
+                )
+                .limit(1)
+                .fetchOne());
+    }
 }

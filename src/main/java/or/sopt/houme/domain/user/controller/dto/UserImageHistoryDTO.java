@@ -16,6 +16,6 @@ public record UserImageHistoryDTO(
 
     // ENUM타입으로 받아 String으로 저장
     public UserImageHistoryDTO(Long imageId, String generatedImageUrl, String tasteTag, Equilibrium equilibrium, Form form) {
-        this(imageId, generatedImageUrl, tasteTag, equilibrium.toString(), form.toString());
+        this(imageId, generatedImageUrl, tasteTag, equilibrium.getDescription(), form.getDescription());
     }
 }

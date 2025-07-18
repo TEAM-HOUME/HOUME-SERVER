@@ -7,4 +7,6 @@ import java.util.Optional;
 
 public interface TagRepositoryCustom {
     Optional<Tag> findTagByUserIdAndImageId(Long userId, Long imageId);
+
+    Optional<Tag> findMostFrequentTagByHouseId(Long houseId);
 }
