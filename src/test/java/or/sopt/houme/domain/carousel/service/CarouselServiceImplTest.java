@@ -1,6 +1,7 @@
 package or.sopt.houme.domain.carousel.service;
 
 import or.sopt.houme.domain.carousel.controller.dto.GetCarouselListResponseDTO;
+import or.sopt.houme.domain.carousel.controller.dto.GetCarouselResponseDTO;
 import or.sopt.houme.domain.carousel.entity.Carousel;
 import or.sopt.houme.domain.carousel.entity.CarouselType;
 import or.sopt.houme.domain.carousel.repository.CarouselRepository;
@@ -19,6 +20,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -41,6 +43,9 @@ class CarouselServiceImplTest {
 
     @Mock
     private CarouselPreferenceRepository carouselPreferenceRepository;
+
+    @Mock
+    private CarouselCacheService carouselCacheService;
 
     private User user;
     private Carousel carousel;
@@ -69,7 +74,12 @@ class CarouselServiceImplTest {
                 Carousel.builder().id(2L).url("url2").filename("file2").originalFilename("origin2").fileExtension("jpg").carouselType(dummyType).build()
         );
 
-        when(carouselRepository.findAll()).thenReturn(mockCarousels);
+        GetCarouselResponseDTO from1 = GetCarouselResponseDTO.from(mockCarousels.get(0));
+        GetCarouselResponseDTO from2 = GetCarouselResponseDTO.from(mockCarousels.get(1));
+
+        List<GetCarouselResponseDTO> getCarouselResponseDTOS = List.of(from1, from2);
+
+        when(carouselCacheService.getShuffledCarouselList()).thenReturn(getCarouselResponseDTOS);
 
         // when
         GetCarouselListResponseDTO result = carouselService.getCarousel(page);

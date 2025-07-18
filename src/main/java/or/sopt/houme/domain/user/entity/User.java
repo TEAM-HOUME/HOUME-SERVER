@@ -53,12 +53,6 @@ public class User extends BaseEntity {
     @Column(name = "role", nullable = false)
     private Role role;
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Credit> credits = new ArrayList<>();
-
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<House> houses = new ArrayList<>();
-
     // 자체 회원가입시 사용되는 유저 업데이트 메서드
     public void updateUserFromSignUp(String name, LocalDate birthday, Gender gender) {
         this.name = name;

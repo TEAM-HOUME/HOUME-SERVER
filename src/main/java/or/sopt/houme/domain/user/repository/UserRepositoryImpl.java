@@ -49,8 +49,8 @@ public class UserRepositoryImpl implements UserRepositoryCustom {
 
         Long mostFrequentTagId = queryFactory
                 .select(tag.id)
-                .from(user)
-                .join(user.houses, house)
+                .from(house)
+                .join(user).on(house.user.id.eq(user.id))
                 .join(houseTaste).on(houseTaste.house.eq(house))
                 .join(houseTaste.taste, taste)
                 .join(tasteTag).on(tasteTag.taste.eq(taste))
@@ -73,9 +73,9 @@ public class UserRepositoryImpl implements UserRepositoryCustom {
                         house.equilibrium,
                         house.form
                 ))
-                .from(user)
-                .join(user.houses, house)
+                .from(house)
                 .join(house.generateImage, generateImage)
+                .join(house.user, user)
                 .join(houseTaste).on(houseTaste.house.eq(house))
                 .join(houseTaste.taste, taste)
                 .join(tasteTag).on(tasteTag.taste.eq(taste))

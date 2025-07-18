@@ -37,7 +37,7 @@ public class TasteTagCustomRepositoryImpl implements TasteTagCustomRepository {
                 )
                 .orderBy(
                         tasteTag.count().desc(),
-                        tag.priority.max().desc()
+                        tag.priority.asc()
                 )
                 .limit(1)
                 .fetchOne());

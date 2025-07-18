@@ -63,8 +63,6 @@ class UserRepositoryImplTest {
                 .socialType(SocialType.KAKAO)
                 .status(UserStatus.ACTIVE)
                 .role(Role.ROLE_USER)
-                .credits(new ArrayList<>())
-                .houses(new ArrayList<>())
                 .build();
         em.persist(mockUser);
 
