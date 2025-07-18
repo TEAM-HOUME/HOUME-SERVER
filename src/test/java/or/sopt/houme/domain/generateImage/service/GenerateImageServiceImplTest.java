@@ -124,5 +124,6 @@ class GenerateImageServiceImplTest {
         assertThat(generateImage1.getFileExtension()).isEqualTo(contentType);
         assertThat(generateImage1.getOriginalFilename()).isEqualTo(originalFilename);
         assertThat(generateImage1.getUrl()).isEqualTo(imageLink);
+        assertThat(generateImage1.getClipScore()).isEqualTo(clipScore);
     }
 }
