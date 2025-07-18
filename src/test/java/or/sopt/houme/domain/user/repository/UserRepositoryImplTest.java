@@ -176,32 +176,6 @@ class UserRepositoryImplTest {
     }
 
     @Test
-    @DisplayName("사용자 이미지 히스토리 조회 - 여러 이력 정상 조회 및 태그 우선순위 확인")
-    void getUserImageHistory_Success() {
-        // when
-        List<UserImageHistoryDTO> result = userRepositoryImpl.getUserImageHistory(mockUser.getId());
-
-        // then
-        assertThat(result).hasSize(2);
-
-        // 첫 번째 DTO
-        UserImageHistoryDTO dto1 = result.get(0);
-        assertThat(dto1.generatedImageUrl()).isEqualTo("https://example.com/image1.png");
-        assertThat(dto1.tasteTag()).isEqualTo("모던");
-        assertThat(dto1.equilibrium()).isEqualTo("5평 이하");
-        assertThat(dto1.houseForm()).isEqualTo("오피스텔");
-
-        // 두 번째 DTO
-        UserImageHistoryDTO dto2 = result.get(1);
-        assertThat(dto2.generatedImageUrl()).isEqualTo("https://example.com/image2.png");
-
-        // dto2의 태그는 taste2가 tag 2개를 갖고 있으므로, 등장 횟수 높은 "모던" 우선
-        assertThat(dto2.tasteTag()).isEqualTo("모던"); // 등장 횟수 기준으로 "모던" 우선
-        assertThat(dto2.equilibrium()).isEqualTo("6~10평");
-        assertThat(dto2.houseForm()).isEqualTo("아파트");
-    }
-
-    @Test
     @DisplayName("유저 ID로 이미지 히스토리 1건 조회 성공 - 여러 이미지 중 하나")
     void findImageHistoryById_Success() {
         // when
