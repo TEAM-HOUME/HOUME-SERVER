@@ -5,15 +5,17 @@ public record ImageHistoryResultPageResponse(
         String houseForm,
         String tasteTag,
         String name,
-        String generatedImageUrl
+        String generatedImageUrl,
+        boolean isLike
 ) {
     public static ImageHistoryResultPageResponse of(
             String equilibrium,
             String houseForm,
             String tasteTag,
             String name,
-            String generatedImageUrl
+            String generatedImageUrl,
+            boolean isLike
     ) {
-        return new ImageHistoryResultPageResponse(equilibrium, houseForm, tasteTag, name, generatedImageUrl);
+        return new ImageHistoryResultPageResponse(equilibrium, houseForm, tasteTag, name, generatedImageUrl, isLike);
     }
 }

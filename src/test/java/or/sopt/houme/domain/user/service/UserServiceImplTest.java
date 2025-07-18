@@ -8,6 +8,8 @@ import or.sopt.houme.domain.house.entity.House;
 import or.sopt.houme.domain.house.entity.enums.Equilibrium;
 import or.sopt.houme.domain.house.entity.enums.Form;
 import or.sopt.houme.domain.house.repository.HouseRepository;
+import or.sopt.houme.domain.preference.entity.Preference;
+import or.sopt.houme.domain.preference.repository.PreferenceRepository;
 import or.sopt.houme.domain.taste.entity.Tag;
 import or.sopt.houme.domain.taste.repository.tag.TagRepository;
 import or.sopt.houme.domain.user.controller.dto.*;
@@ -17,6 +19,7 @@ import or.sopt.houme.domain.user.repository.UserRepository;
 import or.sopt.houme.global.api.ErrorCode;
 import or.sopt.houme.global.api.handler.*;
 
+import org.assertj.core.api.PredicateAssert;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -36,13 +39,15 @@ class UserServiceImplTest {
     private final TagRepository tagRepository = mock(TagRepository.class);
     private final GenerateImageRepository generateImageRepository = mock(GenerateImageRepository.class);
     private final CreditRepository creditRepository = mock(CreditRepository.class);
+    private final PreferenceRepository preferenceRepository = mock(PreferenceRepository.class);
 
     private final UserServiceImpl userService = new UserServiceImpl(
             userRepository,
             houseRepository,
             tagRepository,
             generateImageRepository,
-            creditRepository);
+            creditRepository,
+            preferenceRepository);
 
     private User user;
     private House house;
@@ -161,10 +166,15 @@ class UserServiceImplTest {
                 .url("https://example.com/image.png")
                 .build();
 
+        Preference preference = Preference.builder()
+                .isLike(true)
+                .build();
+
         given(userRepository.findById(userId)).willReturn(Optional.of(user));
         given(houseRepository.findHouseByUserIdAndImageId(userId, imageId)).willReturn(Optional.of(house));
         given(tagRepository.findTagByUserIdAndImageId(userId, imageId)).willReturn(Optional.of(tag));
         given(generateImageRepository.findGenerateImageByUserIdAndImageId(userId, imageId)).willReturn(Optional.of(generateImage));
+        given(preferenceRepository.findPreferenceByUserIdAndImageId(userId, imageId)).willReturn(Optional.ofNullable(preference));
 
         // when
         ImageHistoryResultPageResponse response = userService.getImageHistoryResultPage(user, imageId);
@@ -175,6 +185,7 @@ class UserServiceImplTest {
         assertThat(response.tasteTag()).isEqualTo("모던");
         assertThat(response.name()).isEqualTo("테스트유저");
         assertThat(response.generatedImageUrl()).isEqualTo("https://example.com/image.png");
+        assertThat(response.isLike()).isTrue();
     }
 
     @Test
