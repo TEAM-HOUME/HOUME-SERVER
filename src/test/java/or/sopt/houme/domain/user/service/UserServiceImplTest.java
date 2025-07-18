@@ -104,34 +104,36 @@ class UserServiceImplTest {
     @DisplayName("유저의 이미지 생성 이력 조회 성공")
     void getUserImageHistoryList_Success() {
         // given
-        User mockUser = User.builder().id(1L).build();
-        GenerateImage mockImage = GenerateImage.builder()
-                .id(1L)
-                .url("test.png")
-                .build();
-        List<UserImageHistoryDTO> mockHistories = List.of(
-                new UserImageHistoryDTO(1L, "url1.png", "모던", "5평 이하", "원룸"),
-                new UserImageHistoryDTO(2L, "url2.png", "빈티지", "6~10평", "단독주택")
-        );
+        Long userId = user.getId();
 
-        // 유저조회 -> mockUser반환
-        given(userRepository.findById(1L)).willReturn(Optional.of(mockUser));
+        given(userRepository.findById(userId))
+                .willReturn(Optional.of(user));
 
-        // 이미지 생성한적 있는지 조회 -> mockImage 반환
-        given(userRepository.findImageHistoryById(1L)).willReturn(Optional.of(mockImage));
+        // 1. 유효한 house 반환
+        given(houseRepository.findValidHouseByUserId(userId))
+                .willReturn(List.of(house));
 
-        // 이미지 생성 이력 리스트 조회 -> mockHistories 반환
-        given(userRepository.getUserImageHistory(1L)).willReturn(mockHistories);
+        // 2. 각 house의 이미지 반환
+        given(generateImageRepository.findByHouseId(house.getId()))
+                .willReturn(generateImage);
+
+        // 3. 대표 태그 반환
+        given(tagRepository.findMostFrequentTagByHouseId(house.getId()))
+                .willReturn(tag);
 
         // when
-        // mockUser에 대한 이미지 생성이력 조회 로직 실행
-        UserImageHistoryListResponse response = userService.getUserImageHistoryList(mockUser);
+        UserImageHistoryListResponse response = userService.getUserImageHistoryList(user);
 
         // then
-        // 로직이 정상 수행되는지, 예상한 배열의 길이인지, 예상한 값과 같은지 검증
         assertThat(response).isNotNull();
-        assertThat(response.histories()).hasSize(2);
-        assertThat(response.histories().get(0).generatedImageUrl()).isEqualTo("url1.png");
+        assertThat(response.histories()).hasSize(1);
+
+        UserImageHistoryDTO dto = response.histories().get(0);
+        assertThat(dto.imageId()).isEqualTo(100L);
+        assertThat(dto.generatedImageUrl()).isEqualTo("https://cdn.com/image.png");
+        assertThat(dto.tasteTag()).isEqualTo("모던");
+        assertThat(dto.equilibrium()).isEqualTo("5평 이하");
+        assertThat(dto.houseForm()).isEqualTo("아파트");
     }
 
     @Test
