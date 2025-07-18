@@ -82,6 +82,7 @@ class UserRepositoryImplTest {
                 .filename("image.png")
                 .originalFilename("original-image.png")
                 .fileExtension("png")
+                .clipScore(0.1234F)
                 .house(mockHouse) // 이미 생성된 House mock 객체
                 .build();
         em.persist(mockGenerateImage);

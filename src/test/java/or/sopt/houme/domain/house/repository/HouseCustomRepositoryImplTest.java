@@ -69,6 +69,7 @@ class HouseCustomRepositoryImplTest {
                 .filename("image.png")
                 .originalFilename("origin.png")
                 .fileExtension("png")
+                .clipScore(0.1234F)
                 .house(mockHouse)
                 .build();
         em.persist(mockGenerateImage);
@@ -78,7 +79,7 @@ class HouseCustomRepositoryImplTest {
     }
 
     @Test
-    @DisplayName("✅ userId와 imageId로 house 조회 성공")
+    @DisplayName("userId와 imageId로 house 조회 성공")
     void findHouseByUserIdAndImageId_success() {
         // when
         Optional<House> result = houseCustomRepositoryImpl.findHouseByUserIdAndImageId(mockUser.getId(), mockGenerateImage.getId());
@@ -90,7 +91,7 @@ class HouseCustomRepositoryImplTest {
     }
 
     @Test
-    @DisplayName("❌ 잘못된 imageId로 조회 시 empty 반환")
+    @DisplayName("잘못된 imageId로 조회 시 empty 반환")
     void findHouseByUserIdAndImageId_invalidImage() {
         // when
         Optional<House> result = houseCustomRepositoryImpl.findHouseByUserIdAndImageId(mockUser.getId(), 999L);

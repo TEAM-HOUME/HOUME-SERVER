@@ -65,6 +65,7 @@ class GenerateImageRepositoryImplTest {
                 .filename("image.png")
                 .originalFilename("origin-image.png")
                 .fileExtension("png")
+                .clipScore(0.1234F)
                 .house(house)
                 .build();
         em.persist(generateImage);
