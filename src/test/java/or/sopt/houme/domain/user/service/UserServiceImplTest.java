@@ -9,7 +9,9 @@ import or.sopt.houme.domain.house.entity.enums.Equilibrium;
 import or.sopt.houme.domain.house.entity.enums.Form;
 import or.sopt.houme.domain.house.repository.HouseRepository;
 import or.sopt.houme.domain.preference.entity.Preference;
+import or.sopt.houme.domain.preference.entity.PromptPreference;
 import or.sopt.houme.domain.preference.repository.PreferenceRepository;
+import or.sopt.houme.domain.preference.repository.PromptPreferenceRepository;
 import or.sopt.houme.domain.taste.entity.Tag;
 import or.sopt.houme.domain.taste.repository.tag.TagRepository;
 import or.sopt.houme.domain.user.controller.dto.*;
@@ -40,6 +42,7 @@ class UserServiceImplTest {
     private final GenerateImageRepository generateImageRepository = mock(GenerateImageRepository.class);
     private final CreditRepository creditRepository = mock(CreditRepository.class);
     private final PreferenceRepository preferenceRepository = mock(PreferenceRepository.class);
+    private final PromptPreferenceRepository  promptPreferenceRepository = mock(PromptPreferenceRepository.class);
 
     private final UserServiceImpl userService = new UserServiceImpl(
             userRepository,
@@ -47,7 +50,8 @@ class UserServiceImplTest {
             tagRepository,
             generateImageRepository,
             creditRepository,
-            preferenceRepository);
+            preferenceRepository,
+            promptPreferenceRepository);
 
     private User user;
     private House house;
@@ -170,11 +174,17 @@ class UserServiceImplTest {
                 .isLike(true)
                 .build();
 
+        PromptPreference promptPreference = PromptPreference.builder()
+                        .preference(preference)
+                .house(house)
+                .build();
+
         given(userRepository.findById(userId)).willReturn(Optional.of(user));
         given(houseRepository.findHouseByUserIdAndImageId(userId, imageId)).willReturn(Optional.of(house));
         given(tagRepository.findTagByUserIdAndImageId(userId, imageId)).willReturn(Optional.of(tag));
         given(generateImageRepository.findGenerateImageByUserIdAndImageId(userId, imageId)).willReturn(Optional.of(generateImage));
         given(preferenceRepository.findPreferenceByUserIdAndImageId(userId, imageId)).willReturn(Optional.ofNullable(preference));
+        given(promptPreferenceRepository.findTopByHouseIdOrderByIdDesc(house.getId())).willReturn(Optional.of(promptPreference));
 
         // when
         ImageHistoryResultPageResponse response = userService.getImageHistoryResultPage(user, imageId);
