@@ -3,7 +3,6 @@ package or.sopt.houme.domain.house.service;
 import or.sopt.houme.domain.house.dto.LatestHouseConditionDTO;
 import or.sopt.houme.domain.house.dto.request.HouseSelectRequest;
 import or.sopt.houme.domain.house.dto.response.HouseIdResponse;
-import or.sopt.houme.domain.house.dto.request.IsLikeRequest;
 import or.sopt.houme.domain.house.dto.response.HouseOptionsResponse;
 import or.sopt.houme.domain.house.entity.House;
 import or.sopt.houme.domain.house.entity.enums.Activity;
@@ -39,4 +38,7 @@ public interface HouseService {
 
     // house와 무드보드(taste) 저장
     void saveHouseTaste(House house, List<Long> tasteIds);
+
+    // houseFloorPlan isMirror 조회
+    boolean getIsMirrorByHouseId(Long houseId);
 }

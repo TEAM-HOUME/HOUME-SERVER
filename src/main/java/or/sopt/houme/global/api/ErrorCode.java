@@ -83,6 +83,11 @@ public enum ErrorCode {
      * 409 CONFLICT
      */
 
+    /**
+     * 429 Too_Many_Requests
+     */
+    RETRY_GET_IMAGE(HttpStatus.TOO_MANY_REQUESTS, 42900, "재요하세요."),
+
 
     /**
      * 500 INTERNAL_SERVER_ERROR

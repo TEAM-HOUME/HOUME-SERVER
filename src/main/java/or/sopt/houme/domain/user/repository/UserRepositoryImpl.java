@@ -1,21 +1,14 @@
 package or.sopt.houme.domain.user.repository;
 
-import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import or.sopt.houme.domain.credit.entity.CreditStatus;
 import or.sopt.houme.domain.generateImage.entity.GenerateImage;
-import or.sopt.houme.domain.house.entity.QHouse;
-import or.sopt.houme.domain.house.entity.mapping.QHouseTaste;
-import or.sopt.houme.domain.taste.entity.QTag;
-import or.sopt.houme.domain.taste.entity.QTaste;
-import or.sopt.houme.domain.taste.entity.QTasteTag;
-import or.sopt.houme.domain.user.controller.dto.UserImageHistoryDTO;
-import or.sopt.houme.domain.user.entity.QUser;
 import or.sopt.houme.domain.generateImage.entity.QGenerateImage;
+import or.sopt.houme.domain.house.entity.QHouse;
+import or.sopt.houme.domain.user.entity.QUser;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
 import java.util.Optional;
 
 import static or.sopt.houme.domain.credit.entity.QCredit.credit;

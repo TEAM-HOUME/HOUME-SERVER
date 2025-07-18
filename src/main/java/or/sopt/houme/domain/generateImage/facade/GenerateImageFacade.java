@@ -3,7 +3,6 @@ package or.sopt.houme.domain.generateImage.facade;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import or.sopt.houme.domain.credit.service.CreditService;
-import or.sopt.houme.domain.furniture.service.FurnitureService;
 import or.sopt.houme.domain.generateImage.dto.request.GenerateImageRequest;
 import or.sopt.houme.domain.generateImage.dto.response.ImageInfoResponse;
 import or.sopt.houme.domain.generateImage.entity.GenerateImage;
@@ -17,6 +16,7 @@ import or.sopt.houme.domain.openai.facade.OpenAiFacade;
 import or.sopt.houme.domain.prompt.dto.PromptFurnitureListDTO;
 import or.sopt.houme.domain.prompt.dto.PromptRequestDTO;
 import or.sopt.houme.domain.taste.entity.Tag;
+import or.sopt.houme.domain.taste.service.TagService;
 import or.sopt.houme.domain.taste.service.TasteTagService;
 import or.sopt.houme.domain.user.entity.User;
 import or.sopt.houme.domain.user.service.UserService;
@@ -38,6 +38,7 @@ public class GenerateImageFacade {
     private final CreditService creditService;
     private final TasteTagService tasteTagService;
     private final UserService userService;
+    private final TagService tagService;
 
     // 스프링을 이용한 이미지 생성
     @Transactional
@@ -104,8 +105,16 @@ public class GenerateImageFacade {
             // house에 프롬프트 저장
             houseService.saveHousePrompt(house, imageUploadResponseDTO.getPullPrompt());
 
-            // 도면 이미지 생성
-            GenerateImage generateImage = generateImageService.createGenerateImage(imageUploadResponseDTO, house);
+            GenerateImage generateImage;
+
+            try {
+                // 도면 이미지 생성
+                generateImage = generateImageService.createGenerateImage(imageUploadResponseDTO, house);
+
+            } catch (Exception e){
+
+                return null;
+            }
 
             // 이미지 생성 여부 업데이트
             userService.updateHasGeneratedImage(user);
@@ -187,8 +196,16 @@ public class GenerateImageFacade {
             // house에 프롬프트 저장
             houseService.saveHousePrompt(house, imageUploadResponseDTO.getPullPrompt());
 
-            // 도면 이미지 생성
-            GenerateImage generateImage = generateImageService.createGenerateImage(imageUploadResponseDTO, house);
+            GenerateImage generateImage;
+
+            try {
+                // 도면 이미지 생성
+                generateImage = generateImageService.createGenerateImage(imageUploadResponseDTO, house);
+
+            } catch (Exception e){
+
+                return null;
+            }
 
             // 이미지 생성 여부 업데이트
             userService.updateHasGeneratedImage(user);
@@ -203,5 +220,27 @@ public class GenerateImageFacade {
             log.info("Image 생성 중 오류 발생 {}", e.getMessage());
             throw new GenerateImageException(ErrorCode.GENERATED_IMAGE_EXCEPTION);
         }
+    }
+
+
+    // houseId로 결과 이미지 찾아오기
+    public ImageInfoResponse getFallBackImage(User user, Long houseId){
+        House houseById = houseService.findHouseById(houseId);
+
+        GenerateImage generateImage;
+
+        try {
+            generateImage = generateImageService.findGenerateImageByHouseId(houseId);
+        } catch (Exception e) {
+            return null;
+        }
+
+        boolean isMirror = houseService.getIsMirrorByHouseId(houseId);
+        String equilibrium = houseById.getEquilibrium().getDescription();
+        String houseForm = houseById.getForm().getDescription();
+
+        Tag tag = tagService.findTagByUserIdAndImageId(user.getId(), generateImage.getId());
+
+        return ImageInfoResponse.of(generateImage.getId(), generateImage.getUrl(), isMirror, equilibrium, houseForm, tag.getTagNameKr(), user.getName());
     }
 }
