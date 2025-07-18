@@ -13,4 +13,7 @@ public interface GenerateImageService {
 
     // 이미지 ID로 조회
     GenerateImage findGenerateImage(Long imageId);
+
+    // houseId로 이미지 조회
+    GenerateImage findGenerateImageByHouseId(Long houseId);
 }

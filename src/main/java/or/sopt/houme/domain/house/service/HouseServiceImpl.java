@@ -34,8 +34,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.Arrays;
 import java.util.List;
 
-import static or.sopt.houme.domain.taste.entity.QTaste.taste;
-
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -181,6 +179,14 @@ public class HouseServiceImpl implements HouseService {
                 .toList();
 
         houseTasteRepository.saveAll(list);
+    }
+
+    @Override
+    public boolean getIsMirrorByHouseId(Long houseId) {
+        HouseFloorPlan houseFloorPlan = houseFloorPlanRepository.findHouseFloorPlanByHouseId(houseId)
+                .orElseThrow(() -> new HouseException(ErrorCode.NOT_FOUND_FLOOR_PLAN));
+
+        return houseFloorPlan.isReverse();
     }
 
     // 유효하지 않은 요청일 때 log 저장

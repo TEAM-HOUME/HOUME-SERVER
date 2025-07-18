@@ -33,4 +33,13 @@ public class GenerateImageServiceImpl implements GenerateImageService {
         return generateImageRepository.findById(imageId)
                 .orElseThrow(() -> new GenerateImageException(ErrorCode.NOT_FOUND_GENERATE_IMAGE_ENTITY));
     }
+
+    // houseId로 생성 이미지 객체 가져오기
+    @Override
+    public GenerateImage findGenerateImageByHouseId(Long houseId) {
+        GenerateImage generateImage = generateImageRepository.findByHouseId(houseId)
+                .orElseThrow(() -> new GenerateImageException(ErrorCode.NOT_FOUND_GENERATE_IMAGE_ENTITY));
+
+        return generateImage;
+    }
 }
