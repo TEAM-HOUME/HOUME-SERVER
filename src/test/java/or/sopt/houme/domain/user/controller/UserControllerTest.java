@@ -75,8 +75,6 @@ class UserControllerTest {
                 .socialType(SocialType.KAKAO)
                 .status(UserStatus.ACTIVE)
                 .role(Role.ROLE_USER)
-                .credits(new ArrayList<>())
-                .houses(new ArrayList<>())
                 .build();
 
         mockUserDetails = new CustomUserDetails(mockUser);

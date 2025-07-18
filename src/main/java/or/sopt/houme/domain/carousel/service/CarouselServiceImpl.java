@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import or.sopt.houme.domain.carousel.controller.dto.GetCarouselListResponseDTO;
 import or.sopt.houme.domain.carousel.controller.dto.GetCarouselResponseDTO;
 import or.sopt.houme.domain.carousel.entity.Carousel;
-import or.sopt.houme.domain.carousel.entity.CarouselType;
 import or.sopt.houme.domain.carousel.repository.CarouselRepository;
 import or.sopt.houme.domain.preference.entity.CarouselPreference;
 import or.sopt.houme.domain.preference.entity.Preference;
@@ -13,29 +12,27 @@ import or.sopt.houme.domain.preference.repository.PreferenceRepository;
 import or.sopt.houme.domain.user.entity.User;
 import or.sopt.houme.global.api.ErrorCode;
 import or.sopt.houme.global.api.handler.CarouselException;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class CarouselServiceImpl implements CarouselService {
 
     private final CarouselRepository carouselRepository;
     private final PreferenceRepository preferenceRepository;
     private final CarouselPreferenceRepository carouselPreferenceRepository;
+    private final CarouselCacheService carouselCacheService;
 
-    @Cacheable(value = "getCarouselListCache", key = "'page:' + #page")
     @Override
     public GetCarouselListResponseDTO getCarousel(int page) {
         int pageSize = 5;
+        List<GetCarouselResponseDTO> shuffled = carouselCacheService.getShuffledCarouselList(); // 고정된 셔플 결과
 
-        List<Carousel> shuffled = getShuffledCarouselList();
-
-        // 페이지네이션 적용
         int fromIndex = page * pageSize;
         int toIndex = Math.min(fromIndex + pageSize, shuffled.size());
         if (fromIndex >= shuffled.size()) {
@@ -43,11 +40,11 @@ public class CarouselServiceImpl implements CarouselService {
         }
 
         List<GetCarouselResponseDTO> result = shuffled.subList(fromIndex, toIndex).stream()
-                .map(GetCarouselResponseDTO::from)
                 .toList();
 
         return GetCarouselListResponseDTO.of(result);
     }
+
 
 
     /**
@@ -63,7 +60,6 @@ public class CarouselServiceImpl implements CarouselService {
     public void likeCarousel(User user, Long carouselId) {
         updateLike(user.getId(), carouselId, true);
     }
-
 
     @Override
     @Transactional
@@ -95,31 +91,6 @@ public class CarouselServiceImpl implements CarouselService {
     private Carousel findCarousel(Long carouselId) {
         return carouselRepository.findById(carouselId)
                 .orElseThrow(() -> new CarouselException(ErrorCode.CAROUSEL_NOT_FOUND));
-    }
-
-    @Cacheable(value = "shuffledCarouselListCache", key = "'all'")
-    public List<Carousel> getShuffledCarouselList() {
-        // 모든 캐러셀 불러오기
-        List<Carousel> allCarousels = carouselRepository.findAll();
-
-        // 타입별로 그룹화
-        Map<CarouselType, Queue<Carousel>> grouped = allCarousels.stream()
-                .collect(Collectors.groupingBy(
-                        Carousel::getCarouselType,
-                        Collectors.toCollection(LinkedList::new)
-                ));
-
-        // 라운드로빈 방식으로 타입 섞기
-        List<Carousel> shuffled = new ArrayList<>();
-        while (!grouped.values().stream().allMatch(Queue::isEmpty)) {
-            for (Queue<Carousel> queue : grouped.values()) {
-                if (!queue.isEmpty()) {
-                    shuffled.add(queue.poll());
-                }
-            }
-        }
-
-        return shuffled;
     }
 
 }

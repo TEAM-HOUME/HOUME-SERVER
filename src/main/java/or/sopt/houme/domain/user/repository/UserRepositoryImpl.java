@@ -38,36 +38,6 @@ public class UserRepositoryImpl implements UserRepositoryCustom {
     }
 
     @Override
-    public List<UserImageHistoryDTO> getUserImageHistory(Long userId) {
-        QUser user = QUser.user;
-        QHouse house = QHouse.house;
-        QGenerateImage generateImage = QGenerateImage.generateImage;
-        QHouseTaste houseTaste = QHouseTaste.houseTaste;
-        QTaste taste = QTaste.taste;
-        QTasteTag tasteTag = QTasteTag.tasteTag;
-        QTag tag = QTag.tag;
-
-        return queryFactory
-                .select(Projections.constructor(
-                        UserImageHistoryDTO.class,
-                        generateImage.id,
-                        generateImage.url,
-                        tag.tagName,
-                        house.equilibrium,
-                        house.form
-                ))
-                .from(user)
-                .join(user.houses, house)
-                .join(house.generateImage, generateImage)
-                .join(houseTaste).on(houseTaste.house.eq(house))
-                .join(houseTaste.taste, taste)
-                .join(tasteTag).on(tasteTag.taste.eq(taste))
-                .join(tasteTag.tag, tag)
-                .where(user.id.eq(userId))
-                .fetch();
-    }
-
-    @Override
     public Optional<GenerateImage> findImageHistoryById(Long userId) {
         QUser user = QUser.user;
         QHouse house = QHouse.house;

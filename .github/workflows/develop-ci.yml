@@ -35,7 +35,7 @@ jobs:
 
       - name: Run Gradle build and tests
         run: |
-          ./gradlew build
+          ./gradlew clean build
           ./gradlew test
           ./gradlew jacocoTestReport
       - name: Jacoco Report to PR
