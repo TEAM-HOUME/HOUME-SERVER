@@ -8,6 +8,8 @@ import or.sopt.houme.domain.generateImage.entity.GenerateImage;
 import or.sopt.houme.domain.generateImage.repository.GenerateImageRepository;
 import or.sopt.houme.domain.house.entity.House;
 import or.sopt.houme.domain.house.repository.HouseRepository;
+import or.sopt.houme.domain.preference.entity.Preference;
+import or.sopt.houme.domain.preference.repository.PreferenceRepository;
 import or.sopt.houme.domain.taste.entity.Tag;
 import or.sopt.houme.domain.taste.repository.tag.TagRepository;
 import or.sopt.houme.domain.user.controller.dto.*;
@@ -33,6 +35,7 @@ public class UserServiceImpl implements UserService {
     private final TagRepository tagRepository;
     private final GenerateImageRepository generateImageRepository;
     private final CreditRepository creditRepository;
+    private final PreferenceRepository preferenceRepository;
 
     @Override
     @Transactional(readOnly = true)
@@ -83,8 +86,9 @@ public class UserServiceImpl implements UserService {
         House house = houseRepository.findHouseByUserIdAndImageId(findUser.getId(), imageId).orElseThrow(() -> new HouseException(ErrorCode.NOT_FOUND_HOUSE_ENTITY));
         Tag tag = tagRepository.findTagByUserIdAndImageId(findUser.getId(), imageId).orElseThrow(() -> new TagException(ErrorCode.NOT_FOUND_TAG_ENTITY));
         GenerateImage generateImage = generateImageRepository.findGenerateImageByUserIdAndImageId(findUser.getId(), imageId).orElseThrow(() -> new GenerateImageException(ErrorCode.NOT_FOUND_GENERATE_IMAGE_ENTITY));
+        Preference preference = preferenceRepository.findPreferenceByUserIdAndImageId(findUser.getId(), imageId);
 
-        return ImageHistoryResultPageResponse.of(house.getEquilibrium().getDescription(), house.getForm().toString(), tag.getTagNameKr(), findUser.getName(), generateImage.getUrl());
+        return ImageHistoryResultPageResponse.of(house.getEquilibrium().getDescription(), house.getForm().toString(), tag.getTagNameKr(), findUser.getName(), generateImage.getUrl(), preference.isLike());
     }
 
     @Override
