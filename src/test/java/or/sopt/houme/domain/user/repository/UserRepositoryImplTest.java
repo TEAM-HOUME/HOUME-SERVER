@@ -52,20 +52,60 @@ class UserRepositoryImplTest {
 
     @BeforeEach
     void setUp() {
+        // 1. 유저 생성
         mockUser = User.builder()
                 .name("테스트유저")
                 .birthday(LocalDate.of(1999, 12, 31))
                 .gender(Gender.MALE)
                 .email("mock@example.com")
                 .password("encodedPassword123")
-                .hasGeneratedImage(true)  // 생성된 이미지가 있다고 가정
+                .hasGeneratedImage(true)
                 .socialType(SocialType.KAKAO)
                 .status(UserStatus.ACTIVE)
                 .role(Role.ROLE_USER)
                 .build();
         em.persist(mockUser);
 
-        mockHouse = House.builder()
+        // 2. 태그 2개 생성
+        Tag tagModern = Tag.builder()
+                .tagName("모던")
+                .tagPrompt("깔끔한 화이트톤의 거실")
+                .tagNameKr("모던")
+                .priority(1)
+                .build();
+        em.persist(tagModern);
+
+        Tag tagVintage = Tag.builder()
+                .tagName("빈티지")
+                .tagPrompt("따뜻한 느낌의 원목 인테리어")
+                .tagNameKr("빈티지")
+                .priority(2)
+                .build();
+        em.persist(tagVintage);
+
+        // 3. Taste 2개 생성 + 각각 Tag 연결
+        Taste taste1 = Taste.builder()
+                .url("https://example.com/taste1.png")
+                .filename("taste1.png")
+                .originalFilename("original-taste1.png")
+                .fileExtension("png")
+                .build();
+        em.persist(taste1);
+
+        Taste taste2 = Taste.builder()
+                .url("https://example.com/taste2.png")
+                .filename("taste2.png")
+                .originalFilename("original-taste2.png")
+                .fileExtension("png")
+                .build();
+        em.persist(taste2);
+
+        em.persist(TasteTag.builder().taste(taste1).tag(tagModern).build());
+        em.persist(TasteTag.builder().taste(taste2).tag(tagVintage).build());
+        em.persist(TasteTag.builder().taste(taste2).tag(tagModern).build()); // taste2는 tag 2개
+
+        // 4. House 2개 생성
+        House house1 = House.builder()
                 .form(Form.OFFICETEL)
                 .structure(Structure.OPEN_ONE_ROOM)
                 .equilibrium(Equilibrium.UNDER_5)
@@ -73,48 +113,44 @@ class UserRepositoryImplTest {
                 .user(mockUser)
                 .isValid(true)
                 .build();
-        em.persist(mockHouse);
+        em.persist(house1);
 
-        mockGenerateImage = GenerateImage.builder()
-                .url("https://example.com/image.png")
-                .filename("image.png")
-                .originalFilename("original-image.png")
+        House house2 = House.builder()
+                .form(Form.APARTMENT)
+                .structure(Structure.DUPLEX)
+                .equilibrium(Equilibrium.BETWEEN_6_10)
+                .activity(Activity.HOME_THEATER)
+                .user(mockUser)
+                .isValid(true)
+                .build();
+        em.persist(house2);
+
+        // 5. HouseTaste로 Taste 연결
+        em.persist(HouseTaste.builder().house(house1).taste(taste1).build());
+        em.persist(HouseTaste.builder().house(house2).taste(taste2).build());
+
+        // 6. GenerateImage 2개 생성
+        GenerateImage generateImage1 = GenerateImage.builder()
+                .url("https://example.com/image1.png")
+                .filename("image1.png")
+                .originalFilename("original-image1.png")
                 .fileExtension("png")
-                .house(mockHouse) // 이미 생성된 House mock 객체
+                .house(house1)
                 .build();
-        em.persist(mockGenerateImage);
+        em.persist(generateImage1);
 
-        mockTaste = Taste.builder()
-                .url("https://example.com/taste-image.png")
-                .filename("taste-image.png")
-                .originalFilename("original-taste-image.png")
+        GenerateImage generateImage2 = GenerateImage.builder()
+                .url("https://example.com/image2.png")
+                .filename("image2.png")
+                .originalFilename("original-image2.png")
                 .fileExtension("png")
+                .house(house2)
                 .build();
-        em.persist(mockTaste);
-
-        Tag mockTag = Tag.builder()
-                .tagName("모던")
-                .tagPrompt("깔끔한 화이트톤의 거실 인테리어") // 예시 프롬프트
-                .tagNameKr("모던")
-                .build();
-        em.persist(mockTag);
-
-        mockTasteTag = TasteTag.builder()
-                .taste(mockTaste)
-                .tag(mockTag)
-                .build();
-        em.persist(mockTasteTag);
-
-        mockHouseTaste = HouseTaste.builder()
-                .house(mockHouse)   // 이미 생성된 House 객체
-                .taste(mockTaste)   // 이미 생성된 Taste 객체
-                .build();
-        em.persist(mockHouseTaste);
+        em.persist(generateImage2);
 
         em.flush();
         em.clear();
     }
-
 
     @Test
     @DisplayName("사용자의 ACTIVE 상태인 크레딧 개수를 올바르게 카운트한다")
@@ -140,29 +176,45 @@ class UserRepositoryImplTest {
     }
 
     @Test
-    @DisplayName("사용자 이미지 히스토리 조회 성공")
+    @DisplayName("사용자 이미지 히스토리 조회 - 여러 이력 정상 조회 및 태그 우선순위 확인")
     void getUserImageHistory_Success() {
         // when
-//        List<UserImageHistoryDTO> result = userRepositoryImpl.getUserImageHistory(mockUser.getId());
-//
-//        // then
-//        assertThat(result).hasSize(1);
-//        UserImageHistoryDTO dto = result.get(0);
-//        assertThat(dto.generatedImageUrl()).isEqualTo("https://example.com/image.png");
-//        assertThat(dto.tasteTag()).isEqualTo("모던");
-//        assertThat(dto.equilibrium()).isEqualTo("UNDER_5");
-//        assertThat(dto.houseForm()).isEqualTo("OFFICETEL");
+        List<UserImageHistoryDTO> result = userRepositoryImpl.getUserImageHistory(mockUser.getId());
+
+        // then
+        assertThat(result).hasSize(2);
+
+        // 첫 번째 DTO
+        UserImageHistoryDTO dto1 = result.get(0);
+        assertThat(dto1.generatedImageUrl()).isEqualTo("https://example.com/image1.png");
+        assertThat(dto1.tasteTag()).isEqualTo("모던");
+        assertThat(dto1.equilibrium()).isEqualTo("5평 이하");
+        assertThat(dto1.houseForm()).isEqualTo("오피스텔");
+
+        // 두 번째 DTO
+        UserImageHistoryDTO dto2 = result.get(1);
+        assertThat(dto2.generatedImageUrl()).isEqualTo("https://example.com/image2.png");
+
+        // dto2의 태그는 taste2가 tag 2개를 갖고 있으므로, 등장 횟수 높은 "모던" 우선
+        assertThat(dto2.tasteTag()).isEqualTo("모던"); // 등장 횟수 기준으로 "모던" 우선
+        assertThat(dto2.equilibrium()).isEqualTo("6~10평");
+        assertThat(dto2.houseForm()).isEqualTo("아파트");
     }
 
     @Test
-    @DisplayName("유저 ID로 이미지 히스토리 1건 조회 성공")
+    @DisplayName("유저 ID로 이미지 히스토리 1건 조회 성공 - 여러 이미지 중 하나")
     void findImageHistoryById_Success() {
         // when
         Optional<GenerateImage> result = userRepositoryImpl.findImageHistoryById(mockUser.getId());
 
         // then
         assertThat(result).isPresent(); // Optional이 존재해야 함
-        assertThat(result.get().getUrl()).isEqualTo("https://example.com/image.png");
-        assertThat(result.get().getFilename()).isEqualTo("image.png");
+
+        GenerateImage image = result.get();
+        assertThat(image.getUrl()).isIn(
+                "https://example.com/image1.png",
+                "https://example.com/image2.png"
+        );
+        assertThat(image.getFilename()).isIn("image1.png", "image2.png");
     }
 }
