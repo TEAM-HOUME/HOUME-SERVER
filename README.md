@@ -2,7 +2,8 @@
 
 ![HOUME Logo](https://img.shields.io/badge/HOUME-나다운%20집을%20만들어주는%20여정-FF6B6B?style=for-the-badge)
 
-![KakaoTalk_Photo_2025-07-04-16-46-13](https://github.com/user-attachments/assets/4fe7a3ca-f2ef-4970-a6f6-51930e887c41)
+<img width="7680" height="4320" alt="image" src="https://github.com/user-attachments/assets/65321324-88d0-47c2-a17c-5fe9ed640ab9" />
+
 
 <br/> <strong>"나다운 집을 만들어주는 여정, 하우미"</strong>
 
@@ -30,25 +31,13 @@ HOUME는 사용자가 자신만의 개성 있는 공간을 디자인하고 꾸�
     <tbody>
       <tr>
         <td>
-          <img 
-            src="https://github.com/gdbs1107.png" 
-            alt="전재연" 
-            style="width: 360px;"
-          />
+          <img style="width: 360px;" alt="전재연" src="https://github.com/user-attachments/assets/f3b23cf6-d4b2-4f40-9408-05157cd236bc" />
         </td>
         <td>
-          <img 
-            src="https://github.com/PBEM22.png" 
-            alt="임채륜" 
-            style="width: 360px;"
-          />
+          <img style="width: 360px;" alt="임채륜" src="https://github.com/user-attachments/assets/64e4999c-be4e-483b-b888-b620369e684e" />
         </td>
         <td>
-          <img 
-            src="https://github.com/kbt82883.png" 
-            alt="구본탁" 
-            style="width: 360px;"
-          />
+          <img style="width: 360px;" alt="구본탁"  src="https://github.com/user-attachments/assets/4f3aaa59-b88f-4ebf-9bf7-269c82eef80c" />
         </td>
       </tr>
       <tr align="center">
@@ -67,3 +56,12 @@ HOUME는 사용자가 자신만의 개성 있는 공간을 디자인하고 꾸�
 </div>
 
 <br />
+
+---
+
+## 🏡 Architecture
+
+<img width="1940" height="1262" alt="image" src="https://github.com/user-attachments/assets/6a43109d-fb2d-40f5-b044-26f24ae0fa61" />
+
+
+
