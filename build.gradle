@@ -140,7 +140,7 @@ tasks.named('test') {
 
 jib {
     from {
-        image = 'openjdk:17.0.8-oracle' // 베이스 이미지 지정
+        image = 'eclipse-temurin:17-jdk' // 베이스 이미지 지정
     }
     to {
         image = project.hasProperty('jibToImage') ? project.getProperty('jibToImage') : 'default/image'
