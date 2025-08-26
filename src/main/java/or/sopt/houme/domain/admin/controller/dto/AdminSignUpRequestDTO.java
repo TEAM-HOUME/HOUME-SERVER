@@ -1,8 +1,6 @@
-package or.sopt.houme.domain.admin;
+package or.sopt.houme.domain.admin.controller.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.RequiredArgsConstructor;
-import or.sopt.houme.domain.user.entity.Role;
 
 
 public record AdminSignUpRequestDTO(
