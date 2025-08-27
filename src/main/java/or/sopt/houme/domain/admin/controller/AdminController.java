@@ -23,4 +23,5 @@ public class AdminController {
     public void register(@RequestBody AdminSignUpRequestDTO dto) {
         adminService.signUp(dto);
     }
+
 }
