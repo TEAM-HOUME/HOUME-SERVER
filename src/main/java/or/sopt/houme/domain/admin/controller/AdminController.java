@@ -5,6 +5,9 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import or.sopt.houme.domain.admin.controller.dto.AdminSignUpRequestDTO;
 import or.sopt.houme.domain.admin.service.AdminService;
+import or.sopt.houme.global.api.ApiResponse;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -22,6 +25,12 @@ public class AdminController {
     @Operation(description = "어드민 회원가입 API")
     public void register(@RequestBody AdminSignUpRequestDTO dto) {
         adminService.signUp(dto);
+    }
+
+    @GetMapping("/test")
+    @Operation(description = "어드민 권한 테스트 API")
+    public ResponseEntity<ApiResponse<String>> adminOnlyTest() {
+        return ResponseEntity.ok(ApiResponse.ok("Admin-only API access successful!"));
     }
 
 }

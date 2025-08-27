@@ -66,7 +66,9 @@ public class WhiteListConfig {
         return List.of(
                 "/api/v1/admin/register",
                 "/admin/register",
-                "/admin/register/success"
+                "/admin/register/success",
+                "/admin/login",
+                "/admin/dashboard"
         );
     }
 }

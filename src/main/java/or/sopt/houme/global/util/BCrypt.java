@@ -2,5 +2,6 @@ package or.sopt.houme.global.util;
 
 public interface BCrypt {
 
-    public String hash(String password);
+    String hash(String password);
+    boolean isMatch(String password, String hashedPassword);
 }

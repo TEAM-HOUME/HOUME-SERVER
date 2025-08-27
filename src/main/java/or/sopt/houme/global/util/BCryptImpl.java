@@ -17,4 +17,9 @@ public class BCryptImpl implements BCrypt {
     public String hash(String password) {
         return encoder.encode(password);
     }
+
+    @Override
+    public boolean isMatch(String password, String hashedPassword) {
+        return encoder.matches(password, hashedPassword);
+    }
 }

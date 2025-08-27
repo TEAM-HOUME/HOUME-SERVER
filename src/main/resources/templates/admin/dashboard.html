@@ -16,13 +16,69 @@
             box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
             text-align: center;
         }
+        #api-result {
+            margin-top: 20px;
+            padding: 10px;
+            border-radius: 5px;
+        }
     </style>
 </head>
 <body>
 <div class="dashboard-container">
     <h1>Welcome to the Admin Dashboard</h1>
     <p class="lead">You have successfully logged in.</p>
+    <hr>
+    <p>Click the button below to test access to an admin-only API endpoint.</p>
+    <button id="test-api-button" class="btn btn-info">Test Admin API</button>
+    <div id="api-result"></div>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+<script>
+    window.onload = function() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const token = urlParams.get('token');
+
+        if (token) {
+            // Store the token in localStorage
+            localStorage.setItem('accessToken', token);
+
+            // Clean the URL to remove the token from the address bar
+            history.replaceState({}, document.title, window.location.pathname);
+        }
+
+        document.getElementById('test-api-button').addEventListener('click', function() {
+            const accessToken = localStorage.getItem('accessToken');
+            const resultDiv = document.getElementById('api-result');
+
+            if (!accessToken) {
+                resultDiv.className = 'alert alert-danger';
+                resultDiv.textContent = 'Error: 액세스토큰이 없습니다. 너 어드민 아니지?';
+                return;
+            }
+
+            fetch('/api/v1/admin/test', {
+                headers: {
+                    'Authorization': 'Bearer ' + accessToken
+                }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok. Status: ' + response.status);
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log(data);
+                resultDiv.className = 'alert alert-success';
+                resultDiv.textContent = 'API Response: ' + JSON.stringify(data.data);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                resultDiv.className = 'alert alert-danger';
+                resultDiv.textContent = 'API Error: ' + error.message;
+            });
+        });
+    };
+</script>
 </body>
 </html>
