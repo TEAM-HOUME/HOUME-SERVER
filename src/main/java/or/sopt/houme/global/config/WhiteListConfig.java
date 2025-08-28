@@ -65,8 +65,6 @@ public class WhiteListConfig {
     public static final List<String> adminWhiteList() {
         return List.of(
                 "/api/v1/admin/register",
-                "/admin/register",
-                "/admin/register/success",
                 "/admin/login"
         );
     }
