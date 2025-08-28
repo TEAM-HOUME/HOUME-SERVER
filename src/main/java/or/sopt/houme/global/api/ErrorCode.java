@@ -27,6 +27,9 @@ public enum ErrorCode {
     // 입력값 검증 예외
     NOT_VALID_EXCEPTION(HttpStatus.BAD_REQUEST, 40008, "유효하지 않은 입력값입니다."),
 
+    // 회원관련
+    USERNAME_DUPLICATE(HttpStatus.BAD_REQUEST,40009,"username이 중복되었습니다. "),
+
     /**
      * 401 UNAUTHORIZED
      */
