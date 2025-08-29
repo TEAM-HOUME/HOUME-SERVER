@@ -44,17 +44,39 @@ public class JWTFilter extends OncePerRequestFilter{
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
 
-        // 헤더에서 Authorization 토큰을 꺼냄
-        String authorizationHeader = request.getHeader(jwtConfig.getHeader());
+        String accessToken = null;
 
-        // Authorization 헤더가 없거나 Bearer 스킴이 없으면 다음 필터로 이동
-        if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
+        /**
+         *
+         * 2025/08/28
+         * ADMIN 로그인을 위해 쿼리파라미터에서 1차적으로 토큰을 검증하는 로직을 추가하였습니다.
+         *
+         * 기존에는 쿠키를 이용한 검증을 추가할 것을 고려하였지만,
+         * 그러면 실제 사용자가 이용할 때 리프레시 토큰이 검증되어 예외가 발생할 것을 우려하여 쿼리 파라미터로 우회하였습니다
+         *
+         * */
+        String tokenFromParameter = request.getParameter("token");
+
+        if (tokenFromParameter != null) {
+            accessToken = tokenFromParameter;
+        } else {
+            // 헤더에서 Authorization 토큰을 꺼냄
+            String authorizationHeader = request.getHeader(jwtConfig.getHeader());
+
+            // Authorization 헤더가 없거나 Bearer 스킴이 없으면 다음 필터로 이동
+            if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
+                filterChain.doFilter(request, response);
+                return;
+            }
+            // Bearer 뒤의 토큰을 추출
+            accessToken = authorizationHeader.substring(7).trim();
+        }
+
+        // 토큰이 없는 경우 필터 체인 계속 진행
+        if (accessToken == null) {
             filterChain.doFilter(request, response);
             return;
         }
-
-        // Bearer 뒤의 토큰을 추출
-        String accessToken = authorizationHeader.substring(7).trim();
 
         /**
          * 토큰의 유효시간을 검증하고

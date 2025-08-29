@@ -61,4 +61,11 @@ public class WhiteListConfig {
                 "/actuator/**"
         );
     }
+
+    public static final List<String> adminWhiteList() {
+        return List.of(
+                "/api/v1/admin/register",
+                "/admin/login"
+        );
+    }
 }

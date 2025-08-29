@@ -103,6 +103,7 @@ public class SecurityConfig {
                 .requestMatchers(WhiteListConfig.makeHouseWhitelist().toArray(new String[0])).permitAll()
                 .requestMatchers(WhiteListConfig.userWhiteList().toArray(new String[0])).permitAll()
                 .requestMatchers(WhiteListConfig.monitoringWhiteList().toArray(new String[0])).permitAll()
+                .requestMatchers(WhiteListConfig.adminWhiteList().toArray(new String[0])).permitAll()
                 .anyRequest().authenticated());
 
 

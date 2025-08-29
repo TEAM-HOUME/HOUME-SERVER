@@ -117,6 +117,9 @@ dependencies {
     // spring AOP
     implementation 'org.springframework.boot:spring-boot-starter-aop'
 
+    // thymeleaf
+    implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
+
 }
 
 def querydslDir = 'src/main/generated'
