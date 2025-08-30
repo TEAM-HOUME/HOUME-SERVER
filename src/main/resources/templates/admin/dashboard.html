@@ -14,23 +14,94 @@
             background-color: #fff;
             border-radius: 10px;
             box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
-            text-align: center;
         }
-        #api-result {
+        .management-section {
+            border: 1px solid #dee2e6;
+            border-radius: .5rem;
+            padding: 1.5rem;
+            margin-top: 2rem;
+        }
+        .api-result {
             margin-top: 20px;
             padding: 10px;
             border-radius: 5px;
+            text-align: left;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        .text-center {
+            text-align: center;
         }
     </style>
 </head>
 <body>
 <div class="dashboard-container">
-    <h1>HouMe 어드민 페이지입니다</h1>
-    <p class="lead">admin에 성공적으로 로그인 되었습니다</p>
-    <hr>
-    <p>Click the button below to test access to an admin-only API endpoint.</p>
-    <button id="test-api-button" class="btn btn-info">Test Admin API</button>
-    <div id="api-result"></div>
+    <div class="text-center">
+        <h1>HouMe 어드민 페이지입니다</h1>
+        <p class="lead">admin에 성공적으로 로그인 되었습니다</p>
+    </div>
+
+    <!-- Furniture Management Section -->
+    <div class="management-section">
+        <h3 class="text-center mb-4">Furniture Management</h3>
+        
+        <div class="text-center">
+            <p>Click the button below to view all registered furnitures.</p>
+            <button id="get-furnitures-button" class="btn btn-secondary">View All Furnitures</button>
+            <div id="get-furnitures-result" class="api-result"></div>
+        </div>
+        
+        <hr class="my-4">
+
+        <div id="furniture-form-container">
+            <h4 class="text-center">Register New Furniture</h4>
+            <form id="furniture-form">
+                <div class="mb-3">
+                    <label for="furnitureNameKr" class="form-label">Furniture Name (KR)</label>
+                    <input type="text" class="form-control" id="furnitureNameKr" required>
+                </div>
+                <div class="mb-3">
+                    <label for="furnitureNameEng" class="form-label">Furniture Name (EN)</label>
+                    <input type="text" class="form-control" id="furnitureNameEng" required>
+                </div>
+                <div class="mb-3 form-check">
+                    <input type="checkbox" class="form-check-input" id="isBed">
+                    <label class="form-check-label" for="isBed">Is Bed?</label>
+                </div>
+                <div class="d-grid">
+                    <button type="submit" class="btn btn-primary">Register Furniture</button>
+                </div>
+            </form>
+            <div id="furniture-api-result" class="api-result"></div>
+        </div>
+
+        <hr class="my-4">
+
+        <div id="furniture-prompt-form-container">
+            <h4 class="text-center">Register New Furniture Prompt</h4>
+            <form id="furniture-prompt-form">
+                <div class="mb-3">
+                    <label for="promptFurnitureNameKr" class="form-label">Furniture Name (KR)</label>
+                    <input type="text" class="form-control" id="promptFurnitureNameKr" required>
+                </div>
+                <div class="mb-3">
+                    <label for="prompt" class="form-label">Prompt</label>
+                    <textarea class="form-control" id="prompt" rows="3" required></textarea>
+                </div>
+                <div class="mb-3">
+                    <label for="tagId" class="form-label">Tag ID</label>
+                    <input type="number" class="form-control" id="tagId" required>
+                </div>
+                <div class="d-grid">
+                    <button type="submit" class="btn btn-success">Register Furniture Prompt</button>
+                </div>
+            </form>
+            <div id="furniture-prompt-api-result" class="api-result"></div>
+        </div>
+    </div>
+
+    <!-- Future sections like Moodboard Management can be added here -->
+
 </div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
 <script>
@@ -39,45 +110,88 @@
         const token = urlParams.get('token');
 
         if (token) {
-            // Store the token in localStorage
             localStorage.setItem('accessToken', token);
-
-            // Clean the URL to remove the token from the address bar
             history.replaceState({}, document.title, window.location.pathname);
         }
 
-        document.getElementById('test-api-button').addEventListener('click', function() {
+        document.getElementById('get-furnitures-button').addEventListener('click', function() {
             const accessToken = localStorage.getItem('accessToken');
-            const resultDiv = document.getElementById('api-result');
+            const resultDiv = document.getElementById('get-furnitures-result');
 
+            if (resultDiv.innerHTML) {
+                resultDiv.innerHTML = '';
+                resultDiv.className = 'api-result';
+                return;
+            }
+
+            testApiCall(accessToken, resultDiv, '/api/v1/admin/furnitures', 'GET');
+        });
+
+        document.getElementById('furniture-form').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const accessToken = localStorage.getItem('accessToken');
+            const resultDiv = document.getElementById('furniture-api-result');
+            
+            const furnitureData = {
+                furnitureNameKr: document.getElementById('furnitureNameKr').value,
+                furnitureNameEng: document.getElementById('furnitureNameEng').value,
+                isBed: document.getElementById('isBed').checked
+            };
+
+            testApiCall(accessToken, resultDiv, '/api/v1/admin/furniture', 'POST', furnitureData);
+        });
+
+        document.getElementById('furniture-prompt-form').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const accessToken = localStorage.getItem('accessToken');
+            const resultDiv = document.getElementById('furniture-prompt-api-result');
+            
+            const promptData = {
+                furnitureNameKr: document.getElementById('promptFurnitureNameKr').value,
+                prompt: document.getElementById('prompt').value,
+                tagId: parseInt(document.getElementById('tagId').value, 10)
+            };
+
+            testApiCall(accessToken, resultDiv, '/api/v1/admin/furniture/prompt', 'POST', promptData);
+        });
+
+        function testApiCall(accessToken, resultDiv, endpoint, method, body = null) {
             if (!accessToken) {
-                resultDiv.className = 'alert alert-danger';
+                resultDiv.className = 'api-result alert alert-danger';
                 resultDiv.textContent = 'Error: 액세스토큰이 없습니다. 너 어드민 아니지?';
                 return;
             }
 
-            fetch('/api/v1/admin/test', {
+            const fetchOptions = {
+                method: method,
                 headers: {
-                    'Authorization': 'Bearer ' + accessToken
+                    'Authorization': 'Bearer ' + accessToken,
+                    'Content-Type': 'application/json'
                 }
-            })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Network response was not ok. Status: ' + response.status);
-                }
-                return response.json();
-            })
-            .then(data => {
-                console.log(data);
-                resultDiv.className = 'alert alert-success';
-                resultDiv.textContent = 'API Response: ' + JSON.stringify(data.data);
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                resultDiv.className = 'alert alert-danger';
-                resultDiv.textContent = 'API Error: ' + error.message;
-            });
-        });
+            };
+
+            if (body) {
+                fetchOptions.body = JSON.stringify(body);
+            }
+
+            fetch(endpoint, fetchOptions)
+                .then(response => {
+                    if (!response.ok) {
+                        return response.json().then(err => { throw new Error(JSON.stringify(err)); });
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log(data);
+                    resultDiv.className = 'api-result alert alert-success';
+                    resultDiv.textContent = 'API Response: ' + JSON.stringify(data.data, null, 2);
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    resultDiv.className = 'api-result alert alert-danger';
+                    resultDiv.textContent = 'API Error: ' + error.message;
+                });
+        }
     };
 </script>
 </body>
