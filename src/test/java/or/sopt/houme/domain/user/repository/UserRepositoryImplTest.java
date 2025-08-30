@@ -135,7 +135,8 @@ class UserRepositoryImplTest {
                 .filename("image1.png")
                 .originalFilename("original-image1.png")
                 .fileExtension("png")
-                .house(house1)
+                .clipScore(0.1234F)
+                .house(house1) // 이미 생성된 House mock 객체
                 .build();
         em.persist(generateImage1);
 
@@ -144,6 +145,7 @@ class UserRepositoryImplTest {
                 .filename("image2.png")
                 .originalFilename("original-image2.png")
                 .fileExtension("png")
+                .clipScore(0.1234F)
                 .house(house2)
                 .build();
         em.persist(generateImage2);

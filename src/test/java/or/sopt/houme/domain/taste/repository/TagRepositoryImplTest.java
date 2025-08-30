@@ -78,6 +78,7 @@ class TagRepositoryImplTest {
                 .filename("image.png")
                 .originalFilename("origin.png")
                 .fileExtension("png")
+                .clipScore(0.1234F)
                 .house(mockHouse)
                 .build();
         em.persist(mockGenerateImage);

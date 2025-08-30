@@ -14,6 +14,9 @@ public class ImageUploadResponseDTO {
     private String contentType;
 
     @Setter
+    private Float clipScore;
+
+    @Setter
     private String pullPrompt;
 
     public static ImageUploadResponseDTO from(String filename, String originalFilename, String imagePath, String contentType) {

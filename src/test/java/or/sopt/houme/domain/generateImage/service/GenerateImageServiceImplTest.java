@@ -43,6 +43,7 @@ class GenerateImageServiceImplTest {
 
     private User savedUser;
     private House savedHouse;
+    private ImageUploadResponseDTO responseDTO;
 
     @BeforeEach
     void setUp() {
@@ -69,27 +70,29 @@ class GenerateImageServiceImplTest {
                         .user(savedUser)
                         .build()
         );
+
+        responseDTO = ImageUploadResponseDTO.builder()
+                .filename("fileName")
+                .originalFilename("originalFilename")
+                .imageLink("imageLink")
+                .contentType("JPG")
+                .clipScore(0.1234F)
+                .build();
     }
 
     @Test
     @DisplayName("도면 이미지를 생성 후 저장 할 수 있다.")
     void createGenerateImage() {
-        // Given
-        String fileName = "fileName";
-        String originalFilename = "originalFilename";
-        String imageLink = "imageLink";
-        String contentType = "JPG";
-
-        ImageUploadResponseDTO from = ImageUploadResponseDTO.from(fileName, originalFilename, imageLink, contentType);
 
         // When
-        GenerateImage generateImage = generateImageService.createGenerateImage(from, savedHouse);
+        GenerateImage generateImage = generateImageService.createGenerateImage(responseDTO, savedHouse);
 
         // Then
         assertThat(generateImage).isNotNull();
-        assertThat(generateImage.getFilename()).isEqualTo(fileName);
-        assertThat(generateImage.getFileExtension()).isEqualTo(contentType);
-        assertThat(generateImage.getOriginalFilename()).isEqualTo(originalFilename);
+        assertThat(generateImage.getFilename()).isEqualTo("fileName");
+        assertThat(generateImage.getFileExtension()).isEqualTo("JPG");
+        assertThat(generateImage.getOriginalFilename()).isEqualTo("originalFilename");
+        assertThat(generateImage.getClipScore()).isEqualTo(0.1234F);
     }
 
     @Test
@@ -100,12 +103,14 @@ class GenerateImageServiceImplTest {
         String originalFilename = "originalFilename";
         String imageLink = "imageLink";
         String contentType = "JPG";
+        Float clipScore = 0.1234F;
 
         GenerateImage generateImage = GenerateImage.builder()
                 .filename(fileName)
                 .originalFilename(originalFilename)
                 .url(imageLink)
                 .fileExtension(contentType)
+                .clipScore(clipScore)
                 .build();
 
         GenerateImage saveImage = generateImageRepository.save(generateImage);
@@ -119,5 +124,6 @@ class GenerateImageServiceImplTest {
         assertThat(generateImage1.getFileExtension()).isEqualTo(contentType);
         assertThat(generateImage1.getOriginalFilename()).isEqualTo(originalFilename);
         assertThat(generateImage1.getUrl()).isEqualTo(imageLink);
+        assertThat(generateImage1.getClipScore()).isEqualTo(clipScore);
     }
 }
