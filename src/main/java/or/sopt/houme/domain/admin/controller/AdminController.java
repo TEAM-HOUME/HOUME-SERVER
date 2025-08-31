@@ -3,10 +3,7 @@ package or.sopt.houme.domain.admin.controller;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import or.sopt.houme.domain.admin.controller.dto.AdminFurnitureGetDto;
-import or.sopt.houme.domain.admin.controller.dto.AdminFurniturePromptRequestDTO;
-import or.sopt.houme.domain.admin.controller.dto.AdminFurnitureRequestDTO;
-import or.sopt.houme.domain.admin.controller.dto.AdminSignUpRequestDTO;
+import or.sopt.houme.domain.admin.controller.dto.*;
 import or.sopt.houme.domain.admin.service.AdminFurnitureService;
 import or.sopt.houme.domain.admin.service.AdminService;
 import or.sopt.houme.global.api.ApiResponse;
@@ -65,6 +62,15 @@ public class AdminController {
     public ResponseEntity<ApiResponse<AdminFurnitureGetDto>> getFurnitures() {
         AdminFurnitureGetDto furniture = adminFurnitureService.getFurniture();
         return ResponseEntity.ok(ApiResponse.ok(furniture));
+    }
+
+
+    @GetMapping("/furniture/tags")
+    @Operation(description = "스타일 태그 조회 API")
+    public ResponseEntity<ApiResponse<AdminFurnitureTagGetDTO>> getFurnitureTags() {
+
+        AdminFurnitureTagGetDTO result = adminFurnitureService.getFurnitureTag();
+        return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
 }

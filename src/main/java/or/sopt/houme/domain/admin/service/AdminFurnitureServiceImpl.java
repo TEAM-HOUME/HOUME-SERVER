@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import or.sopt.houme.domain.admin.controller.dto.AdminFurnitureGetDto;
 import or.sopt.houme.domain.admin.controller.dto.AdminFurniturePromptRequestDTO;
 import or.sopt.houme.domain.admin.controller.dto.AdminFurnitureRequestDTO;
+import or.sopt.houme.domain.admin.controller.dto.AdminFurnitureTagGetDTO;
 import or.sopt.houme.domain.furniture.entity.Furniture;
 import or.sopt.houme.domain.furniture.entity.FurnitureTag;
 import or.sopt.houme.domain.furniture.entity.FurnitureType;
@@ -82,5 +83,21 @@ public class AdminFurnitureServiceImpl implements AdminFurnitureService {
                 .toList();
 
         return new AdminFurnitureGetDto(furnitureNames);
+    }
+
+
+    @Override
+    public AdminFurnitureTagGetDTO getFurnitureTag() {
+        List<Tag> all = tagRepository.findAll();
+
+        List<Long> tagIds = all.stream()
+                .map(Tag::getId)
+                .toList();
+
+        List<String> tagNames = all.stream()
+                .map(Tag::getTagNameKr)
+                .toList();
+
+        return new AdminFurnitureTagGetDTO(tagIds, tagNames);
     }
 }
