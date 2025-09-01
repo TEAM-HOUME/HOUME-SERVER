@@ -3,8 +3,8 @@ package or.sopt.houme.domain.admin.controller;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import or.sopt.houme.domain.admin.controller.dto.*;
-import or.sopt.houme.domain.admin.controller.dto.furniture.AdminFurnitureUpdateRequestDTO;
+import or.sopt.houme.domain.admin.controller.dto.AdminSignUpRequestDTO;
+import or.sopt.houme.domain.admin.controller.dto.furniture.*;
 import or.sopt.houme.domain.admin.service.AdminFurnitureService;
 import or.sopt.houme.domain.admin.service.AdminService;
 import or.sopt.houme.global.api.ApiResponse;
@@ -57,7 +57,7 @@ public class AdminController {
     @GetMapping("/furnitures")
     @Operation(description = "가구 조회 API")
     public ResponseEntity<ApiResponse<AdminFurnitureGetDto>> getFurnitures() {
-        AdminFurnitureGetDto furniture = adminFurnitureService.getFurniture();
+        or.sopt.houme.domain.admin.controller.dto.furniture.AdminFurnitureGetDto furniture = adminFurnitureService.getFurniture();
         return ResponseEntity.ok(ApiResponse.ok(furniture));
     }
 

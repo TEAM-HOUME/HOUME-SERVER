@@ -1,11 +1,7 @@
 package or.sopt.houme.domain.admin.service;
 
 import lombok.RequiredArgsConstructor;
-import or.sopt.houme.domain.admin.controller.dto.AdminFurnitureGetDto;
-import or.sopt.houme.domain.admin.controller.dto.AdminFurniturePromptRequestDTO;
-import or.sopt.houme.domain.admin.controller.dto.AdminFurnitureRequestDTO;
-import or.sopt.houme.domain.admin.controller.dto.AdminFurnitureTagGetDTO;
-import or.sopt.houme.domain.admin.controller.dto.furniture.AdminFurnitureUpdateRequestDTO;
+import or.sopt.houme.domain.admin.controller.dto.furniture.*;
 import or.sopt.houme.domain.furniture.entity.Furniture;
 import or.sopt.houme.domain.furniture.entity.FurnitureTag;
 import or.sopt.houme.domain.furniture.entity.FurnitureType;
@@ -16,7 +12,6 @@ import or.sopt.houme.domain.taste.entity.Tag;
 import or.sopt.houme.domain.taste.repository.tag.TagRepository;
 import or.sopt.houme.global.api.ErrorCode;
 import or.sopt.houme.global.api.GeneralException;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,7 +20,6 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 @Transactional
-@Slf4j
 public class AdminFurnitureServiceImpl implements AdminFurnitureService {
 
     private final FurnitureRepository furnitureRepository;
@@ -80,12 +74,25 @@ public class AdminFurnitureServiceImpl implements AdminFurnitureService {
     @Override
     public AdminFurnitureGetDto getFurniture(){
 
-        List<Furniture> all = furnitureRepository.findAll();
-        List<String> furnitureNames = all.stream()
-                .map(Furniture::getFurnitureNameKr)
+        List<Furniture> allFurnitures = furnitureRepository.findAll();
+
+        List<AdminFurnitureGetDto.FurnitureInfo> furnitureInfos = allFurnitures.stream()
+                .map(furniture -> {
+                    List<FurnitureTag> furnitureTags = furnitureTagRepository.findByFurniture(furniture);
+                    List<AdminFurnitureGetDto.TagInfo> tagInfos = furnitureTags.stream()
+                            .map(furnitureTag -> new AdminFurnitureGetDto.TagInfo(
+                                    furnitureTag.getTag().getId(),
+                                    furnitureTag.getTag().getTagNameKr()))
+                            .toList();
+
+                    return new AdminFurnitureGetDto.FurnitureInfo(
+                            furniture.getId(),
+                            furniture.getFurnitureNameKr(),
+                            tagInfos);
+                })
                 .toList();
 
-        return new AdminFurnitureGetDto(furnitureNames);
+        return new AdminFurnitureGetDto(furnitureInfos);
     }
 
 
@@ -107,28 +114,22 @@ public class AdminFurnitureServiceImpl implements AdminFurnitureService {
 
     @Override
     public void updateFurniture(AdminFurnitureUpdateRequestDTO dto){
-        log.info("Attempting to update furniture with dto: {}", dto);
 
         Furniture byFurnitureNameKr = furnitureRepository.findByFurnitureNameKr(dto.furnitureNameKr())
                 .orElseThrow(()-> new GeneralException(ErrorCode.NOT_VALID_EXCEPTION));
-        log.info("Found furniture: {}", byFurnitureNameKr.getId());
 
         Tag byIdTag = tagRepository.findById(dto.tagId())
                 .orElseThrow(()-> new GeneralException(ErrorCode.NOT_VALID_EXCEPTION));
-        log.info("Found tag: {}", byIdTag.getId());
 
         FurnitureTag byFurnitureIdAndTag = furnitureTagRepository.findByFurnitureAndTag(byFurnitureNameKr, byIdTag)
                 .orElseThrow(()-> new GeneralException(ErrorCode.NOT_VALID_EXCEPTION));
-        log.info("Found furnitureTag: {}", byFurnitureIdAndTag.getId());
 
         if (dto.newFurnitureNameEng() != null && !dto.newFurnitureNameEng().isBlank()){
             byFurnitureNameKr.updateFurnitureNameEng(dto.newFurnitureNameEng());
-            log.info("Updated furniture name to: {}", dto.newFurnitureNameEng());
         }
 
         if (dto.newPrompt() != null && !dto.newPrompt().isBlank()){
             byFurnitureIdAndTag.updatePrompt(dto.newPrompt());
-            log.info("Updated prompt to: {}", dto.newPrompt());
         }
     }
 }

@@ -238,11 +238,15 @@
         }
 
         function displayFurnituresAsTable(data, resultDiv) {
-            const furnitures = data.data.furnitureKrNames;
+            const furnitures = data.data.furnitures;
             if (Array.isArray(furnitures)) {
-                let tableHTML = '<table class="table table-bordered table-striped mt-3"><thead><tr><th>#</th><th>가구 이름</th></tr></thead><tbody>';
-                furnitures.forEach((name, index) => {
-                    tableHTML += `<tr><td>${index + 1}</td><td>${name}</td></tr>`;
+                let tableHTML = '<table class="table table-bordered table-striped mt-3"><thead><tr><th>ID</th><th>가구 이름</th><th>태그</th></tr></thead><tbody>';
+                furnitures.forEach(furniture => {
+                    let tagsHTML = '';
+                    if (Array.isArray(furniture.tags)) {
+                        tagsHTML = furniture.tags.map(tag => `<span class="badge bg-info me-1">${tag.tagName} (ID: ${tag.tagId})</span>`).join(' ');
+                    }
+                    tableHTML += `<tr><td>${furniture.furnitureId}</td><td>${furniture.furnitureNameKr}</td><td>${tagsHTML}</td></tr>`;
                 });
                 tableHTML += '</tbody></table>';
                 resultDiv.innerHTML = tableHTML;

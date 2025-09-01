@@ -6,10 +6,13 @@ import or.sopt.houme.domain.taste.entity.Tag;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
 public interface FurnitureTagRepository extends JpaRepository<FurnitureTag, Long> {
 
     Optional<FurnitureTag> findByFurnitureAndTag(Furniture furniture, Tag tag);
+
+    List<FurnitureTag> findByFurniture(Furniture furniture);
 }
