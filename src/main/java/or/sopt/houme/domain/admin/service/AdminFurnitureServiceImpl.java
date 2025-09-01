@@ -137,7 +137,7 @@ public class AdminFurnitureServiceImpl implements AdminFurnitureService {
 
 
     @Override
-    public void deleteFurnitureTag(AdminFurnitureDeleteDTO dto){
+    public void deleteFurnitureTag(AdminFurnitureTagDeleteDTO dto){
 
         log.info("삭제 기능이 호출되었습니다");
         Furniture byFurnitureNameKr = furnitureRepository.findByFurnitureNameKr(dto.furnitureNameKr())
@@ -151,5 +151,25 @@ public class AdminFurnitureServiceImpl implements AdminFurnitureService {
 
         furnitureTagRepository.delete(byFurnitureIdAndTag);
 
+    }
+
+
+    @Override
+    public void deleteFurniture(AdminFurnitureDeleteDTO dto){
+
+        /**
+         * 태그가 존재하면 삭제되지 않도록 제한사항 추가해야함
+         * */
+
+        Furniture byFurnitureNameKr = furnitureRepository.findByFurnitureNameKr(dto.furnitureNameKr())
+                .orElseThrow(()-> new GeneralException(ErrorCode.NOT_VALID_EXCEPTION));
+
+        // 태그가 존재하면 예외 발생
+        List<FurnitureTag> furnitureTags = furnitureTagRepository.findByFurniture(byFurnitureNameKr);
+        if (!furnitureTags.isEmpty()) {
+            throw new GeneralException(ErrorCode.NOT_VALID_EXCEPTION); // 태그가 존재하면 예외 발생
+        }
+
+        furnitureRepository.delete(byFurnitureNameKr);
     }
 }

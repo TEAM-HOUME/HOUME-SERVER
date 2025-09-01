@@ -80,11 +80,19 @@ public class AdminController {
     }
 
 
-    @DeleteMapping("/furniture")
-    @Operation(description = "가구 삭제 API")
-    public ResponseEntity<ApiResponse<String>> deleteFurnitureTag(@RequestBody AdminFurnitureDeleteDTO dto) {
+    @DeleteMapping("/furniture/tag")
+    @Operation(description = "가구 태그 삭제 API")
+    public ResponseEntity<ApiResponse<String>> deleteFurnitureTag(@RequestBody AdminFurnitureTagDeleteDTO dto) {
 
         adminFurnitureService.deleteFurnitureTag(dto);
+        return ResponseEntity.ok(ApiResponse.ok("삭제가 성공적으로 완료되었습니다"));
+    }
+
+
+    @DeleteMapping("/furniture")
+    @Operation(description = "가구 삭제 API")
+    public ResponseEntity<ApiResponse<String>> deleteFurniture(@RequestBody AdminFurnitureDeleteDTO dto) {
+        adminFurnitureService.deleteFurniture(dto);
         return ResponseEntity.ok(ApiResponse.ok("삭제가 성공적으로 완료되었습니다"));
     }
 

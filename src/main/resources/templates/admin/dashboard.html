@@ -241,7 +241,7 @@
     function displayFurnituresAsTable(data, resultDiv) {
         const furnitures = data.data.furnitures;
         if (Array.isArray(furnitures)) {
-            let tableHTML = '<table class="table table-bordered table-striped mt-3"><thead><tr><th>ID</th><th>가구 이름</th><th>태그</th></tr></thead><tbody>';
+            let tableHTML = '<table class="table table-bordered table-striped mt-3"><thead><tr><th>ID</th><th>가구 이름</th><th>태그</th><th>작업</th></tr></thead><tbody>';
             furnitures.forEach(furniture => {
                 let tagsHTML = '';
                 if (Array.isArray(furniture.tags)) {
@@ -249,13 +249,44 @@
                         `<span class="badge bg-info me-1">${tag.tagName} (ID: ${tag.tagId}) <button class="btn btn-sm btn-danger" style="display: inline-block;" onclick="deleteFurnitureTag('${furniture.furnitureNameKr}', ${tag.tagId})">x</button></span>`
                     ).join(' ');
                 }
-                tableHTML += `<tr><td>${furniture.furnitureId}</td><td>${furniture.furnitureNameKr}</td><td>${tagsHTML}</td></tr>`;
+                let actionsHTML = `<button class="btn btn-danger btn-sm" onclick="deleteFurniture('${furniture.furnitureNameKr}')">가구 삭제</button>`;
+                tableHTML += `<tr><td>${furniture.furnitureId}</td><td>${furniture.furnitureNameKr}</td><td>${tagsHTML}</td><td>${actionsHTML}</td></tr>`;
             });
             tableHTML += '</tbody></table>';
             resultDiv.innerHTML = tableHTML;
         } else {
             resultDiv.textContent = 'API 응답: ' + JSON.stringify(data.data, null, 2);
         }
+    }
+
+    function deleteFurniture(furnitureNameKr) {
+        if (!confirm(`'${furnitureNameKr}' 가구를 정말로 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.`)) {
+            return;
+        }
+
+        const accessToken = localStorage.getItem('accessToken');
+        const resultDiv = document.getElementById('get-furnitures-result');
+
+        // Note: The backend expects a tagId, but we are deleting the whole furniture.
+        // Sending a dummy tagId as the backend seems to require it.
+        const deleteData = {
+            furnitureNameKr: furnitureNameKr,
+            tagId: 0 // Dummy tagId
+        };
+
+        testApiCall(accessToken, resultDiv, '/api/v1/admin/furniture', 'DELETE', deleteData, () => {
+            // 성공 메시지 표시
+            const successMsg = document.createElement('div');
+            successMsg.className = 'alert alert-success';
+            successMsg.textContent = '가구가 성공적으로 삭제되었습니다. 목록을 새로고침합니다.';
+            resultDiv.prepend(successMsg);
+
+            // 잠시 후 목록 새로고침
+            setTimeout(() => {
+                document.getElementById('get-furnitures-button').click(); // 테이블 닫기
+                document.getElementById('get-furnitures-button').click(); // 테이블 다시 열기
+            }, 1500);
+        });
     }
 
     function deleteFurnitureTag(furnitureNameKr, tagId) {
@@ -271,7 +302,7 @@
             tagId: tagId
         };
 
-        testApiCall(accessToken, resultDiv, '/api/v1/admin/furniture', 'DELETE', deleteData, () => {
+        testApiCall(accessToken, resultDiv, '/api/v1/admin/furniture/tag', 'DELETE', deleteData, () => {
             // 성공 메시지 표시
             const successMsg = document.createElement('div');
             successMsg.className = 'alert alert-success';
@@ -334,7 +365,12 @@
             .catch(error => {
                 console.error('오류:', error);
                 resultDiv.className = 'api-result alert alert-danger';
-                resultDiv.textContent = 'API 오류: ' + error.message;
+                try {
+                    const errorJson = JSON.parse(error.message);
+                    resultDiv.textContent = `API 오류: ${errorJson.msg}`;
+                } catch (e) {
+                    resultDiv.textContent = 'API 오류: ' + error.message;
+                }
             });
     }
 </script>
