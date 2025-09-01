@@ -59,6 +59,7 @@ public enum ErrorCode {
     // 가구 관련 예외
     NOT_FOUND_FURNITURE(HttpStatus.NOT_FOUND,40413, "가구 객체를 찾을 수 없습니다"),
     NOT_FOUND_FURNITURE_TAG(HttpStatus.NOT_FOUND,40414,"가구 태그 객체를 찾을 수 없습니다"),
+    INVALID_DELETE_FURNITURE(HttpStatus.BAD_REQUEST,40415,"태그가 있는 가구가 존재하여 가구를 삭제 할 수 없습니다"),
 
     // 집 엔티티 관련 예외
     NOT_FOUND_HOUSE_ENTITY(HttpStatus.NOT_FOUND, 40405, "집 객체를 찾을 수 없습니다." ),

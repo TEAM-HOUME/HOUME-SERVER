@@ -96,4 +96,15 @@ public class AdminController {
         return ResponseEntity.ok(ApiResponse.ok("삭제가 성공적으로 완료되었습니다"));
     }
 
+
+    @GetMapping("/furniture/prompt")
+    @Operation(description = "가구 프롬프트 조회 API")
+    public ResponseEntity<ApiResponse<AdminFurnitureDetailsResponseDTO>> getFurniturePrompt(@RequestParam String furnitureNameKr, @RequestParam Long tagId) {
+
+        AdminFurnitureDetailsRequestDTO dto = new AdminFurnitureDetailsRequestDTO(furnitureNameKr, tagId);
+
+        AdminFurnitureDetailsResponseDTO details = adminFurnitureService.getDetails(dto);
+        return ResponseEntity.ok(ApiResponse.ok(details));
+    }
+
 }

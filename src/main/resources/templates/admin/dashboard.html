@@ -50,6 +50,26 @@
             <button id="get-furnitures-button" class="btn btn-secondary">등록된 가구 보기</button>
             <div id="get-furnitures-result" class="api-result"></div>
         </div>
+
+        <hr class="my-4">
+
+        <div id="get-prompt-form-container">
+            <h4 class="text-center">프롬프트 조회</h4>
+            <form id="get-prompt-form">
+                <div class="mb-3">
+                    <label for="promptQueryFurnitureNameKr" class="form-label">가구 이름 (한글)</label>
+                    <input type="text" class="form-control" id="promptQueryFurnitureNameKr" required>
+                </div>
+                <div class="mb-3">
+                    <label for="promptQueryTagId" class="form-label">태그 ID</label>
+                    <input type="number" class="form-control" id="promptQueryTagId" required>
+                </div>
+                <div class="d-grid">
+                    <button type="submit" class="btn btn-info">프롬프트 조회</button>
+                </div>
+            </form>
+            <div id="get-prompt-result" class="api-result"></div>
+        </div>
         
         <hr class="my-4">
 
@@ -200,6 +220,19 @@
             };
 
             testApiCall(accessToken, resultDiv, '/api/v1/admin/furniture', 'PATCH', updateData);
+        });
+
+        document.getElementById('get-prompt-form').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const accessToken = localStorage.getItem('accessToken');
+            const resultDiv = document.getElementById('get-prompt-result');
+            
+            const furnitureNameKr = document.getElementById('promptQueryFurnitureNameKr').value;
+            const tagId = document.getElementById('promptQueryTagId').value;
+
+            const endpoint = `/api/v1/admin/furniture/prompt?furnitureNameKr=${encodeURIComponent(furnitureNameKr)}&tagId=${tagId}`;
+
+            testApiCall(accessToken, resultDiv, endpoint, 'GET', null);
         });
     };
 

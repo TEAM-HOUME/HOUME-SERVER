@@ -1,7 +1,6 @@
 package or.sopt.houme.domain.admin.service;
 
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import or.sopt.houme.domain.admin.controller.dto.furniture.*;
 import or.sopt.houme.domain.furniture.entity.Furniture;
 import or.sopt.houme.domain.furniture.entity.FurnitureTag;
@@ -160,9 +159,27 @@ public class AdminFurnitureServiceImpl implements AdminFurnitureService {
 
         List<FurnitureTag> furnitureTags = furnitureTagRepository.findByFurniture(byFurnitureNameKr);
         if (!furnitureTags.isEmpty()) {
-            throw new GeneralException(ErrorCode.NOT_FOUND_FURNITURE_TAG);
+            throw new GeneralException(ErrorCode.INVALID_DELETE_FURNITURE);
         }
 
         furnitureRepository.delete(byFurnitureNameKr);
+    }
+
+
+    @Override
+    public AdminFurnitureDetailsResponseDTO getDetails(AdminFurnitureDetailsRequestDTO dto){
+
+        Furniture byFurnitureNameKr = furnitureRepository.findByFurnitureNameKr(dto.furnitureNameKr())
+                .orElseThrow(()-> new GeneralException(ErrorCode.NOT_FOUND_FURNITURE));
+
+        Tag byIdTag = tagRepository.findById(dto.tagId())
+                .orElseThrow(()-> new GeneralException(ErrorCode.NOT_FOUND_TAG_ENTITY));
+
+        FurnitureTag byFurnitureIdAndTag = furnitureTagRepository.findByFurnitureAndTag(byFurnitureNameKr, byIdTag)
+                .orElseThrow(()-> new GeneralException(ErrorCode.NOT_FOUND_FURNITURE_TAG));
+
+        String furniturePrompt = byFurnitureIdAndTag.getFurniturePrompt();
+
+        return new AdminFurnitureDetailsResponseDTO(furniturePrompt);
     }
 }

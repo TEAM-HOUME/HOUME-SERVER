@@ -17,4 +17,6 @@ public interface AdminFurnitureService {
     void deleteFurnitureTag(AdminFurnitureTagDeleteDTO dto);
 
     void deleteFurniture(AdminFurnitureDeleteDTO dto);
+
+    AdminFurnitureDetailsResponseDTO getDetails(AdminFurnitureDetailsRequestDTO dto);
 }
