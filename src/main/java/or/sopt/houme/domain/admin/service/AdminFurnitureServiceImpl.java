@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -32,6 +33,12 @@ public class AdminFurnitureServiceImpl implements AdminFurnitureService {
     public void registerFurniture(AdminFurnitureRequestDTO dto) {
 
         FurnitureType furnitureType;
+
+        Optional<Furniture> byFurnitureNameKr = furnitureRepository.findByFurnitureNameKr(dto.furnitureNameKr());
+        if (byFurnitureNameKr.isPresent()) {
+            throw new GeneralException(ErrorCode.ALREADY_EXIST_FURNITURE);
+        }
+
         if (dto.isBed()){
             furnitureType = furnitureTypeRepository.findById(1L)
                     .orElseThrow(()-> new GeneralException(ErrorCode.NOT_VALID_EXCEPTION));
