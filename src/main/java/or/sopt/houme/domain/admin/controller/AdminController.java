@@ -4,15 +4,12 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import or.sopt.houme.domain.admin.controller.dto.*;
+import or.sopt.houme.domain.admin.controller.dto.furniture.AdminFurnitureUpdateRequestDTO;
 import or.sopt.houme.domain.admin.service.AdminFurnitureService;
 import or.sopt.houme.domain.admin.service.AdminService;
 import or.sopt.houme.global.api.ApiResponse;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
@@ -71,6 +68,15 @@ public class AdminController {
 
         AdminFurnitureTagGetDTO result = adminFurnitureService.getFurnitureTag();
         return ResponseEntity.ok(ApiResponse.ok(result));
+    }
+
+
+    @PatchMapping("/furniture")
+    @Operation(description = "가구 정보 수정 API")
+    public ResponseEntity<ApiResponse<String>> updateFurniture(@RequestBody AdminFurnitureUpdateRequestDTO dto) {
+        adminFurnitureService.updateFurniture(dto);
+
+        return ResponseEntity.ok(ApiResponse.ok("업데이트가 성공적으로 완료되었습니다"));
     }
 
 }

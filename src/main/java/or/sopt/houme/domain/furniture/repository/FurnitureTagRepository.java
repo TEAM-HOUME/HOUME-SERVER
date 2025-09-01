@@ -1,9 +1,15 @@
 package or.sopt.houme.domain.furniture.repository;
 
+import or.sopt.houme.domain.furniture.entity.Furniture;
 import or.sopt.houme.domain.furniture.entity.FurnitureTag;
+import or.sopt.houme.domain.taste.entity.Tag;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.Optional;
+
 @Repository
 public interface FurnitureTagRepository extends JpaRepository<FurnitureTag, Long> {
+
+    Optional<FurnitureTag> findByFurnitureAndTag(Furniture furniture, Tag tag);
 }

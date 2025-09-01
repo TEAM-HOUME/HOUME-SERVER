@@ -100,6 +100,34 @@
             </form>
             <div id="furniture-prompt-api-result" class="api-result"></div>
         </div>
+
+        <hr class="my-4">
+
+        <div id="update-furniture-form-container">
+            <h4 class="text-center">가구 정보 수정</h4>
+            <form id="update-furniture-form">
+                <div class="mb-3">
+                    <label for="updateFurnitureNameKr" class="form-label">가구 이름 (한글)</label>
+                    <input type="text" class="form-control" id="updateFurnitureNameKr" required>
+                </div>
+                <div class="mb-3">
+                    <label for="updateTagId" class="form-label">태그 ID</label>
+                    <input type="number" class="form-control" id="updateTagId" required>
+                </div>
+                <div class="mb-3">
+                    <label for="newFurnitureNameEng" class="form-label">새 가구 이름 (영어)</label>
+                    <input type="text" class="form-control" id="newFurnitureNameEng">
+                </div>
+                <div class="mb-3">
+                    <label for="newPrompt" class="form-label">새 프롬프트</label>
+                    <textarea class="form-control" id="newPrompt" rows="3"></textarea>
+                </div>
+                <div class="d-grid">
+                    <button type="submit" class="btn btn-warning">가구 정보 수정</button>
+                </div>
+            </form>
+            <div id="update-furniture-api-result" class="api-result"></div>
+        </div>
     </div>
 
     <!-- 향후 무드보드 관리 등 다른 섹션 추가 가능 -->
@@ -159,6 +187,21 @@
             testApiCall(accessToken, resultDiv, '/api/v1/admin/furniture/prompt', 'POST', promptData);
         });
 
+        document.getElementById('update-furniture-form').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const accessToken = localStorage.getItem('accessToken');
+            const resultDiv = document.getElementById('update-furniture-api-result');
+            
+            const updateData = {
+                furnitureNameKr: document.getElementById('updateFurnitureNameKr').value,
+                tagId: parseInt(document.getElementById('updateTagId').value, 10),
+                newFurnitureNameEng: document.getElementById('newFurnitureNameEng').value,
+                newPrompt: document.getElementById('newPrompt').value
+            };
+
+            testApiCall(accessToken, resultDiv, '/api/v1/admin/furniture', 'PATCH', updateData);
+        });
+
         function populateTagDropdown() {
             const accessToken = localStorage.getItem('accessToken');
             if (!accessToken) return;
@@ -187,7 +230,7 @@
                             const option = document.createElement('option');
                             option.value = tagIds[i];
                             option.textContent = `${tagNames[i]} (ID: ${tagIds[i]})`;
-                            selectElement.appendChild(option);
+                            selectElement.appendChild(option.cloneNode(true));
                         }
                     }
                 })

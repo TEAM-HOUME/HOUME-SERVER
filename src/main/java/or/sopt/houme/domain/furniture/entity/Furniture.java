@@ -24,8 +24,13 @@ public class Furniture {
     // 가구 이름 (한글)
     @Column(name = "furniture_name_kr", nullable = false)
     private String furnitureNameKr;
+
     // 가구 타입
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "furniture_type_id", nullable = false)
     private FurnitureType furnitureType;
+
+    public void updateFurnitureNameEng(String furnitureNameEng) {
+        this.furnitureNameEng = furnitureNameEng;
+    }
 }

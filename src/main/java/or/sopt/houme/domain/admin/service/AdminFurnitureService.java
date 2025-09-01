@@ -4,6 +4,7 @@ import or.sopt.houme.domain.admin.controller.dto.AdminFurnitureGetDto;
 import or.sopt.houme.domain.admin.controller.dto.AdminFurniturePromptRequestDTO;
 import or.sopt.houme.domain.admin.controller.dto.AdminFurnitureRequestDTO;
 import or.sopt.houme.domain.admin.controller.dto.AdminFurnitureTagGetDTO;
+import or.sopt.houme.domain.admin.controller.dto.furniture.AdminFurnitureUpdateRequestDTO;
 import or.sopt.houme.domain.furniture.entity.Furniture;
 
 public interface AdminFurnitureService {
@@ -15,4 +16,6 @@ public interface AdminFurnitureService {
     AdminFurnitureGetDto getFurniture();
 
     AdminFurnitureTagGetDTO getFurnitureTag();
+
+    void updateFurniture(AdminFurnitureUpdateRequestDTO dto);
 }
