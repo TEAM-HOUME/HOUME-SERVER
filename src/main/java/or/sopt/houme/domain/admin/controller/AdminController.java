@@ -21,11 +21,11 @@ public class AdminController {
     private final AdminService adminService;
 
 
-    @PostMapping("/register")
+/*    @PostMapping("/register")
     @Operation(summary = "어드민 회원가입 API")
     public void register(@RequestBody AdminSignUpRequestDTO dto) {
         adminService.signUp(dto);
-    }
+    }*/
 
 
     @GetMapping("/test")
