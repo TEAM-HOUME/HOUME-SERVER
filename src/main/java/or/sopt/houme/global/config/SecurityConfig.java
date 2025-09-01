@@ -105,7 +105,6 @@ public class SecurityConfig {
                 .requestMatchers(WhiteListConfig.userWhiteList().toArray(new String[0])).permitAll()
                 .requestMatchers(WhiteListConfig.monitoringWhiteList().toArray(new String[0])).permitAll()
                 .requestMatchers(WhiteListConfig.adminWhiteList().toArray(new String[0])).permitAll()
-                .requestMatchers(WhiteListConfig.adminWhiteListFurniture().toArray(new String[0])).hasRole("ADMIN")
                 .anyRequest().authenticated());
 
 

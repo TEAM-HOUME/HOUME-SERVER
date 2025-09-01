@@ -68,16 +68,4 @@ public class WhiteListConfig {
                 "/admin/login"
         );
     }
-
-    public static final List<String> adminWhiteListFurniture() {
-        return List.of(
-                "/api/v1/admin/dashboard",
-            "/api/v1/admin/furniture",
-            "/api/v1/admin/furniture/prompt",
-            "/api/v1/admin/furnitures",
-            "/api/v1/admin/furniture/tags",
-            "/api/v1/admin/furniture/prompt",
-            "/api/v1/admin/furniture/tag"
-        );
-    }
 }
