@@ -56,8 +56,8 @@ public class AdminController {
 
     @GetMapping("/furnitures")
     @Operation(description = "가구 조회 API")
-    public ResponseEntity<ApiResponse<AdminFurnitureGetDto>> getFurnitures() {
-        or.sopt.houme.domain.admin.controller.dto.furniture.AdminFurnitureGetDto furniture = adminFurnitureService.getFurniture();
+    public ResponseEntity<ApiResponse<AdminFurnitureGetDTO>> getFurnitures() {
+        AdminFurnitureGetDTO furniture = adminFurnitureService.getFurniture();
         return ResponseEntity.ok(ApiResponse.ok(furniture));
     }
 
@@ -77,6 +77,15 @@ public class AdminController {
         adminFurnitureService.updateFurniture(dto);
 
         return ResponseEntity.ok(ApiResponse.ok("업데이트가 성공적으로 완료되었습니다"));
+    }
+
+
+    @DeleteMapping("/furniture")
+    @Operation(description = "가구 삭제 API")
+    public ResponseEntity<ApiResponse<String>> deleteFurniture(@RequestBody AdminFurnitureDeleteDTO dto) {
+
+        adminFurnitureService.deleteFurniture(dto);
+        return ResponseEntity.ok(ApiResponse.ok("삭제가 성공적으로 완료되었습니다"));
     }
 
 }

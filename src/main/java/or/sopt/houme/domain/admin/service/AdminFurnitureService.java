@@ -8,9 +8,11 @@ public interface AdminFurnitureService {
 
     void registerFurniturePrompt (AdminFurniturePromptRequestDTO dto);
 
-    AdminFurnitureGetDto getFurniture();
+    AdminFurnitureGetDTO getFurniture();
 
     AdminFurnitureTagGetDTO getFurnitureTag();
 
     void updateFurniture(AdminFurnitureUpdateRequestDTO dto);
+
+    void deleteFurniture(AdminFurnitureDeleteDTO dto);
 }

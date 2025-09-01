@@ -1,6 +1,7 @@
 package or.sopt.houme.domain.admin.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import or.sopt.houme.domain.admin.controller.dto.furniture.*;
 import or.sopt.houme.domain.furniture.entity.Furniture;
 import or.sopt.houme.domain.furniture.entity.FurnitureTag;
@@ -20,6 +21,7 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 @Transactional
+@Slf4j
 public class AdminFurnitureServiceImpl implements AdminFurnitureService {
 
     private final FurnitureRepository furnitureRepository;
@@ -72,27 +74,27 @@ public class AdminFurnitureServiceImpl implements AdminFurnitureService {
 
 
     @Override
-    public AdminFurnitureGetDto getFurniture(){
+    public AdminFurnitureGetDTO getFurniture(){
 
         List<Furniture> allFurnitures = furnitureRepository.findAll();
 
-        List<AdminFurnitureGetDto.FurnitureInfo> furnitureInfos = allFurnitures.stream()
+        List<AdminFurnitureGetDTO.FurnitureInfo> furnitureInfos = allFurnitures.stream()
                 .map(furniture -> {
                     List<FurnitureTag> furnitureTags = furnitureTagRepository.findByFurniture(furniture);
-                    List<AdminFurnitureGetDto.TagInfo> tagInfos = furnitureTags.stream()
-                            .map(furnitureTag -> new AdminFurnitureGetDto.TagInfo(
+                    List<AdminFurnitureGetDTO.TagInfo> tagInfos = furnitureTags.stream()
+                            .map(furnitureTag -> new AdminFurnitureGetDTO.TagInfo(
                                     furnitureTag.getTag().getId(),
                                     furnitureTag.getTag().getTagNameKr()))
                             .toList();
 
-                    return new AdminFurnitureGetDto.FurnitureInfo(
+                    return new AdminFurnitureGetDTO.FurnitureInfo(
                             furniture.getId(),
                             furniture.getFurnitureNameKr(),
                             tagInfos);
                 })
                 .toList();
 
-        return new AdminFurnitureGetDto(furnitureInfos);
+        return new AdminFurnitureGetDTO(furnitureInfos);
     }
 
 
@@ -131,5 +133,23 @@ public class AdminFurnitureServiceImpl implements AdminFurnitureService {
         if (dto.newPrompt() != null && !dto.newPrompt().isBlank()){
             byFurnitureIdAndTag.updatePrompt(dto.newPrompt());
         }
+    }
+
+
+    @Override
+    public void deleteFurniture(AdminFurnitureDeleteDTO dto){
+
+        log.info("삭제 기능이 호출되었습니다");
+        Furniture byFurnitureNameKr = furnitureRepository.findByFurnitureNameKr(dto.furnitureNameKr())
+                .orElseThrow(()-> new GeneralException(ErrorCode.NOT_VALID_EXCEPTION));
+
+        Tag byIdTag = tagRepository.findById(dto.tagId())
+                .orElseThrow(()-> new GeneralException(ErrorCode.NOT_VALID_EXCEPTION));
+
+        FurnitureTag byFurnitureIdAndTag = furnitureTagRepository.findByFurnitureAndTag(byFurnitureNameKr, byIdTag)
+                .orElseThrow(()-> new GeneralException(ErrorCode.NOT_VALID_EXCEPTION));
+
+        furnitureTagRepository.delete(byFurnitureIdAndTag);
+
     }
 }
