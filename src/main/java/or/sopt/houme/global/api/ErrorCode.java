@@ -56,6 +56,10 @@ public enum ErrorCode {
     // 도면 관련 예외
     NOT_FOUND_HOUSE(HttpStatus.NOT_FOUND, 40404, "저장되어있는 주거 정보가 없습니다."),
 
+    // 가구 관련 예외
+    NOT_FOUND_FURNITURE(HttpStatus.NOT_FOUND,40413, "가구 객체를 찾을 수 없습니다"),
+    NOT_FOUND_FURNITURE_TAG(HttpStatus.NOT_FOUND,40414,"가구 태그 객체를 찾을 수 없습니다"),
+
     // 집 엔티티 관련 예외
     NOT_FOUND_HOUSE_ENTITY(HttpStatus.NOT_FOUND, 40405, "집 객체를 찾을 수 없습니다." ),
 

@@ -21,7 +21,6 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 @Transactional
-@Slf4j
 public class AdminFurnitureServiceImpl implements AdminFurnitureService {
 
     private final FurnitureRepository furnitureRepository;
@@ -57,10 +56,10 @@ public class AdminFurnitureServiceImpl implements AdminFurnitureService {
     public void registerFurniturePrompt(AdminFurniturePromptRequestDTO dto){
 
         Tag byIdTag = tagRepository.findById(dto.tagId())
-                .orElseThrow(()-> new GeneralException(ErrorCode.NOT_VALID_EXCEPTION));
+                .orElseThrow(()-> new GeneralException(ErrorCode.NOT_FOUND_TAG_ENTITY));
 
         Furniture byFurnitureNameKr = furnitureRepository.findByFurnitureNameKr(dto.furnitureNameKr())
-                .orElseThrow(()-> new GeneralException(ErrorCode.NOT_VALID_EXCEPTION));;
+                .orElseThrow(()-> new GeneralException(ErrorCode.NOT_FOUND_FURNITURE));;
 
         FurnitureTag newFurnitureTage = FurnitureTag.builder()
                 .furniturePrompt(dto.prompt())
@@ -118,13 +117,13 @@ public class AdminFurnitureServiceImpl implements AdminFurnitureService {
     public void updateFurniture(AdminFurnitureUpdateRequestDTO dto){
 
         Furniture byFurnitureNameKr = furnitureRepository.findByFurnitureNameKr(dto.furnitureNameKr())
-                .orElseThrow(()-> new GeneralException(ErrorCode.NOT_VALID_EXCEPTION));
+                .orElseThrow(()-> new GeneralException(ErrorCode.NOT_FOUND_FURNITURE));
 
         Tag byIdTag = tagRepository.findById(dto.tagId())
-                .orElseThrow(()-> new GeneralException(ErrorCode.NOT_VALID_EXCEPTION));
+                .orElseThrow(()-> new GeneralException(ErrorCode.NOT_FOUND_TAG_ENTITY));
 
         FurnitureTag byFurnitureIdAndTag = furnitureTagRepository.findByFurnitureAndTag(byFurnitureNameKr, byIdTag)
-                .orElseThrow(()-> new GeneralException(ErrorCode.NOT_VALID_EXCEPTION));
+                .orElseThrow(()-> new GeneralException(ErrorCode.NOT_FOUND_FURNITURE_TAG));
 
         if (dto.newFurnitureNameEng() != null && !dto.newFurnitureNameEng().isBlank()){
             byFurnitureNameKr.updateFurnitureNameEng(dto.newFurnitureNameEng());
@@ -139,15 +138,14 @@ public class AdminFurnitureServiceImpl implements AdminFurnitureService {
     @Override
     public void deleteFurnitureTag(AdminFurnitureTagDeleteDTO dto){
 
-        log.info("삭제 기능이 호출되었습니다");
         Furniture byFurnitureNameKr = furnitureRepository.findByFurnitureNameKr(dto.furnitureNameKr())
-                .orElseThrow(()-> new GeneralException(ErrorCode.NOT_VALID_EXCEPTION));
+                .orElseThrow(()-> new GeneralException(ErrorCode.NOT_FOUND_FURNITURE));
 
         Tag byIdTag = tagRepository.findById(dto.tagId())
-                .orElseThrow(()-> new GeneralException(ErrorCode.NOT_VALID_EXCEPTION));
+                .orElseThrow(()-> new GeneralException(ErrorCode.NOT_FOUND_TAG_ENTITY));
 
         FurnitureTag byFurnitureIdAndTag = furnitureTagRepository.findByFurnitureAndTag(byFurnitureNameKr, byIdTag)
-                .orElseThrow(()-> new GeneralException(ErrorCode.NOT_VALID_EXCEPTION));
+                .orElseThrow(()-> new GeneralException(ErrorCode.NOT_FOUND_FURNITURE_TAG));
 
         furnitureTagRepository.delete(byFurnitureIdAndTag);
 
@@ -157,17 +155,12 @@ public class AdminFurnitureServiceImpl implements AdminFurnitureService {
     @Override
     public void deleteFurniture(AdminFurnitureDeleteDTO dto){
 
-        /**
-         * 태그가 존재하면 삭제되지 않도록 제한사항 추가해야함
-         * */
-
         Furniture byFurnitureNameKr = furnitureRepository.findByFurnitureNameKr(dto.furnitureNameKr())
-                .orElseThrow(()-> new GeneralException(ErrorCode.NOT_VALID_EXCEPTION));
+                .orElseThrow(()-> new GeneralException(ErrorCode.NOT_FOUND_FURNITURE));
 
-        // 태그가 존재하면 예외 발생
         List<FurnitureTag> furnitureTags = furnitureTagRepository.findByFurniture(byFurnitureNameKr);
         if (!furnitureTags.isEmpty()) {
-            throw new GeneralException(ErrorCode.NOT_VALID_EXCEPTION); // 태그가 존재하면 예외 발생
+            throw new GeneralException(ErrorCode.NOT_FOUND_FURNITURE_TAG);
         }
 
         furnitureRepository.delete(byFurnitureNameKr);
