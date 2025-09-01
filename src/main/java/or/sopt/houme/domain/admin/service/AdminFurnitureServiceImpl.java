@@ -137,7 +137,7 @@ public class AdminFurnitureServiceImpl implements AdminFurnitureService {
 
 
     @Override
-    public void deleteFurniture(AdminFurnitureDeleteDTO dto){
+    public void deleteFurnitureTag(AdminFurnitureDeleteDTO dto){
 
         log.info("삭제 기능이 호출되었습니다");
         Furniture byFurnitureNameKr = furnitureRepository.findByFurnitureNameKr(dto.furnitureNameKr())
