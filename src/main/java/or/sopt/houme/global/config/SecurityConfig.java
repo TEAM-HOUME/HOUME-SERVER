@@ -8,6 +8,7 @@ import or.sopt.houme.domain.user.service.OAuthService;
 import or.sopt.houme.global.jwt.JWTFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Role;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
@@ -104,6 +105,7 @@ public class SecurityConfig {
                 .requestMatchers(WhiteListConfig.userWhiteList().toArray(new String[0])).permitAll()
                 .requestMatchers(WhiteListConfig.monitoringWhiteList().toArray(new String[0])).permitAll()
                 .requestMatchers(WhiteListConfig.adminWhiteList().toArray(new String[0])).permitAll()
+                .requestMatchers(WhiteListConfig.adminWhiteListFurniture().toArray(new String[0])).hasRole("ADMIN")
                 .anyRequest().authenticated());
 
 

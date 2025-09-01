@@ -44,8 +44,17 @@
     <!-- 가구 관리 섹션 -->
     <div class="management-section">
         <h3 class="text-center mb-4">가구 관리</h3>
+
+        <ul class="nav nav-pills justify-content-center mb-4">
+            <li class="nav-item"><a class="nav-link" href="#get-furnitures-result">등록된 가구 보기</a></li>
+            <li class="nav-item"><a class="nav-link" href="#get-prompt-form-container">프롬프트 조회</a></li>
+            <li class="nav-item"><a class="nav-link" href="#furniture-form-container">신규 가구 등록</a></li>
+            <li class="nav-item"><a class="nav-link" href="#furniture-prompt-form-container">가구 프롬프트 등록</a></li>
+            <li class="nav-item
+            "><a class="nav-link" href="#update-furniture-form-container">가구 정보 수정</a></li>
+        </ul>
         
-        <div class="text-center">
+        <div id="get-furnitures-container" class="text-center">
             <p>버튼을 눌러 등록된 모든 가구를 조회합니다.</p>
             <button id="get-furnitures-button" class="btn btn-secondary">등록된 가구 보기</button>
             <div id="get-furnitures-result" class="api-result"></div>
@@ -373,16 +382,17 @@
 
         fetch(endpoint, fetchOptions)
             .then(response => {
+                if (response.status === 403) {
+                    throw new Error('접근 권한이 없습니다. ADMIN으로 로그인해주세요.');
+                }
                 if (!response.ok) {
                     return response.json().then(err => { throw new Error(JSON.stringify(err)); });
                 }
-                // Handle empty response body for DELETE requests
-                const contentType = response.headers.get("content-type");
-                if (contentType && contentType.indexOf("application/json") !== -1) {
-                    return response.json();
-                } else {
+                const contentLength = response.headers.get('Content-Length');
+                if (contentLength === '0') {
                     return null;
                 }
+                return response.json();
             })
             .then(data => {
                 console.log(data);
