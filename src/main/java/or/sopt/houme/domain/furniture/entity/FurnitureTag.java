@@ -26,4 +26,8 @@ public class FurnitureTag {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "tag_id")
     private Tag tag;
+
+    public void updatePrompt(String prompt) {
+        this.furniturePrompt = prompt;
+    }
 }
