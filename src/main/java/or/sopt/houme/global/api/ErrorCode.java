@@ -114,7 +114,13 @@ public enum ErrorCode {
     CREDIT_CREATE_EXCEPTION(HttpStatus.INTERNAL_SERVER_ERROR,50012,"크레딧 생성 과정 중 예외가 발생하였습니다."),
 
     // 이미지 생성 중
-    GENERATED_IMAGE_EXCEPTION(HttpStatus.INTERNAL_SERVER_ERROR, 50013, "이미지 생성 중 예외가 발생하였습니다.");
+    GENERATED_IMAGE_EXCEPTION(HttpStatus.INTERNAL_SERVER_ERROR, 50013, "이미지 생성 중 예외가 발생하였습니다."),
+
+    /**
+     * 504 GATEWAY_TIMEOUT
+     */
+    // 이미지 생성 타임아웃
+    GENERATED_IMAGE_TIMEOUT(HttpStatus.GATEWAY_TIMEOUT, 50400, "이미지 생성 시간이 초과되었습니다.");
 
     private final HttpStatus status;
     private final int code;

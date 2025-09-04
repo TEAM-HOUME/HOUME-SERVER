@@ -18,6 +18,13 @@ public class CreditServiceImpl implements CreditService{
 
     private final CreditRepository creditRepository;
 
+    // 크레딧 확인
+    @Override
+    public void checkUserCredit(User user) {
+        creditRepository.findOldCreditByUser(user)
+                .orElseThrow(() -> new CreditException(ErrorCode.CREDIT_NOT_FOUND));
+    }
+
     // 크레딧 감소 로직
     @Transactional
     @Override

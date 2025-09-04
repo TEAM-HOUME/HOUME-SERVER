@@ -45,3 +45,6 @@ src/main/generated
 
 ### initialize 무시 ###
 **/*initialize*.java
+
+### .DS 무시 ###
+.DS_Store

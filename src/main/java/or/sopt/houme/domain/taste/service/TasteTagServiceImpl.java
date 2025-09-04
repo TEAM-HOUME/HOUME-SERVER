@@ -1,6 +1,7 @@
 package or.sopt.houme.domain.taste.service;
 
 import lombok.RequiredArgsConstructor;
+import or.sopt.houme.domain.taste.dto.response.TagDTO;
 import or.sopt.houme.domain.taste.entity.Tag;
 import or.sopt.houme.domain.taste.repository.taste_tag.TasteTagRepository;
 import or.sopt.houme.global.api.ErrorCode;
@@ -26,5 +27,20 @@ public class TasteTagServiceImpl implements TasteTagService {
                 .orElseThrow(() -> new GeneralException(ErrorCode.NOT_FOUND_TAG_ENTITY));
 
         return bestTag;
+    }
+
+    // 우선순위 가장 높은 2개의 Tag 반환
+    @Override
+    public List<TagDTO> getPriorityIdList(List<Long> tasteIds) {
+
+        List<Tag> bestTasteIdList = tasteTagRepository.findBestTasteIdList(tasteIds);
+
+        if (bestTasteIdList.isEmpty()) {
+            throw new GeneralException(ErrorCode.NOT_FOUND_TAG_ENTITY);
+        }
+
+        return bestTasteIdList.stream()
+                .map(TagDTO::of)
+                .toList();
     }
 }
