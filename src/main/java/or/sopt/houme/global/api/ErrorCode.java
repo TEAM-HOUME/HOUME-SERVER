@@ -85,6 +85,7 @@ public enum ErrorCode {
     /**
      * 409 CONFLICT
      */
+    CREDIT_LOCK_FAILED(HttpStatus.CONFLICT, 40900, "다른 요청을 처리 중입니다. 잠시 후 다시 시도해주세요."),
 
     /**
      * 429 Too_Many_Requests
@@ -115,6 +116,8 @@ public enum ErrorCode {
 
     // 이미지 생성 중
     GENERATED_IMAGE_EXCEPTION(HttpStatus.INTERNAL_SERVER_ERROR, 50013, "이미지 생성 중 예외가 발생하였습니다."),
+    CREDIT_LOCK_INTERRUPTED(HttpStatus.INTERNAL_SERVER_ERROR, 50014, "크레딧 처리 중 스레드 충돌이 발생했습니다."),
+
 
     /**
      * 504 GATEWAY_TIMEOUT

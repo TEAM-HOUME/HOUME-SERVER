@@ -35,6 +35,7 @@ public class TasteTagServiceImpl implements TasteTagService {
 
         List<Tag> bestTasteIdList = tasteTagRepository.findBestTasteIdList(tasteIds);
 
+        // 태그 리스트가 비어 있다면 예외처리
         if (bestTasteIdList.isEmpty()) {
             throw new GeneralException(ErrorCode.NOT_FOUND_TAG_ENTITY);
         }

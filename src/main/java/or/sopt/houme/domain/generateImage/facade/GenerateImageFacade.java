@@ -61,7 +61,7 @@ public class GenerateImageFacade {
              */
 
             // 크레딧 감소
-            creditService.decreaseCredit(user);
+            creditService.decreaseCreditAtomically(user);
 
             Activity activity;
             try {
@@ -152,7 +152,7 @@ public class GenerateImageFacade {
          */
 
         // 크레딧 감소
-        creditService.decreaseCredit(user);
+        creditService.decreaseCreditAtomically(user);
 
         Activity activity;
         try {
@@ -235,16 +235,19 @@ public class GenerateImageFacade {
     // 비동기 이미지 생성 요청
     public List<ImageInfoResponse> generateImageBy2ea(User user, GenerateImageRequest generateImageRequest){
 
-        // 작업 전에 크레딧 보유 여부 먼저 확인
-        creditService.checkUserCredit(user);
+        // 크레딧 관련 실패와 락 처리
+        creditService.decreaseCreditAtomically(user);
 
-        /**
-         * redis 저장 (user랑 상태값)
-         * 재요청시 user 조회 (상태값은 이미지 받았는지 판단)
-         * 상태값이 요청 후 받았다( -> 재요청 가능 )
-         */
+        Activity activity;
+        try {
+            // 활동범위에 값이 유효하지 않으면 예외처리
+            activity = Activity.valueOf(generateImageRequest.activity());
+        } catch (IllegalArgumentException e){
+            log.error("활동범위가 유효하지 않음: {}", generateImageRequest.activity());
+            throw new GeneralException(ErrorCode.NOT_VALID_EXCEPTION);
+        }
 
-        Activity activity = Activity.valueOf(generateImageRequest.activity());
+        // 기존 house에 주요활동 업데이트하기 (저장)
         House house = houseService.updateHouseActivity(generateImageRequest.houseId(), activity);
 
         // house_floor_plan 생성 및 저장
@@ -264,8 +267,10 @@ public class GenerateImageFacade {
 
         Equilibrium equilibrium;
         try {
+            // 평형범위에 값이 유효하지 않으면 예외처리
             equilibrium = Equilibrium.valueOf(generateImageRequest.equilibrium());
         } catch (IllegalArgumentException e){
+            log.error("평형범위가 유효하지 않음: {}", generateImageRequest.equilibrium());
             throw new GeneralException(ErrorCode.NOT_VALID_EXCEPTION);
         }
 
@@ -275,6 +280,9 @@ public class GenerateImageFacade {
         // 최고 순위 2개 찾기
         List<TagDTO> priorityIdList = tasteTagService.getPriorityIdList(generateImageRequest.moodBoardIds());
 
+        // 비동기 이미지 생성 리스트 (태그가 2개가 아닐 경우가 있기 떄문에 대비함)
+        List<CompletableFuture<ImageUploadResponseDTO>> futures = new ArrayList<>();
+
         // 이미지 생성 태그 1번 준비
         PromptRequestDTO promptRequestDTO1 = PromptRequestDTO.of(
                 generateImageRequest.floorPlan().floorPlanId(),
@@ -282,34 +290,32 @@ public class GenerateImageFacade {
                 equilibrium,
                 promptFurnitureListDTO
         );
-
-        // 이미지 생성 태그 2번 준비
-        PromptRequestDTO promptRequestDTO2 = PromptRequestDTO.of(
-                generateImageRequest.floorPlan().floorPlanId(),
-                priorityIdList.get(1).id(),
-                equilibrium,
-                promptFurnitureListDTO
-        );
-
-        log.info("2번");
-
         // OpenAI로 image 비동기 생성
-        // 1번 이미지
-        CompletableFuture<ImageUploadResponseDTO> future1 =
-                asyncGenerateImageService.generateImageAsync(promptRequestDTO1);
+        // 1번 이미지 (항상 실행됨)
+        futures.add(asyncGenerateImageService.generateImageAsync(promptRequestDTO1));
 
-        // 2번 이미지
-        CompletableFuture<ImageUploadResponseDTO> future2 =
-                asyncGenerateImageService.generateImageAsync(promptRequestDTO2);
+        // 2번째 태그가 존재할 시에 2번 이미지 준비
+        if (priorityIdList.size() > 1) {
+            // 이미지 생성 태그 2번 준비
+            PromptRequestDTO promptRequestDTO2 = PromptRequestDTO.of(
+                    generateImageRequest.floorPlan().floorPlanId(),
+                    priorityIdList.get(1).id(),
+                    equilibrium,
+                    promptFurnitureListDTO
+            );
 
-        List<CompletableFuture<ImageUploadResponseDTO>> futures = List.of(future1, future2);
+            // OpenAI로 image 비동기 생성
+            // 2번 이미지
+            futures.add(asyncGenerateImageService.generateImageAsync(promptRequestDTO2));
+        }
+
+        // allOf로 모든 1번, 2번 이미지 생성 기다리기
         CompletableFuture<Void> allFutures = CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]));
 
         try {
 
-            log.info("3번");
-
             // --- 결과 대기 및 Timeout 설정 ---
+            // 둘 중에 하나라도 200초가 넘어가면 타임아웃 처리
             allFutures.orTimeout(200, TimeUnit.SECONDS).join();
 
             // 모든 비동기 작업이 성공했을 때만 DB에 결과를 저장
@@ -354,8 +360,7 @@ public class GenerateImageFacade {
             User user, House house, List<ImageUploadResponseDTO> results,
             GenerateImageRequest generateImageRequest, List<TagDTO> priorityIdList) {
 
-        // 크레딧 감소는 모든 작업이 성공한 것이 확인된 후에 실행합니다.
-        creditService.decreaseCredit(user);
+        // 크레딧 차감 로직은 generateImageBy2ea 메서드 시작 부분에서 이루어짐
 
         // house에 프롬프트 저장
         for (ImageUploadResponseDTO result : results) {

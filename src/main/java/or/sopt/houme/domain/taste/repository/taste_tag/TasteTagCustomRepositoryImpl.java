@@ -58,7 +58,7 @@ public class TasteTagCustomRepositoryImpl implements TasteTagCustomRepository {
                 .groupBy(tasteTag.tag)
                 .orderBy(
                         tasteTag.tag.count().desc(), // 1순위: 선택된 횟수가 많은 순서
-                        tasteTag.tag.priority.asc()  // 2순위: 횟수가 같다면 우선순위가 높은 순서 (숫자가 낮은)
+                        tag.priority.asc()  // 2순위: 횟수가 같다면 우선순위가 높은 순서 (숫자가 낮은)
                 )
                 // 상위 2개 반환
                 .limit(2)

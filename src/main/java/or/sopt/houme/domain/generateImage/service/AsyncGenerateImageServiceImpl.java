@@ -31,7 +31,7 @@ public class AsyncGenerateImageServiceImpl implements AsyncGenerateImageService{
         } catch (Exception e){
 
             // 예외 발생
-            log.error("An error occurred during image generation: {}", e.getMessage());
+            log.error("이미지 생성 중 예외발생: {}", e.getMessage());
             // 비동기 작업 내에서 발생한 예외를 CompletableFuture에 담아 반환
             return CompletableFuture.failedFuture(e);
         }
