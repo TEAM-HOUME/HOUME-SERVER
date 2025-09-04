@@ -116,7 +116,7 @@ public enum ErrorCode {
 
     // 이미지 생성 중
     GENERATED_IMAGE_EXCEPTION(HttpStatus.INTERNAL_SERVER_ERROR, 50013, "이미지 생성 중 예외가 발생하였습니다."),
-    CREDIT_LOCK_INTERRUPTED(HttpStatus.INTERNAL_SERVER_ERROR, 50014, "크레딧 처리 중 스레드 충돌이 발생했습니다."),
+    CREDIT_LOCK_INTERRUPTED(HttpStatus.INTERNAL_SERVER_ERROR, 50014, "크레딧 처리 대기 중 스레드 인터럽트가 발생했습니다."),
 
 
     /**
