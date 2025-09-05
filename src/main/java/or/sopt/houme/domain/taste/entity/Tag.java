@@ -29,4 +29,13 @@ public class Tag {
     @Column(name = "tag_prompt", nullable = false, columnDefinition = "TEXT")
     private  String tagPrompt;
 
+    public static Tag of(String tagName, int priority, String tagNameKr, String tagPrompt) {
+        return Tag.builder()
+                .tagName(tagName)
+                .priority(priority)
+                .tagNameKr(tagNameKr)
+                .tagPrompt(tagPrompt)
+                .build();
+    }
+
 }
