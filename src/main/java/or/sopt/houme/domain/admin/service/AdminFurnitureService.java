@@ -1,0 +1,22 @@
+package or.sopt.houme.domain.admin.service;
+
+import or.sopt.houme.domain.admin.controller.dto.furniture.*;
+
+public interface AdminFurnitureService {
+
+    void registerFurniture(AdminFurnitureRequestDTO dto);
+
+    void registerFurniturePrompt (AdminFurniturePromptRequestDTO dto);
+
+    AdminFurnitureGetDTO getFurniture();
+
+    AdminFurnitureTagGetDTO getFurnitureTag();
+
+    void updateFurniture(AdminFurnitureUpdateRequestDTO dto);
+
+    void deleteFurnitureTag(AdminFurnitureTagDeleteDTO dto);
+
+    void deleteFurniture(AdminFurnitureDeleteDTO dto);
+
+    AdminFurnitureDetailsResponseDTO getDetails(AdminFurnitureDetailsRequestDTO dto);
+}
