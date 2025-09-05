@@ -14,7 +14,14 @@ jobs:
     permissions:
       checks: write
       pull-requests: write
+
     steps:
+      # redis 설정
+      - name: set up redis
+        uses: supercharge/redis-github-action@1.7.0
+        with:
+          redis-version: 'latest'
+
       - name: checkout the code
         uses: actions/checkout@v4
       - name: JDK 17 설정
@@ -35,8 +42,7 @@ jobs:
 
       - name: Run Gradle build and tests
         run: |
-          ./gradlew clean build
-          ./gradlew test
+          ./gradlew clean build -Dspring.profiles.active=test
           ./gradlew jacocoTestReport
       - name: Jacoco Report to PR
         id: jacoco
