@@ -48,7 +48,7 @@ jobs:
       - name: Run Gradle build and tests
         run: |
           ./gradlew clean build
-          ./gradlew test
+          ./gradlew test -Dspring.profiles.active=test
           ./gradlew jacocoTestReport
       - name: Jacoco Report to PR
         id: jacoco
