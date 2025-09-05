@@ -9,10 +9,7 @@ import or.sopt.houme.domain.admin.controller.dto.tag.AdminTagGetResponseDTO;
 import or.sopt.houme.domain.admin.service.AdminTagService;
 import or.sopt.houme.global.api.ApiResponse;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -26,7 +23,7 @@ public class AdminTagController {
 
     @PostMapping("/tag")
     @Operation(summary = "스타일 태그 생성 API")
-    public ResponseEntity<ApiResponse<String>> createTag(AdminTagRequestDTO dto){
+    public ResponseEntity<ApiResponse<String>> createTag(@RequestBody AdminTagRequestDTO dto){
         adminTagService.create(dto);
 
         return ResponseEntity.ok(ApiResponse.ok("성공적으로 스타일 태그가 생성 되었습니다"));

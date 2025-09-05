@@ -50,8 +50,8 @@
             <li class="nav-item"><a class="nav-link" href="#get-prompt-form-container">프롬프트 조회</a></li>
             <li class="nav-item"><a class="nav-link" href="#furniture-form-container">신규 가구 등록</a></li>
             <li class="nav-item"><a class="nav-link" href="#furniture-prompt-form-container">가구 프롬프트 등록</a></li>
-            <li class="nav-item
-            "><a class="nav-link" href="#update-furniture-form-container">가구 정보 수정</a></li>
+            <li class="nav-item"><a class="nav-link" href="#update-furniture-form-container">가구 정보 수정</a></li>
+            <li class="nav-item"><a class="nav-link" href="#create-tag-form-container">스타일 태그 관리</a></li>
         </ul>
         
         <div id="get-furnitures-container" class="text-center">
@@ -161,6 +161,48 @@
 
     <!-- 향후 무드보드 관리 등 다른 섹션 추가 가능 -->
 
+    <hr class="my-4">
+
+    <!-- 스타일 태그 관리 섹션 -->
+    <div class="management-section">
+        <h3 class="text-center mb-4">스타일 태그 관리</h3>
+
+        <div id="create-tag-form-container">
+            <h4 class="text-center">태그 생성</h4>
+            <form id="create-tag-form">
+                <div class="mb-3">
+                    <label for="tagPriority" class="form-label">우선순위</label>
+                    <input type="number" class="form-control" id="tagPriority" required>
+                </div>
+                <div class="mb-3">
+                    <label for="tagName" class="form-label">태그 이름 (영어)</label>
+                    <input type="text" class="form-control" id="tagName" required>
+                </div>
+                <div class="mb-3">
+                    <label for="tagNameKr" class="form-label">태그 이름 (한글)</label>
+                    <input type="text" class="form-control" id="tagNameKr" required>
+                </div>
+                <div class="mb-3">
+                    <label for="tagPrompt" class="form-label">태그 프롬프트</label>
+                    <textarea class="form-control" id="tagPrompt" rows="3" required></textarea>
+                </div>
+                <div class="d-grid">
+                    <button type="submit" class="btn btn-primary">태그 생성</button>
+                </div>
+            </form>
+            <div id="create-tag-api-result" class="api-result"></div>
+        </div>
+
+        <hr class="my-4">
+
+        <div id="get-all-tags-container">
+            <h4 class="text-center">모든 태그 조회</h4>
+            <p>버튼을 눌러 등록된 모든 스타일 태그를 조회합니다.</p>
+            <button id="get-all-tags-button" class="btn btn-secondary">모든 태그 보기</button>
+            <div id="get-all-tags-result" class="api-result"></div>
+        </div>
+    </div>
+
 </div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
 <script>
@@ -243,6 +285,34 @@
 
             testApiCall(accessToken, resultDiv, endpoint, 'GET', null);
         });
+
+        document.getElementById('create-tag-form').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const accessToken = localStorage.getItem('accessToken');
+            const resultDiv = document.getElementById('create-tag-api-result');
+            
+            const tagData = {
+                priority: parseInt(document.getElementById('tagPriority').value, 10),
+                tagName: document.getElementById('tagName').value,
+                tag_name_kr: document.getElementById('tagNameKr').value,
+                tag_prompt: document.getElementById('tagPrompt').value
+            };
+
+            testApiCall(accessToken, resultDiv, '/api/v1/admin/tag', 'POST', tagData);
+        });
+
+        document.getElementById('get-all-tags-button').addEventListener('click', function() {
+            const accessToken = localStorage.getItem('accessToken');
+            const resultDiv = document.getElementById('get-all-tags-result');
+
+            if (resultDiv.innerHTML) {
+                resultDiv.innerHTML = '';
+                resultDiv.className = 'api-result';
+                return;
+            }
+
+            testApiCall(accessToken, resultDiv, '/api/v1/admin/tags', 'GET', null, displayTagsAsTable);
+        });
     };
 
     function populateTagDropdown() {
@@ -298,6 +368,46 @@
             resultDiv.innerHTML = tableHTML;
         } else {
             resultDiv.textContent = 'API 응답: ' + JSON.stringify(data.data, null, 2);
+        }
+    }
+
+    function displayTagsAsTable(data, resultDiv) {
+        const tags = data.data.tagGetResponseDTOS;
+        if (Array.isArray(tags)) {
+            let tableHTML = '<table class="table table-bordered table-striped mt-3"><thead><tr><th>우선순위</th><th>태그 이름 (영어)</th><th>태그 이름 (한글)</th><th>태그 프롬프트</th></tr></thead><tbody>';
+            tags.forEach((tag, index) => {
+                const fullPromptId = `fullPrompt-${index}`;
+                const toggleButtonId = `toggleButton-${index}`;
+
+                tableHTML += `<tr>
+                                <td>${tag.priority}</td>
+                                <td>${tag.tagName}</td>
+                                <td>${tag.tag_name_kr}</td>
+                                <td>
+                                    <button id="${toggleButtonId}" class="btn btn-sm btn-info" onclick="togglePrompt('${fullPromptId}', '${toggleButtonId}')">
+                                        보기
+                                    </button>
+                                    <pre id="${fullPromptId}" style="display: none; white-space: pre-wrap;">${tag.tag_prompt}</pre>
+                                </td>
+                              </tr>`;
+            });
+            tableHTML += '</tbody></table>';
+            resultDiv.innerHTML = tableHTML;
+        } else {
+            resultDiv.textContent = 'API 응답: ' + JSON.stringify(data.data, null, 2);
+        }
+    }
+
+    function togglePrompt(fullPromptId, toggleButtonId) {
+        const fullPromptSpan = document.getElementById(fullPromptId);
+        const toggleButton = document.getElementById(toggleButtonId);
+
+        if (fullPromptSpan.style.display === 'none') {
+            fullPromptSpan.style.display = 'inline';
+            toggleButton.textContent = '숨기기';
+        } else {
+            fullPromptSpan.style.display = 'none';
+            toggleButton.textContent = '보기';
         }
     }
 
@@ -386,7 +496,14 @@
                     throw new Error('접근 권한이 없습니다. ADMIN으로 로그인해주세요.');
                 }
                 if (!response.ok) {
-                    return response.json().then(err => { throw new Error(JSON.stringify(err)); });
+                    // Attempt to parse error response as JSON, but handle cases where it's not JSON
+                    const contentType = response.headers.get("content-type");
+                    if (contentType && contentType.indexOf("application/json") !== -1) {
+                        return response.json().then(err => { throw new Error(JSON.stringify(err)); });
+                    } else {
+                        // If not JSON, throw a generic error with status text
+                        throw new Error(`서버 오류: ${response.status} ${response.statusText}`);
+                    }
                 }
                 const contentLength = response.headers.get('Content-Length');
                 if (contentLength === '0') {
