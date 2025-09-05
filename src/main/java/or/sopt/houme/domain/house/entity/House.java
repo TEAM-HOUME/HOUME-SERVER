@@ -44,6 +44,7 @@ public class House {
     private User user;
 
     @OneToMany(mappedBy = "house")
+    @Builder.Default
     private List<GenerateImage> generateImages = new ArrayList<>();
 
     // 입력값이 유효한지에 대한 여부 (true = 유효한 값)
