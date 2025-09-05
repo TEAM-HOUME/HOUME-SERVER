@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import or.sopt.houme.domain.credit.service.CreditService;
 import or.sopt.houme.domain.generateImage.dto.request.GenerateImageRequest;
+import or.sopt.houme.domain.generateImage.dto.response.ImageInfoListResponse;
 import or.sopt.houme.domain.generateImage.dto.response.ImageInfoResponse;
 import or.sopt.houme.domain.generateImage.entity.GenerateImage;
 import or.sopt.houme.domain.generateImage.service.AsyncGenerateImageService;
@@ -22,10 +23,14 @@ import or.sopt.houme.domain.taste.service.TagService;
 import or.sopt.houme.domain.taste.service.TasteTagService;
 import or.sopt.houme.domain.user.entity.User;
 import or.sopt.houme.domain.user.service.UserService;
+import or.sopt.houme.global.api.ApiResponse;
 import or.sopt.houme.global.api.ErrorCode;
 import or.sopt.houme.global.api.GeneralException;
 import or.sopt.houme.global.api.handler.GenerateImageException;
+import or.sopt.houme.global.api.handler.ImageFallbackException;
 import or.sopt.houme.global.dto.ImageUploadResponseDTO;
+import or.sopt.houme.global.util.constant.S3Constant;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -233,7 +238,7 @@ public class GenerateImageFacade {
     }
 
     // 비동기 이미지 생성 요청
-    public List<ImageInfoResponse> generateImageBy2ea(User user, GenerateImageRequest generateImageRequest){
+    public ImageInfoListResponse generateImageBy2ea(User user, GenerateImageRequest generateImageRequest){
 
         // 크레딧 관련 실패와 락 처리
         creditService.decreaseCreditAtomically(user);
@@ -324,7 +329,24 @@ public class GenerateImageFacade {
                     .collect(Collectors.toList());
 
             // DB 작업을 별도의 트랜잭션 메서드로 분리하여 호출
-            return saveResultsAndCreateResponse(user, house, results, generateImageRequest, priorityIdList);
+            List<ImageInfoResponse> imageInfoResponses = saveResultsAndCreateResponse(user, house, results, generateImageRequest, priorityIdList);
+
+            // 리스트가 비어있다면, 재요청 시도하라는 반환 (429, Too_Many_Requests)
+            if (imageInfoResponses.isEmpty()) {
+                throw new GeneralException(ErrorCode.RETRY_GET_IMAGE);
+            }
+
+            // DTO로 변환
+            ImageInfoListResponse imageInfoListResponse = ImageInfoListResponse.of(imageInfoResponses);
+
+            // 만들어진 이미지가 Fallback 이미지라면, 예외처리
+            for (ImageInfoResponse imageInfoResponse : imageInfoListResponse.imageInfoResponses()){
+                if (imageInfoResponse.imageUrl().equals(S3Constant.FALL_BACK_IMAGE)){
+                    throw new ImageFallbackException(ErrorCode.GENERATED_IMAGE_EXCEPTION, imageInfoListResponse);
+                }
+            }
+
+            return imageInfoListResponse;
 
         } catch (CompletionException | CancellationException e) {
             // CancellationException도 함께 처리 (이미 취소됐다는 예외)
@@ -332,7 +354,7 @@ public class GenerateImageFacade {
             // 아직 완료되지 않은 다른 작업들을 강제로 취소
             futures.forEach(future -> future.cancel(true));
 
-            // 예외 원인 확인 (CompletionException으로 감싸진 TimeoutException인지.)
+            // 예외 원인 확인 (CompletionException으로 감싸진 TimeoutException 인지)
             Throwable cause = e.getCause();
 
             if (cause instanceof TimeoutException) {

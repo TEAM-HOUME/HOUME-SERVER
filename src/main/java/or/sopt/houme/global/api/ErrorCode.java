@@ -96,7 +96,7 @@ public enum ErrorCode {
     /**
      * 429 Too_Many_Requests
      */
-    RETRY_GET_IMAGE(HttpStatus.TOO_MANY_REQUESTS, 42900, "재요하세요."),
+    RETRY_GET_IMAGE(HttpStatus.TOO_MANY_REQUESTS, 42900, "너무 많은 요청이 들어왔습니다. 잠시 후에 재요청하세요."),
 
 
     /**

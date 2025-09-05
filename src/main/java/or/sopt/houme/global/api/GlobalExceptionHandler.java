@@ -1,6 +1,8 @@
 package or.sopt.houme.global.api;
 
 import io.sentry.Sentry;
+import or.sopt.houme.domain.generateImage.dto.response.ImageInfoListResponse;
+import or.sopt.houme.global.api.handler.ImageFallbackException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.HttpMediaTypeNotAcceptableException;
@@ -16,6 +18,27 @@ import org.springframework.web.servlet.NoHandlerFoundException;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
+
+    // Fallback 이미지 반환 Exception Handler
+    @ExceptionHandler(ImageFallbackException.class)
+    public ResponseEntity<ApiResponse<ImageInfoListResponse>> handleImageFallbackException(ImageFallbackException e) {
+        // 센트리 알림
+        Sentry.captureException(e);
+
+        ErrorCode errorCode = e.getErrorCode();
+
+        // Exception에서 imageInfoListResponse 추출
+        ImageInfoListResponse imageInfoListResponse = e.getImageInfoListResponse();
+
+        // ApiResponse에 담기 (가독성을 위한 분리)
+        ApiResponse<ImageInfoListResponse> response = ApiResponse.fail(
+                errorCode.getCode(),
+                imageInfoListResponse,
+                "이미지 생성 중 예외가 발생하였습니다"
+        );
+
+        return ResponseEntity.internalServerError().body(response);
+    }
 
     @ExceptionHandler(GeneralException.class)
     public ResponseEntity<ApiResponse<Void>> handleGeneralException(GeneralException e) {
