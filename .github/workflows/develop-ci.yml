@@ -14,6 +14,18 @@ jobs:
     permissions:
       checks: write
       pull-requests: write
+
+    services:
+      redis:
+        image: redis:latest # redis 이미지
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
     steps:
       - name: checkout the code
         uses: actions/checkout@v4
@@ -32,12 +44,6 @@ jobs:
         run: |
           mkdir -p ./src/main/resources
           echo "${{ secrets.APPLICATION_TEST }}" > ./src/main/resources/application-test.yml
-
-      - name: set up redis
-        uses: supercharge/redis-github-action@1.7.0
-        with:
-          redis-version: 7
-          # host와 port 설정을 안해놓으면 자동으로 'redis', 6379로 세팅됨
 
       - name: Run Gradle build and tests
         run: |
