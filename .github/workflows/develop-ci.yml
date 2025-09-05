@@ -21,12 +21,24 @@ jobs:
         ports:
           - 6379:6379
         options: >-
-          --health-cmd "redis-cli ping"
+          --health-cmd "redis-cli ping || exit 1"
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
 
     steps:
+      # redis 띄워지는걸 기다리기
+      - name: Wait for Redis
+        run: |
+          for i in {1..10}; do
+            if nc -z redis 6379; then
+              echo "Redis is up!"
+              break
+            fi
+            echo "Waiting for Redis..."
+            sleep 3
+          done
+
       - name: checkout the code
         uses: actions/checkout@v4
       - name: JDK 17 설정
