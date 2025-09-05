@@ -1,7 +1,9 @@
 package or.sopt.houme.domain.admin.service;
 
 import lombok.RequiredArgsConstructor;
+import or.sopt.houme.domain.admin.controller.dto.tag.AdminTagGetAllResponseDTO;
 import or.sopt.houme.domain.admin.controller.dto.tag.AdminTagRequestDTO;
+import or.sopt.houme.domain.admin.controller.dto.tag.AdminTagGetResponseDTO;
 import or.sopt.houme.domain.taste.entity.Tag;
 import or.sopt.houme.domain.taste.repository.tag.TagRepository;
 import or.sopt.houme.global.api.ErrorCode;
@@ -9,6 +11,7 @@ import or.sopt.houme.global.api.GeneralException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -29,6 +32,23 @@ public class AdminTagServiceImpl implements AdminTagService {
 
         Tag newTag = Tag.of(dto.tagName(), dto.priority(), dto.tag_name_kr(), dto.tag_prompt());
         tagRepository.save(newTag);
+    }
 
+    @Override
+    public AdminTagGetAllResponseDTO getAll() {
+
+        List<Tag> tags = tagRepository.findAll();
+
+        List<AdminTagGetResponseDTO> responseDTOS = tags.stream()
+                .map(tag -> new AdminTagGetResponseDTO(
+                        tag.getPriority(),
+                        tag.getTagName(),
+                        tag.getTagNameKr(),
+                        tag.getTagPrompt()))
+                .toList();
+
+        AdminTagGetAllResponseDTO result = new AdminTagGetAllResponseDTO(responseDTOS);
+
+        return result;
     }
 }
