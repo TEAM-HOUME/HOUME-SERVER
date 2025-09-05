@@ -33,6 +33,12 @@ jobs:
           mkdir -p ./src/main/resources
           echo "${{ secrets.APPLICATION_TEST }}" > ./src/main/resources/application-test.yml
 
+      - name: set up redis
+        uses: supercharge/redis-github-action@1.7.0
+        with:
+          redis-version: 7
+          # host와 port 설정을 안해놓으면 자동으로 'redis', 6379로 세팅됨
+
       - name: Run Gradle build and tests
         run: |
           ./gradlew clean build
