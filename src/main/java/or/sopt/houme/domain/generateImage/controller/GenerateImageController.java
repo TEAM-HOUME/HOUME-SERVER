@@ -74,10 +74,6 @@ public class GenerateImageController {
     ){
         ImageInfoResponse fallBackImage = generateImageFacade.getFallBackImage(userDetails.getUser(), houseId);
 
-        if (fallBackImage == null) {
-            return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).body(ApiResponse.fail(ErrorCode.RETRY_GET_IMAGE.getCode(), ErrorCode.RETRY_GET_IMAGE.getMsg()));
-        }
-
         return ResponseEntity.ok(ApiResponse.ok(fallBackImage));
     }
 

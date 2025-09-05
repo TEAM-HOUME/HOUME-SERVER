@@ -439,7 +439,9 @@ public class GenerateImageFacade {
         try {
             generateImage = generateImageService.findGenerateImageByHouseId(houseId);
         } catch (Exception e) {
-            return null;
+
+            // 다시 시도하라는 예외처리
+            throw new GeneralException(ErrorCode.RETRY_GET_IMAGE);
         }
 
         // 반전여부
