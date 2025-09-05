@@ -1,7 +1,6 @@
 package or.sopt.houme.global.api;
 
 import io.sentry.Sentry;
-import or.sopt.houme.domain.generateImage.dto.response.ImageInfoListResponse;
 import or.sopt.houme.global.api.handler.ImageFallbackException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
