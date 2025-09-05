@@ -36,9 +36,6 @@ public class GenerateImageController {
 
         ImageInfoResponse imageInfoResponse = generateImageFacade.generateImage(userDetails.getUser(), request);
 
-        if (imageInfoResponse == null) {
-            return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).body(ApiResponse.fail(ErrorCode.RETRY_GET_IMAGE.getCode(), ErrorCode.RETRY_GET_IMAGE.getMsg()));
-        }
         return ResponseEntity.ok(ApiResponse.ok(imageInfoResponse));
     }
 
@@ -51,13 +48,6 @@ public class GenerateImageController {
             @RequestBody @Valid GenerateImageRequest request){
 
         ImageInfoResponse imageInfoResponse = generateImageFacade.generateImageByFastApi(userDetails.getUser(), request);
-
-        if (imageInfoResponse == null) {
-            return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).body(ApiResponse.fail(ErrorCode.RETRY_GET_IMAGE.getCode(), ErrorCode.RETRY_GET_IMAGE.getMsg()));
-        }
-        if (imageInfoResponse.imageUrl().equals(S3Constant.FALL_BACK_IMAGE)){
-            return ResponseEntity.internalServerError().body(ApiResponse.fail(500,imageInfoResponse,"이미지 생성 중 예외가 발생하였습니다"));
-        }
 
         return ResponseEntity.ok(ApiResponse.ok(imageInfoResponse));
     }

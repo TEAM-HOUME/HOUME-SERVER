@@ -21,19 +21,19 @@ public class GlobalExceptionHandler {
 
     // Fallback 이미지 반환 Exception Handler
     @ExceptionHandler(ImageFallbackException.class)
-    public ResponseEntity<ApiResponse<ImageInfoListResponse>> handleImageFallbackException(ImageFallbackException e) {
+    public ResponseEntity<ApiResponse<Object>> handleImageFallbackException(ImageFallbackException e) {
         // 센트리 알림
         Sentry.captureException(e);
 
         ErrorCode errorCode = e.getErrorCode();
 
-        // Exception에서 imageInfoListResponse 추출
-        ImageInfoListResponse imageInfoListResponse = e.getImageInfoListResponse();
+        // Exception에서 imageInfo 추출 (ImageInfoList or ImageInfo)Response
+        Object imageInfo = e.getImageInfo();
 
         // ApiResponse에 담기 (가독성을 위한 분리)
-        ApiResponse<ImageInfoListResponse> response = ApiResponse.fail(
+        ApiResponse<Object> response = ApiResponse.fail(
                 errorCode.getCode(),
-                imageInfoListResponse,
+                imageInfo,
                 "이미지 생성 중 예외가 발생하였습니다"
         );
 

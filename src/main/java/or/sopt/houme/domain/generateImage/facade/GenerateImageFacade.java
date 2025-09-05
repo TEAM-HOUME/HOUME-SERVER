@@ -128,16 +128,27 @@ public class GenerateImageFacade {
 
             } catch (Exception e){
 
-                return null;
+                // 이미지 재요청 시도하라는 예외 처리
+                throw new GeneralException(ErrorCode.RETRY_GET_IMAGE);
             }
 
-            // 이미지 생성 여부 업데이트
-            userService.updateHasGeneratedImage(user);
-
-            return ImageInfoResponse.of(generateImage.getId(), generateImage.getUrl(),
+            // 이미지 반환 ImageInfoResponse 생성
+            ImageInfoResponse imageInfoResponse = ImageInfoResponse.of(generateImage.getId(), generateImage.getUrl(),
                     generateImageRequest.floorPlan().isMirror(),
                     house.getEquilibrium().getDescription(), house.getForm().getDescription(),
                     tag.getTagNameKr(), user.getName());
+
+            // 만약 Fallback 이미지라면, 예외처리
+            if (generateImage.getUrl().equals(S3Constant.FALL_BACK_IMAGE)){
+                throw new ImageFallbackException(ErrorCode.GENERATED_IMAGE_EXCEPTION, imageInfoResponse);
+            }
+
+            // 먼저 예외 처리 하고 업데이트하기
+            // 이미지 생성 여부 업데이트
+            userService.updateHasGeneratedImage(user);
+
+            return imageInfoResponse;
+
         } catch (GenerateImageException e) {
           throw e;
         } catch (Exception e){
@@ -219,16 +230,25 @@ public class GenerateImageFacade {
 
             } catch (Exception e){
 
-                return null;
+                // 이미지 생성 중 오류가 발생하면 재요청하라는 예외 반환
+                throw new GeneralException(ErrorCode.RETRY_GET_IMAGE);
+            }
+
+            // 이미지 반환 ImageInfoResponse 생성
+            ImageInfoResponse imageInfoResponse = ImageInfoResponse.of(generateImage.getId(), generateImage.getUrl(),
+                    generateImageRequest.floorPlan().isMirror(),
+                    house.getEquilibrium().getDescription(), house.getForm().getDescription(),
+                    tag.getTagNameKr(), user.getName());
+
+            // 만약 Fallback 이미지라면, 예외처리
+            if (generateImage.getUrl().equals(S3Constant.FALL_BACK_IMAGE)){
+                throw new ImageFallbackException(ErrorCode.GENERATED_IMAGE_EXCEPTION, imageInfoResponse);
             }
 
             // 이미지 생성 여부 업데이트
             userService.updateHasGeneratedImage(user);
 
-            return ImageInfoResponse.of(generateImage.getId(), generateImage.getUrl(),
-                    generateImageRequest.floorPlan().isMirror(),
-                    house.getEquilibrium().getDescription(), house.getForm().getDescription(),
-                    tag.getTagNameKr(), user.getName());
+            return imageInfoResponse;
         } catch (GenerateImageException e) {
             throw e;
         } catch (Exception e){
@@ -394,6 +414,7 @@ public class GenerateImageFacade {
                 .map(result -> generateImageService.createGenerateImage(result, house))
                 .toList();
 
+        // 사용자 계정 이미지 생성여부 업데이트
         userService.updateHasGeneratedImage(user);
 
         // 반환 리스트 생성
@@ -421,10 +442,14 @@ public class GenerateImageFacade {
             return null;
         }
 
+        // 반전여부
         boolean isMirror = houseService.getIsMirrorByHouseId(houseId);
+        // 평형
         String equilibrium = houseById.getEquilibrium().getDescription();
+        // 집 형태
         String houseForm = houseById.getForm().getDescription();
 
+        // 태그 찾기
         Tag tag = tagService.findTagByUserIdAndImageId(user.getId(), generateImage.getId());
 
         return ImageInfoResponse.of(generateImage.getId(), generateImage.getUrl(), isMirror, equilibrium, houseForm, tag.getTagNameKr(), user.getName());

@@ -1,7 +1,6 @@
 package or.sopt.houme.global.api.handler;
 
 import lombok.Getter;
-import or.sopt.houme.domain.generateImage.dto.response.ImageInfoListResponse;
 import or.sopt.houme.global.api.ErrorCode;
 import or.sopt.houme.global.api.GeneralException;
 
@@ -9,10 +8,10 @@ import or.sopt.houme.global.api.GeneralException;
 @Getter
 public class ImageFallbackException extends GeneralException {
 
-  private final ImageInfoListResponse imageInfoListResponse;
+  private final Object imageInfo;
 
-    public ImageFallbackException(ErrorCode errorCode, ImageInfoListResponse imageInfoListResponse) {
+    public ImageFallbackException(ErrorCode errorCode, Object imageInfo) {
         super(errorCode);
-        this.imageInfoListResponse = imageInfoListResponse;   // 사용자 반환을 위한 ImageInfoListResponse
+        this.imageInfo = imageInfo;   // 사용자 반환을 위한 Object (ImageInfoListResponse와 ImageInfoResponse 둘 다 처리하기 위함)
     }
 }
