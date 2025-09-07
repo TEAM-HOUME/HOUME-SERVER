@@ -201,6 +201,34 @@
             <button id="get-all-tags-button" class="btn btn-secondary">모든 태그 보기</button>
             <div id="get-all-tags-result" class="api-result"></div>
         </div>
+
+        <hr class="my-4">
+
+        <div id="update-tag-form-container">
+            <h4 class="text-center">태그 수정</h4>
+            <form id="update-tag-form">
+                <div class="mb-3">
+                    <label for="updateTagNameKr" class="form-label">태그 이름 (한글)</label>
+                    <input type="text" class="form-control" id="updateTagNameKr" required>
+                </div>
+                <div class="mb-3">
+                    <label for="updateTagPriority" class="form-label">새 우선순위</label>
+                    <input type="number" class="form-control" id="updateTagPriority">
+                </div>
+                <div class="mb-3">
+                    <label for="updateTagNameEng" class="form-label">새 태그 이름 (영어)</label>
+                    <input type="text" class="form-control" id="updateTagNameEng">
+                </div>
+                <div class="mb-3">
+                    <label for="updateTagPrompt" class="form-label">새 태그 프롬프트</label>
+                    <textarea class="form-control" id="updateTagPrompt" rows="3"></textarea>
+                </div>
+                <div class="d-grid">
+                    <button type="submit" class="btn btn-warning">태그 수정</button>
+                </div>
+            </form>
+            <div id="update-tag-api-result" class="api-result"></div>
+        </div>
     </div>
 
 </div>
@@ -312,6 +340,21 @@
             }
 
             testApiCall(accessToken, resultDiv, '/api/v1/admin/tags', 'GET', null, displayTagsAsTable);
+        });
+
+        document.getElementById('update-tag-form').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const accessToken = localStorage.getItem('accessToken');
+            const resultDiv = document.getElementById('update-tag-api-result');
+
+            const updateData = {
+                tagNameKr: document.getElementById('updateTagNameKr').value,
+                newPriority: document.getElementById('updateTagPriority').value ? parseInt(document.getElementById('updateTagPriority').value, 10) : null,
+                newTagNameEng: document.getElementById('updateTagNameEng').value,
+                newTagPrompt: document.getElementById('updateTagPrompt').value
+            };
+
+            testApiCall(accessToken, resultDiv, '/api/v1/admin/tag', 'PATCH', updateData);
         });
     };
 

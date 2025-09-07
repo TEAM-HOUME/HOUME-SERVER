@@ -1,6 +1,7 @@
 package or.sopt.houme.domain.admin.service;
 
 import lombok.RequiredArgsConstructor;
+import or.sopt.houme.domain.admin.controller.dto.AdminTagUpdateRequestDTO;
 import or.sopt.houme.domain.admin.controller.dto.tag.AdminTagGetAllResponseDTO;
 import or.sopt.houme.domain.admin.controller.dto.tag.AdminTagRequestDTO;
 import or.sopt.houme.domain.admin.controller.dto.tag.AdminTagGetResponseDTO;
@@ -21,6 +22,7 @@ public class AdminTagServiceImpl implements AdminTagService {
 
     private final TagRepository tagRepository;
 
+
     @Override
     public void create(AdminTagRequestDTO dto){
 
@@ -33,6 +35,7 @@ public class AdminTagServiceImpl implements AdminTagService {
         Tag newTag = Tag.of(dto.tagName(), dto.priority(), dto.tag_name_kr(), dto.tag_prompt());
         tagRepository.save(newTag);
     }
+
 
     @Override
     public AdminTagGetAllResponseDTO getAll() {
@@ -47,8 +50,16 @@ public class AdminTagServiceImpl implements AdminTagService {
                         tag.getTagPrompt()))
                 .toList();
 
-        AdminTagGetAllResponseDTO result = new AdminTagGetAllResponseDTO(responseDTOS);
+        return new AdminTagGetAllResponseDTO(responseDTOS);
+    }
 
-        return result;
+
+    @Override
+    public void update(AdminTagUpdateRequestDTO dto){
+
+        Tag byTagNameKr = tagRepository.findByTagNameKr(dto.tagNameKr())
+                .orElseThrow(()-> new GeneralException(ErrorCode.NOT_FOUND_TAG_ENTITY));
+
+        byTagNameKr.update(dto);
     }
 }

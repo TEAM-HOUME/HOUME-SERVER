@@ -2,6 +2,7 @@ package or.sopt.houme.domain.taste.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import or.sopt.houme.domain.admin.controller.dto.AdminTagUpdateRequestDTO;
 
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -36,6 +37,19 @@ public class Tag {
                 .tagNameKr(tagNameKr)
                 .tagPrompt(tagPrompt)
                 .build();
+    }
+
+    public void update(AdminTagUpdateRequestDTO dto) {
+
+        if (dto.newTagNameEng() != null) {
+            this.tagName = dto.newTagNameEng();
+        }
+        if (dto.newPriority() != null) {
+            this.priority = dto.newPriority();
+        }
+        if (dto.newTagPrompt() != null) {
+            this.tagPrompt = dto.newTagPrompt();
+        }
     }
 
 }

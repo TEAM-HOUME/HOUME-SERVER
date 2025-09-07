@@ -3,6 +3,7 @@ package or.sopt.houme.domain.admin.controller;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import or.sopt.houme.domain.admin.controller.dto.AdminTagUpdateRequestDTO;
 import or.sopt.houme.domain.admin.controller.dto.tag.AdminTagGetAllResponseDTO;
 import or.sopt.houme.domain.admin.controller.dto.tag.AdminTagRequestDTO;
 import or.sopt.houme.domain.admin.controller.dto.tag.AdminTagGetResponseDTO;
@@ -29,6 +30,7 @@ public class AdminTagController {
         return ResponseEntity.ok(ApiResponse.ok("성공적으로 스타일 태그가 생성 되었습니다"));
     }
 
+
     @GetMapping("/tags")
     @Operation(summary = "스타일 태그 조회 API")
     public ResponseEntity<ApiResponse<AdminTagGetAllResponseDTO>> getTags(){
@@ -36,5 +38,14 @@ public class AdminTagController {
         AdminTagGetAllResponseDTO all = adminTagService.getAll();
 
         return ResponseEntity.ok(ApiResponse.ok(all));
+    }
+
+
+    @PatchMapping("/tag")
+    @Operation(summary = "스타일 태그 수정 API")
+    public ResponseEntity<ApiResponse<String>> updateTag(@RequestBody AdminTagUpdateRequestDTO dto){
+
+        adminTagService.update(dto);
+        return ResponseEntity.ok(ApiResponse.ok("성공적으로 스타일 태그가 업데이트 되었습니다"));
     }
 }
