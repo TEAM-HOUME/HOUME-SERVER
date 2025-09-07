@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import or.sopt.houme.domain.admin.controller.dto.AdminTagUpdateRequestDTO;
+import or.sopt.houme.domain.admin.controller.dto.tag.AdminTagDeleteRequestDTO;
 import or.sopt.houme.domain.admin.controller.dto.tag.AdminTagGetAllResponseDTO;
 import or.sopt.houme.domain.admin.controller.dto.tag.AdminTagRequestDTO;
 import or.sopt.houme.domain.admin.controller.dto.tag.AdminTagGetResponseDTO;
@@ -47,5 +48,13 @@ public class AdminTagController {
 
         adminTagService.update(dto);
         return ResponseEntity.ok(ApiResponse.ok("성공적으로 스타일 태그가 업데이트 되었습니다"));
+    }
+
+
+    @DeleteMapping("/tag")
+    @Operation(summary = "스타일 태그 삭제 API")
+    public ResponseEntity<ApiResponse<String>> deleteTag(@RequestBody AdminTagDeleteRequestDTO dto){
+        adminTagService.delete(dto);
+        return ResponseEntity.ok(ApiResponse.ok("성공적으로 스타일 태그가 삭제 되었습니다"));
     }
 }

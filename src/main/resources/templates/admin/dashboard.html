@@ -417,7 +417,7 @@
     function displayTagsAsTable(data, resultDiv) {
         const tags = data.data.tagGetResponseDTOS;
         if (Array.isArray(tags)) {
-            let tableHTML = '<table class="table table-bordered table-striped mt-3"><thead><tr><th>우선순위</th><th>태그 이름 (영어)</th><th>태그 이름 (한글)</th><th>태그 프롬프트</th></tr></thead><tbody>';
+            let tableHTML = '<table class="table table-bordered table-striped mt-3"><thead><tr><th>우선순위</th><th>태그 이름 (영어)</th><th>태그 이름 (한글)</th><th>태그 프롬프트</th><th>작업</th></tr></thead><tbody>';
             tags.forEach((tag, index) => {
                 const fullPromptId = `fullPrompt-${index}`;
                 const toggleButtonId = `toggleButton-${index}`;
@@ -432,6 +432,7 @@
                                     </button>
                                     <pre id="${fullPromptId}" style="display: none; white-space: pre-wrap;">${tag.tag_prompt}</pre>
                                 </td>
+                                <td><button class="btn btn-danger btn-sm" onclick="deleteTag('${tag.tag_name_kr}')">태그 삭제</button></td>
                               </tr>`;
             });
             tableHTML += '</tbody></table>';
@@ -439,6 +440,31 @@
         } else {
             resultDiv.textContent = 'API 응답: ' + JSON.stringify(data.data, null, 2);
         }
+    }
+
+    function deleteTag(tagNameKr) {
+        if (!confirm(`'${tagNameKr}' 태그를 정말로 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.`)) {
+            return;
+        }
+
+        const accessToken = localStorage.getItem('accessToken');
+        const resultDiv = document.getElementById('get-all-tags-result');
+
+        const deleteData = {
+            tagNameKr: tagNameKr
+        };
+
+        testApiCall(accessToken, resultDiv, '/api/v1/admin/tag', 'DELETE', deleteData, () => {
+            const successMsg = document.createElement('div');
+            successMsg.className = 'alert alert-success';
+            successMsg.textContent = '태그가 성공적으로 삭제되었습니다. 목록을 새로고침합니다.';
+            resultDiv.prepend(successMsg);
+
+            setTimeout(() => {
+                document.getElementById('get-all-tags-button').click(); 
+                document.getElementById('get-all-tags-button').click(); 
+            }, 1500);
+        });
     }
 
     function togglePrompt(fullPromptId, toggleButtonId) {

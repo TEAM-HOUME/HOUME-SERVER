@@ -2,6 +2,7 @@ package or.sopt.houme.domain.admin.service;
 
 import lombok.RequiredArgsConstructor;
 import or.sopt.houme.domain.admin.controller.dto.AdminTagUpdateRequestDTO;
+import or.sopt.houme.domain.admin.controller.dto.tag.AdminTagDeleteRequestDTO;
 import or.sopt.houme.domain.admin.controller.dto.tag.AdminTagGetAllResponseDTO;
 import or.sopt.houme.domain.admin.controller.dto.tag.AdminTagRequestDTO;
 import or.sopt.houme.domain.admin.controller.dto.tag.AdminTagGetResponseDTO;
@@ -61,5 +62,16 @@ public class AdminTagServiceImpl implements AdminTagService {
                 .orElseThrow(()-> new GeneralException(ErrorCode.NOT_FOUND_TAG_ENTITY));
 
         byTagNameKr.update(dto);
+    }
+
+
+    @Override
+    public void delete(AdminTagDeleteRequestDTO dto){
+
+        Tag byTagNameKr = tagRepository.findByTagNameKr(dto.tagNameKr())
+                .orElseThrow(()-> new GeneralException(ErrorCode.NOT_FOUND_TAG_ENTITY));
+
+        tagRepository.delete(byTagNameKr);
+
     }
 }
