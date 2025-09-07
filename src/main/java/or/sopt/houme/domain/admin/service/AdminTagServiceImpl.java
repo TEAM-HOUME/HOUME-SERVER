@@ -41,7 +41,7 @@ public class AdminTagServiceImpl implements AdminTagService {
     @Override
     public AdminTagGetAllResponseDTO getAll() {
 
-        List<Tag> tags = tagRepository.findAll();
+        List<Tag> tags = tagRepository.findAllByOrderByPriorityAsc();
 
         List<AdminTagGetResponseDTO> responseDTOS = tags.stream()
                 .map(tag -> new AdminTagGetResponseDTO(
