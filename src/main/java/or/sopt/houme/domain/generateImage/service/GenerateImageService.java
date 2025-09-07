@@ -1,9 +1,7 @@
 package or.sopt.houme.domain.generateImage.service;
 
-import or.sopt.houme.domain.house.dto.request.IsLikeRequest;
 import or.sopt.houme.domain.generateImage.entity.GenerateImage;
 import or.sopt.houme.domain.house.entity.House;
-import or.sopt.houme.domain.user.entity.User;
 import or.sopt.houme.global.dto.ImageUploadResponseDTO;
 
 public interface GenerateImageService {

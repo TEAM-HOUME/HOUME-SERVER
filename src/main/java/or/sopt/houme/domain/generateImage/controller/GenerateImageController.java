@@ -10,14 +10,9 @@ import or.sopt.houme.domain.generateImage.dto.response.ImageInfoResponse;
 import or.sopt.houme.domain.generateImage.facade.GenerateImageFacade;
 import or.sopt.houme.domain.user.controller.dto.CustomUserDetails;
 import or.sopt.houme.global.api.ApiResponse;
-import or.sopt.houme.global.api.ErrorCode;
-import or.sopt.houme.global.util.constant.S3Constant;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/api")
@@ -36,9 +31,6 @@ public class GenerateImageController {
 
         ImageInfoResponse imageInfoResponse = generateImageFacade.generateImage(userDetails.getUser(), request);
 
-        if (imageInfoResponse == null) {
-            return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).body(ApiResponse.fail(ErrorCode.RETRY_GET_IMAGE.getCode(), ErrorCode.RETRY_GET_IMAGE.getMsg()));
-        }
         return ResponseEntity.ok(ApiResponse.ok(imageInfoResponse));
     }
 
@@ -52,13 +44,6 @@ public class GenerateImageController {
 
         ImageInfoResponse imageInfoResponse = generateImageFacade.generateImageByFastApi(userDetails.getUser(), request);
 
-        if (imageInfoResponse == null) {
-            return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).body(ApiResponse.fail(ErrorCode.RETRY_GET_IMAGE.getCode(), ErrorCode.RETRY_GET_IMAGE.getMsg()));
-        }
-        if (imageInfoResponse.imageUrl().equals(S3Constant.FALL_BACK_IMAGE)){
-            return ResponseEntity.internalServerError().body(ApiResponse.fail(500,imageInfoResponse,"이미지 생성 중 예외가 발생하였습니다"));
-        }
-
         return ResponseEntity.ok(ApiResponse.ok(imageInfoResponse));
     }
 
@@ -70,19 +55,7 @@ public class GenerateImageController {
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @RequestBody @Valid GenerateImageRequest request){
 
-        List<ImageInfoResponse> imageInfoResponses = generateImageFacade.generateImageBy2ea(userDetails.getUser(), request);
-
-        if (imageInfoResponses == null) {
-            return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).body(ApiResponse.fail(ErrorCode.RETRY_GET_IMAGE.getCode(), ErrorCode.RETRY_GET_IMAGE.getMsg()));
-        }
-
-        ImageInfoListResponse imageInfoListResponse = ImageInfoListResponse.of(imageInfoResponses);
-
-        for (ImageInfoResponse imageInfoResponse : imageInfoListResponse.imageInfoResponses()){
-            if (imageInfoResponse.imageUrl().equals(S3Constant.FALL_BACK_IMAGE)){
-                return ResponseEntity.internalServerError().body(ApiResponse.fail(500,imageInfoListResponse,"이미지 생성 중 예외가 발생하였습니다"));
-            }
-        }
+        ImageInfoListResponse imageInfoListResponse = generateImageFacade.generateImageBy2ea(userDetails.getUser(), request);
 
         return ResponseEntity.ok(ApiResponse.ok(imageInfoListResponse));
     }
@@ -95,10 +68,6 @@ public class GenerateImageController {
             @RequestParam Long houseId
     ){
         ImageInfoResponse fallBackImage = generateImageFacade.getFallBackImage(userDetails.getUser(), houseId);
-
-        if (fallBackImage == null) {
-            return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).body(ApiResponse.fail(ErrorCode.RETRY_GET_IMAGE.getCode(), ErrorCode.RETRY_GET_IMAGE.getMsg()));
-        }
 
         return ResponseEntity.ok(ApiResponse.ok(fallBackImage));
     }
