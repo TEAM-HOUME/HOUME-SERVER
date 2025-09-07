@@ -3,235 +3,194 @@
 <head>
     <title>HouMe 어드민 대시보드</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         body {
-            background-color: #f8f9fa;
+            background-color: #f0f2f5;
+            display: flex;
         }
-        .dashboard-container {
-            max-width: 800px;
-            margin: 100px auto;
-            padding: 40px;
+        #sidebar {
+            width: 250px;
+            background: #343a40;
+            color: white;
+            height: 100vh;
+            position: fixed;
+            top: 0;
+            left: 0;
+            padding-top: 20px;
+        }
+        #sidebar .nav-link {
+            color: #adb5bd;
+            padding: 10px 20px;
+            display: flex;
+            align-items: center;
+        }
+        #sidebar .nav-link:hover, #sidebar .nav-link.active {
+            color: #fff;
+            background: #495057;
+        }
+        #sidebar .nav-link i {
+            margin-right: 10px;
+        }
+        #content {
+            margin-left: 250px;
+            padding: 30px;
+            width: calc(100% - 250px);
+        }
+        .content-section {
+            display: none;
+        }
+        .content-section.active {
+            display: block;
+        }
+        .card {
+            margin-bottom: 20px;
+            box-shadow: 0 0 15px rgba(0,0,0,0.05);
+            border: none;
+        }
+        .card-header {
             background-color: #fff;
-            border-radius: 10px;
-            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
-        }
-        .management-section {
-            border: 1px solid #dee2e6;
-            border-radius: .5rem;
-            padding: 1.5rem;
-            margin-top: 2rem;
+            border-bottom: 1px solid #eee;
         }
         .api-result {
             margin-top: 20px;
-            padding: 10px;
+            padding: 15px;
             border-radius: 5px;
-            text-align: left;
+            background-color: #e9ecef;
             white-space: pre-wrap;
             word-wrap: break-word;
+            font-family: monospace;
         }
-        .text-center {
-            text-align: center;
+        .btn-primary {
+            background-color: #007bff;
+            border-color: #007bff;
+        }
+        .btn-secondary {
+            background-color: #6c757d;
+            border-color: #6c757d;
         }
     </style>
 </head>
 <body>
-<div class="dashboard-container">
-    <div class="text-center">
-        <h1>HouMe 어드민 페이지</h1>
-        <p class="lead">성공적으로 로그인 되었습니다.</p>
-    </div>
+
+<div id="sidebar">
+    <h3 class="text-center mb-4">HouMe Admin</h3>
+    <ul class="nav flex-column">
+        <li class="nav-item">
+            <a class="nav-link active" href="#" data-target="furniture-management">
+                <i class="fas fa-couch"></i>가구 관리
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="#" data-target="tag-management">
+                <i class="fas fa-tags"></i>태그 관리
+            </a>
+        </li>
+    </ul>
+</div>
+
+<div id="content">
+    <h1 class="mb-4">대시보드</h1>
 
     <!-- 가구 관리 섹션 -->
-    <div class="management-section">
-        <h3 class="text-center mb-4">가구 관리</h3>
-
-        <ul class="nav nav-pills justify-content-center mb-4">
-            <li class="nav-item"><a class="nav-link" href="#get-furnitures-result">등록된 가구 보기</a></li>
-            <li class="nav-item"><a class="nav-link" href="#get-prompt-form-container">프롬프트 조회</a></li>
-            <li class="nav-item"><a class="nav-link" href="#furniture-form-container">신규 가구 등록</a></li>
-            <li class="nav-item"><a class="nav-link" href="#furniture-prompt-form-container">가구 프롬프트 등록</a></li>
-            <li class="nav-item"><a class="nav-link" href="#update-furniture-form-container">가구 정보 수정</a></li>
-            <li class="nav-item"><a class="nav-link" href="#create-tag-form-container">스타일 태그 관리</a></li>
-        </ul>
-        
-        <div id="get-furnitures-container" class="text-center">
-            <p>버튼을 눌러 등록된 모든 가구를 조회합니다.</p>
-            <button id="get-furnitures-button" class="btn btn-secondary">등록된 가구 보기</button>
-            <div id="get-furnitures-result" class="api-result"></div>
+    <div id="furniture-management" class="content-section active">
+        <h2>가구 관리</h2>
+        <div class="card">
+            <div class="card-header">등록된 가구</div>
+            <div class="card-body">
+                <button id="get-furnitures-button" class="btn btn-secondary">등록된 가구 보기</button>
+                <div id="get-furnitures-result" class="api-result"></div>
+            </div>
         </div>
-
-        <hr class="my-4">
-
-        <div id="get-prompt-form-container">
-            <h4 class="text-center">프롬프트 조회</h4>
-            <form id="get-prompt-form">
-                <div class="mb-3">
-                    <label for="promptQueryFurnitureNameKr" class="form-label">가구 이름 (한글)</label>
-                    <input type="text" class="form-control" id="promptQueryFurnitureNameKr" required>
-                </div>
-                <div class="mb-3">
-                    <label for="promptQueryTagId" class="form-label">태그 ID</label>
-                    <input type="number" class="form-control" id="promptQueryTagId" required>
-                </div>
-                <div class="d-grid">
-                    <button type="submit" class="btn btn-info">프롬프트 조회</button>
-                </div>
-            </form>
-            <div id="get-prompt-result" class="api-result"></div>
-        </div>
-        
-        <hr class="my-4">
-
-        <div id="furniture-form-container">
-            <h4 class="text-center">신규 가구 등록</h4>
-            <form id="furniture-form">
-                <div class="mb-3">
-                    <label for="furnitureNameKr" class="form-label">가구 이름 (한글)</label>
-                    <input type="text" class="form-control" id="furnitureNameKr" required>
-                </div>
-                <div class="mb-3">
-                    <label for="furnitureNameEng" class="form-label">가구 이름 (영어)</label>
-                    <input type="text" class="form-control" id="furnitureNameEng" required>
-                </div>
-                <div class="mb-3 form-check">
-                    <input type="checkbox" class="form-check-input" id="isBed">
-                    <label class="form-check-label" for="isBed">침대 여부</label>
-                </div>
-                <div class="d-grid">
+        <div class="card">
+            <div class="card-header">신규 가구 등록</div>
+            <div class="card-body">
+                <form id="furniture-form">
+                    <div class="mb-3"><label for="furnitureNameKr" class="form-label">가구 이름 (한글)</label><input type="text" class="form-control" id="furnitureNameKr" required></div>
+                    <div class="mb-3"><label for="furnitureNameEng" class="form-label">가구 이름 (영어)</label><input type="text" class="form-control" id="furnitureNameEng" required></div>
+                    <div class="mb-3 form-check"><input type="checkbox" class="form-check-input" id="isBed"><label class="form-check-label" for="isBed">침대 여부</label></div>
                     <button type="submit" class="btn btn-primary">가구 등록</button>
-                </div>
-            </form>
-            <div id="furniture-api-result" class="api-result"></div>
+                </form>
+                <div id="furniture-api-result" class="api-result"></div>
+            </div>
         </div>
-
-        <hr class="my-4">
-
-        <div id="furniture-prompt-form-container">
-            <h4 class="text-center">가구 프롬프트 등록</h4>
-            <form id="furniture-prompt-form">
-                <div class="mb-3">
-                    <label for="promptFurnitureNameKr" class="form-label">가구 이름 (한글)</label>
-                    <input type="text" class="form-control" id="promptFurnitureNameKr" required>
-                </div>
-                <div class="mb-3">
-                    <label for="prompt" class="form-label">프롬프트</label>
-                    <textarea class="form-control" id="prompt" rows="3" required></textarea>
-                </div>
-                <div class="mb-3">
-                    <label for="tagId" class="form-label">스타일 태그</label>
-                    <select class="form-select" id="tagId" required>
-                        <option value="" selected disabled>태그를 선택하세요...</option>
-                    </select>
-                </div>
-                <div class="d-grid">
+        <div class="card">
+            <div class="card-header">가구 프롬프트 등록</div>
+            <div class="card-body">
+                <form id="furniture-prompt-form">
+                    <div class="mb-3"><label for="promptFurnitureNameKr" class="form-label">가구 이름 (한글)</label><input type="text" class="form-control" id="promptFurnitureNameKr" required></div>
+                    <div class="mb-3"><label for="prompt" class="form-label">프롬프트</label><textarea class="form-control" id="prompt" rows="3" required></textarea></div>
+                    <div class="mb-3"><label for="tagId" class="form-label">스타일 태그</label><select class="form-select" id="tagId" required><option value="" selected disabled>태그를 선택하세요...</option></select></div>
                     <button type="submit" class="btn btn-success">프롬프트 등록</button>
-                </div>
-            </form>
-            <div id="furniture-prompt-api-result" class="api-result"></div>
+                </form>
+                <div id="furniture-prompt-api-result" class="api-result"></div>
+            </div>
         </div>
-
-        <hr class="my-4">
-
-        <div id="update-furniture-form-container">
-            <h4 class="text-center">가구 정보 수정</h4>
-            <form id="update-furniture-form">
-                <div class="mb-3">
-                    <label for="updateFurnitureNameKr" class="form-label">가구 이름 (한글)</label>
-                    <input type="text" class="form-control" id="updateFurnitureNameKr" required>
-                </div>
-                <div class="mb-3">
-                    <label for="updateTagId" class="form-label">태그 ID</label>
-                    <input type="number" class="form-control" id="updateTagId" required>
-                </div>
-                <div class="mb-3">
-                    <label for="newFurnitureNameEng" class="form-label">새 가구 이름 (영어)</label>
-                    <input type="text" class="form-control" id="newFurnitureNameEng">
-                </div>
-                <div class="mb-3">
-                    <label for="newPrompt" class="form-label">새 프롬프트</label>
-                    <textarea class="form-control" id="newPrompt" rows="3"></textarea>
-                </div>
-                <div class="d-grid">
+        <div class="card">
+            <div class="card-header">가구 정보 수정</div>
+            <div class="card-body">
+                <form id="update-furniture-form">
+                    <div class="mb-3"><label for="updateFurnitureNameKr" class="form-label">가구 이름 (한글)</label><input type="text" class="form-control" id="updateFurnitureNameKr" required></div>
+                    <div class="mb-3"><label for="updateTagId" class="form-label">태그 ID</label><input type="number" class="form-control" id="updateTagId" required></div>
+                    <div class="mb-3"><label for="newFurnitureNameEng" class="form-label">새 가구 이름 (영어)</label><input type="text" class="form-control" id="newFurnitureNameEng"></div>
+                    <div class="mb-3"><label for="newPrompt" class="form-label">새 프롬프트</label><textarea class="form-control" id="newPrompt" rows="3"></textarea></div>
                     <button type="submit" class="btn btn-warning">가구 정보 수정</button>
-                </div>
-            </form>
-            <div id="update-furniture-api-result" class="api-result"></div>
+                </form>
+                <div id="update-furniture-api-result" class="api-result"></div>
+            </div>
+        </div>
+         <div class="card">
+            <div class="card-header">프롬프트 조회</div>
+            <div class="card-body">
+                <form id="get-prompt-form">
+                    <div class="mb-3"><label for="promptQueryFurnitureNameKr" class="form-label">가구 이름 (한글)</label><input type="text" class="form-control" id="promptQueryFurnitureNameKr" required></div>
+                    <div class="mb-3"><label for="promptQueryTagId" class="form-label">태그 ID</label><input type="number" class="form-control" id="promptQueryTagId" required></div>
+                    <button type="submit" class="btn btn-info">프롬프트 조회</button>
+                </form>
+                <div id="get-prompt-result" class="api-result"></div>
+            </div>
         </div>
     </div>
 
-    <!-- 향후 무드보드 관리 등 다른 섹션 추가 가능 -->
-
-    <hr class="my-4">
-
-    <!-- 스타일 태그 관리 섹션 -->
-    <div class="management-section">
-        <h3 class="text-center mb-4">스타일 태그 관리</h3>
-
-        <div id="create-tag-form-container">
-            <h4 class="text-center">태그 생성</h4>
-            <form id="create-tag-form">
-                <div class="mb-3">
-                    <label for="tagPriority" class="form-label">우선순위</label>
-                    <input type="number" class="form-control" id="tagPriority" required>
-                </div>
-                <div class="mb-3">
-                    <label for="tagName" class="form-label">태그 이름 (영어)</label>
-                    <input type="text" class="form-control" id="tagName" required>
-                </div>
-                <div class="mb-3">
-                    <label for="tagNameKr" class="form-label">태그 이름 (한글)</label>
-                    <input type="text" class="form-control" id="tagNameKr" required>
-                </div>
-                <div class="mb-3">
-                    <label for="tagPrompt" class="form-label">태그 프롬프트</label>
-                    <textarea class="form-control" id="tagPrompt" rows="3" required></textarea>
-                </div>
-                <div class="d-grid">
+    <!-- 태그 관리 섹션 -->
+    <div id="tag-management" class="content-section">
+        <h2>태그 관리</h2>
+        <div class="card">
+            <div class="card-header">등록된 태그</div>
+            <div class="card-body">
+                <button id="get-all-tags-button" class="btn btn-secondary">모든 태그 보기</button>
+                <div id="get-all-tags-result" class="api-result"></div>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-header">태그 생성</div>
+            <div class="card-body">
+                <form id="create-tag-form">
+                    <div class="mb-3"><label for="tagPriority" class="form-label">우선순위</label><input type="number" class="form-control" id="tagPriority" required></div>
+                    <div class="mb-3"><label for="tagName" class="form-label">태그 이름 (영어)</label><input type="text" class="form-control" id="tagName" required></div>
+                    <div class="mb-3"><label for="tagNameKr" class="form-label">태그 이름 (한글)</label><input type="text" class="form-control" id="tagNameKr" required></div>
+                    <div class="mb-3"><label for="tagPrompt" class="form-label">태그 프롬프트</label><textarea class="form-control" id="tagPrompt" rows="3" required></textarea></div>
                     <button type="submit" class="btn btn-primary">태그 생성</button>
-                </div>
-            </form>
-            <div id="create-tag-api-result" class="api-result"></div>
+                </form>
+                <div id="create-tag-api-result" class="api-result"></div>
+            </div>
         </div>
-
-        <hr class="my-4">
-
-        <div id="get-all-tags-container">
-            <h4 class="text-center">모든 태그 조회</h4>
-            <p>버튼을 눌러 등록된 모든 스타일 태그를 조회합니다.</p>
-            <button id="get-all-tags-button" class="btn btn-secondary">모든 태그 보기</button>
-            <div id="get-all-tags-result" class="api-result"></div>
-        </div>
-
-        <hr class="my-4">
-
-        <div id="update-tag-form-container">
-            <h4 class="text-center">태그 수정</h4>
-            <form id="update-tag-form">
-                <div class="mb-3">
-                    <label for="updateTagNameKr" class="form-label">태그 이름 (한글)</label>
-                    <input type="text" class="form-control" id="updateTagNameKr" required>
-                </div>
-                <div class="mb-3">
-                    <label for="updateTagPriority" class="form-label">새 우선순위</label>
-                    <input type="number" class="form-control" id="updateTagPriority">
-                </div>
-                <div class="mb-3">
-                    <label for="updateTagNameEng" class="form-label">새 태그 이름 (영어)</label>
-                    <input type="text" class="form-control" id="updateTagNameEng">
-                </div>
-                <div class="mb-3">
-                    <label for="updateTagPrompt" class="form-label">새 태그 프롬프트</label>
-                    <textarea class="form-control" id="updateTagPrompt" rows="3"></textarea>
-                </div>
-                <div class="d-grid">
+        <div class="card">
+            <div class="card-header">태그 수정</div>
+            <div class="card-body">
+                <form id="update-tag-form">
+                    <div class="mb-3"><label for="updateTagNameKr" class="form-label">태그 이름 (한글)</label><input type="text" class="form-control" id="updateTagNameKr" required></div>
+                    <div class="mb-3"><label for="updateTagPriority" class="form-label">새 우선순위</label><input type="number" class="form-control" id="updateTagPriority"></div>
+                    <div class="mb-3"><label for="updateTagNameEng" class="form-label">새 태그 이름 (영어)</label><input type="text" class="form-control" id="updateTagNameEng"></div>
+                    <div class="mb-3"><label for="updateTagPrompt" class="form-label">새 태그 프롬프트</label><textarea class="form-control" id="updateTagPrompt" rows="3"></textarea></div>
                     <button type="submit" class="btn btn-warning">태그 수정</button>
-                </div>
-            </form>
-            <div id="update-tag-api-result" class="api-result"></div>
+                </form>
+                <div id="update-tag-api-result" class="api-result"></div>
+            </div>
         </div>
     </div>
-
 </div>
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
 <script>
     window.onload = function() {
@@ -245,16 +204,28 @@
 
         populateTagDropdown();
 
+        // Sidebar navigation
+        document.querySelectorAll('#sidebar .nav-link').forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                document.querySelectorAll('#sidebar .nav-link').forEach(l => l.classList.remove('active'));
+                this.classList.add('active');
+
+                const target = this.getAttribute('data-target');
+                document.querySelectorAll('.content-section').forEach(section => {
+                    section.classList.remove('active');
+                });
+                document.getElementById(target).classList.add('active');
+            });
+        });
+
         document.getElementById('get-furnitures-button').addEventListener('click', function() {
             const accessToken = localStorage.getItem('accessToken');
             const resultDiv = document.getElementById('get-furnitures-result');
-
             if (resultDiv.innerHTML) {
                 resultDiv.innerHTML = '';
-                resultDiv.className = 'api-result';
                 return;
             }
-
             testApiCall(accessToken, resultDiv, '/api/v1/admin/furnitures', 'GET', null, displayFurnituresAsTable);
         });
 
@@ -262,13 +233,11 @@
             event.preventDefault();
             const accessToken = localStorage.getItem('accessToken');
             const resultDiv = document.getElementById('furniture-api-result');
-            
             const furnitureData = {
                 furnitureNameKr: document.getElementById('furnitureNameKr').value,
                 furnitureNameEng: document.getElementById('furnitureNameEng').value,
                 isBed: document.getElementById('isBed').checked
             };
-
             testApiCall(accessToken, resultDiv, '/api/v1/admin/furniture', 'POST', furnitureData);
         });
 
@@ -276,13 +245,11 @@
             event.preventDefault();
             const accessToken = localStorage.getItem('accessToken');
             const resultDiv = document.getElementById('furniture-prompt-api-result');
-            
             const promptData = {
                 furnitureNameKr: document.getElementById('promptFurnitureNameKr').value,
                 prompt: document.getElementById('prompt').value,
                 tagId: parseInt(document.getElementById('tagId').value, 10)
             };
-
             testApiCall(accessToken, resultDiv, '/api/v1/admin/furniture/prompt', 'POST', promptData);
         });
 
@@ -290,14 +257,12 @@
             event.preventDefault();
             const accessToken = localStorage.getItem('accessToken');
             const resultDiv = document.getElementById('update-furniture-api-result');
-            
             const updateData = {
                 furnitureNameKr: document.getElementById('updateFurnitureNameKr').value,
                 tagId: parseInt(document.getElementById('updateTagId').value, 10),
                 newFurnitureNameEng: document.getElementById('newFurnitureNameEng').value,
                 newPrompt: document.getElementById('newPrompt').value
             };
-
             testApiCall(accessToken, resultDiv, '/api/v1/admin/furniture', 'PATCH', updateData);
         });
 
@@ -305,12 +270,9 @@
             event.preventDefault();
             const accessToken = localStorage.getItem('accessToken');
             const resultDiv = document.getElementById('get-prompt-result');
-            
             const furnitureNameKr = document.getElementById('promptQueryFurnitureNameKr').value;
             const tagId = document.getElementById('promptQueryTagId').value;
-
             const endpoint = `/api/v1/admin/furniture/prompt?furnitureNameKr=${encodeURIComponent(furnitureNameKr)}&tagId=${tagId}`;
-
             testApiCall(accessToken, resultDiv, endpoint, 'GET', null);
         });
 
@@ -318,27 +280,22 @@
             event.preventDefault();
             const accessToken = localStorage.getItem('accessToken');
             const resultDiv = document.getElementById('create-tag-api-result');
-            
             const tagData = {
                 priority: parseInt(document.getElementById('tagPriority').value, 10),
                 tagName: document.getElementById('tagName').value,
                 tag_name_kr: document.getElementById('tagNameKr').value,
                 tag_prompt: document.getElementById('tagPrompt').value
             };
-
             testApiCall(accessToken, resultDiv, '/api/v1/admin/tag', 'POST', tagData);
         });
 
         document.getElementById('get-all-tags-button').addEventListener('click', function() {
             const accessToken = localStorage.getItem('accessToken');
             const resultDiv = document.getElementById('get-all-tags-result');
-
             if (resultDiv.innerHTML) {
                 resultDiv.innerHTML = '';
-                resultDiv.className = 'api-result';
                 return;
             }
-
             testApiCall(accessToken, resultDiv, '/api/v1/admin/tags', 'GET', null, displayTagsAsTable);
         });
 
@@ -346,14 +303,12 @@
             event.preventDefault();
             const accessToken = localStorage.getItem('accessToken');
             const resultDiv = document.getElementById('update-tag-api-result');
-
             const updateData = {
                 tagNameKr: document.getElementById('updateTagNameKr').value,
                 newPriority: document.getElementById('updateTagPriority').value ? parseInt(document.getElementById('updateTagPriority').value, 10) : null,
                 newTagNameEng: document.getElementById('updateTagNameEng').value,
                 newTagPrompt: document.getElementById('updateTagPrompt').value
             };
-
             testApiCall(accessToken, resultDiv, '/api/v1/admin/tag', 'PATCH', updateData);
         });
     };
@@ -361,245 +316,123 @@
     function populateTagDropdown() {
         const accessToken = localStorage.getItem('accessToken');
         if (!accessToken) return;
-
-        const fetchOptions = {
+        fetch('/api/v1/admin/furniture/tags', {
             method: 'GET',
-            headers: {
-                'Authorization': 'Bearer ' + accessToken,
-                'Content-Type': 'application/json'
+            headers: {'Authorization': 'Bearer ' + accessToken, 'Content-Type': 'application/json'}
+        })
+        .then(response => response.json())
+        .then(data => {
+            const selectElement = document.getElementById('tagId');
+            const responseData = data.data;
+            if (responseData && Array.isArray(responseData.tagId) && Array.isArray(responseData.tagNameKr)) {
+                responseData.tagId.forEach((id, index) => {
+                    const option = document.createElement('option');
+                    option.value = id;
+                    option.textContent = `${responseData.tagNameKr[index]} (ID: ${id})`;
+                    selectElement.appendChild(option);
+                });
             }
-        };
-
-        fetch('/api/v1/admin/furniture/tags', fetchOptions)
-            .then(response => {
-                if (!response.ok) throw new Error('태그 목록 로딩 실패');
-                return response.json();
-            })
-            .then(data => {
-                const responseData = data.data;
-                if (responseData && Array.isArray(responseData.tagId) && Array.isArray(responseData.tagNameKr)) {
-                    const selectElement = document.getElementById('tagId');
-                    const tagIds = responseData.tagId;
-                    const tagNames = responseData.tagNameKr;
-
-                    for (let i = 0; i < tagIds.length; i++) {
-                        const option = document.createElement('option');
-                        option.value = tagIds[i];
-                        option.textContent = `${tagNames[i]} (ID: ${tagIds[i]})`;
-                        selectElement.appendChild(option.cloneNode(true));
-                    }
-                }
-            })
-            .catch(error => console.error('태그 드롭다운 채우기 오류:', error));
+        })
+        .catch(error => console.error('Error populating tag dropdown:', error));
     }
 
     function displayFurnituresAsTable(data, resultDiv) {
         const furnitures = data.data.furnitures;
-        if (Array.isArray(furnitures)) {
-            let tableHTML = '<table class="table table-bordered table-striped mt-3"><thead><tr><th>ID</th><th>가구 이름</th><th>태그</th><th>작업</th></tr></thead><tbody>';
-            furnitures.forEach(furniture => {
-                let tagsHTML = '';
-                if (Array.isArray(furniture.tags)) {
-                    tagsHTML = furniture.tags.map(tag => 
-                        `<span class="badge bg-info me-1">${tag.tagName} (ID: ${tag.tagId}) <button class="btn btn-sm btn-danger" style="display: inline-block;" onclick="deleteFurnitureTag('${furniture.furnitureNameKr}', ${tag.tagId})">x</button></span>`
-                    ).join(' ');
-                }
-                let actionsHTML = `<button class="btn btn-danger btn-sm" onclick="deleteFurniture('${furniture.furnitureNameKr}')">가구 삭제</button>`;
-                tableHTML += `<tr><td>${furniture.furnitureId}</td><td>${furniture.furnitureNameKr}</td><td>${tagsHTML}</td><td>${actionsHTML}</td></tr>`;
-            });
-            tableHTML += '</tbody></table>';
-            resultDiv.innerHTML = tableHTML;
-        } else {
-            resultDiv.textContent = 'API 응답: ' + JSON.stringify(data.data, null, 2);
-        }
+        let tableHTML = '<table class="table table-hover"><thead><tr><th>ID</th><th>가구 이름</th><th>태그</th><th>작업</th></tr></thead><tbody>';
+        furnitures.forEach(furniture => {
+            let tagsHTML = Array.isArray(furniture.tags) ? furniture.tags.map(tag =>
+                `<span class="badge bg-info me-1">${tag.tagName} (ID: ${tag.tagId}) <button class="btn btn-sm btn-danger" onclick="deleteFurnitureTag('${furniture.furnitureNameKr}', ${tag.tagId})">x</button></span>`
+            ).join(' ') : '';
+            let actionsHTML = `<button class="btn btn-danger btn-sm" onclick="deleteFurniture('${furniture.furnitureNameKr}')">가구 삭제</button>`;
+            tableHTML += `<tr><td>${furniture.furnitureId}</td><td>${furniture.furnitureNameKr}</td><td>${tagsHTML}</td><td>${actionsHTML}</td></tr>`;
+        });
+        tableHTML += '</tbody></table>';
+        resultDiv.innerHTML = tableHTML;
     }
 
     function displayTagsAsTable(data, resultDiv) {
         const tags = data.data.tagGetResponseDTOS;
-        if (Array.isArray(tags)) {
-            let tableHTML = '<table class="table table-bordered table-striped mt-3"><thead><tr><th>우선순위</th><th>태그 이름 (영어)</th><th>태그 이름 (한글)</th><th>태그 프롬프트</th><th>작업</th></tr></thead><tbody>';
-            tags.forEach((tag, index) => {
-                const fullPromptId = `fullPrompt-${index}`;
-                const toggleButtonId = `toggleButton-${index}`;
-
-                tableHTML += `<tr>
-                                <td>${tag.priority}</td>
-                                <td>${tag.tagName}</td>
-                                <td>${tag.tag_name_kr}</td>
-                                <td>
-                                    <button id="${toggleButtonId}" class="btn btn-sm btn-info" onclick="togglePrompt('${fullPromptId}', '${toggleButtonId}')">
-                                        보기
-                                    </button>
-                                    <pre id="${fullPromptId}" style="display: none; white-space: pre-wrap;">${tag.tag_prompt}</pre>
-                                </td>
-                                <td><button class="btn btn-danger btn-sm" onclick="deleteTag('${tag.tag_name_kr}')">태그 삭제</button></td>
-                              </tr>`;
-            });
-            tableHTML += '</tbody></table>';
-            resultDiv.innerHTML = tableHTML;
-        } else {
-            resultDiv.textContent = 'API 응답: ' + JSON.stringify(data.data, null, 2);
-        }
-    }
-
-    function deleteTag(tagNameKr) {
-        if (!confirm(`'${tagNameKr}' 태그를 정말로 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.`)) {
-            return;
-        }
-
-        const accessToken = localStorage.getItem('accessToken');
-        const resultDiv = document.getElementById('get-all-tags-result');
-
-        const deleteData = {
-            tagNameKr: tagNameKr
-        };
-
-        testApiCall(accessToken, resultDiv, '/api/v1/admin/tag', 'DELETE', deleteData, () => {
-            const successMsg = document.createElement('div');
-            successMsg.className = 'alert alert-success';
-            successMsg.textContent = '태그가 성공적으로 삭제되었습니다. 목록을 새로고침합니다.';
-            resultDiv.prepend(successMsg);
-
-            setTimeout(() => {
-                document.getElementById('get-all-tags-button').click(); 
-                document.getElementById('get-all-tags-button').click(); 
-            }, 1500);
+        let tableHTML = '<table class="table table-hover"><thead><tr><th>우선순위</th><th>태그 이름 (영문)</th><th>태그 이름 (한글)</th><th>프롬프트</th><th>작업</th></tr></thead><tbody>';
+        tags.forEach((tag, index) => {
+            tableHTML += `<tr>
+                            <td>${tag.priority}</td>
+                            <td>${tag.tagName}</td>
+                            <td>${tag.tag_name_kr}</td>
+                            <td><button class="btn btn-sm btn-info" onclick="togglePrompt('prompt-${index}')">보기</button><pre id="prompt-${index}" style="display:none;">${tag.tag_prompt}</pre></td>
+                            <td><button class="btn btn-danger btn-sm" onclick="deleteTag('${tag.tag_name_kr}')">삭제</button></td>
+                          </tr>`;
         });
+        tableHTML += '</tbody></table>';
+        resultDiv.innerHTML = tableHTML;
     }
 
-    function togglePrompt(fullPromptId, toggleButtonId) {
-        const fullPromptSpan = document.getElementById(fullPromptId);
-        const toggleButton = document.getElementById(toggleButtonId);
-
-        if (fullPromptSpan.style.display === 'none') {
-            fullPromptSpan.style.display = 'inline';
-            toggleButton.textContent = '숨기기';
-        } else {
-            fullPromptSpan.style.display = 'none';
-            toggleButton.textContent = '보기';
-        }
+    function togglePrompt(id) {
+        const el = document.getElementById(id);
+        el.style.display = el.style.display === 'none' ? 'block' : 'none';
     }
 
     function deleteFurniture(furnitureNameKr) {
-        if (!confirm(`'${furnitureNameKr}' 가구를 정말로 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.`)) {
-            return;
-        }
-
+        if (!confirm(`'${furnitureNameKr}' 가구를 정말로 삭제하시겠습니까?`)) return;
         const accessToken = localStorage.getItem('accessToken');
         const resultDiv = document.getElementById('get-furnitures-result');
-
-        // Note: The backend expects a tagId, but we are deleting the whole furniture.
-        // Sending a dummy tagId as the backend seems to require it.
-        const deleteData = {
-            furnitureNameKr: furnitureNameKr,
-            tagId: 0 // Dummy tagId
-        };
-
-        testApiCall(accessToken, resultDiv, '/api/v1/admin/furniture', 'DELETE', deleteData, () => {
-            // 성공 메시지 표시
-            const successMsg = document.createElement('div');
-            successMsg.className = 'alert alert-success';
-            successMsg.textContent = '가구가 성공적으로 삭제되었습니다. 목록을 새로고침합니다.';
-            resultDiv.prepend(successMsg);
-
-            // 잠시 후 목록 새로고침
-            setTimeout(() => {
-                document.getElementById('get-furnitures-button').click(); // 테이블 닫기
-                document.getElementById('get-furnitures-button').click(); // 테이블 다시 열기
-            }, 1500);
+        testApiCall(accessToken, resultDiv, '/api/v1/admin/furniture', 'DELETE', { furnitureNameKr, tagId: 0 }, () => {
+            alert('가구가 삭제되었습니다.');
+            document.getElementById('get-furnitures-button').click();
         });
     }
 
     function deleteFurnitureTag(furnitureNameKr, tagId) {
-        if (!confirm(`'${furnitureNameKr}' 가구에서 태그 ID ${tagId}를 정말로 삭제하시겠습니까?`)) {
-            return;
-        }
-
+        if (!confirm(`'${furnitureNameKr}' 가구에서 태그 ID ${tagId}를 삭제하시겠습니까?`)) return;
         const accessToken = localStorage.getItem('accessToken');
         const resultDiv = document.getElementById('get-furnitures-result');
+        testApiCall(accessToken, resultDiv, '/api/v1/admin/furniture/tag', 'DELETE', { furnitureNameKr, tagId }, () => {
+            alert('가구 태그가 삭제되었습니다.');
+            document.getElementById('get-furnitures-button').click();
+        });
+    }
 
-        const deleteData = {
-            furnitureNameKr: furnitureNameKr,
-            tagId: tagId
-        };
-
-        testApiCall(accessToken, resultDiv, '/api/v1/admin/furniture/tag', 'DELETE', deleteData, () => {
-            // 성공 메시지 표시
-            const successMsg = document.createElement('div');
-            successMsg.className = 'alert alert-success';
-            successMsg.textContent = '태그가 성공적으로 삭제되었습니다. 목록을 새로고침합니다.';
-            resultDiv.prepend(successMsg);
-
-            // 잠시 후 목록 새로고침
-            setTimeout(() => {
-                document.getElementById('get-furnitures-button').click(); // 테이블 닫기
-                document.getElementById('get-furnitures-button').click(); // 테이블 다시 열기
-            }, 1500);
+    function deleteTag(tagNameKr) {
+        if (!confirm(`'${tagNameKr}' 태그를 정말로 삭제하시겠습니까?`)) return;
+        const accessToken = localStorage.getItem('accessToken');
+        const resultDiv = document.getElementById('get-all-tags-result');
+        testApiCall(accessToken, resultDiv, '/api/v1/admin/tag', 'DELETE', { tagNameKr }, () => {
+            alert('태그가 삭제되었습니다.');
+            document.getElementById('get-all-tags-button').click();
         });
     }
 
     function testApiCall(accessToken, resultDiv, endpoint, method, body = null, successCallback = null) {
         if (!accessToken) {
-            resultDiv.className = 'api-result alert alert-danger';
-            resultDiv.textContent = '오류: 액세스 토큰을 찾을 수 없습니다. 다시 로그인해주세요.';
+            resultDiv.innerHTML = '<div class="alert alert-danger">액세스 토큰을 찾을 수 없습니다.</div>';
             return;
         }
-
         const fetchOptions = {
             method: method,
             headers: {
                 'Authorization': 'Bearer ' + accessToken,
                 'Content-Type': 'application/json'
-            }
+            },
+            body: body ? JSON.stringify(body) : null
         };
-
-        if (body) {
-            fetchOptions.body = JSON.stringify(body);
-        }
-
-        console.log('Sending API call with options:', fetchOptions);
-
         fetch(endpoint, fetchOptions)
             .then(response => {
-                if (response.status === 403) {
-                    throw new Error('접근 권한이 없습니다. ADMIN으로 로그인해주세요.');
-                }
                 if (!response.ok) {
-                    // Attempt to parse error response as JSON, but handle cases where it's not JSON
-                    const contentType = response.headers.get("content-type");
-                    if (contentType && contentType.indexOf("application/json") !== -1) {
-                        return response.json().then(err => { throw new Error(JSON.stringify(err)); });
-                    } else {
-                        // If not JSON, throw a generic error with status text
-                        throw new Error(`서버 오류: ${response.status} ${response.statusText}`);
-                    }
+                    return response.json().then(err => { throw new Error(err.msg || '서버 오류'); });
                 }
-                const contentLength = response.headers.get('Content-Length');
-                if (contentLength === '0') {
-                    return null;
-                }
-                return response.json();
+                return response.status === 204 || response.headers.get('Content-Length') === '0' ? null : response.json();
             })
             .then(data => {
-                console.log(data);
-                resultDiv.className = 'api-result'; // Clear previous alert styles
                 if (successCallback) {
                     successCallback(data, resultDiv);
                 } else if (data) {
-                    resultDiv.innerHTML = '<div class="alert alert-success">API 응답: ' + JSON.stringify(data.data, null, 2) + '</div>';
+                    resultDiv.innerHTML = '<div class="alert alert-success">API 응답: <pre>' + JSON.stringify(data.data, null, 2) + '</pre></div>';
                 } else {
                     resultDiv.innerHTML = '<div class="alert alert-success">요청이 성공적으로 처리되었습니다.</div>';
                 }
             })
             .catch(error => {
-                console.error('오류:', error);
-                resultDiv.className = 'api-result alert alert-danger';
-                try {
-                    const errorJson = JSON.parse(error.message);
-                    resultDiv.textContent = `API 오류: ${errorJson.msg}`;
-                } catch (e) {
-                    resultDiv.textContent = 'API 오류: ' + error.message;
-                }
+                resultDiv.innerHTML = `<div class="alert alert-danger">오류: ${error.message}</div>`;
+                console.error('API Error:', error);
             });
     }
 </script>
