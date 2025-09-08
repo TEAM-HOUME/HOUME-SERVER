@@ -9,6 +9,9 @@ import or.sopt.houme.domain.house.entity.enums.Form;
 import or.sopt.houme.domain.house.entity.enums.Structure;
 import or.sopt.houme.domain.user.entity.User;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
@@ -40,8 +43,9 @@ public class House {
     @JoinColumn(name = "user_id")
     private User user;
 
-    @OneToOne(mappedBy = "house")
-    private GenerateImage generateImage;
+    @OneToMany(mappedBy = "house")
+    @Builder.Default
+    private List<GenerateImage> generateImages = new ArrayList<>();
 
     // 입력값이 유효한지에 대한 여부 (true = 유효한 값)
     @Column(name = "is_valid", nullable = false)

@@ -9,4 +9,7 @@ public interface TasteTagCustomRepository {
 
     // 우선순위 계산 후 반환
     Optional<Tag> findBestTasteId(List<Long> tasteIds);
+
+    // 우선순위 계산 후 상위 2개 반환
+    List<Tag> findBestTasteIdList(List<Long> tasteIds);
 }

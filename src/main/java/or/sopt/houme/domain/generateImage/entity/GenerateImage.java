@@ -30,7 +30,7 @@ public class GenerateImage extends BaseEntity {
     @Column(name = "file_extension", nullable = false)
     private String fileExtension;
 
-    @OneToOne
+    @ManyToOne(fetch =  FetchType.LAZY)
     @JoinColumn(name = "house_id")
     private House house;
 

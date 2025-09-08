@@ -120,6 +120,9 @@ dependencies {
     // thymeleaf
     implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
 
+    // redisson 의존성 추가
+    implementation 'org.redisson:redisson-spring-boot-starter:3.27.2'
+
 }
 
 def querydslDir = 'src/main/generated'

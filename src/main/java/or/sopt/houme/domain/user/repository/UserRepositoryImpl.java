@@ -39,7 +39,7 @@ public class UserRepositoryImpl implements UserRepositoryCustom {
         return Optional.ofNullable(queryFactory
                 .select(generateImage)
                 .from(house)
-                .join(house.generateImage, generateImage)
+                .join(house.generateImages, generateImage)
                 .join(house.user, user)
                 .where(user.id.eq(userId))
                 .limit(1)

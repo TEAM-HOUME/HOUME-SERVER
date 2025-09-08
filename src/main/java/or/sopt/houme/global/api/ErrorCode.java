@@ -92,11 +92,12 @@ public enum ErrorCode {
     /**
      * 409 CONFLICT
      */
+    CREDIT_LOCK_FAILED(HttpStatus.CONFLICT, 40900, "다른 요청을 처리 중입니다. 잠시 후 다시 시도해주세요."),
 
     /**
      * 429 Too_Many_Requests
      */
-    RETRY_GET_IMAGE(HttpStatus.TOO_MANY_REQUESTS, 42900, "재요하세요."),
+    RETRY_GET_IMAGE(HttpStatus.TOO_MANY_REQUESTS, 42900, "너무 많은 요청이 들어왔습니다. 잠시 후에 재요청하세요."),
 
 
     /**
@@ -121,7 +122,15 @@ public enum ErrorCode {
     CREDIT_CREATE_EXCEPTION(HttpStatus.INTERNAL_SERVER_ERROR,50012,"크레딧 생성 과정 중 예외가 발생하였습니다."),
 
     // 이미지 생성 중
-    GENERATED_IMAGE_EXCEPTION(HttpStatus.INTERNAL_SERVER_ERROR, 50013, "이미지 생성 중 예외가 발생하였습니다.");
+    GENERATED_IMAGE_EXCEPTION(HttpStatus.INTERNAL_SERVER_ERROR, 50013, "이미지 생성 중 예외가 발생하였습니다."),
+    CREDIT_LOCK_INTERRUPTED(HttpStatus.INTERNAL_SERVER_ERROR, 50014, "크레딧 처리 대기 중 스레드 인터럽트가 발생했습니다."),
+
+
+    /**
+     * 504 GATEWAY_TIMEOUT
+     */
+    // 이미지 생성 타임아웃
+    GENERATED_IMAGE_TIMEOUT(HttpStatus.GATEWAY_TIMEOUT, 50400, "이미지 생성 시간이 초과되었습니다.");
 
     private final HttpStatus status;
     private final int code;
