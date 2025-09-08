@@ -3,6 +3,8 @@ package or.sopt.houme.domain.admin.service;
 import lombok.RequiredArgsConstructor;
 import or.sopt.houme.domain.admin.controller.dto.moodboard.AdminMoodBoardCreateRequestDTO;
 import or.sopt.houme.domain.admin.controller.dto.moodboard.AdminMoodBoardCreateResponseDTO;
+import or.sopt.houme.domain.admin.controller.dto.moodboard.AdminMoodBoardGetAllResponseDTO;
+import or.sopt.houme.domain.admin.controller.dto.moodboard.AdminMoodBoardGetResponseDTO;
 import or.sopt.houme.domain.taste.entity.Tag;
 import or.sopt.houme.domain.taste.entity.Taste;
 import or.sopt.houme.domain.taste.entity.TasteTag;
@@ -15,6 +17,8 @@ import or.sopt.houme.global.dto.S3PresignedUrlResponseDTO;
 import or.sopt.houme.global.util.S3PresignedUtil;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -54,5 +58,19 @@ public class AdminMoodBoardServiceImpl implements AdminMoodBoardService {
         Taste savedTaste = tasteRepository.save(taste);
 
         return new AdminMoodBoardCreateResponseDTO(presignedUrl.uploadUrl(), savedTaste.getId());
+    }
+
+
+    @Override
+    public AdminMoodBoardGetAllResponseDTO getAll() {
+        
+        List<AdminMoodBoardGetResponseDTO> moodBoardList = tasteRepository.findAll().stream()
+                .map(taste -> new AdminMoodBoardGetResponseDTO(
+                        taste.getFilename(),
+                        taste.getOriginalFilename(),
+                        taste.getUrl()
+                )).toList();
+
+        return new AdminMoodBoardGetAllResponseDTO(moodBoardList);
     }
 }
