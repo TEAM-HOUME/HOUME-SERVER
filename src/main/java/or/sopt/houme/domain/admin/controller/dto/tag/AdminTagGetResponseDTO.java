@@ -4,6 +4,7 @@ import or.sopt.houme.domain.taste.entity.Tag;
 
 public record AdminTagGetResponseDTO(
 
+        long id,
         int priority,
         String tagName,
         String tag_name_kr,
@@ -12,7 +13,7 @@ public record AdminTagGetResponseDTO(
 ){
 
     public static AdminTagGetResponseDTO of(Tag tag) {
-        return new AdminTagGetResponseDTO(tag.getPriority(), tag.getTagName(), tag.getTagNameKr(), tag.getTagPrompt());
+        return new AdminTagGetResponseDTO(tag.getId(), tag.getPriority(), tag.getTagName(), tag.getTagNameKr(), tag.getTagPrompt());
     }
 
 }
