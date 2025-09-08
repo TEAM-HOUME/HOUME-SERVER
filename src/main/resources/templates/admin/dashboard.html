@@ -429,12 +429,13 @@
     function displayMoodboards(data, resultDiv) {
         const moodboards = data.data.dtos; // Corrected to dtos
         if (Array.isArray(moodboards)) {
-            let tableHTML = '<table class="table table-hover"><thead><tr><th>이미지</th><th>파일 이름</th><th>원본 파일 이름</th></tr></thead><tbody>';
+            let tableHTML = '<table class="table table-hover"><thead><tr><th>이미지</th><th>파일 이름</th><th>원본 파일 이름</th><th>작업</th></tr></thead><tbody>';
             moodboards.forEach(moodboard => {
                 tableHTML += `<tr>
                                 <td><img src="${moodboard.url}" alt="${moodboard.originalFilename}" style="width: 100px; height: auto;"></td>
                                 <td>${moodboard.filename}</td>
                                 <td>${moodboard.originalFilename}</td>
+                                <td><button class="btn btn-danger btn-sm" onclick="deleteMoodboard('${moodboard.filename}')">삭제</button></td>
                               </tr>`;
             });
             tableHTML += '</tbody></table>';
@@ -552,6 +553,16 @@
         testApiCall(accessToken, resultDiv, '/api/v1/admin/tag', 'DELETE', { tagNameKr }, () => {
             alert('태그가 삭제되었습니다.');
             document.getElementById('get-all-tags-button').click();
+        });
+    }
+
+    function deleteMoodboard(filename) {
+        if (!confirm(`'${filename}' 무드보드를 정말로 삭제하시겠습니까?`)) return;
+        const accessToken = localStorage.getItem('accessToken');
+        const resultDiv = document.getElementById('get-all-moodboards-result');
+        testApiCall(accessToken, resultDiv, `/api/v1/admin/moodboard?filename=${encodeURIComponent(filename)}`, 'DELETE', null, () => {
+            alert('무드보드가 삭제되었습니다.');
+            document.getElementById('get-all-moodboards-button').click();
         });
     }
 

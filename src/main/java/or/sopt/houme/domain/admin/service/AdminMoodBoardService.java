@@ -8,4 +8,6 @@ public interface AdminMoodBoardService {
     AdminMoodBoardCreateResponseDTO create(AdminMoodBoardCreateRequestDTO requestDTO, String contentType);
 
     AdminMoodBoardGetAllResponseDTO getAll();
+
+    void delete(String filename);
 }

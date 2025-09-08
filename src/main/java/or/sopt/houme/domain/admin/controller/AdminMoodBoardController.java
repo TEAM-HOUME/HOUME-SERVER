@@ -17,7 +17,9 @@ import org.springframework.web.bind.annotation.*;
 @Tag(name = "어드민 무드보드 관련 API")
 public class AdminMoodBoardController {
 
+
     private final AdminMoodBoardService adminMoodBoardService;
+
 
     @PostMapping("/moodboard")
     @Operation(summary = "무드보드 이미지 업로드용 presigned url 생성 API")
@@ -35,5 +37,14 @@ public class AdminMoodBoardController {
     public ResponseEntity<ApiResponse<AdminMoodBoardGetAllResponseDTO>> getAll(){
         AdminMoodBoardGetAllResponseDTO response = adminMoodBoardService.getAll();
         return ResponseEntity.ok(ApiResponse.ok(response));
+    }
+
+
+    @DeleteMapping("/moodboard")
+    @Operation(summary = "무드보드 삭제 API")
+    public ResponseEntity<ApiResponse<String>> deleteMoodBoard(@RequestParam String filename){
+
+        adminMoodBoardService.delete(filename);
+        return ResponseEntity.ok(ApiResponse.ok("무드보드 삭제에 성공하였습니다"));
     }
 }

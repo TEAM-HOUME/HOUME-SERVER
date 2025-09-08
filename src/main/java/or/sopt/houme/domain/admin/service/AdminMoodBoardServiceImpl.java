@@ -1,6 +1,7 @@
 package or.sopt.houme.domain.admin.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import or.sopt.houme.domain.admin.controller.dto.moodboard.AdminMoodBoardCreateRequestDTO;
 import or.sopt.houme.domain.admin.controller.dto.moodboard.AdminMoodBoardCreateResponseDTO;
 import or.sopt.houme.domain.admin.controller.dto.moodboard.AdminMoodBoardGetAllResponseDTO;
@@ -15,19 +16,23 @@ import or.sopt.houme.global.api.ErrorCode;
 import or.sopt.houme.global.api.GeneralException;
 import or.sopt.houme.global.dto.S3PresignedUrlResponseDTO;
 import or.sopt.houme.global.util.S3PresignedUtil;
+import or.sopt.houme.global.util.S3Util;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 @Transactional
 public class AdminMoodBoardServiceImpl implements AdminMoodBoardService {
 
 
 
     private final S3PresignedUtil s3PresignedUtil;
+    private final S3Util s3Util;
     private final TasteRepository tasteRepository;
     private final TagRepository tagRepository;
     private final TasteTagRepository tasteTagRepository;
@@ -41,7 +46,7 @@ public class AdminMoodBoardServiceImpl implements AdminMoodBoardService {
 
         Taste taste = Taste.builder()
                 .url(presignedUrl.publicUrl())
-                .filename(requestDTO.filename())
+                .filename(presignedUrl.keyName())
                 .originalFilename(requestDTO.originalFilename())
                 .fileExtension(requestDTO.imageExtension())
                 .build();
@@ -63,7 +68,7 @@ public class AdminMoodBoardServiceImpl implements AdminMoodBoardService {
 
     @Override
     public AdminMoodBoardGetAllResponseDTO getAll() {
-        
+
         List<AdminMoodBoardGetResponseDTO> moodBoardList = tasteRepository.findAll().stream()
                 .map(taste -> new AdminMoodBoardGetResponseDTO(
                         taste.getFilename(),
@@ -72,5 +77,24 @@ public class AdminMoodBoardServiceImpl implements AdminMoodBoardService {
                 )).toList();
 
         return new AdminMoodBoardGetAllResponseDTO(moodBoardList);
+    }
+
+
+    @Override
+    public void delete(String filename){
+
+        log.info(filename);
+
+        Taste byFilename = tasteRepository.findByFilename(filename)
+                .orElseThrow(()-> new GeneralException(ErrorCode.NOT_FOUND_TASTE));
+
+        TasteTag byTaste = tasteTagRepository.findByTaste(byFilename)
+                .orElseThrow(() -> new GeneralException(ErrorCode.NOT_FOUND_TASTE));
+
+        tasteTagRepository.delete(byTaste);
+        tasteRepository.delete(byFilename);
+
+        s3Util.delete(filename);
+
     }
 }
