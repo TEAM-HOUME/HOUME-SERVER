@@ -32,7 +32,7 @@ public class S3PresignedUtil {
     private String bucketDomain;
 
 
-    public S3PresignedUrlResponseDTO createPresignedUrl(String imageExtension, String dirName) {
+    public S3PresignedUrlResponseDTO createPresignedUrl(String imageExtension, String dirName, String contentType) {
 
         // 1. 입력 검증: 지원 가능한 이미지 확장자인지 확인
         // jpg, jpeg, png, gif, webp만 허용하며, 대소문자 구분하지 않음
@@ -51,9 +51,6 @@ public class S3PresignedUtil {
         // 형식: {dirName}/{timestamp}_{uuid}.{extension}
         String keyName = generateUniqueKeyName(imageExtension, sanitizedDirName);
 
-        // 4. MIME 타입 설정: 브라우저가 파일을 올바르게 인식할 수 있도록 Content-Type 지정
-        String contentType = "image/" + imageExtension.toLowerCase();
-
         // 5. S3 PutObject 요청 객체 생성
         // - bucket: 파일이 저장될 S3 버킷명
         // - key: S3 내에서 객체를 식별하는 고유 키 (디렉토리 포함)
@@ -62,13 +59,6 @@ public class S3PresignedUtil {
         PutObjectRequest objectRequest = PutObjectRequest.builder()
                 .bucket(bucket)
                 .key(keyName)
-                .contentType(contentType)
-                .metadata(Map.of(
-                        "fileType", "image",                    // 파일 유형 구분
-                        "originalExtension", imageExtension,    // 원본 확장자 보존
-                        "directory", sanitizedDirName,          // 저장 디렉토리
-                        "uploadTimestamp", String.valueOf(System.currentTimeMillis()) // 업로드 시간
-                ))
                 .build();
 
         // 6. Presigned URL 요청 생성

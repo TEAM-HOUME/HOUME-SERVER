@@ -86,6 +86,11 @@
                 <i class="fas fa-tags"></i>태그 관리
             </a>
         </li>
+        <li class="nav-item">
+            <a class="nav-link" href="#" data-target="moodboard-management">
+                <i class="fas fa-images"></i>무드보드 관리
+            </a>
+        </li>
     </ul>
 </div>
 
@@ -186,6 +191,34 @@
                     <button type="submit" class="btn btn-warning">태그 수정</button>
                 </form>
                 <div id="update-tag-api-result" class="api-result"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 무드보드 관리 섹션 -->
+    <div id="moodboard-management" class="content-section">
+        <h2>무드보드 관리</h2>
+        <div class="card">
+            <div class="card-header">무드보드 이미지 업로드</div>
+            <div class="card-body">
+                <form id="moodboard-upload-form">
+                    <div class="mb-3">
+                        <label for="moodboard-image" class="form-label">이미지 파일 선택</label>
+                        <input type="file" class="form-control" id="moodboard-image" accept="image/*" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="moodboard-filename" class="form-label">파일 이름</label>
+                        <input type="text" class="form-control" id="moodboard-filename" required>
+                        <div class="form-text">파일 이름은 영어로 작성해주세요. (예: midcentury_blue1.png)</div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="moodboard-original-filename" class="form-label">원본 파일 이름</label>
+                        <input type="text" class="form-control" id="moodboard-original-filename" required>
+                        <div class="form-text">사용자에게 보여질 파일 이름(한글)을 작성해주세요. (예: 미드센추리 블루 스타일)</div>
+                    </div>
+                    <button type="submit" class="btn btn-primary">업로드</button>
+                </form>
+                <div id="moodboard-upload-result" class="api-result"></div>
             </div>
         </div>
     </div>
@@ -311,6 +344,61 @@
             };
             testApiCall(accessToken, resultDiv, '/api/v1/admin/tag', 'PATCH', updateData);
         });
+
+        document.getElementById('moodboard-upload-form').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const accessToken = localStorage.getItem('accessToken');
+            const resultDiv = document.getElementById('moodboard-upload-result');
+            const imageFile = document.getElementById('moodboard-image').files[0];
+
+            if (!imageFile) {
+                resultDiv.innerHTML = '<div class="alert alert-danger">이미지 파일을 선택해주세요.</div>';
+                return;
+            }
+
+            const imageExtension = imageFile.name.split('.').pop();
+            const filename = document.getElementById('moodboard-filename').value;
+            const originalFilename = document.getElementById('moodboard-original-filename').value;
+
+            const requestDTO = { imageExtension, filename, originalFilename };
+
+            // 1. Get presigned URL from our server
+            fetch(`/api/v1/admin/moodboard?contentType=${encodeURIComponent(imageFile.type)}`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': 'Bearer ' + accessToken,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(requestDTO)
+            })
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(err => { throw new Error(err.msg || '서버 오류'); });
+                }
+                return response.json();
+            })
+            .then(data => {
+                const presignedUrl = data.data.presignedUrl;
+                console.log("Presigned URL:", presignedUrl);
+                resultDiv.innerHTML = '<div class="alert alert-info">Presigned URL을 받았습니다. 이미지 업로드를 시작합니다...</div>';
+
+                // 2. Upload image to S3 with the presigned URL
+                return fetch(presignedUrl, {
+                    method: 'PUT',
+                    body: imageFile
+                });
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('S3에 이미지 업로드를 실패했습니다.');
+                }
+                resultDiv.innerHTML = '<div class="alert alert-success">이미지 업로드에 성공했습니다!</div>';
+            })
+            .catch(error => {
+                resultDiv.innerHTML = `<div class="alert alert-danger">오류: ${error.message}</div>`;
+                console.error('Upload Error:', error);
+            });
+        });
     };
 
     function populateTagDropdown() {
@@ -432,7 +520,7 @@
             })
             .catch(error => {
                 resultDiv.innerHTML = `<div class="alert alert-danger">오류: ${error.message}</div>`;
-                console.error('API Error:', error);
+                console.error('Upload Error:', error);
             });
     }
 </script>
