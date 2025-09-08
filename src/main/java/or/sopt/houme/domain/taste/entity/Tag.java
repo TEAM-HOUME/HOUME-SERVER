@@ -23,7 +23,7 @@ public class Tag {
     private int priority;
 
     // 태그(취향) 이름 한글
-    @Column(name = "tag_name_kr", nullable = false)
+    @Column(name = "tag_name_kr", nullable = false, unique = true)
     private String tagNameKr;
 
     // 태그(취향) 프롬프트

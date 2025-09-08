@@ -22,7 +22,7 @@ public class Furniture {
     private String furnitureNameEng;
 
     // 가구 이름 (한글)
-    @Column(name = "furniture_name_kr", nullable = false)
+    @Column(name = "furniture_name_kr", nullable = false, unique = true)
     private String furnitureNameKr;
 
     // 가구 타입

@@ -10,6 +10,7 @@ import or.sopt.houme.domain.taste.entity.Tag;
 import or.sopt.houme.domain.taste.repository.tag.TagRepository;
 import or.sopt.houme.global.api.ErrorCode;
 import or.sopt.houme.global.api.GeneralException;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -34,7 +35,12 @@ public class AdminTagServiceImpl implements AdminTagService {
         }
 
         Tag newTag = Tag.of(dto.tagName(), dto.priority(), dto.tag_name_kr(), dto.tag_prompt());
-        tagRepository.save(newTag);
+
+        try {
+            tagRepository.save(newTag);
+        } catch (DataIntegrityViolationException e) {
+            throw new GeneralException(ErrorCode.ALREADY_EXIST_TAG);
+        }
     }
 
 
