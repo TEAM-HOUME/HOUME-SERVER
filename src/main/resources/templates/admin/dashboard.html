@@ -227,6 +227,13 @@
                 <div id="moodboard-upload-result" class="api-result"></div>
             </div>
         </div>
+        <div class="card">
+            <div class="card-header">전체 무드보드 보기</div>
+            <div class="card-body">
+                <button id="get-all-moodboards-button" class="btn btn-secondary">전체 무드보드 보기</button>
+                <div id="get-all-moodboards-result" class="api-result"></div>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -407,7 +414,35 @@
                 console.error('Upload Error:', error);
             });
         });
+
+        document.getElementById('get-all-moodboards-button').addEventListener('click', function() {
+            const accessToken = localStorage.getItem('accessToken');
+            const resultDiv = document.getElementById('get-all-moodboards-result');
+            if (resultDiv.innerHTML) {
+                resultDiv.innerHTML = '';
+                return;
+            }
+            testApiCall(accessToken, resultDiv, '/api/v1/admin/moodboards', 'GET', null, displayMoodboards);
+        });
     };
+
+    function displayMoodboards(data, resultDiv) {
+        const moodboards = data.data.dtos; // Corrected to dtos
+        if (Array.isArray(moodboards)) {
+            let tableHTML = '<table class="table table-hover"><thead><tr><th>이미지</th><th>파일 이름</th><th>원본 파일 이름</th></tr></thead><tbody>';
+            moodboards.forEach(moodboard => {
+                tableHTML += `<tr>
+                                <td><img src="${moodboard.url}" alt="${moodboard.originalFilename}" style="width: 100px; height: auto;"></td>
+                                <td>${moodboard.filename}</td>
+                                <td>${moodboard.originalFilename}</td>
+                              </tr>`;
+            });
+            tableHTML += '</tbody></table>';
+            resultDiv.innerHTML = tableHTML;
+        } else {
+            resultDiv.innerHTML = '<div class="alert alert-info">무드보드가 없습니다.</div>';
+        }
+    }
 
     function populateTagDropdown() {
         const accessToken = localStorage.getItem('accessToken');
