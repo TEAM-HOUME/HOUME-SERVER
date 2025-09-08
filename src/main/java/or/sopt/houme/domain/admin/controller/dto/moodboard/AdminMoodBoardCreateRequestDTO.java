@@ -1,8 +1,9 @@
 package or.sopt.houme.domain.admin.controller.dto.moodboard;
 
+import java.util.List;
+
 public record AdminMoodBoardCreateRequestDTO(
         String imageExtension,
-        String filename,
         String originalFilename,
         Long tagId
 ) {
