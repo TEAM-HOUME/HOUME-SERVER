@@ -19,7 +19,7 @@ public class Tag {
     private String tagName;
 
     // 우선순위
-    @Column(name = "priority", nullable = false)
+    @Column(name = "priority", nullable = false, unique = true)
     private int priority;
 
     // 태그(취향) 이름 한글
