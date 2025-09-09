@@ -7,4 +7,8 @@ public record AdminMoodBoardGetResponseDTO(
         String url
 
 ) {
+
+    public static AdminMoodBoardGetResponseDTO of(String filename, String originalFilename, String url) {
+        return new AdminMoodBoardGetResponseDTO(filename, originalFilename, url);
+    }
 }

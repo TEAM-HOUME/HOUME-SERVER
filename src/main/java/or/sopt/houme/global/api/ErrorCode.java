@@ -129,6 +129,9 @@ public enum ErrorCode {
     GENERATED_IMAGE_EXCEPTION(HttpStatus.INTERNAL_SERVER_ERROR, 50013, "이미지 생성 중 예외가 발생하였습니다."),
     CREDIT_LOCK_INTERRUPTED(HttpStatus.INTERNAL_SERVER_ERROR, 50014, "크레딧 처리 대기 중 스레드 인터럽트가 발생했습니다."),
 
+    // DB 관련
+    DATA_INTEGRITY_VIOLATION(HttpStatus.INTERNAL_SERVER_ERROR,50015, "데이터 무결성 제약 조건을 위반했습니다. 서버 관리자에게 문의해주세요"),
+
 
     /**
      * 504 GATEWAY_TIMEOUT

@@ -28,6 +28,9 @@ public class AdminTagServiceImpl implements AdminTagService {
     /**
      * 태그 엔티티를 생성하는 메서드입니다.
      * 어드민 사용의 편리함과 기획의도를 고려하여 Tag의 한글명을 unique 필드로 사용중입니다.
+     *
+     * @throws GeneralException 로직 중 무결성 제약조건에 부합하지 않으면 예외 발생
+     * @throws DataIntegrityViolationException 데이터 저장 중 무결성 제약조건에 부합하지 않으면 예외 발생
      * */
     @Override
     public void create(AdminTagRequestDTO dto){
@@ -72,6 +75,8 @@ public class AdminTagServiceImpl implements AdminTagService {
      * 3. 프롬프트
      *
      * 를 수정 할 수 있습니다.
+     *
+     * @throws GeneralException 로직 중 우선순위가 이미 있는 데이터로 들어오면 예외 발
      * */
     @Override
     public void update(AdminTagUpdateRequestDTO dto){
