@@ -39,4 +39,18 @@ public class GenerateImageRepositoryImpl implements GenerateImageRepositoryCusto
                 .where(generateImage.house.id.eq(houseId))
                 .fetchOne());
     }
+
+    // 가장 최근 생성된 GenerateImage 1개 가져오기 (생성시간 내림차순, Id 내림차순)
+    @Override
+    public Optional<GenerateImage> findLastGenerateImage(Long houseId) {
+        QGenerateImage generateImage = QGenerateImage.generateImage;
+
+        return Optional.ofNullable(queryFactory
+                .selectFrom(generateImage)
+                .where(generateImage.house.id.eq(houseId))
+                .orderBy(
+                        generateImage.createdAt.desc(),
+                        generateImage.id.asc())
+                .fetchOne());
+    }
 }
