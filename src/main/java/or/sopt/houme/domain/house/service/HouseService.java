@@ -24,7 +24,7 @@ public interface HouseService {
     // house에 주요활동 저장하기
     House updateHouseActivity(Long houseId, Activity activity);
 
-    // 생성된 이미지 선호도
+    // 생성된 이미지 가져오기 (가장 최신 1개)
     House findHouseById(long houseId);
 
     // 생성된 이미지 프롬프트 저장
@@ -33,7 +33,7 @@ public interface HouseService {
     // houseId와 floorPlan 저장
     void saveHouseFloorPlan(House house, Long floorPlanId);
 
-    // house와 furniture wjwkd
+    // house와 furniture 저장
     void saveHouseFurniture(House house, List<Long> furnitureIds);
 
     // house와 무드보드(taste) 저장

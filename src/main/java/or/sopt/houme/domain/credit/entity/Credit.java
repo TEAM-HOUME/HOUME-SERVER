@@ -23,4 +23,13 @@ public class Credit extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private User user;
+
+    /**
+     * ===도메인 로직===
+     */
+
+    // 크레딧 상태 업데이트 메서드
+    public void updateStatus(CreditStatus status) {
+        this.status = status;
+    }
 }
