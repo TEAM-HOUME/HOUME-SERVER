@@ -473,6 +473,7 @@ class AdminFurnitureServiceImplTest {
         assertEquals(ErrorCode.NOT_FOUND_FURNITURE_TAG, exception.getErrorCode());
     }
 
+
     @Test
     @DisplayName("registerFurniture()는 존재하지 않는 가구 타입으로 등록 시 예외를 발생시킨다")
     void registerFurniture_notValidException() {
@@ -508,6 +509,7 @@ class AdminFurnitureServiceImplTest {
         });
         assertEquals(ErrorCode.FOREIGN_KEY_CONSTRAINT_FAIL, exception.getErrorCode());
     }
+
 
     @Test
     @DisplayName("deleteFurniture()는 외래키 제약 조건 위반 시 예외를 발생시킨다")
