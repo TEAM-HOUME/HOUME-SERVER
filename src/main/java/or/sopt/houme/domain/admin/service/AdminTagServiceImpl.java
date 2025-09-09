@@ -91,7 +91,9 @@ public class AdminTagServiceImpl implements AdminTagService {
 
     /**
      * 태그 데이터를 삭제하는 메서드입니다.
-     * 연관된 데이터가 존재하여 삭제 할 수 없는 경우 DataIntegrityViolationException 를 catch 하여 예외를 핸들링합니다.
+     *
+     * @throws GeneralException 태그 정보를 찾을 수 없을 때
+     * @throws DataIntegrityViolationException 연관된 데이터가 존재하는 경우 예외 발생
      * */
     @Override
     public void delete(AdminTagDeleteRequestDTO dto){

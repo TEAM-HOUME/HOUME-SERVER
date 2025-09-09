@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import or.sopt.houme.domain.admin.controller.dto.furniture.AdminFurnitureRequestDTO;
 
 @Entity
 @NoArgsConstructor
@@ -29,6 +30,14 @@ public class Furniture {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "furniture_type_id", nullable = false)
     private FurnitureType furnitureType;
+
+    public static Furniture createByAdminFurnitureRequestDTO(AdminFurnitureRequestDTO dto, FurnitureType furnitureType){
+        return Furniture.builder()
+                .furnitureNameKr(dto.furnitureNameKr())
+                .furnitureNameEng(dto.furnitureNameEng())
+                .furnitureType(furnitureType)
+                .build();
+    }
 
     public void updateFurnitureNameEng(String furnitureNameEng) {
         this.furnitureNameEng = furnitureNameEng;
