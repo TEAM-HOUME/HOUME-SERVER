@@ -67,6 +67,7 @@ public enum ErrorCode {
 
     // 태그 엔티티 관련 예외
     NOT_FOUND_TAG_ENTITY(HttpStatus.NOT_FOUND, 40406, "태그 객체를 찾을 수 없습니다." ),
+    ALREADY_EXIST_TAG(HttpStatus.BAD_REQUEST,40413, "이미 존재하는 태그입니다"),
 
     // 생성된 이미지 엔티티 관련 예외
     NOT_FOUND_GENERATE_IMAGE_ENTITY(HttpStatus.NOT_FOUND, 40407, "생성된 이미지 객체를 찾을 수 없습니다." ),

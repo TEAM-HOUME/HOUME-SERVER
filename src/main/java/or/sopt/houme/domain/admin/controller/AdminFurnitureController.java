@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/admin")
-@Tag(name = "어드민 회원 관련 API")
+@Tag(name = "어드민 가구 관련 API")
 public class AdminFurnitureController {
 
 
