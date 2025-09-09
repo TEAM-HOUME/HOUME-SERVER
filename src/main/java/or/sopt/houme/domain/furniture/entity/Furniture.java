@@ -12,8 +12,12 @@ import or.sopt.houme.domain.admin.controller.dto.furniture.AdminFurnitureRequest
 @AllArgsConstructor
 @Getter
 @Builder
-@Table(name = "furnitures")
+@Table(name = "furnitures", indexes = {
+        @Index(name = "idx_furniture_name_kr", columnList = "furniture_name_kr", unique = true),
+})
 public class Furniture {
+
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -30,6 +34,8 @@ public class Furniture {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "furniture_type_id", nullable = false)
     private FurnitureType furnitureType;
+
+
 
     public static Furniture createByAdminFurnitureRequestDTO(AdminFurnitureRequestDTO dto, FurnitureType furnitureType){
         return Furniture.builder()

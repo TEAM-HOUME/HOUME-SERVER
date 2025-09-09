@@ -10,8 +10,12 @@ import or.sopt.houme.global.dto.S3PresignedUrlResponseDTO;
 @Getter
 @AllArgsConstructor
 @Builder
-@Table(name = "tastes")
+@Table(name = "tastes", indexes = {
+        @Index(name = "idx_filename", columnList = "filename", unique = true),
+})
 public class Taste {
+
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -27,6 +31,8 @@ public class Taste {
 
     @Column(name = "file_extension", nullable = false)
     private String fileExtension;
+
+
 
     public static Taste createByPreSignedURL(S3PresignedUrlResponseDTO presignedUrl, AdminMoodBoardCreateRequestDTO requestDTO){
         return Taste.builder()
