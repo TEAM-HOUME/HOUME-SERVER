@@ -12,4 +12,6 @@ public interface TagRepository extends JpaRepository<Tag, Long>, TagRepositoryCu
     Optional<Tag> findByTagNameKr(String tagNameKr);
 
     List<Tag> findAllByOrderByPriorityAsc();
+
+    Boolean findByPriority(Integer priority);
 }

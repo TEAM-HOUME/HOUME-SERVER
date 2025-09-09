@@ -32,6 +32,24 @@ public class S3PresignedUtil {
     private String bucketDomain;
 
 
+    /**
+     * S3에 이미지 업로드를 위한 PreSigned URL을 생성하는 메서드입니다.
+     *
+     * 로직 흐름:
+     * 1. 이미지 확장자 유효성을 검증합니다.
+     * 2. 디렉토리명을 정제(sanitize)하여 S3 키에 사용할 수 있도록 처리합니다.
+     * 3. 고유한 키(S3 object key)를 생성합니다.
+     * 4. S3Presigner를 사용하여 업로드용 PreSigned URL을 생성합니다.
+     * 5. 생성된 PreSigned URL과 공개 접근 가능한 이미지 URL, 키 정보를 포함한 DTO를 반환합니다.
+     *
+     * @param imageExtension 업로드할 이미지 파일의 확장자
+     * @param dirName 저장할 S3 디렉토리 이름
+     * @param contentType 업로드할 파일의 Content-Type
+     *
+     * @return 업로드 URL, 공개 URL, 키 등을 포함한 응답 DTO
+     *
+     * @throws GeneralException 지원하지 않는 이미지 확장자인 경우 예외 발생
+     */
     public S3PresignedUrlResponseDTO createPresignedUrl(String imageExtension, String dirName, String contentType) {
 
         if (!isValidImageExtension(imageExtension)) {
@@ -71,11 +89,9 @@ public class S3PresignedUtil {
         );
     }
 
+
     /**
-     * 디렉토리명을 검증하고 정제하는 메서드
-     *
-     * @param dirName 원본 디렉토리명
-     * @return 정제된 안전한 디렉토리명
+     * 디렉토리명을 검증하고 정제하는 메서드 입니다
      */
     private String sanitizeDirectoryName(String dirName) {
         // null이나 빈 문자열인 경우 기본값 반환

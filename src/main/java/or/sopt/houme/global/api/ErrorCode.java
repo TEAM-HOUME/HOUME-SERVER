@@ -11,6 +11,9 @@ public enum ErrorCode {
     // 인증관련
     REQUEST_HEADER_EMPTY(HttpStatus.BAD_REQUEST, 40000, "요청 헤더가 누락되었습니다."),
 
+    // DB관련
+    FOREIGN_KEY_CONSTRAINT_FAIL(HttpStatus.BAD_REQUEST,40010 ,"연관된 데이터들을 먼저 삭제해주세요" ),
+
     // Token 관련 예외
     ACCESS_INVALID_TYPE(HttpStatus.BAD_REQUEST,40001 ,"액세스 토큰이 존재하지 않습니다."),
     ACCESS_TOKEN_EXPIRED(HttpStatus.BAD_REQUEST,40002 ,"액세스 토큰이 만료되었습니다." ),
@@ -28,7 +31,7 @@ public enum ErrorCode {
     NOT_VALID_EXCEPTION(HttpStatus.BAD_REQUEST, 40008, "유효하지 않은 입력값입니다."),
 
     // 회원관련
-    USERNAME_DUPLICATE(HttpStatus.BAD_REQUEST,40009,"username이 중복되었습니다. "),
+    USERNAME_DUPLICATE(HttpStatus.BAD_REQUEST,40009,"username이 중복되었습니다."),
 
     /**
      * 401 UNAUTHORIZED
@@ -68,6 +71,7 @@ public enum ErrorCode {
     // 태그 엔티티 관련 예외
     NOT_FOUND_TAG_ENTITY(HttpStatus.NOT_FOUND, 40406, "태그 객체를 찾을 수 없습니다." ),
     ALREADY_EXIST_TAG(HttpStatus.BAD_REQUEST,40413, "이미 존재하는 태그입니다"),
+    ALREADY_EXIST_PRIORITY(HttpStatus.BAD_REQUEST,40417,"이미 존재하는 우선순위 입니다"),
 
     // 생성된 이미지 엔티티 관련 예외
     NOT_FOUND_GENERATE_IMAGE_ENTITY(HttpStatus.NOT_FOUND, 40407, "생성된 이미지 객체를 찾을 수 없습니다." ),
