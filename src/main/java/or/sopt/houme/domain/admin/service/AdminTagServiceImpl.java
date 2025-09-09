@@ -1,6 +1,7 @@
 package or.sopt.houme.domain.admin.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import or.sopt.houme.domain.admin.controller.dto.AdminTagUpdateRequestDTO;
 import or.sopt.houme.domain.admin.controller.dto.tag.AdminTagDeleteRequestDTO;
 import or.sopt.houme.domain.admin.controller.dto.tag.AdminTagGetAllResponseDTO;
@@ -19,6 +20,7 @@ import java.util.Optional;
 
 @Service
 @Transactional
+@Slf4j
 @RequiredArgsConstructor
 public class AdminTagServiceImpl implements AdminTagService {
 
@@ -30,6 +32,7 @@ public class AdminTagServiceImpl implements AdminTagService {
      * 어드민 사용의 편리함과 기획의도를 고려하여 Tag의 한글명을 unique 필드로 사용중입니다.
      *
      * @throws GeneralException 로직 중 무결성 제약조건에 부합하지 않으면 예외 발생
+     * @throws GeneralException 이미 존재하는 우선순위가 있다면 예외 발생
      * @throws DataIntegrityViolationException 데이터 저장 중 무결성 제약조건에 부합하지 않으면 예외 발생
      * */
     @Override
@@ -39,6 +42,12 @@ public class AdminTagServiceImpl implements AdminTagService {
 
         if(byTagNameKr.isPresent()){
             throw new GeneralException(ErrorCode.ALREADY_EXIST_TAG);
+        }
+
+        Optional<Tag> byPriority = tagRepository.findByPriority(dto.priority());
+
+        if (byPriority.isPresent()){
+            throw new GeneralException(ErrorCode.ALREADY_EXIST_PRIORITY);
         }
 
         Tag newTag = Tag.of(dto.tagName(), dto.priority(), dto.tag_name_kr(), dto.tag_prompt());
@@ -84,9 +93,9 @@ public class AdminTagServiceImpl implements AdminTagService {
         Tag byTagNameKr = tagRepository.findByTagNameKr(dto.tagNameKr())
                 .orElseThrow(()-> new GeneralException(ErrorCode.NOT_FOUND_TAG_ENTITY));
 
-        Boolean byPriority = tagRepository.findByPriority(dto.newPriority());
+        Optional<Tag> byPriority = tagRepository.findByPriority(dto.newPriority());
 
-        if (byPriority){
+        if (byPriority.isPresent()){
             throw new GeneralException(ErrorCode.ALREADY_EXIST_PRIORITY);
         }
 

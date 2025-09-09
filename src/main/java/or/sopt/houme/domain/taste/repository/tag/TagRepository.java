@@ -13,5 +13,5 @@ public interface TagRepository extends JpaRepository<Tag, Long>, TagRepositoryCu
 
     List<Tag> findAllByOrderByPriorityAsc();
 
-    Boolean findByPriority(Integer priority);
+    Optional<Tag> findByPriority(int priority);
 }
