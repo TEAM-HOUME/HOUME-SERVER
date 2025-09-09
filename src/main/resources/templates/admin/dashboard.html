@@ -86,6 +86,11 @@
                 <i class="fas fa-tags"></i>태그 관리
             </a>
         </li>
+        <li class="nav-item">
+            <a class="nav-link" href="#" data-target="moodboard-management">
+                <i class="fas fa-images"></i>무드보드 관리
+            </a>
+        </li>
     </ul>
 </div>
 
@@ -189,6 +194,42 @@
             </div>
         </div>
     </div>
+
+    <!-- 무드보드 관리 섹션 -->
+    <div id="moodboard-management" class="content-section">
+        <h2>무드보드 관리</h2>
+        <div class="card">
+            <div class="card-header">무드보드 이미지 업로드</div>
+            <div class="card-body">
+                <form id="moodboard-upload-form">
+                    <div class="mb-3">
+                        <label for="moodboard-image" class="form-label">이미지 파일 선택</label>
+                        <input type="file" class="form-control" id="moodboard-image" accept="image/*" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="moodboard-original-filename" class="form-label">원본 파일 이름</label>
+                        <input type="text" class="form-control" id="moodboard-original-filename" required>
+                        <div class="form-text">사용자에게 보여질 파일 이름(한글)을 작성해주세요. (예: 미드센추리 블루 스타일)</div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="moodboard-tagId" class="form-label">스타일 태그</label>
+                        <select class="form-select" id="moodboard-tagId" required>
+                            <option value="" selected disabled>태그를 선택하세요...</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary">업로드</button>
+                </form>
+                <div id="moodboard-upload-result" class="api-result"></div>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-header">전체 무드보드 보기</div>
+            <div class="card-body">
+                <button id="get-all-moodboards-button" class="btn btn-secondary">전체 무드보드 보기</button>
+                <div id="get-all-moodboards-result" class="api-result"></div>
+            </div>
+        </div>
+    </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
@@ -203,6 +244,7 @@
         }
 
         populateTagDropdown();
+        populateMoodboardTagDropdown();
 
         // Sidebar navigation
         document.querySelectorAll('#sidebar .nav-link').forEach(link => {
@@ -311,7 +353,91 @@
             };
             testApiCall(accessToken, resultDiv, '/api/v1/admin/tag', 'PATCH', updateData);
         });
+
+        document.getElementById('moodboard-upload-form').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const accessToken = localStorage.getItem('accessToken');
+            const resultDiv = document.getElementById('moodboard-upload-result');
+            const imageFile = document.getElementById('moodboard-image').files[0];
+
+            if (!imageFile) {
+                resultDiv.innerHTML = '<div class="alert alert-danger">이미지 파일을 선택해주세요.</div>';
+                return;
+            }
+
+            const imageExtension = imageFile.name.split('.').pop();
+            const originalFilename = document.getElementById('moodboard-original-filename').value;
+            const tagId = document.getElementById('moodboard-tagId').value;
+
+            const requestDTO = { imageExtension, originalFilename, tagId };
+
+            // 1. Get presigned URL from our server
+            fetch(`/api/v1/admin/moodboard?contentType=${encodeURIComponent(imageFile.type)}`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': 'Bearer ' + accessToken,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(requestDTO)
+            })
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(err => { throw new Error(err.msg || '서버 오류'); });
+                }
+                return response.json();
+            })
+            .then(data => {
+                const presignedUrl = data.data.presignedUrl;
+                console.log("Presigned URL:", presignedUrl);
+                resultDiv.innerHTML = '<div class="alert alert-info">Presigned URL을 받았습니다. 이미지 업로드를 시작합니다...</div>';
+
+                // 2. Upload image to S3 with the presigned URL
+                return fetch(presignedUrl, {
+                    method: 'PUT',
+                    body: imageFile
+                });
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('S3에 이미지 업로드를 실패했습니다.');
+                }
+                resultDiv.innerHTML = '<div class="alert alert-success">이미지 업로드에 성공했습니다!</div>';
+            })
+            .catch(error => {
+                resultDiv.innerHTML = `<div class="alert alert-danger">오류: ${error.message}</div>`;
+                console.error('Upload Error:', error);
+            });
+        });
+
+        document.getElementById('get-all-moodboards-button').addEventListener('click', function() {
+            const accessToken = localStorage.getItem('accessToken');
+            const resultDiv = document.getElementById('get-all-moodboards-result');
+            if (resultDiv.innerHTML) {
+                resultDiv.innerHTML = '';
+                return;
+            }
+            testApiCall(accessToken, resultDiv, '/api/v1/admin/moodboards', 'GET', null, displayMoodboards);
+        });
     };
+
+    function displayMoodboards(data, resultDiv) {
+        const moodboards = data.data.dtos; // Corrected to dtos
+        if (Array.isArray(moodboards)) {
+            let tableHTML = '<table class="table table-hover"><thead><tr><th>이미지</th><th>파일 이름</th><th>원본 파일 이름</th><th>작업</th></tr></thead><tbody>';
+            moodboards.forEach(moodboard => {
+                tableHTML += `<tr>
+                                <td><img src="${moodboard.url}" alt="${moodboard.originalFilename}" style="width: 100px; height: auto;"></td>
+                                <td>${moodboard.filename}</td>
+                                <td>${moodboard.originalFilename}</td>
+                                <td><button class="btn btn-danger btn-sm" onclick="deleteMoodboard('${moodboard.filename}')">삭제</button></td>
+                              </tr>`;
+            });
+            tableHTML += '</tbody></table>';
+            resultDiv.innerHTML = tableHTML;
+        } else {
+            resultDiv.innerHTML = '<div class="alert alert-info">무드보드가 없습니다.</div>';
+        }
+    }
 
     function populateTagDropdown() {
         const accessToken = localStorage.getItem('accessToken');
@@ -334,6 +460,29 @@
             }
         })
         .catch(error => console.error('Error populating tag dropdown:', error));
+    }
+
+    function populateMoodboardTagDropdown() {
+        const accessToken = localStorage.getItem('accessToken');
+        if (!accessToken) return;
+        fetch('/api/v1/admin/tags', {
+            method: 'GET',
+            headers: {'Authorization': 'Bearer ' + accessToken, 'Content-Type': 'application/json'}
+        })
+        .then(response => response.json())
+        .then(data => {
+            const selectElement = document.getElementById('moodboard-tagId');
+            const tags = data.data.tagGetResponseDTOS;
+            if (Array.isArray(tags)) {
+                tags.forEach(tag => {
+                    const option = document.createElement('option');
+                    option.value = tag.id;
+                    option.textContent = `${tag.tag_name_kr} (ID: ${tag.id})`;
+                    selectElement.appendChild(option);
+                });
+            }
+        })
+        .catch(error => console.error('Error populating moodboard tag dropdown:', error));
     }
 
     function displayFurnituresAsTable(data, resultDiv) {
@@ -401,6 +550,16 @@
         });
     }
 
+    function deleteMoodboard(filename) {
+        if (!confirm(`'${filename}' 무드보드를 정말로 삭제하시겠습니까?`)) return;
+        const accessToken = localStorage.getItem('accessToken');
+        const resultDiv = document.getElementById('get-all-moodboards-result');
+        testApiCall(accessToken, resultDiv, `/api/v1/admin/moodboard?filename=${encodeURIComponent(filename)}`, 'DELETE', null, () => {
+            alert('무드보드가 삭제되었습니다.');
+            document.getElementById('get-all-moodboards-button').click();
+        });
+    }
+
     function testApiCall(accessToken, resultDiv, endpoint, method, body = null, successCallback = null) {
         if (!accessToken) {
             resultDiv.innerHTML = '<div class="alert alert-danger">액세스 토큰을 찾을 수 없습니다.</div>';
@@ -432,7 +591,7 @@
             })
             .catch(error => {
                 resultDiv.innerHTML = `<div class="alert alert-danger">오류: ${error.message}</div>`;
-                console.error('API Error:', error);
+                console.error('Upload Error:', error);
             });
     }
 </script>

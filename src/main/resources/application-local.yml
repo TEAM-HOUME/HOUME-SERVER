@@ -64,6 +64,7 @@ cloud:
   aws:
     s3:
       bucket: houme-bucket
+      bucket-domain: ${BUCKET_DOMAIN}
     credentials:
       access-key: ${S3_ACCESS}
       secret-key: ${S3_SECRET}

@@ -51,6 +51,7 @@ public class AdminTagServiceImpl implements AdminTagService {
 
         List<AdminTagGetResponseDTO> responseDTOS = tags.stream()
                 .map(tag -> new AdminTagGetResponseDTO(
+                        tag.getId(),
                         tag.getPriority(),
                         tag.getTagName(),
                         tag.getTagNameKr(),
