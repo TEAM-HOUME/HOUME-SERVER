@@ -13,6 +13,7 @@ import or.sopt.houme.domain.taste.entity.Tag;
 @Builder
 public class FurnitureTag {
 
+
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
@@ -27,6 +28,8 @@ public class FurnitureTag {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "tag_id")
     private Tag tag;
+
+
 
     public static FurnitureTag createByAdminFurniturePromptRequestDTO(AdminFurniturePromptRequestDTO dto,
                                                                       Furniture furniture,

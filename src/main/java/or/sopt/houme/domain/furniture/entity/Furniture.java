@@ -7,6 +7,9 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import or.sopt.houme.domain.admin.controller.dto.furniture.AdminFurnitureRequestDTO;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Entity
 @NoArgsConstructor
 @AllArgsConstructor
@@ -34,7 +37,6 @@ public class Furniture {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "furniture_type_id", nullable = false)
     private FurnitureType furnitureType;
-
 
 
     public static Furniture createByAdminFurnitureRequestDTO(AdminFurnitureRequestDTO dto, FurnitureType furnitureType){
