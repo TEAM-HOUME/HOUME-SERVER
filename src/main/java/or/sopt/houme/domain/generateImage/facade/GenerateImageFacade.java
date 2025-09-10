@@ -358,9 +358,35 @@ public class GenerateImageFacade {
                         .map(CompletableFuture::join)
                         .collect(Collectors.toList());
 
+                // 리스트가 비어있다면, 재요청 시도하라는 반환 (429, Too_Many_Requests)
+                if (results.isEmpty()){
+                    throw new GeneralException(ErrorCode.RETRY_GET_IMAGE);
+                }
+
+                // fallback 이미지 저장
+                List<ImageInfoResponse> fallbackResponses = new ArrayList<>();
+
+                // 만들어진 이미지가 Fallback 이미지라면, 예외처리
+                for (int i = 0; i < results.size(); i++) {
+                    if (results.get(i).getImageLink().equals(S3Constant.FALL_BACK_IMAGE)){
+                        fallbackResponses.add(
+                                ImageInfoResponse.of(null, results.get(i).getImageLink(),
+                                        generateImageRequest.floorPlan().isMirror(),
+                                        generateImageRequest.equilibrium(),
+                                        house.getForm().getDescription(),
+                                        priorityIdList.get(i).tagNameKr(),
+                                        user.getName()
+                                )
+                        );
+                    }
+                }
+                // fallback 이미지가 포함되어 있다면 예외처리
+                if (!fallbackResponses.isEmpty()) {
+                    throw new ImageFallbackException(ErrorCode.GENERATED_IMAGE_EXCEPTION, fallbackResponses);
+                }
+
                 // DB 작업을 별도의 트랜잭션 클래스의 메서드로 분리하여 호출 (크레딧 차감은 여기서)
-                List<ImageInfoResponse> imageInfoResponses =
-                        generateImageTransactionService.saveResultsAndCreateResponse(
+                List<ImageInfoResponse> imageInfoResponses = generateImageTransactionService.saveResultsAndCreateResponse(
                                 user,
                                 house,
                                 results,
@@ -369,20 +395,9 @@ public class GenerateImageFacade {
                                 lockedCredit
                         );
 
-                // 리스트가 비어있다면, 재요청 시도하라는 반환 (429, Too_Many_Requests)
-                if (imageInfoResponses.isEmpty()) {
-                    throw new GeneralException(ErrorCode.RETRY_GET_IMAGE);
-                }
 
                 // DTO로 변환
                 ImageInfoListResponse imageInfoListResponse = ImageInfoListResponse.of(imageInfoResponses);
-
-                // 만들어진 이미지가 Fallback 이미지라면, 예외처리
-                for (ImageInfoResponse imageInfoResponse : imageInfoListResponse.imageInfoResponses()) {
-                    if (imageInfoResponse.imageUrl().equals(S3Constant.FALL_BACK_IMAGE)) {
-                        throw new ImageFallbackException(ErrorCode.GENERATED_IMAGE_EXCEPTION, imageInfoListResponse);
-                    }
-                }
 
                 return imageInfoListResponse;
 
