@@ -100,12 +100,11 @@ public class AdminFurnitureServiceImpl implements AdminFurnitureService {
     @Override
     public AdminFurnitureGetDTO getFurniture(){
 
-        List<Furniture> allFurnitures = furnitureRepository.findAll();
+        List<Furniture> allFurnitures = furnitureRepository.findAllWithTags();
 
         List<AdminFurnitureGetDTO.FurnitureInfo> furnitureInfos = allFurnitures.stream()
                 .map(furniture -> {
-                    List<FurnitureTag> furnitureTags = furnitureTagRepository.findByFurniture(furniture);
-                    List<AdminFurnitureGetDTO.TagInfo> tagInfos = furnitureTags.stream()
+                    List<AdminFurnitureGetDTO.TagInfo> tagInfos = furniture.getFurnitureTags().stream()
                             .map(furnitureTag -> new AdminFurnitureGetDTO.TagInfo(
                                     furnitureTag.getTag().getId(),
                                     furnitureTag.getTag().getTagNameKr()))

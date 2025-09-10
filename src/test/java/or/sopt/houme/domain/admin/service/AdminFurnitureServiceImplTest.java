@@ -154,16 +154,17 @@ class AdminFurnitureServiceImplTest {
     @DisplayName("getFurniture()는 모든 가구 정보를 성공적으로 조회한다")
     void getFurniture_success() {
         // given
+        Tag tag1 = Tag.builder().id(1L).tagNameKr("모던").build();
+
         Furniture furniture1 = Furniture.builder().id(1L).furnitureNameKr("침대").build();
-        Furniture furniture2 = Furniture.builder().id(2L).furnitureNameKr("소파").build();
+        FurnitureTag furnitureTag1 = FurnitureTag.builder().furniture(furniture1).tag(tag1).build();
+        furniture1.setFurnitureTags(List.of(furnitureTag1));
+
+        Furniture furniture2 = Furniture.builder().id(2L).furnitureNameKr("소파").furnitureTags(Collections.emptyList()).build();
+
         List<Furniture> furnitures = List.of(furniture1, furniture2);
 
-        Tag tag1 = Tag.builder().id(1L).tagNameKr("모던").build();
-        FurnitureTag furnitureTag1 = FurnitureTag.builder().furniture(furniture1).tag(tag1).build();
-        when(furnitureTagRepository.findByFurniture(furniture1)).thenReturn(List.of(furnitureTag1));
-        when(furnitureTagRepository.findByFurniture(furniture2)).thenReturn(Collections.emptyList());
-
-        when(furnitureRepository.findAll()).thenReturn(furnitures);
+        when(furnitureRepository.findAllWithTags()).thenReturn(furnitures);
 
         // when
         AdminFurnitureGetDTO result = adminFurnitureService.getFurniture();

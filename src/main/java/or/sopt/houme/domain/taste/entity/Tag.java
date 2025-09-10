@@ -10,7 +10,7 @@ import or.sopt.houme.domain.admin.controller.dto.AdminTagUpdateRequestDTO;
 @AllArgsConstructor
 @Builder
 @Table(name = "tags", indexes = {
-        @Index(name = "idx_tag_name_kr", columnList = "tag_name_kr", unique = true)
+        @Index(name = "idx_tag_name_kr", columnList = "tag_name_kr")
 })
 public class Tag {
 

@@ -85,7 +85,7 @@ public class AdminTagServiceImpl implements AdminTagService {
      *
      * 를 수정 할 수 있습니다.
      *
-     * @throws GeneralException 로직 중 우선순위가 이미 있는 데이터로 들어오면 예외 발
+     * @throws GeneralException 로직 중 우선순위가 이미 있는 데이터로 들어오면 예외 발생
      * */
     @Override
     public void update(AdminTagUpdateRequestDTO dto){

@@ -16,7 +16,7 @@ import java.util.List;
 @Getter
 @Builder
 @Table(name = "furnitures", indexes = {
-        @Index(name = "idx_furniture_name_kr", columnList = "furniture_name_kr", unique = true),
+        @Index(name = "idx_furniture_name_kr", columnList = "furniture_name_kr"),
 })
 public class Furniture {
 
@@ -37,6 +37,13 @@ public class Furniture {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "furniture_type_id", nullable = false)
     private FurnitureType furnitureType;
+
+    @OneToMany(mappedBy = "furniture")
+    private List<FurnitureTag> furnitureTags = new ArrayList<>();
+
+    public void setFurnitureTags(List<FurnitureTag> furnitureTags) {
+        this.furnitureTags = furnitureTags;
+    }
 
 
     public static Furniture createByAdminFurnitureRequestDTO(AdminFurnitureRequestDTO dto, FurnitureType furnitureType){
