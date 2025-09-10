@@ -21,4 +21,12 @@ public class TasteTag {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "tag_id")
     private Tag tag;
+
+
+    public static TasteTag of(Taste taste, Tag tag) {
+        return TasteTag.builder()
+                .taste(taste)
+                .tag(tag)
+                .build();
+    }
 }

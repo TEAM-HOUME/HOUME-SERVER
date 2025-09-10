@@ -5,7 +5,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;
 
-public interface FurnitureRepository extends JpaRepository<Furniture, Long> {
+public interface FurnitureRepository extends JpaRepository<Furniture, Long>, FurnitureCustomRepository {
 
     Optional<Furniture> findByFurnitureNameKr (String furnitureName);
 }

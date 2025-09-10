@@ -2,6 +2,7 @@ package or.sopt.houme.domain.furniture.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import or.sopt.houme.domain.admin.controller.dto.furniture.AdminFurniturePromptRequestDTO;
 import or.sopt.houme.domain.taste.entity.Tag;
 
 @Entity
@@ -11,6 +12,7 @@ import or.sopt.houme.domain.taste.entity.Tag;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Builder
 public class FurnitureTag {
+
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -26,6 +28,18 @@ public class FurnitureTag {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "tag_id")
     private Tag tag;
+
+
+
+    public static FurnitureTag createByAdminFurniturePromptRequestDTO(AdminFurniturePromptRequestDTO dto,
+                                                                      Furniture furniture,
+                                                                      Tag tag){
+        return FurnitureTag.builder()
+                .furniturePrompt(dto.prompt())
+                .furniture(furniture)
+                .tag(tag)
+                .build();
+    }
 
     public void updatePrompt(String prompt) {
         this.furniturePrompt = prompt;

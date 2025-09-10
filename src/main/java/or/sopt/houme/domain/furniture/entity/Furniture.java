@@ -5,14 +5,22 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import or.sopt.houme.domain.admin.controller.dto.furniture.AdminFurnitureRequestDTO;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
 @Builder
-@Table(name = "furnitures")
+@Table(name = "furnitures", indexes = {
+        @Index(name = "idx_furniture_name_kr", columnList = "furniture_name_kr"),
+})
 public class Furniture {
+
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -29,6 +37,22 @@ public class Furniture {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "furniture_type_id", nullable = false)
     private FurnitureType furnitureType;
+
+    @OneToMany(mappedBy = "furniture")
+    private List<FurnitureTag> furnitureTags = new ArrayList<>();
+
+    public void setFurnitureTags(List<FurnitureTag> furnitureTags) {
+        this.furnitureTags = furnitureTags;
+    }
+
+
+    public static Furniture createByAdminFurnitureRequestDTO(AdminFurnitureRequestDTO dto, FurnitureType furnitureType){
+        return Furniture.builder()
+                .furnitureNameKr(dto.furnitureNameKr())
+                .furnitureNameEng(dto.furnitureNameEng())
+                .furnitureType(furnitureType)
+                .build();
+    }
 
     public void updateFurnitureNameEng(String furnitureNameEng) {
         this.furnitureNameEng = furnitureNameEng;

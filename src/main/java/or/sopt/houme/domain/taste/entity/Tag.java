@@ -9,8 +9,11 @@ import or.sopt.houme.domain.admin.controller.dto.AdminTagUpdateRequestDTO;
 @Getter
 @AllArgsConstructor
 @Builder
-@Table(name = "tags")
+@Table(name = "tags", indexes = {
+        @Index(name = "idx_tag_name_kr", columnList = "tag_name_kr")
+})
 public class Tag {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -19,7 +22,7 @@ public class Tag {
     private String tagName;
 
     // 우선순위
-    @Column(name = "priority", nullable = false)
+    @Column(name = "priority", nullable = false, unique = true)
     private int priority;
 
     // 태그(취향) 이름 한글
@@ -29,6 +32,8 @@ public class Tag {
     // 태그(취향) 프롬프트
     @Column(name = "tag_prompt", nullable = false, columnDefinition = "TEXT")
     private  String tagPrompt;
+
+
 
     public static Tag of(String tagName, int priority, String tagNameKr, String tagPrompt) {
         return Tag.builder()
