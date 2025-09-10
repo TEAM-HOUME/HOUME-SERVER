@@ -50,7 +50,8 @@ public class GenerateImageRepositoryImpl implements GenerateImageRepositoryCusto
                 .where(generateImage.house.id.eq(houseId))
                 .orderBy(
                         generateImage.createdAt.desc(),
-                        generateImage.id.asc())
-                .fetchOne());
+                        generateImage.id.desc())
+                .limit(1)
+                .fetchFirst());
     }
 }

@@ -24,7 +24,7 @@ public class CreditCustomRepositoryImpl implements CreditCustomRepository {
         return Optional.ofNullable(queryFactory.selectFrom(credit)
                 .where(credit.user.eq(user).and(credit.status.eq(CreditStatus.ACTIVE)))
                 .orderBy(credit.createdAt.asc())
-                .fetchOne());
+                .fetchFirst());
     }
 
     // User와 Status로 제일 오래된 Credit 찾기
@@ -35,9 +35,9 @@ public class CreditCustomRepositoryImpl implements CreditCustomRepository {
         return Optional.ofNullable(queryFactory
                 .selectFrom(credit)
                 .where(credit.user.eq(user)
-                        .and(credit.status.eq(CreditStatus.ACTIVE))
+                        .and(credit.status.eq(status))
                 )
                 .orderBy(credit.createdAt.asc())
-                .fetchOne());
+                .fetchFirst());
     }
 }
