@@ -9,8 +9,8 @@ import lombok.*;
 @AllArgsConstructor
 @Builder
 @Table(name = "preferences_factors",
-        uniqueConstraints = @UniqueConstraint(columnNames = "preference_id"))
-public class PreferencesFactor {
+        uniqueConstraints = @UniqueConstraint(columnNames = {"preference_id", "factor_id"}))
+public class PreferenceFactor {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -22,4 +22,12 @@ public class PreferencesFactor {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "factor_id")
     private Factor factor;
+
+    // 정적 팩터리 메서드
+    public static PreferenceFactor of(Preference preference, Factor factor) {
+        return PreferenceFactor.builder()
+                .preference(preference)
+                .factor(factor)
+                .build();
+    }
 }

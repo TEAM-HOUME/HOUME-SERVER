@@ -4,6 +4,7 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import or.sopt.houme.domain.preference.entity.Factor;
 import or.sopt.houme.domain.preference.entity.QFactor;
+import or.sopt.houme.domain.user.entity.User;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
