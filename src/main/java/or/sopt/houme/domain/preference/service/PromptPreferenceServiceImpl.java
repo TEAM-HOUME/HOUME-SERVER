@@ -25,12 +25,11 @@ public class PromptPreferenceServiceImpl implements PromptPreferenceService {
     public void togglePromptPreference(House house, boolean isLike) {
         // house.id로 기존 선호도 데이터를 조회
         Optional<PromptPreference> promptPreferenceOptional =
-                promptPreferenceRepository.findPreferenceByHouseId(house.getId());
+                promptPreferenceRepository.findFirstByHouseIdOrderByIdDesc(house.getId());
 
         if (promptPreferenceOptional.isPresent()) {
             // 이미 좋아요/싫어요 상태가 있는 경우
-            PromptPreference promptPreference = promptPreferenceOptional.get();
-            Preference preference = promptPreference.getPreference();
+            Preference preference = promptPreferenceOptional.get().getPreference();
 
             // 기존 상태와 요청 상태가 다를 경우에만 업데이트
             if (preference.isLike() != isLike) {
@@ -43,10 +42,7 @@ public class PromptPreferenceServiceImpl implements PromptPreferenceService {
             Preference newPreference = Preference.of(isLike);
             preferenceRepository.save(newPreference);
 
-            PromptPreference newPromptPreference = PromptPreference.builder()
-                    .house(house)
-                    .preference(newPreference)
-                    .build();
+            PromptPreference newPromptPreference = PromptPreference.generatePreference(newPreference, house);
             promptPreferenceRepository.save(newPromptPreference);
         }
     }

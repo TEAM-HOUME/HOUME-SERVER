@@ -16,11 +16,11 @@ public class PromptPreference {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "preference_id")
+    @JoinColumn(name = "preference_id", unique = true)
     private Preference preference;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "house_id")
+    @JoinColumn(name = "house_id", unique = true)
     private House house;
 
     // 정적 메서드
