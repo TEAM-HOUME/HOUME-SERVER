@@ -88,6 +88,11 @@ public enum ErrorCode {
 
     // 무드보드 (taste)
     NOT_FOUND_TASTE(HttpStatus.NOT_FOUND, 40412, "제공된 무드보드 ID에 해당하는 취향을 찾을 수 없습니다."),
+
+    // 좋아요 관련 예외
+    NOT_FOUND_PREFERENCE(HttpStatus.NOT_FOUND, 40413, "유저와 이미지에 매핑되는 좋아요를 찾을 수 없습니다."),
+    NOT_FOUND_FACTOR(HttpStatus.NOT_FOUND, 40414, "해당 요인을 찾을 수 없습니다."),
+
     /**
      * 405 METHOD_NOT_ALLOWED
      */
