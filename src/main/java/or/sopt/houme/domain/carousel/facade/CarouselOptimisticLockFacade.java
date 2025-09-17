@@ -6,9 +6,8 @@ import or.sopt.houme.domain.carousel.service.CarouselServiceImpl;
 import or.sopt.houme.domain.user.entity.User;
 import or.sopt.houme.global.api.ErrorCode;
 import or.sopt.houme.global.api.handler.CarouselException;
-import org.springframework.stereotype.Component;
-
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.stereotype.Component;
 
 import static or.sopt.houme.global.util.constant.OptimisticLockConstant.MAX_RETRIES;
 import static or.sopt.houme.global.util.constant.OptimisticLockConstant.RETRY_DELAY_MS;
