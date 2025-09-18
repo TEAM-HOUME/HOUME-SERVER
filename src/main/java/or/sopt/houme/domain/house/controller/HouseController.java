@@ -12,6 +12,8 @@ import or.sopt.houme.domain.house.dto.response.HouseOptionsResponse;
 import or.sopt.houme.domain.house.service.HouseService;
 import or.sopt.houme.domain.user.controller.dto.CustomUserDetails;
 import or.sopt.houme.global.api.ApiResponse;
+import or.sopt.houme.global.api.ErrorCode;
+import or.sopt.houme.global.api.handler.GenerateImageException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -52,7 +54,11 @@ public class HouseController {
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @RequestBody @Valid IsLikeRequest request
     ){
-        houseLikeFacade.isLike(userDetails.getUser(), imageId, request);
+        try {
+            houseLikeFacade.isLike(userDetails.getUser(), imageId, request);
+        } catch (InterruptedException e) {
+            throw new GenerateImageException(ErrorCode.PROMPT_INTERRUPT_EXCEPTION);
+        }
 
         return ResponseEntity.ok(ApiResponse.ok(null));
     }

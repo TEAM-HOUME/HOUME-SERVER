@@ -22,7 +22,6 @@ import java.time.LocalDate;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
 
 @Transactional
 @SpringBootTest
@@ -75,12 +74,12 @@ class PromptPreferenceServiceImplTest {
         House saveHouse = houseRepository.save(house);
 
         // When
-        promptPreferenceService.createPromptPreference(saveHouse, preference);
+        promptPreferenceService.togglePromptPreference(saveHouse, preference.isLike());
 
         // Then
         List<PromptPreference> all = promptPreferenceRepository.findAll();
         assertThat(all.size()).isEqualTo(1);
         assertThat(all.get(0).getHouse()).isEqualTo(house);
-        assertThat(all.get(0).getPreference()).isEqualTo(preference);
+        assertThat(all.get(0).getPreference().isLike()).isEqualTo(preference.isLike());
     }
 }

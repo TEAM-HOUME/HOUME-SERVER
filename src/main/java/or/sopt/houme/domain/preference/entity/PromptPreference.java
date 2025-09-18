@@ -9,14 +9,17 @@ import or.sopt.houme.domain.house.entity.House;
 @Getter
 @AllArgsConstructor
 @Builder
-@Table(name = "prompt_preferences")
+@Table(name = "prompt_preferences", uniqueConstraints = {
+        // 하나의 집에 대해 한 건의 선호도만 존재하도록 설정
+        @UniqueConstraint(name = "uk_prompt_pref_house", columnNames = "house_id")
+})
 public class PromptPreference {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "preference_id")
+    @JoinColumn(name = "preference_id", unique = true)
     private Preference preference;
 
     @ManyToOne(fetch = FetchType.LAZY)

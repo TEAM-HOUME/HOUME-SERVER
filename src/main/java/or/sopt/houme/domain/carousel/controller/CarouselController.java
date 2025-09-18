@@ -10,7 +10,6 @@ import or.sopt.houme.domain.user.controller.dto.CustomUserDetails;
 import or.sopt.houme.global.api.ApiResponse;
 import or.sopt.houme.global.api.ErrorCode;
 import or.sopt.houme.global.api.handler.CarouselException;
-import org.springframework.boot.context.properties.bind.DefaultValue;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
