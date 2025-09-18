@@ -36,15 +36,20 @@ public class FactorServiceImpl implements FactorService {
     @Override
     @Transactional
     public void toggleFactorLog(User user, Long imageId, Long factorId) {
-        // 1. user + imageId로 preference 조회
+        // user + imageId로 preference 조회
         Preference preference = preferenceRepository.findPreferenceByUserIdAndImageId(user.getId(), imageId)
                 .orElseThrow(() -> new PreferenceException(ErrorCode.NOT_FOUND_PREFERENCE));
 
-        // 2. factor 조회
+        // factor 조회
         Factor factor = factorRepository.findById(factorId)
                 .orElseThrow(() -> new PreferenceException(ErrorCode.NOT_FOUND_FACTOR));
 
-        // 3. preferenceFactor 존재 여부 확인
+        // 선호 여부가 미스매치는 아닌지
+        if (!factor.isLike() == preference.isLike()) {
+            throw new PreferenceException(ErrorCode.MISMATCHED_IS_LIKE);
+        }
+
+        // preferenceFactor 존재 여부 확인
         Optional<PreferenceFactor> existing = preferenceFactorRepository.findByPreferenceAndFactor(preference, factor);
 
         if (existing.isPresent()) {

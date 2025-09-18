@@ -33,6 +33,9 @@ public enum ErrorCode {
     // 회원관련
     USERNAME_DUPLICATE(HttpStatus.BAD_REQUEST,40009,"username이 중복되었습니다."),
 
+    // 좋아요 관련
+    MISMATCHED_IS_LIKE(HttpStatus.BAD_REQUEST,40010 ,"좋아요와 요인의 선호 여부가 일치하지 않습니다."),
+
     /**
      * 401 UNAUTHORIZED
      */
