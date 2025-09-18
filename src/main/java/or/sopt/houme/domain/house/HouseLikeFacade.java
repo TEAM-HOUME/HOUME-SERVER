@@ -1,5 +1,6 @@
 package or.sopt.houme.domain.house;
 
+import jakarta.persistence.OptimisticLockException;
 import lombok.RequiredArgsConstructor;
 import or.sopt.houme.domain.generateImage.entity.GenerateImage;
 import or.sopt.houme.domain.generateImage.service.GenerateImageService;
@@ -42,8 +43,9 @@ public class HouseLikeFacade {
                 promptPreferenceService.togglePromptPreference(house, request.isLike());
                 // 성공시 종료
                 return;
-            } catch (DataIntegrityViolationException e){
+            } catch (OptimisticLockException | DataIntegrityViolationException e){
                 // unique 제약 조건 위반 시 재시도
+                // 지수 백오프 => 서버 부하 감소, 성공률 증가
                 long backoffTime = (long) Math.pow(2, retryCount) * RETRY_DELAY_MS;
                 Thread.sleep(backoffTime);
                 retryCount++;
