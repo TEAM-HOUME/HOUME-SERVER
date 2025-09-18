@@ -29,6 +29,15 @@ public class FurnitureTag {
     @JoinColumn(name = "tag_id")
     private Tag tag;
 
+    @Column(name = "furniture_url",columnDefinition = "varchar(2048)", nullable = false)
+    private String furnitureUrl;
+
+    @Column(name = "search_keyword", nullable = false)
+    private String searchKeyword;
+
+    @Column(name = "priority", nullable = false)
+    private Integer priority;
+
 
 
     public static FurnitureTag createByAdminFurniturePromptRequestDTO(AdminFurniturePromptRequestDTO dto,

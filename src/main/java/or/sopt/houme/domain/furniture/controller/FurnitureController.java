@@ -1,6 +1,7 @@
 package or.sopt.houme.domain.furniture.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import or.sopt.houme.domain.furniture.dto.response.FurnitureAndActivityResponse;
 import or.sopt.houme.domain.furniture.service.FurnitureService;
@@ -36,4 +37,12 @@ public class FurnitureController {
 
         return ResponseEntity.ok(ApiResponse.ok(furnitureAndActivity));
     }
+
+//    @Operation(summary = "생성된 이미지에서 가구 카테고리 조회 API",
+//            description = "생성된 이미지에서 소파, 침대, 스탠드, 러그와 같은 카테고리를 제공합니다.\n" +
+//                    "각 가구 카테고리의 순서는 스타일에 따라 다릅니다.")
+//    @GetMapping("/api/v1/generated-images/{imageId}/curations/categories")
+//    public ResponseEntity<ApiResponse<?>> getFurnitureCategories() {
+//
+//    }
 }
