@@ -34,7 +34,7 @@ public enum ErrorCode {
     USERNAME_DUPLICATE(HttpStatus.BAD_REQUEST,40009,"username이 중복되었습니다."),
 
     // 좋아요 관련
-    MISMATCHED_IS_LIKE(HttpStatus.BAD_REQUEST,40010 ,"좋아요와 요인의 선호 여부가 일치하지 않습니다."),
+    MISMATCHED_IS_LIKE(HttpStatus.BAD_REQUEST,40011 ,"좋아요와 요인의 선호 여부가 일치하지 않습니다."),
 
     /**
      * 401 UNAUTHORIZED
@@ -73,7 +73,7 @@ public enum ErrorCode {
 
     // 태그 엔티티 관련 예외
     NOT_FOUND_TAG_ENTITY(HttpStatus.NOT_FOUND, 40406, "태그 객체를 찾을 수 없습니다." ),
-    ALREADY_EXIST_TAG(HttpStatus.BAD_REQUEST,40413, "이미 존재하는 태그입니다"),
+    ALREADY_EXIST_TAG(HttpStatus.BAD_REQUEST,40420, "이미 존재하는 태그입니다"),
     ALREADY_EXIST_PRIORITY(HttpStatus.BAD_REQUEST,40417,"이미 존재하는 우선순위 입니다"),
 
     // 생성된 이미지 엔티티 관련 예외
@@ -93,8 +93,8 @@ public enum ErrorCode {
     NOT_FOUND_TASTE(HttpStatus.NOT_FOUND, 40412, "제공된 무드보드 ID에 해당하는 취향을 찾을 수 없습니다."),
 
     // 좋아요 관련 예외
-    NOT_FOUND_PREFERENCE(HttpStatus.NOT_FOUND, 40413, "유저와 이미지에 매핑되는 좋아요를 찾을 수 없습니다."),
-    NOT_FOUND_FACTOR(HttpStatus.NOT_FOUND, 40414, "해당 요인을 찾을 수 없습니다."),
+    NOT_FOUND_PREFERENCE(HttpStatus.NOT_FOUND, 40418, "유저와 이미지에 매핑되는 좋아요를 찾을 수 없습니다."),
+    NOT_FOUND_FACTOR(HttpStatus.NOT_FOUND, 40419, "해당 요인을 찾을 수 없습니다."),
 
     /**
      * 405 METHOD_NOT_ALLOWED
