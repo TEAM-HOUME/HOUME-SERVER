@@ -30,11 +30,10 @@ public class FactorController {
 
     @Operation(summary = "생성된 이미지 선호 여부에 따른 요인 선택 로그 토글 API",
             description = "생성된 이미지의 선호 여부에 따른 요인을 선택한 로그를 토글링합니다.")
-    @PostMapping("/generated-images/{imageId}/preference/factors/logs")
+    @PostMapping("/generated-images/{imageId}/preference/factors/{factorId}")
     public ResponseEntity<ApiResponse<Void>> toggleFactorLog(
             @AuthenticationPrincipal CustomUserDetails user,
-            @PathVariable Long imageId,
-            @RequestParam Long factorId
+            @PathVariable Long imageId, Long factorId
     ) {
         factorService.toggleFactorLog(user.getUser(), imageId, factorId);
 
