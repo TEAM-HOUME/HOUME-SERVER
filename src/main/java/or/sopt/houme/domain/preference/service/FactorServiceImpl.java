@@ -28,6 +28,7 @@ public class FactorServiceImpl implements FactorService {
 
     @Override
     public FactorsResponse getFactors(boolean isLike) {
+        // 선호 여부에 따른 요인 리스트 조회
         List<Factor> factors = factorRepository.findFactorsByIsLike(isLike);
 
         return FactorsResponse.from(factors);
@@ -37,6 +38,7 @@ public class FactorServiceImpl implements FactorService {
     @Transactional
     public void toggleFactorLog(User user, Long imageId, Long factorId) {
         // user + imageId로 preference 조회
+        // 유저와 이미지간 존재하는 preference 객체는 유일합니다.
         Preference preference = preferenceRepository.findPreferenceByUserIdAndImageId(user.getId(), imageId)
                 .orElseThrow(() -> new PreferenceException(ErrorCode.NOT_FOUND_PREFERENCE));
 
@@ -52,6 +54,7 @@ public class FactorServiceImpl implements FactorService {
         // preferenceFactor 존재 여부 확인
         Optional<PreferenceFactor> existing = preferenceFactorRepository.findByPreferenceAndFactor(preference, factor);
 
+        // 매핑 객체를 토글링합니다.
         if (existing.isPresent()) {
             // 이미 있으면 삭제 (toggle off)
             preferenceFactorRepository.delete(existing.get());
