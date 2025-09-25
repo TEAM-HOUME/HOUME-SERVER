@@ -37,7 +37,8 @@ public class GenerateImageRepositoryImpl implements GenerateImageRepositoryCusto
         return Optional.ofNullable(queryFactory
                 .selectFrom(generateImage)
                 .where(generateImage.house.id.eq(houseId))
-                .fetchOne());
+                .orderBy(generateImage.createdAt.asc())
+                .fetchFirst());
     }
 
     // 가장 최근 생성된 GenerateImage 1개 가져오기 (생성시간 내림차순, Id 내림차순)
