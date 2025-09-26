@@ -64,4 +64,15 @@ public class FurnitureServiceImpl implements FurnitureService {
         // 반환 Response 생성
         return FurnitureAndActivityResponse.of(activities, list);
     }
+
+    @Override
+    public Optional<Long> findBedId(List<Long> furnitureIds) {
+        String BED = "BED";
+
+        return furnitureRepository.findAllById(furnitureIds)
+                .stream()
+                .filter(furniture -> BED.equals(furniture.getFurnitureType().getNameEng()))
+                .map(Furniture::getId)
+                .findFirst();
+    }
 }

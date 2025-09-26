@@ -1,6 +1,7 @@
 package or.sopt.houme.domain.generateImage.facade;
 
 import or.sopt.houme.domain.credit.service.CreditService;
+import or.sopt.houme.domain.furniture.service.FurnitureService;
 import or.sopt.houme.domain.generateImage.dto.request.GenerateImageRequest;
 import or.sopt.houme.domain.generateImage.dto.response.ImageInfoResponse;
 import or.sopt.houme.domain.generateImage.entity.GenerateImage;
@@ -29,6 +30,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
@@ -58,6 +60,9 @@ class GenerateImageFacadeTest {
     @Mock
     GenerateImageService generateImageService;
 
+    @Mock
+    FurnitureService furnitureService;
+
     @Test
     @DisplayName("받은 데이터들을 토대로 JAVA로 OpenAI를 사용해 이미지를 받을 수 있다.")
     void generateImage() {
@@ -86,7 +91,7 @@ class GenerateImageFacadeTest {
 
         GenerateImageRequest generateImageRequest = new GenerateImageRequest(
                 1L, "UNDER_5", new GenerateImageRequest.FloorPlanInfo(1L, false),
-                List.of(3L), "READING", 1L, new ArrayList<>()
+                List.of(3L), "READING", new ArrayList<>()
         );
 
         Tag tag = Tag.builder()
@@ -104,7 +109,7 @@ class GenerateImageFacadeTest {
 
         PromptRequestDTO promptRequestDTO = PromptRequestDTO.of(
                 1L, tag.getId(), house.getEquilibrium(),
-                PromptFurnitureListDTO.of(List.of(generateImageRequest.bedId()))
+                PromptFurnitureListDTO.of(List.of())
         );
 
         String filename = "filename";
@@ -171,7 +176,7 @@ class GenerateImageFacadeTest {
 
         GenerateImageRequest generateImageRequest = new GenerateImageRequest(
                 1L, "UNDER_5", new GenerateImageRequest.FloorPlanInfo(1L, false),
-                List.of(3L), "READING", 1L, new ArrayList<>()
+                List.of(3L), "READING", List.of(1L)
         );
 
         Tag tag = Tag.builder()
@@ -184,12 +189,15 @@ class GenerateImageFacadeTest {
 
         when(houseService.updateHouseActivity(generateImageRequest.houseId(), Activity.valueOf(generateImageRequest.activity()))).thenReturn(house);
 
+        // 침대 Id 찾기
+        when(furnitureService.findBedId(generateImageRequest.selectiveIds())).thenReturn(Optional.empty());
+
         when(tasteTagService.getPriorityId(generateImageRequest.moodBoardIds()))
                 .thenReturn(tag);
 
         PromptRequestDTO promptRequestDTO = PromptRequestDTO.of(
                 1L, tag.getId(), house.getEquilibrium(),
-                PromptFurnitureListDTO.of(List.of(generateImageRequest.bedId()))
+                PromptFurnitureListDTO.of(generateImageRequest.selectiveIds())
         );
 
         String filename = "filename";
