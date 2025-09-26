@@ -141,10 +141,10 @@ class HouseServiceImplTest {
         when(houseRepository.save(savedHouse)).thenReturn(savedHouse);
 
         // When
-        House house = houseService.updateHouseActivity(savedHouse.getId(), Activity.RELAXING);
+        House house = houseService.updateHouseActivity(savedHouse.getId(), Activity.REMOTE_WORK);
 
         // Then
         assertThat(house).isNotNull();
-        assertThat(house.getActivity()).isEqualTo(Activity.RELAXING);
+        assertThat(house.getActivity()).isEqualTo(Activity.REMOTE_WORK);
     }
 }
