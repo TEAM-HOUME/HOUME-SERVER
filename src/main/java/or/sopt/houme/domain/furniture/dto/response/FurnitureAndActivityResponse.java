@@ -7,11 +7,10 @@ import java.util.List;
 
 public record FurnitureAndActivityResponse(
         List<ActivityItem> activities,
-        FurnitureGroup beds,
-        FurnitureGroup selectives
+        List<FurnitureCategoryGroup>  categories
 ) {
     // of
-    public static FurnitureAndActivityResponse of(List<ActivityItem> activities, FurnitureGroup beds, FurnitureGroup selectives) {
-        return new FurnitureAndActivityResponse(activities, beds, selectives);
+    public static FurnitureAndActivityResponse of(List<ActivityItem> activities, List<FurnitureCategoryGroup> furnitureCategories) {
+        return new FurnitureAndActivityResponse(activities, furnitureCategories);
     }
 }

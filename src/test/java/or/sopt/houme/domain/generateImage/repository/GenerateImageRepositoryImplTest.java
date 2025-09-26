@@ -55,7 +55,7 @@ class GenerateImageRepositoryImplTest {
                 .form(Form.OFFICETEL)
                 .structure(Structure.OPEN_ONE_ROOM)
                 .equilibrium(Equilibrium.UNDER_5)
-                .activity(Activity.RELAXING)
+                .activity(Activity.REMOTE_WORK)
                 .isValid(true)
                 .build();
         em.persist(house);
