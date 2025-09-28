@@ -19,9 +19,7 @@ public record GenerateImageRequest(
         List<Long> moodBoardIds,        // tasteId
         @NotBlank(message = "주요 활동은 필수입니다.")
         String activity,
-        @NotNull(message = "bedId는 필수입니다.")
-        Long bedId,
-        @Size(max = 4, message = "최대 4개까지만 입력 가능합니다.")
+        @Size(max = 6, message = "최대 6개까지만 입력 가능합니다.")
         // 선택 가구들 아이디
         List<Long> selectiveIds
 ) {

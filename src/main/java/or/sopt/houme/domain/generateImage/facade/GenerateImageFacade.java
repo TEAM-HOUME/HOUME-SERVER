@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import or.sopt.houme.domain.credit.entity.Credit;
 import or.sopt.houme.domain.credit.entity.CreditStatus;
 import or.sopt.houme.domain.credit.service.CreditService;
+import or.sopt.houme.domain.furniture.service.FurnitureService;
 import or.sopt.houme.domain.generateImage.dto.request.GenerateImageRequest;
 import or.sopt.houme.domain.generateImage.dto.response.ImageInfoListResponse;
 import or.sopt.houme.domain.generateImage.dto.response.ImageInfoResponse;
@@ -38,6 +39,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.*;
 import java.util.stream.Collectors;
 
@@ -53,6 +55,7 @@ public class GenerateImageFacade {
     private final TasteTagService tasteTagService;
     private final UserService userService;
     private final TagService tagService;
+    private final FurnitureService furnitureService;
 
     // 비동기 서비스
     private final AsyncGenerateImageService asyncGenerateImageService;
@@ -85,10 +88,13 @@ public class GenerateImageFacade {
             // house_floor_plan 생성 및 저장
             houseService.saveHouseFloorPlan(house, generateImageRequest.floorPlan().floorPlanId());
 
-            // 복층일 경우 침대 제외
-            if (!house.getStructure().equals(Structure.DUPLEX)){
+            // 침대 ID 찾기
+            Optional<Long> bedId = furnitureService.findBedId(generateImageRequest.selectiveIds());
+
+            // 복층이 아닌 경우 침대 추가
+            if (!house.getStructure().equals(Structure.DUPLEX) && bedId.isPresent()) {
                 log.info("복층이 아닌 경우 침대 추가");
-                generateImageRequest.selectiveIds().add(generateImageRequest.bedId());
+                generateImageRequest.selectiveIds().add(bedId.get());
             }
 
             // house furniture 저장
@@ -187,10 +193,13 @@ public class GenerateImageFacade {
         // house_floor_plan 생성 및 저장
         houseService.saveHouseFloorPlan(house, generateImageRequest.floorPlan().floorPlanId());
 
-        // 복층일 경우 침대 제외
-        if (!house.getStructure().equals(Structure.DUPLEX)){
+        // 침대 ID 찾기
+        Optional<Long> bedId = furnitureService.findBedId(generateImageRequest.selectiveIds());
+
+        // 복층이 아닌 경우 침대 추가
+        if (!house.getStructure().equals(Structure.DUPLEX) && bedId.isPresent()) {
             log.info("복층이 아닌 경우 침대 추가");
-            generateImageRequest.selectiveIds().add(generateImageRequest.bedId());
+            generateImageRequest.selectiveIds().add(bedId.get());
         }
 
         // house furniture 저장
@@ -287,10 +296,13 @@ public class GenerateImageFacade {
             // house_floor_plan 생성 및 저장
             houseService.saveHouseFloorPlan(house, generateImageRequest.floorPlan().floorPlanId());
 
-            // 복층일 경우 침대 제외
-            if (!house.getStructure().equals(Structure.DUPLEX)) {
+            // 침대 ID 찾기
+            Optional<Long> bedId = furnitureService.findBedId(generateImageRequest.selectiveIds());
+
+            // 복층이 아닌 경우 침대 추가
+            if (!house.getStructure().equals(Structure.DUPLEX) && bedId.isPresent()) {
                 log.info("복층이 아닌 경우 침대 추가");
-                generateImageRequest.selectiveIds().add(generateImageRequest.bedId());
+                generateImageRequest.selectiveIds().add(bedId.get());
             }
 
             // house furniture 저장

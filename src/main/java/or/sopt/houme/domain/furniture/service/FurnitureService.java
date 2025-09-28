@@ -5,6 +5,7 @@ import or.sopt.houme.domain.furniture.dto.response.FurnitureCategoriesResponse;
 import or.sopt.houme.domain.user.entity.User;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface FurnitureService {
 
@@ -12,4 +13,7 @@ public interface FurnitureService {
     FurnitureAndActivityResponse getFurnitureAndActivity();
 
     FurnitureCategoriesResponse getFurnitureCategoriesByStyle(User user, Long imageId, List<String> detectedObjects);
+
+    // 가구 중 침대 ID 조회
+    Optional<Long> findBedId(List<Long> furnitureIds);
 }
