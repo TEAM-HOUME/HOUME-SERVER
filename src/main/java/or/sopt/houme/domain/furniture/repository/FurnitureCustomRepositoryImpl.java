@@ -5,6 +5,8 @@ import lombok.RequiredArgsConstructor;
 import or.sopt.houme.domain.furniture.entity.Furniture;
 import or.sopt.houme.domain.furniture.entity.QFurniture;
 import or.sopt.houme.domain.furniture.entity.QFurnitureTag;
+import or.sopt.houme.domain.house.entity.QHouse;
+import or.sopt.houme.domain.house.entity.mapping.QHouseFurniture;
 import or.sopt.houme.domain.taste.entity.QTag;
 import org.springframework.stereotype.Repository;
 
@@ -34,6 +36,23 @@ public class FurnitureCustomRepositoryImpl implements FurnitureCustomRepository 
                 .leftJoin(furniture.furnitureTags, furnitureTag).fetchJoin()
                 .leftJoin(furnitureTag.tag, tag).fetchJoin()
                 .distinct()
+                .fetch();
+    }
+
+    // N+1 검토 필요
+    @Override
+    public List<Furniture> findAllByHouseId(Long houseId) {
+        QHouse house = QHouse.house;
+        QHouseFurniture houseFurniture = QHouseFurniture.houseFurniture;
+        QFurniture furniture = QFurniture.furniture;
+
+        return queryFactory
+                .select(furniture)
+                .distinct()
+                .from(houseFurniture)
+                .join(houseFurniture.furniture, furniture)
+                .join(houseFurniture.house, house)
+                .where(house.id.eq(houseId))
                 .fetch();
     }
 }

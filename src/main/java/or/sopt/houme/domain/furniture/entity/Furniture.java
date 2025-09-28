@@ -41,6 +41,10 @@ public class Furniture {
     @OneToMany(mappedBy = "furniture")
     private List<FurnitureTag> furnitureTags = new ArrayList<>();
 
+    // object365 기반 단어
+    @Column(name = "object365_word", nullable = true)
+    private String object365Word;
+
     public void setFurnitureTags(List<FurnitureTag> furnitureTags) {
         this.furnitureTags = furnitureTags;
     }
