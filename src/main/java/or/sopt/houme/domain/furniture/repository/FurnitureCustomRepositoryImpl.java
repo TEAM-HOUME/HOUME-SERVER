@@ -39,6 +39,7 @@ public class FurnitureCustomRepositoryImpl implements FurnitureCustomRepository 
                 .fetch();
     }
 
+    // N+1 검토 필요
     @Override
     public List<Furniture> findAllByHouseId(Long houseId) {
         QHouse house = QHouse.house;
