@@ -48,6 +48,7 @@ public class FurnitureCustomRepositoryImpl implements FurnitureCustomRepository 
 
         return queryFactory
                 .select(furniture)
+                .distinct()
                 .from(houseFurniture)
                 .join(houseFurniture.furniture, furniture)
                 .join(houseFurniture.house, house)
