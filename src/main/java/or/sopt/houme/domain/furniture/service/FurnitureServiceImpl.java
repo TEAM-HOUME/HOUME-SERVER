@@ -152,6 +152,11 @@ public class FurnitureServiceImpl implements FurnitureService {
                         && requestedObjects.contains(f.getObject365Word().toLowerCase()))  // 소문자로 비교하기
                 .toList();
 
+        // 만약 교집합 가구가 없다면, 빈 리스트 반환
+        if (intersectedFurnitures.isEmpty()) {
+            return FurnitureCategoriesResponse.of(Collections.emptyList());
+        }
+
         // 4. 교집합으로 산출된 가구들과 스타일 태그에 해당하는 매핑 객체를 furniture_tags에서 조회
         List<FurnitureTag> styleMappedFurnitureTags = furnitureTagRepository.findAllByTagIdAndFurnitureIn(
                 tag.getId(),
