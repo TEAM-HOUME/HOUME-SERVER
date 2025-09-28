@@ -131,4 +131,43 @@ public class FurnitureServiceImpl implements FurnitureService {
                 .map(Furniture::getId)
                 .findFirst();
     }
+
+    @Override
+    public FurnitureCategoriesResponse getFurnitureCategoriesByStyle(User user, Long imageId, List<String> detectedObjects) {
+
+        // 1. userId와 imageId로 해당하는 스타일 태그 조회
+        Tag tag = tagRepository.findTagByUserIdAndImageId(user.getId(), imageId).orElseThrow(() -> new TagException(ErrorCode.NOT_FOUND_TAG_ENTITY));
+
+        // 2. userId와 imageId로 이미지 생성시 선택했던 가구들을 조회
+        House house = houseRepository.findHouseByUserIdAndImageId(user.getId(), imageId).orElseThrow(() -> new HouseException(ErrorCode.NOT_FOUND_HOUSE_ENTITY));
+        List<Furniture> selectedFurnitures = furnitureRepository.findAllByHouseId(house.getId());
+
+        // 3. 2번 과정에서 생성된 selectedFurnitures의 'object365Word' 필드와 FurnitureCategoriesRequest의 furnitureNames를 비교하여 교집합 산출
+        Set<String> requestedObjects = detectedObjects.stream()
+                .map(String::toLowerCase) // 소문자로 변환
+                .collect(Collectors.toSet());
+
+        List<Furniture> intersectedFurnitures = selectedFurnitures.stream()
+                .filter(f -> f.getObject365Word() != null
+                        && requestedObjects.contains(f.getObject365Word().toLowerCase()))  // 소문자로 비교하기
+                .toList();
+
+        // 4. 교집합으로 산출된 가구들과 스타일 태그에 해당하는 매핑 객체를 furniture_tags에서 조회
+        List<FurnitureTag> styleMappedFurnitureTags = furnitureTagRepository.findAllByTagIdAndFurnitureIn(
+                tag.getId(),
+                intersectedFurnitures
+        );
+
+        // 5. priority 기준 오름차순 정렬 → 응답 DTO 변환
+        List<FurnitureCategoriesResponse.FurnitureCategoryResponse> categoryResponses =
+                styleMappedFurnitureTags.stream()
+                        .sorted(Comparator.comparingInt(FurnitureTag::getPriority))
+                        .map(ft -> FurnitureCategoriesResponse.FurnitureCategoryResponse.of(
+                                ft.getFurniture().getId(),
+                                ft.getFurniture().getFurnitureNameKr()
+                        ))
+                        .toList();
+
+        return FurnitureCategoriesResponse.of(categoryResponses);
+    }
 }
