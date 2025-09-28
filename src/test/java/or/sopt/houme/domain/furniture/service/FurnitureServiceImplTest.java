@@ -1,21 +1,35 @@
 package or.sopt.houme.domain.furniture.service;
 
 import or.sopt.houme.domain.furniture.dto.response.FurnitureAndActivityResponse;
+import or.sopt.houme.domain.furniture.dto.response.FurnitureCategoriesResponse;
 import or.sopt.houme.domain.furniture.entity.Furniture;
+import or.sopt.houme.domain.furniture.entity.FurnitureTag;
 import or.sopt.houme.domain.furniture.entity.FurnitureType;
 import or.sopt.houme.domain.furniture.entity.FurnitureTypes;
 import or.sopt.houme.domain.furniture.repository.FurnitureRepository;
+import or.sopt.houme.domain.furniture.repository.FurnitureTagRepository;
+import or.sopt.houme.domain.house.entity.House;
 import or.sopt.houme.domain.house.entity.enums.Activity;
+import or.sopt.houme.domain.house.repository.HouseRepository;
+import or.sopt.houme.domain.taste.entity.Tag;
+import or.sopt.houme.domain.taste.repository.tag.TagRepository;
+import or.sopt.houme.domain.user.entity.User;
+import or.sopt.houme.global.api.handler.HouseException;
+import or.sopt.houme.global.api.handler.TagException;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -27,6 +41,23 @@ class FurnitureServiceImplTest {
 
     @Mock
     FurnitureRepository furnitureRepository;
+    @Mock
+    FurnitureTagRepository furnitureTagRepository;
+    @Mock
+    HouseRepository houseRepository;
+    @Mock
+    TagRepository tagRepository;
+
+    private User user;
+
+    @BeforeEach
+    void setUp() {
+        user = User.builder()
+                .id(1L)
+                .name("최융아")
+                .email("user1@kakao.com")
+                .build();
+    }
 
     @Test
     @DisplayName("주요활동, 가구들에 대한 정보들을 받을 수 있다.")
@@ -69,6 +100,113 @@ class FurnitureServiceImplTest {
         assertThat(furnitureAndActivity.selectives().isRequired()).isFalse();
         assertThat(furnitureAndActivity.beds().items()).isNotEmpty();
         assertThat(furnitureAndActivity.selectives().items()).isNotEmpty();
+    }
+
+    @Test
+    @DisplayName("감지된 단어와 선택 가구의 교집합만 추려 priority 오름차순으로 정렬된다")
+    void categories_intersection_sorted() {
+        // Given
+        Long imageId = 10L;
+        List<String> detectedObjects = List.of("Bed", "Desk", "Bed", "Desk", "Chair", "Box", "Dining Table");
+
+        Tag tag = Tag.builder()
+                .id(100L)
+                .build();
+
+        House house = House.builder()
+                .id(200L)
+                .build();
+
+        // 이미지 생성 과정에서 사용자가 선택한 가구: Bed, Chair, TV, Dining Table
+        Furniture bed = Furniture.builder()
+                .id(1L)
+                .furnitureNameKr("침대")
+                .object365Word("Bed")
+                .build();
+
+        Furniture chair = Furniture.builder()
+                .id(2L)
+                .furnitureNameKr("의자")
+                .object365Word("Chair")
+                .build();
+
+        Furniture tv = Furniture.builder()
+                .id(3L)
+                .furnitureNameKr("TV")
+                .object365Word("Monitor/TV")
+                .build();
+
+        Furniture dining = Furniture.builder()
+                .id(4L)
+                .furnitureNameKr("식탁")
+                .object365Word("Dining Table")
+                .build();
+
+        // 레포지토리 Stubbing
+        when(tagRepository.findTagByUserIdAndImageId(user.getId(), imageId))
+                .thenReturn(Optional.of(tag));
+        when(houseRepository.findHouseByUserIdAndImageId(user.getId(), imageId))
+                .thenReturn(Optional.of(house));
+        when(furnitureRepository.findAllByHouseId(house.getId()))
+                .thenReturn(List.of(bed, chair, tv, dining));
+
+        // furnitureTag 우선순위: Bed(4), Chair(3), TV(2), Dining Table(1)
+        // 교집합은 Bed/Chair/Dining Table 이므로 그 3개만 반환
+        FurnitureTag ftBed = FurnitureTag.builder()
+                .id(11L).tag(tag).furniture(bed).priority(4).build();
+        FurnitureTag ftChair = FurnitureTag.builder()
+                .id(12L).tag(tag).furniture(chair).priority(3).build();
+        FurnitureTag ftDining = FurnitureTag.builder()
+                .id(13L).tag(tag).furniture(dining).priority(1).build();
+
+        // 태그와 가구 리스트로 매핑 객체 조회
+        when(furnitureTagRepository.findAllByTagIdAndFurnitureIn(tag.getId(), List.of(bed, chair, dining)))
+                .thenReturn(List.of(ftBed, ftChair, ftDining));
+
+        // When
+        FurnitureCategoriesResponse response =
+                furnitureService.getFurnitureCategoriesByStyle(user, imageId, detectedObjects);
+
+        // Then
+        // 교집합: Bed, Chair, Dining Table 만 포함
+        // 정렬: priority 오름차순 → Dining Table(2) → Chair(4) → Bed(5)
+        assertThat(response.categories()).hasSize(3);
+        assertThat(response.categories())
+                .extracting(FurnitureCategoriesResponse.FurnitureCategoryResponse::categoryName)
+                .containsExactly("식탁", "의자", "침대");
+    }
+
+    @Test
+    @DisplayName("Tag가 없을 경우 예외 발생")
+    void getFurnitureCategoriesByStyle_tagNotFound() {
+        // Given
+        Long imageId = 10L;
+
+        when(tagRepository.findTagByUserIdAndImageId(user.getId(), imageId))
+                .thenReturn(Optional.empty());
+
+        // When & Then
+        assertThrows(TagException.class,
+                () -> furnitureService.getFurnitureCategoriesByStyle(user, imageId, List.of("Bed")));
+    }
+
+    @Test
+    @DisplayName("House가 없을 경우 예외 발생")
+    void getFurnitureCategoriesByStyle_houseNotFound() {
+        // Given
+        Long imageId = 10L;
+        Tag tag = Tag.builder()
+                .id(100L)
+                .build();
+
+        when(tagRepository.findTagByUserIdAndImageId(user.getId(), imageId))
+                .thenReturn(Optional.of(tag));
+        when(houseRepository.findHouseByUserIdAndImageId(user.getId(), imageId))
+                .thenReturn(Optional.empty());
+
+        // When & Then
+        assertThrows(HouseException.class,
+                () -> furnitureService.getFurnitureCategoriesByStyle(user, imageId, List.of("Bed")));
     }
 
     private Furniture createFurniture(String eng, String kr, FurnitureType type) {
