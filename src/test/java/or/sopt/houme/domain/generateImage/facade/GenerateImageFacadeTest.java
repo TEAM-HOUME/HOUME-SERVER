@@ -78,7 +78,7 @@ class GenerateImageFacadeTest {
                 .id(1L)
                 .form(Form.OFFICETEL)
                 .structure(Structure.OPEN_ONE_ROOM)
-                .activity(Activity.RELAXING)
+                .activity(Activity.READING)
                 .equilibrium(Equilibrium.UNDER_5)
                 .user(user)
                 .isValid(true)
@@ -86,7 +86,7 @@ class GenerateImageFacadeTest {
 
         GenerateImageRequest generateImageRequest = new GenerateImageRequest(
                 1L, "UNDER_5", new GenerateImageRequest.FloorPlanInfo(1L, false),
-                List.of(3L), "RELAXING", 1L, new ArrayList<>()
+                List.of(3L), "READING", 1L, new ArrayList<>()
         );
 
         Tag tag = Tag.builder()
@@ -163,7 +163,7 @@ class GenerateImageFacadeTest {
                 .id(1L)
                 .form(Form.OFFICETEL)
                 .structure(Structure.OPEN_ONE_ROOM)
-                .activity(Activity.RELAXING)
+                .activity(Activity.REMOTE_WORK)
                 .equilibrium(Equilibrium.UNDER_5)
                 .user(user)
                 .isValid(true)
@@ -171,7 +171,7 @@ class GenerateImageFacadeTest {
 
         GenerateImageRequest generateImageRequest = new GenerateImageRequest(
                 1L, "UNDER_5", new GenerateImageRequest.FloorPlanInfo(1L, false),
-                List.of(3L), "RELAXING", 1L, new ArrayList<>()
+                List.of(3L), "READING", 1L, new ArrayList<>()
         );
 
         Tag tag = Tag.builder()

@@ -7,6 +7,7 @@ import or.sopt.houme.domain.furniture.dto.FurnitureGroup;
 import or.sopt.houme.domain.furniture.dto.FurnitureItem;
 import or.sopt.houme.domain.furniture.dto.response.FurnitureAndActivityResponse;
 import or.sopt.houme.domain.furniture.dto.response.FurnitureCategoriesResponse;
+import or.sopt.houme.domain.furniture.dto.response.FurnitureCategoryGroup;
 import or.sopt.houme.domain.furniture.entity.Furniture;
 import or.sopt.houme.domain.furniture.entity.FurnitureTag;
 import or.sopt.houme.domain.furniture.entity.FurnitureType;
@@ -14,6 +15,7 @@ import or.sopt.houme.domain.furniture.entity.FurnitureTypes;
 import or.sopt.houme.domain.furniture.repository.FurnitureRepository;
 import or.sopt.houme.domain.furniture.repository.FurnitureTagRepository;
 import or.sopt.houme.domain.house.entity.House;
+import or.sopt.houme.domain.furniture.repository.FurnitureTypeRepository;
 import or.sopt.houme.domain.house.entity.enums.Activity;
 import or.sopt.houme.domain.house.repository.HouseRepository;
 import or.sopt.houme.domain.taste.entity.Tag;
@@ -40,37 +42,36 @@ public class FurnitureServiceImpl implements FurnitureService {
     private final TagRepository tagRepository;
     private final HouseRepository houseRepository;
     private final FurnitureTagRepository furnitureTagRepository;
+    private final FurnitureTypeRepository furnitureTypeRepository;
 
     // 가구 반환
     @Cacheable(value = "furnitureAndActivityCache")
     @Override
     public FurnitureAndActivityResponse getFurnitureAndActivity() {
 
-        // 침대 가구들
-        List<FurnitureItem> bedItems = new ArrayList<>();
-        // 선택 가구들
-        List<FurnitureItem> selectiveItems = new ArrayList<>();
+        // 모든 카테고리 가져오기
+        List<FurnitureType> furnitureTypes = furnitureTypeRepository.findAll();
 
-        // 가구 타입별 구분
+        // 모든 가구 조회 (없는 경우는 빈 리스트)
         List<Furniture> furnitureList = Optional.of(furnitureRepository.findAll())
                 .orElse(Collections.emptyList());
 
-        for (Furniture item : furnitureList) {
-            FurnitureType type = item.getFurnitureType();
-            if (type == null || type.getFurnitureType() == null) continue;
+        // FurnitureType 별로 그룹화
+        Map<Long, List<FurnitureItem>> furnitureByCategory = furnitureList.stream()
+                .collect(Collectors.groupingBy(
+                        furniture -> furniture.getFurnitureType().getId(),  // FurnitureType Id 가져오기
+                        Collectors.mapping(FurnitureItem::from, Collectors.toList())
+                ));
 
-            FurnitureItem furnitureItem = FurnitureItem.from(item);
-            if (type.getFurnitureType() == FurnitureTypes.BED) {
-                bedItems.add(furnitureItem);
-            } else {
-                selectiveItems.add(furnitureItem);
-            }
-        }
-
-        // 필수 값 (BED)
-        FurnitureGroup bedGroup = FurnitureGroup.from(true, bedItems);
-        // 필수 아님 (그 외 가구)
-        FurnitureGroup selectiveGroup = FurnitureGroup.from(false, selectiveItems);
+        // 각 FurnitureType에 해당하는 FurnitureGroup 생성
+        List<FurnitureCategoryGroup> list = furnitureTypes.stream()
+                .map(furnitureType -> {
+                    // 없으면 빈 리스트
+                    List<FurnitureItem> items = furnitureByCategory.getOrDefault(furnitureType.getId(), Collections.emptyList());
+                    return FurnitureCategoryGroup.from(furnitureType, items);
+                })
+                .sorted(Comparator.comparing(FurnitureCategoryGroup::categoryId)) // 카테고리 ID로 정렬
+                .toList();
 
         // 주요 활동 담기
         List<ActivityItem> activities = Arrays.stream(Activity.values())
@@ -78,7 +79,7 @@ public class FurnitureServiceImpl implements FurnitureService {
                 .toList();
 
         // 반환 Response 생성
-        return FurnitureAndActivityResponse.of(activities, bedGroup, selectiveGroup);
+        return FurnitureAndActivityResponse.of(activities, list);
     }
 
     @Override

@@ -57,7 +57,7 @@ class HouseCustomRepositoryImplTest {
                 .form(Form.OFFICETEL)
                 .structure(Structure.OPEN_ONE_ROOM)
                 .equilibrium(Equilibrium.UNDER_5)
-                .activity(Activity.RELAXING)
+                .activity(Activity.READING)
                 .user(mockUser)
                 .isValid(true)
                 .build();

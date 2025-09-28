@@ -57,12 +57,14 @@ class AdminFurnitureServiceImplTest {
 
         bedType = FurnitureType.builder()
                 .id(1L)
-                .furnitureType(FurnitureTypes.BED)
+                .nameKr("침대")
+                .nameEng("BED")
                 .build();
 
         FurnitureType sofaType = FurnitureType.builder()
                 .id(2L)
-                .furnitureType(FurnitureTypes.SELECTIVE)
+                .nameKr("소파")
+                .nameEng("SOFA")
                 .build();
     }
 

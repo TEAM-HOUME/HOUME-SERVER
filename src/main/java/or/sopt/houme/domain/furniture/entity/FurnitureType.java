@@ -14,10 +14,14 @@ public class FurnitureType {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "furniture_type", nullable = false)
-    private FurnitureTypes furnitureType;
+    // 카테고리 한글 이름
+    @Column(name = "name_kr", nullable = false, unique = true)
+    private String nameKr;
 
-    @Column(name = "is_required", nullable = false)
+    // 카테고리 영어 이름
+    @Column(name = "name_eng", nullable = false, unique = true)
+    private String nameEng;
+
+    @Column(name = "is_required")
     private Boolean isRequired;
 }

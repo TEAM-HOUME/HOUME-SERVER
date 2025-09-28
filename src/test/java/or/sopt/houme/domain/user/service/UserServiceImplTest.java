@@ -110,8 +110,8 @@ class UserServiceImplTest {
     }
 
     @Test
-    @DisplayName("유저의 이미지 생성 이력 조회 성공")
-    void getUserImageHistoryList_Success() {
+    @DisplayName("유저의 이미지 생성 이력 조회 성공 - 동일한 houseId에 여러 이미지가 있을 때 첫 번째 것만 반환")
+    void getUserImageHistoryList_MultipleGenerateImages_ReturnsFirst() {
         // given
         Long userId = user.getId();
 
@@ -122,9 +122,22 @@ class UserServiceImplTest {
         given(houseRepository.findValidHouseByUserId(userId))
                 .willReturn(List.of(house));
 
-        // 2. 각 house의 이미지 반환
+        // 2. 동일한 houseId에 여러 이미지가 있다고 가정
+        GenerateImage firstImage = GenerateImage.builder()
+                .id(100L)
+                .url("https://cdn.com/image1.png")
+                .house(house)
+                .build();
+
+        GenerateImage secondImage = GenerateImage.builder()
+                .id(200L)
+                .url("https://cdn.com/image2.png")
+                .house(house)
+                .build();
+
+        // Repository는 결국 fetchFirst() 결과만 반환하므로 "첫 번째 이미지"만 리턴되도록 설정
         given(generateImageRepository.findByHouseId(house.getId()))
-                .willReturn(Optional.ofNullable(generateImage));
+                .willReturn(Optional.of(firstImage));
 
         // 3. 대표 태그 반환
         given(tagRepository.findMostFrequentTagByHouseId(house.getId()))
@@ -138,8 +151,8 @@ class UserServiceImplTest {
         assertThat(response.histories()).hasSize(1);
 
         UserImageHistoryDTO dto = response.histories().get(0);
-        assertThat(dto.imageId()).isEqualTo(100L);
-        assertThat(dto.generatedImageUrl()).isEqualTo("https://cdn.com/image.png");
+        assertThat(dto.imageId()).isEqualTo(100L); // 첫번째 이미지가 선택됨
+        assertThat(dto.generatedImageUrl()).isEqualTo("https://cdn.com/image1.png");
         assertThat(dto.tasteTag()).isEqualTo("모던");
         assertThat(dto.equilibrium()).isEqualTo("5평 이하");
         assertThat(dto.houseForm()).isEqualTo("아파트");

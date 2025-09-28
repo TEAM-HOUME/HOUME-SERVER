@@ -109,7 +109,7 @@ class UserRepositoryImplTest {
                 .form(Form.OFFICETEL)
                 .structure(Structure.OPEN_ONE_ROOM)
                 .equilibrium(Equilibrium.UNDER_5)
-                .activity(Activity.RELAXING)
+                .activity(Activity.REMOTE_WORK)
                 .user(mockUser)
                 .isValid(true)
                 .build();
@@ -119,7 +119,7 @@ class UserRepositoryImplTest {
                 .form(Form.APARTMENT)
                 .structure(Structure.DUPLEX)
                 .equilibrium(Equilibrium.BETWEEN_6_10)
-                .activity(Activity.HOME_THEATER)
+                .activity(Activity.READING)
                 .user(mockUser)
                 .isValid(true)
                 .build();
