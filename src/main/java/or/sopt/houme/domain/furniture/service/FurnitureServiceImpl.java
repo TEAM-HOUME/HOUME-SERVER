@@ -1,7 +1,6 @@
 package or.sopt.houme.domain.furniture.service;
 
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import or.sopt.houme.domain.furniture.dto.ActivityItem;
 import or.sopt.houme.domain.furniture.dto.FurnitureGroup;
 import or.sopt.houme.domain.furniture.dto.FurnitureItem;
