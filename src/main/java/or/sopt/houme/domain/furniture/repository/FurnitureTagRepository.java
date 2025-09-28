@@ -15,4 +15,6 @@ public interface FurnitureTagRepository extends JpaRepository<FurnitureTag, Long
     Optional<FurnitureTag> findByFurnitureAndTag(Furniture furniture, Tag tag);
 
     List<FurnitureTag> findByFurniture(Furniture furniture);
+
+    List<FurnitureTag> findAllByTagIdAndFurnitureIn(Long tagId, List<Furniture> furnitures);
 }
