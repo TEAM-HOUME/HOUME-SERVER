@@ -2,6 +2,7 @@ package or.sopt.houme.domain.furniture.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
+import or.sopt.houme.domain.furniture.dto.request.FurnitureProductsInfoResponse;
 import or.sopt.houme.domain.furniture.dto.response.FurnitureAndActivityResponse;
 import or.sopt.houme.domain.furniture.dto.response.FurnitureCategoriesResponse;
 import or.sopt.houme.domain.furniture.service.FurnitureService;
@@ -46,6 +47,15 @@ public class FurnitureController {
     @GetMapping("/generated-images/{imageId}/curations/categories")
     public ResponseEntity<ApiResponse<FurnitureCategoriesResponse>> getFurnitureCategories(@AuthenticationPrincipal CustomUserDetails userDetails, @PathVariable Long imageId, @RequestParam List<String> detectedObjects) {
         FurnitureCategoriesResponse response = furnitureService.getFurnitureCategoriesByStyle(userDetails.getUser(), imageId, detectedObjects);
+
+        return ResponseEntity.ok(ApiResponse.ok(response));
+    }
+
+    @Operation(summary = "가구 카테고리를 클릭하여 가구 제품 조회 API",
+            description = "생성된 이미지의 큐레이션 탭에서 가구 카테고리를 클릭하여 네이버 쇼핑 API를 통한 가구 제품들을 검색합니다.")
+    @GetMapping("/api/v1/generated-images/{imageId}/curations/products/{categoryId}")
+    public ResponseEntity<ApiResponse<FurnitureProductsInfoResponse>> getFurnitureProductInfoFromNaverApi(@AuthenticationPrincipal CustomUserDetails userDetails, @PathVariable Long imageId, Long categoryId) {
+        FurnitureProductsInfoResponse response = furnitureService.getFurnitureProductInfoFromNaverApi(userDetails.getUser(), imageId, categoryId);
 
         return ResponseEntity.ok(ApiResponse.ok(response));
     }

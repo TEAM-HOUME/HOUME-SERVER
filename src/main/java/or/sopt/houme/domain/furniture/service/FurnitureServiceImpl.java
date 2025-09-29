@@ -1,16 +1,17 @@
 package or.sopt.houme.domain.furniture.service;
 
 import lombok.RequiredArgsConstructor;
+import or.sopt.houme.domain.furniture.client.NaverShopApiClient;
 import or.sopt.houme.domain.furniture.dto.ActivityItem;
-import or.sopt.houme.domain.furniture.dto.FurnitureGroup;
 import or.sopt.houme.domain.furniture.dto.FurnitureItem;
+import or.sopt.houme.domain.furniture.dto.NaverFurnitureProductDto;
+import or.sopt.houme.domain.furniture.dto.request.FurnitureProductsInfoResponse;
 import or.sopt.houme.domain.furniture.dto.response.FurnitureAndActivityResponse;
 import or.sopt.houme.domain.furniture.dto.response.FurnitureCategoriesResponse;
 import or.sopt.houme.domain.furniture.dto.response.FurnitureCategoryGroup;
 import or.sopt.houme.domain.furniture.entity.Furniture;
 import or.sopt.houme.domain.furniture.entity.FurnitureTag;
 import or.sopt.houme.domain.furniture.entity.FurnitureType;
-import or.sopt.houme.domain.furniture.entity.FurnitureTypes;
 import or.sopt.houme.domain.furniture.repository.FurnitureRepository;
 import or.sopt.houme.domain.furniture.repository.FurnitureTagRepository;
 import or.sopt.houme.domain.house.entity.House;
@@ -22,6 +23,7 @@ import or.sopt.houme.domain.taste.repository.tag.TagRepository;
 import or.sopt.houme.domain.user.entity.User;
 import or.sopt.houme.domain.user.repository.UserRepository;
 import or.sopt.houme.global.api.ErrorCode;
+import or.sopt.houme.global.api.GeneralException;
 import or.sopt.houme.global.api.handler.HouseException;
 import or.sopt.houme.global.api.handler.TagException;
 import org.springframework.cache.annotation.Cacheable;
@@ -42,6 +44,8 @@ public class FurnitureServiceImpl implements FurnitureService {
     private final HouseRepository houseRepository;
     private final FurnitureTagRepository furnitureTagRepository;
     private final FurnitureTypeRepository furnitureTypeRepository;
+
+    NaverShopApiClient naverShopApiClient;
 
     // 가구 반환
     @Cacheable(value = "furnitureAndActivityCache")
@@ -129,5 +133,35 @@ public class FurnitureServiceImpl implements FurnitureService {
                 .filter(furniture -> BED.equals(furniture.getFurnitureType().getNameEng()))
                 .map(Furniture::getId)
                 .findFirst();
+    }
+
+    @Override
+    public FurnitureProductsInfoResponse getFurnitureProductInfoFromNaverApi(User user, Long imageId, Long categoryId) {
+
+        // 1. userId와 imageId로 스타일 태그 조회
+        Tag tag = tagRepository.findTagByUserIdAndImageId(user.getId(), imageId).orElseThrow(() -> new TagException(ErrorCode.NOT_FOUND_TAG_ENTITY));
+
+        // 2. categoryId로 furniture 객체 조회
+        Furniture furniture = furnitureRepository.findById(categoryId).orElseThrow(() -> new GeneralException(ErrorCode.NOT_FOUND_FURNITURE));
+
+        // 3. tagId와 categoryId(=furnitureId)로 furnitureTag 매핑 객체 조회
+        FurnitureTag furnitureTag = furnitureTagRepository.findByFurnitureAndTag(furniture, tag).orElseThrow(() -> new GeneralException(ErrorCode.NOT_FOUND_FURNITURE_TAG));
+
+        // 4. 네이버 API 호출
+        String searchKeyword = furnitureTag.getSearchKeyword(); // ← DB에서 매핑된 검색 키워드 꺼냄
+        List<NaverFurnitureProductDto> products = naverShopApiClient.searchProducts(searchKeyword, 20);
+
+        // 5. 변환: Naver DTO → FurnitureProductsInfoResponse.FurnitureProductInfo
+        List<FurnitureProductsInfoResponse.FurnitureProductInfo> infos = products.stream()
+                .map(dto -> FurnitureProductsInfoResponse.FurnitureProductInfo.of(
+                        dto.furnitureProductImageUrl(),
+                        dto.furnitureProductSiteUrl(),
+                        dto.furnitureProductName(),
+                        dto.furnitureProductBrandName()
+                ))
+                .toList();
+
+        // 6. 응답 DTO 생성
+        return FurnitureProductsInfoResponse.of(user.getName(), infos);
     }
 }
