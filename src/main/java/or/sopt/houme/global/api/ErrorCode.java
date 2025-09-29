@@ -36,6 +36,9 @@ public enum ErrorCode {
     // 좋아요 관련
     MISMATCHED_IS_LIKE(HttpStatus.BAD_REQUEST,40011 ,"좋아요와 요인의 선호 여부가 일치하지 않습니다."),
 
+    // 클라이언트가 JSON body를 잘못 보냈을 때
+    REQUEST_BODY_NOT_READABLE(HttpStatus.BAD_REQUEST, 40012, "요청 데이터 타입이 일치하지 않습니다."),
+
     /**
      * 401 UNAUTHORIZED
      */
@@ -144,6 +147,8 @@ public enum ErrorCode {
     PROMPT_RETRY_EXCEPTION(HttpStatus.INTERNAL_SERVER_ERROR,50016,"생성된 이미지 좋아요,싫어요 시도 중 동시성 예외가 발생하였습니다, 서버 개발자에게 문의해주세요"),
     PROMPT_INTERRUPT_EXCEPTION(HttpStatus.INTERNAL_SERVER_ERROR,50017,"이미지 API 실행 중, INTERRUPT_EXCEPTION 가 발생하였습니다. 서버 개발자에게 문의해주세요"),
 
+    // DB 제약조건 위반 에러
+    DB_CONSTRAINT_VIOLATION(HttpStatus.INTERNAL_SERVER_ERROR, 50018, "DB 제약조건 문제 발생, 서버 개발자에게 문의해주세요"),
 
     /**
      * 504 GATEWAY_TIMEOUT
