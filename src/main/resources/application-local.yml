@@ -60,6 +60,10 @@ openai:
     background: auto
     output-format: png
 
+naver:
+  client-id: ${NAVER_CLIENT_ID}
+  client-secret: ${NAVER_CLIENT_SECRET}
+
 cloud:
   aws:
     s3:
