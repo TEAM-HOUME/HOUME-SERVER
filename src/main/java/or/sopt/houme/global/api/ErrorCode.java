@@ -102,7 +102,7 @@ public enum ErrorCode {
     NOT_FOUND_FACTOR(HttpStatus.NOT_FOUND, 40419, "해당 요인을 찾을 수 없습니다."),
 
     // Admin 가구 타입 관련 예외
-    NOT_FOUND_FURNITURE_TYPE(HttpStatus.NOT_FOUND, 40420, "가구 타입을 찾을 수 없습니다."),
+    NOT_FOUND_FURNITURE_TYPE(HttpStatus.NOT_FOUND, 40421, "가구 타입을 찾을 수 없습니다."),
 
     /**
      * 405 METHOD_NOT_ALLOWED

@@ -2,7 +2,6 @@ package or.sopt.houme.domain.furniture.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-import or.sopt.houme.domain.admin.controller.dto.furniture.type.request.AdminUpdateFurnitureTypeRequest;
 
 @Entity
 @Table(name = "furniture_types")
@@ -26,8 +25,12 @@ public class FurnitureType {
     @Column(name = "is_required")
     private Boolean isRequired;
 
-    public void updateFurnitureType(AdminUpdateFurnitureTypeRequest request) {
-        this.nameKr = request.furnitureTypeNameKr();
-        this.nameEng = request.furnitureTypeNameEng();
+    public void updateFurnitureType(String nameKr, String nameEng) {
+        if (nameKr != null && !nameKr.isBlank()){
+            this.nameKr = nameKr;
+        }
+        if (nameEng != null && !nameEng.isBlank()){
+            this.nameEng = nameEng;
+        }
     }
 }

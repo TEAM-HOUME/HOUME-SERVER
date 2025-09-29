@@ -282,7 +282,7 @@ public class AdminFurnitureServiceImpl implements AdminFurnitureService {
         // 가구타입 등록
         FurnitureType entity = FurnitureType.builder()
                 .nameKr(request.furnitureTypeNameKr())
-                .nameEng(request.furnitureTypeNameEng())
+                .nameEng(request.furnitureTypeNameEng().toUpperCase())
                 .build();
 
         furnitureTypeRepository.save(entity);
@@ -314,6 +314,16 @@ public class AdminFurnitureServiceImpl implements AdminFurnitureService {
         FurnitureType furnitureType = furnitureTypeRepository.findById(request.id())
                 .orElseThrow(() -> new AdminException(ErrorCode.NOT_FOUND_FURNITURE_TYPE));
 
-        furnitureType.updateFurnitureType(request);
+        // 한글명이 이미 있는지 확인
+        if (furnitureTypeRepository.existsByNameKr(request.furnitureTypeNameKr())) {
+            throw new AdminException(ErrorCode.DUPLICATE_FURNITURE_TYPE_KR);
+        }
+
+        // 영어명이 이미 있는지 확인
+        if (furnitureTypeRepository.existsByNameEng(request.furnitureTypeNameEng())) {
+            throw new AdminException(ErrorCode.DUPLICATE_FURNITURE_TYPE_ENG);
+        }
+
+        furnitureType.updateFurnitureType(request.furnitureTypeNameKr(), request.furnitureTypeNameEng().toUpperCase());
     }
 }

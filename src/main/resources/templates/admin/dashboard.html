@@ -331,18 +331,6 @@
             testApiCall(accessToken, resultDiv, '/api/v1/admin/furniture', 'POST', furnitureData);
         });
 
-        document.getElementById('furniture-form').addEventListener('submit', function(event) {
-            event.preventDefault();
-            const accessToken = localStorage.getItem('accessToken');
-            const resultDiv = document.getElementById('furniture-api-result');
-            const furnitureData = {
-                furnitureNameKr: document.getElementById('furnitureNameKr').value,
-                furnitureNameEng: document.getElementById('furnitureNameEng').value,
-                isBed: document.getElementById('isBed').checked
-            };
-            testApiCall(accessToken, resultDiv, '/api/v1/admin/furniture', 'POST', furnitureData);
-        });
-
         document.getElementById('furniture-prompt-form').addEventListener('submit', function(event) {
             event.preventDefault();
             const accessToken = localStorage.getItem('accessToken');
