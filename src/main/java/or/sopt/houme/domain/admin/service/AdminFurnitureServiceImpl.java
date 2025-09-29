@@ -52,7 +52,7 @@ public class AdminFurnitureServiceImpl implements AdminFurnitureService {
         }
 
         furnitureType = furnitureTypeRepository.findById(dto.furnitureType())
-                .orElseThrow(()-> new GeneralException(ErrorCode.NOT_VALID_EXCEPTION));
+                .orElseThrow(()-> new AdminException(ErrorCode.NOT_FOUND_FURNITURE_TYPE));
 
         Furniture newFurniture = Furniture.createByAdminFurnitureRequestDTO(dto, furnitureType);
 
@@ -275,7 +275,7 @@ public class AdminFurnitureServiceImpl implements AdminFurnitureService {
         }
 
         // 영어명이 이미 있는지 확인
-        if (furnitureTypeRepository.existsByNameEng(request.furnitureTypeNameEng())) {
+        if (furnitureTypeRepository.existsByNameEng(request.furnitureTypeNameEng().toUpperCase())) {
             throw new AdminException(ErrorCode.DUPLICATE_FURNITURE_TYPE_ENG);
         }
 
@@ -320,7 +320,7 @@ public class AdminFurnitureServiceImpl implements AdminFurnitureService {
         }
 
         // 영어명이 이미 있는지 확인
-        if (furnitureTypeRepository.existsByNameEng(request.furnitureTypeNameEng())) {
+        if (furnitureTypeRepository.existsByNameEng(request.furnitureTypeNameEng().toUpperCase())) {
             throw new AdminException(ErrorCode.DUPLICATE_FURNITURE_TYPE_ENG);
         }
 
