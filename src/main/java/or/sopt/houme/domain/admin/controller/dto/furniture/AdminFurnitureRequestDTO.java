@@ -10,7 +10,7 @@ public record AdminFurnitureRequestDTO(
         @Schema(description = "추가되는 가구의 영어명 입니다")
         String furnitureNameEng,
 
-        @Schema(description = "침대인지 아닌지에 대한 필드입니다")
-        boolean isBed
+        @Schema(description = "추가되는 가구의 가구 타입 입니다")
+        Long furnitureType
 ) {
 }

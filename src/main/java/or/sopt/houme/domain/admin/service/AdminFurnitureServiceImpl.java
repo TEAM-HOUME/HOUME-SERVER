@@ -2,6 +2,10 @@ package or.sopt.houme.domain.admin.service;
 
 import lombok.RequiredArgsConstructor;
 import or.sopt.houme.domain.admin.controller.dto.furniture.*;
+import or.sopt.houme.domain.admin.controller.dto.furniture.type.request.AdminFurnitureTypeRequest;
+import or.sopt.houme.domain.admin.controller.dto.furniture.type.request.AdminUpdateFurnitureTypeRequest;
+import or.sopt.houme.domain.admin.controller.dto.furniture.type.response.AdminFurnitureTypeListResponse;
+import or.sopt.houme.domain.admin.controller.dto.furniture.type.response.AdminFurnitureTypeResponse;
 import or.sopt.houme.domain.furniture.entity.Furniture;
 import or.sopt.houme.domain.furniture.entity.FurnitureTag;
 import or.sopt.houme.domain.furniture.entity.FurnitureType;
@@ -12,6 +16,7 @@ import or.sopt.houme.domain.taste.entity.Tag;
 import or.sopt.houme.domain.taste.repository.tag.TagRepository;
 import or.sopt.houme.global.api.ErrorCode;
 import or.sopt.houme.global.api.GeneralException;
+import or.sopt.houme.global.api.handler.AdminException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -46,13 +51,8 @@ public class AdminFurnitureServiceImpl implements AdminFurnitureService {
             throw new GeneralException(ErrorCode.ALREADY_EXIST_FURNITURE);
         }
 
-        if (dto.isBed()){
-            furnitureType = furnitureTypeRepository.findById(1L)
-                    .orElseThrow(()-> new GeneralException(ErrorCode.NOT_VALID_EXCEPTION));
-        }else {
-            furnitureType = furnitureTypeRepository.findById(2L)
-                    .orElseThrow(()-> new GeneralException(ErrorCode.NOT_VALID_EXCEPTION));
-        }
+        furnitureType = furnitureTypeRepository.findById(dto.furnitureType())
+                .orElseThrow(()-> new GeneralException(ErrorCode.NOT_VALID_EXCEPTION));
 
         Furniture newFurniture = Furniture.createByAdminFurnitureRequestDTO(dto, furnitureType);
 
@@ -247,5 +247,73 @@ public class AdminFurnitureServiceImpl implements AdminFurnitureService {
         String furniturePrompt = byFurnitureIdAndTag.getFurniturePrompt();
 
         return new AdminFurnitureDetailsResponseDTO(furniturePrompt);
+    }
+
+    /**
+     * FurnitureType 반환 메서드
+     * @return AdminFurnitureTypeListResponse
+     */
+    @Override
+    public AdminFurnitureTypeListResponse getFurnitureTypes() {
+
+        List<AdminFurnitureTypeResponse> list = furnitureTypeRepository.findAll().stream()
+                .map(AdminFurnitureTypeResponse::of)
+                .toList();
+
+        return new AdminFurnitureTypeListResponse(list);
+    }
+
+    /**
+     * FurnitureType 등록 메서드
+     */
+    @Override
+    public void registerFurnitureType(AdminFurnitureTypeRequest request) {
+
+        // 한글명이 이미 있는지 확인
+        if (furnitureTypeRepository.existsByNameKr(request.furnitureTypeNameKr())) {
+            throw new AdminException(ErrorCode.DUPLICATE_FURNITURE_TYPE_KR);
+        }
+
+        // 영어명이 이미 있는지 확인
+        if (furnitureTypeRepository.existsByNameEng(request.furnitureTypeNameEng())) {
+            throw new AdminException(ErrorCode.DUPLICATE_FURNITURE_TYPE_ENG);
+        }
+
+        // 가구타입 등록
+        FurnitureType entity = FurnitureType.builder()
+                .nameKr(request.furnitureTypeNameKr())
+                .nameEng(request.furnitureTypeNameEng())
+                .build();
+
+        furnitureTypeRepository.save(entity);
+    }
+
+    /**
+     * FurnitureType 삭제 메서드
+     */
+    @Override
+    public void deleteFurnitureType(long furnitureTypeId) {
+
+        FurnitureType type = furnitureTypeRepository.findById(furnitureTypeId)
+                .orElseThrow(() -> new AdminException(ErrorCode.NOT_FOUND_FURNITURE_TYPE));
+
+        boolean hasFurnitures = furnitureRepository.existsByFurnitureType(type);
+        if (hasFurnitures) {
+            throw new AdminException(ErrorCode.CANNOT_DELETE_FURNITURE_TYPE_IN_USE);
+        }
+
+        furnitureTypeRepository.delete(type);
+    }
+
+    /**
+     * FurnitureType 수정 메서드
+     */
+    @Override
+    public void updateFurnitureType(AdminUpdateFurnitureTypeRequest request) {
+
+        FurnitureType furnitureType = furnitureTypeRepository.findById(request.id())
+                .orElseThrow(() -> new AdminException(ErrorCode.NOT_FOUND_FURNITURE_TYPE));
+
+        furnitureType.updateFurnitureType(request);
     }
 }
