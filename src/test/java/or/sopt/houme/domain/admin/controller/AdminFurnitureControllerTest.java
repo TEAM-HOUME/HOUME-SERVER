@@ -41,7 +41,7 @@ class AdminFurnitureControllerTest {
     @DisplayName("POST /api/v1/admin/furniture 요청으로 가구를 등록할 수 있다")
     void registerFurniture_success() throws Exception {
         // given
-        AdminFurnitureRequestDTO requestDTO = new AdminFurnitureRequestDTO("테스트 가구", "test furniture", true);
+        AdminFurnitureRequestDTO requestDTO = new AdminFurnitureRequestDTO("테스트 가구", "test furniture", 1L);
 
         // when & then
         mockMvc.perform(post("/api/v1/admin/furniture")

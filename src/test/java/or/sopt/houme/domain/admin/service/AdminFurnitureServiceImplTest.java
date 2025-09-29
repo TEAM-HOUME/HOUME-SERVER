@@ -73,7 +73,7 @@ class AdminFurnitureServiceImplTest {
     @DisplayName("registerFurniture()는 새로운 가구를 성공적으로 등록한다")
     void registerFurniture_success() {
         // given
-        AdminFurnitureRequestDTO requestDTO = new AdminFurnitureRequestDTO("새로운 침대", "new bed", true);
+        AdminFurnitureRequestDTO requestDTO = new AdminFurnitureRequestDTO("새로운 침대", "new bed", 1L);
         when(furnitureRepository.findByFurnitureNameKr("새로운 침대")).thenReturn(Optional.empty());
         when(furnitureTypeRepository.findById(1L)).thenReturn(Optional.of(bedType));
 
@@ -89,7 +89,7 @@ class AdminFurnitureServiceImplTest {
     @DisplayName("registerFurniture()는 이미 존재하는 가구 이름으로 등록 시 예외를 발생시킨다")
     void registerFurniture_alreadyExists() {
         // given
-        AdminFurnitureRequestDTO requestDTO = new AdminFurnitureRequestDTO("기존 침대", "existing bed", true);
+        AdminFurnitureRequestDTO requestDTO = new AdminFurnitureRequestDTO("기존 침대", "existing bed", 1L);
         when(furnitureRepository.findByFurnitureNameKr("기존 침대")).thenReturn(Optional.of(Furniture.builder().build()));
 
         // when & then
@@ -481,7 +481,7 @@ class AdminFurnitureServiceImplTest {
     @DisplayName("registerFurniture()는 존재하지 않는 가구 타입으로 등록 시 예외를 발생시킨다")
     void registerFurniture_notValidException() {
         // given
-        AdminFurnitureRequestDTO requestDTO = new AdminFurnitureRequestDTO("새로운 침대", "new bed", true);
+        AdminFurnitureRequestDTO requestDTO = new AdminFurnitureRequestDTO("새로운 침대", "new bed", 1L);
         when(furnitureRepository.findByFurnitureNameKr("새로운 침대")).thenReturn(Optional.empty());
         when(furnitureTypeRepository.findById(1L)).thenReturn(Optional.empty());
 
