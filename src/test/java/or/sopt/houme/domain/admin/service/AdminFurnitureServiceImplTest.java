@@ -489,7 +489,7 @@ class AdminFurnitureServiceImplTest {
         GeneralException exception = assertThrows(GeneralException.class, () -> {
             adminFurnitureService.registerFurniture(requestDTO);
         });
-        assertEquals(ErrorCode.NOT_VALID_EXCEPTION, exception.getErrorCode());
+        assertEquals(ErrorCode.NOT_FOUND_FURNITURE_TYPE, exception.getErrorCode());
     }
 
     @Test
