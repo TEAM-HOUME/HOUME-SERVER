@@ -12,6 +12,7 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -36,7 +37,8 @@ public class NaverShopApiClient {
                 .queryParam("display", display) // 검색 개수
                 .queryParam("exclude", "used:rental:cbshop") // 중고, 렌탈 등등 상품은 제외
                 .queryParam("filter", "naverpay") // 네이버페이 인증된 상품만 검색하는 것이 중복이 적음
-                .build(true)
+                .encode(StandardCharsets.UTF_8)
+                .build()
                 .toUri();
 
         HttpHeaders headers = new HttpHeaders();
