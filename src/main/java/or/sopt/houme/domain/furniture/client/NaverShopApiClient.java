@@ -2,6 +2,7 @@ package or.sopt.houme.domain.furniture.client;
 
 import lombok.RequiredArgsConstructor;
 import or.sopt.houme.domain.furniture.dto.NaverFurnitureProductDto;
+import or.sopt.houme.domain.furniture.dto.NaverFurnitureProductDtoForPlan;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -55,6 +56,35 @@ public class NaverShopApiClient {
 
         for (Map<String, Object> item : items) {
             results.add(NaverFurnitureProductDto.from(item));
+        }
+
+        return results;
+    }
+
+    public List<NaverFurnitureProductDtoForPlan> searchProductsForPlan(String query, int display) {
+        URI uri = UriComponentsBuilder.fromHttpUrl(BASE_URL)
+                .queryParam("query", query) // 검색어
+                .queryParam("display", display) // 검색 개수
+                .queryParam("exclude", "used:rental:cbshop") // 중고, 렌탈 등등 상품은 제외
+                .queryParam("filter", "naverpay") // 네이버페이 인증된 상품만 검색하는 것이 중복이 적음
+                .encode(StandardCharsets.UTF_8)
+                .build()
+                .toUri();
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("X-Naver-Client-Id", clientId);
+        headers.set("X-Naver-Client-Secret", clientSecret);
+
+        HttpEntity<Void> entity = new HttpEntity<>(headers);
+
+        // REST 요청
+        ResponseEntity<Map> response = restTemplate.exchange(uri, HttpMethod.GET, entity, Map.class);
+
+        List<Map<String, Object>> items = (List<Map<String, Object>>) response.getBody().get("items");
+        List<NaverFurnitureProductDtoForPlan> results = new ArrayList<>();
+
+        for (Map<String, Object> item : items) {
+            results.add(NaverFurnitureProductDtoForPlan.from(item));
         }
 
         return results;
