@@ -36,6 +36,9 @@ public enum ErrorCode {
     // 좋아요 관련
     MISMATCHED_IS_LIKE(HttpStatus.BAD_REQUEST,40011 ,"좋아요와 요인의 선호 여부가 일치하지 않습니다."),
 
+    // 이미지 관련 예외
+    IMAGE_PROCESSING_ERROR(HttpStatus.BAD_REQUEST,40012 ,"이미지 컬러 해시값 계산 중 오류가 발생하였습니다."),
+
     /**
      * 401 UNAUTHORIZED
      */
