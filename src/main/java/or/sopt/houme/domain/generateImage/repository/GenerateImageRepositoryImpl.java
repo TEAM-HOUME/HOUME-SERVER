@@ -50,6 +50,7 @@ public class GenerateImageRepositoryImpl implements GenerateImageRepositoryCusto
                 .selectFrom(generateImage)
                 .join(generateImage.house, house).fetchJoin()
                 .where(house.id.eq(houseId))
+                .orderBy(generateImage.createdAt.asc())
                 .fetch();
     }
 }
