@@ -6,7 +6,7 @@ public record NaverFurnitureProductDto(
         String furnitureProductImageUrl,
         String furnitureProductSiteUrl,
         String furnitureProductName,
-        String furnitureProductBrandName
+        String furnitureProductMallName
 ) {
     public static NaverFurnitureProductDto from(Map<String, Object> it) {
         return new NaverFurnitureProductDto(
