@@ -20,17 +20,17 @@ import or.sopt.houme.domain.user.entity.User;
 import or.sopt.houme.domain.user.repository.UserRepository;
 import or.sopt.houme.global.api.ErrorCode;
 import or.sopt.houme.global.api.handler.*;
-
-import org.assertj.core.api.PredicateAssert;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDate;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.BDDMockito.*;
 
@@ -159,8 +159,8 @@ class UserServiceImplTest {
     }
 
     @Test
-    @DisplayName("마이페이지 이미지 히스토리 결과 페이지 조회 성공")
-    void getImageHistoryResultPage_success() {
+    @DisplayName("마이페이지 이미지 히스토리 결과 페이지 - 생성된 이미지 2개 조회 성공")
+    void getImageHistoryResultPage_multipleGenerateImages_success() {
         // given
         Long userId = 1L;
         Long imageId = 10L;
@@ -179,8 +179,12 @@ class UserServiceImplTest {
                 .tagNameKr("모던")
                 .build();
 
-        GenerateImage generateImage = GenerateImage.builder()
-                .url("https://example.com/image.png")
+        GenerateImage generateImage1 = GenerateImage.builder()
+                .url("https://example.com/image1.png")
+                .build();
+
+        GenerateImage generateImage2 = GenerateImage.builder()
+                .url("https://example.com/image2.png")
                 .build();
 
         Preference preference = Preference.builder()
@@ -188,27 +192,39 @@ class UserServiceImplTest {
                 .build();
 
         PromptPreference promptPreference = PromptPreference.builder()
-                        .preference(preference)
+                .preference(preference)
                 .house(house)
                 .build();
 
         given(userRepository.findById(userId)).willReturn(Optional.of(user));
         given(houseRepository.findHouseByUserIdAndImageId(userId, imageId)).willReturn(Optional.of(house));
         given(tagRepository.findTagByUserIdAndImageId(userId, imageId)).willReturn(Optional.of(tag));
-        given(generateImageRepository.findGenerateImageByUserIdAndImageId(userId, imageId)).willReturn(Optional.of(generateImage));
-        given(preferenceRepository.findPreferenceByUserIdAndImageId(userId, imageId)).willReturn(Optional.ofNullable(preference));
-        given(promptPreferenceRepository.findFirstByHouseIdOrderByIdDesc(house.getId())).willReturn(Optional.of(promptPreference));
+        // generateImages 리스트 2개 반환
+        given(generateImageRepository.findGenerateImagesByHouseId(house.getId()))
+                .willReturn(List.of(generateImage1, generateImage2));
+        given(promptPreferenceRepository.findFirstByHouseIdOrderByIdDesc(house.getId()))
+                .willReturn(Optional.of(promptPreference));
 
         // when
-        ImageHistoryResultPageResponse response = userService.getImageHistoryResultPage(user, imageId);
+        ImageHistoriesResultPageResponse response = userService.getImageHistoryResultPage(user, imageId);
 
         // then
-        assertThat(response.equilibrium()).isEqualTo("5평 이하");
-        assertThat(response.houseForm()).isEqualTo("OFFICETEL");
-        assertThat(response.tasteTag()).isEqualTo("모던");
-        assertThat(response.name()).isEqualTo("테스트유저");
-        assertThat(response.generatedImageUrl()).isEqualTo("https://example.com/image.png");
-//        assertThat(response.isLike()).isTrue();
+        assertThat(response.histories()).hasSize(2);
+
+        ImageHistoriesResultPageResponse.ImageHistoryResultPageResponse history1 = response.histories().get(0);
+        ImageHistoriesResultPageResponse.ImageHistoryResultPageResponse history2 = response.histories().get(1);
+
+        assertThat(history1.generatedImageUrl()).isEqualTo("https://example.com/image1.png");
+        assertThat(history2.generatedImageUrl()).isEqualTo("https://example.com/image2.png");
+
+        // 공통 속성 검증
+        response.histories().forEach(history -> {
+            assertThat(history.equilibrium()).isEqualTo("5평 이하");
+            assertThat(history.houseForm()).isEqualTo("OFFICETEL");
+            assertThat(history.tasteTag()).isEqualTo("모던");
+            assertThat(history.name()).isEqualTo("테스트유저");
+            assertThat(history.isLike()).isTrue();
+        });
     }
 
     @Test
@@ -250,8 +266,8 @@ class UserServiceImplTest {
                 .willReturn(Optional.of(house));
         given(tagRepository.findTagByUserIdAndImageId(user.getId(), generateImage.getId()))
                 .willReturn(Optional.of(tag));
-        given(generateImageRepository.findGenerateImageByUserIdAndImageId(user.getId(), generateImage.getId()))
-                .willReturn(Optional.empty());
+        given(generateImageRepository.findGenerateImagesByHouseId(house.getId()))
+                .willReturn(Collections.emptyList());
 
         // when & then
         assertThatThrownBy(() -> userService.getImageHistoryResultPage(user, generateImage.getId()))

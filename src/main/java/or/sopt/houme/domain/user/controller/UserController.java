@@ -7,11 +7,9 @@ import lombok.RequiredArgsConstructor;
 import or.sopt.houme.domain.user.controller.dto.*;
 import or.sopt.houme.domain.user.entity.Gender;
 import or.sopt.houme.domain.user.service.UserService;
-import or.sopt.houme.domain.user.service.UserServiceImpl;
 import or.sopt.houme.global.api.ApiResponse;
 import or.sopt.houme.global.api.ErrorCode;
 import or.sopt.houme.global.api.GeneralException;
-import org.apache.coyote.BadRequestException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -43,8 +41,8 @@ public class UserController {
 
     @GetMapping(value = "/mypage/images/{imageId}")
     @Operation(summary = "마이페이지에서 이미지 생성 이력 클릭시 결과 페이지 제공 API")
-    public ResponseEntity<ApiResponse<ImageHistoryResultPageResponse>> getImageHistoryResultPage(@AuthenticationPrincipal CustomUserDetails userDetails, @PathVariable Long imageId) {
-        ImageHistoryResultPageResponse imageHistoryResultPageResponse = userService.getImageHistoryResultPage(userDetails.getUser(), imageId);
+    public ResponseEntity<ApiResponse<ImageHistoriesResultPageResponse>> getImageHistoryResultPage(@AuthenticationPrincipal CustomUserDetails userDetails, @PathVariable Long imageId) {
+        ImageHistoriesResultPageResponse imageHistoryResultPageResponse = userService.getImageHistoryResultPage(userDetails.getUser(), imageId);
 
         return ResponseEntity.ok(ApiResponse.ok(imageHistoryResultPageResponse));
     }
