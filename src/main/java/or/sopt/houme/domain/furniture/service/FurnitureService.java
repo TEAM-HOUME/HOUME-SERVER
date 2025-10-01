@@ -1,8 +1,9 @@
 package or.sopt.houme.domain.furniture.service;
 
-import or.sopt.houme.domain.furniture.dto.request.FurnitureProductsInfoResponse;
+import or.sopt.houme.domain.furniture.dto.response.FurnitureProductsInfoResponse;
 import or.sopt.houme.domain.furniture.dto.response.FurnitureAndActivityResponse;
 import or.sopt.houme.domain.furniture.dto.response.FurnitureCategoriesResponse;
+import or.sopt.houme.domain.furniture.dto.response.FurnitureProductsInfoResponseForPlan;
 import or.sopt.houme.domain.user.entity.User;
 
 import java.util.List;
@@ -20,4 +21,6 @@ public interface FurnitureService {
 
 
     FurnitureProductsInfoResponse getFurnitureProductInfoFromNaverApi(User user, Long imageId, Long categoryId);
+
+    FurnitureProductsInfoResponseForPlan getFurnitureProductInfoFromNaverApiForPlan(User user, Long tagId, Long furnitureId, String searchKeyword, int searchProductsCount);
 }
