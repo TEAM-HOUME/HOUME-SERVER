@@ -24,4 +24,13 @@ public class FurnitureType {
 
     @Column(name = "is_required")
     private Boolean isRequired;
+
+    public void updateFurnitureType(String nameKr, String nameEng) {
+        if (nameKr != null && !nameKr.isBlank()){
+            this.nameKr = nameKr;
+        }
+        if (nameEng != null && !nameEng.isBlank()){
+            this.nameEng = nameEng;
+        }
+    }
 }

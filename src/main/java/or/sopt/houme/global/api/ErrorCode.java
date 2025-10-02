@@ -39,6 +39,11 @@ public enum ErrorCode {
     // 클라이언트가 JSON body를 잘못 보냈을 때
     REQUEST_BODY_NOT_READABLE(HttpStatus.BAD_REQUEST, 40012, "요청 데이터 타입이 일치하지 않습니다."),
 
+    // 어드민 FurnitureType 관련 예외
+    DUPLICATE_FURNITURE_TYPE_KR(HttpStatus.BAD_REQUEST, 40013, "중복된 가구타입 한글명입니다."),
+    DUPLICATE_FURNITURE_TYPE_ENG(HttpStatus.BAD_REQUEST, 40014, "중복된 가구타입 영어명입니다."),
+    CANNOT_DELETE_FURNITURE_TYPE_IN_USE(HttpStatus.BAD_REQUEST, 40015, "해당 가구 타입을 사용하는 가구들을 먼저 삭제해주세요."),
+
     /**
      * 401 UNAUTHORIZED
      */
@@ -98,6 +103,9 @@ public enum ErrorCode {
     // 좋아요 관련 예외
     NOT_FOUND_PREFERENCE(HttpStatus.NOT_FOUND, 40418, "유저와 이미지에 매핑되는 좋아요를 찾을 수 없습니다."),
     NOT_FOUND_FACTOR(HttpStatus.NOT_FOUND, 40419, "해당 요인을 찾을 수 없습니다."),
+
+    // Admin 가구 타입 관련 예외
+    NOT_FOUND_FURNITURE_TYPE(HttpStatus.NOT_FOUND, 40421, "가구 타입을 찾을 수 없습니다."),
 
     /**
      * 405 METHOD_NOT_ALLOWED
