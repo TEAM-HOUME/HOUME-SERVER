@@ -1,8 +1,8 @@
 package or.sopt.houme.domain.furniture.client;
 
 import lombok.RequiredArgsConstructor;
-import or.sopt.houme.domain.furniture.dto.NaverFurnitureProductDto;
-import or.sopt.houme.domain.furniture.dto.NaverFurnitureProductDtoForPlan;
+import or.sopt.houme.domain.furniture.dto.external.naverShop.NaverFurnitureProductDto;
+import or.sopt.houme.domain.furniture.dto.external.naverShop.NaverFurnitureProductDtoForPlan;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
