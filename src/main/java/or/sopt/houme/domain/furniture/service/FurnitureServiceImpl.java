@@ -1,11 +1,14 @@
 package or.sopt.houme.domain.furniture.service;
 
 import lombok.RequiredArgsConstructor;
+import or.sopt.houme.domain.furniture.client.FastApiImageHashClient;
 import or.sopt.houme.domain.furniture.client.NaverShopApiClient;
 import or.sopt.houme.domain.furniture.dto.ActivityItem;
 import or.sopt.houme.domain.furniture.dto.FurnitureItem;
-import or.sopt.houme.domain.furniture.dto.NaverFurnitureProductDto;
-import or.sopt.houme.domain.furniture.dto.NaverFurnitureProductDtoForPlan;
+import or.sopt.houme.domain.furniture.dto.external.naverShop.FurnitureProductsInfoResponse;
+import or.sopt.houme.domain.furniture.dto.external.naverShop.FurnitureProductsInfoResponseForPlan;
+import or.sopt.houme.domain.furniture.dto.external.naverShop.NaverFurnitureProductDto;
+import or.sopt.houme.domain.furniture.dto.external.naverShop.NaverFurnitureProductDtoForPlan;
 import or.sopt.houme.domain.furniture.dto.response.*;
 import or.sopt.houme.domain.furniture.entity.Furniture;
 import or.sopt.houme.domain.furniture.entity.FurnitureTag;
@@ -45,6 +48,7 @@ public class FurnitureServiceImpl implements FurnitureService {
     private final FurnitureTypeRepository furnitureTypeRepository;
 
     private final NaverShopApiClient naverShopApiClient;
+    private final FastApiImageHashClient imageHashClient;
 
     // 가구 반환
     @Cacheable(value = "furnitureAndActivityCache")
@@ -135,63 +139,19 @@ public class FurnitureServiceImpl implements FurnitureService {
     }
 
     @Override
-    public FurnitureProductsInfoResponse getFurnitureProductInfoFromNaverApi(User user, Long imageId, Long categoryId) {
+    public FurnitureTag findFurnitureTag(User user, Long imageId, Long categoryId) {
 
         // 1. userId와 imageId로 스타일 태그 조회
-        Tag tag = tagRepository.findTagByUserIdAndImageId(user.getId(), imageId).orElseThrow(() -> new TagException(ErrorCode.NOT_FOUND_TAG_ENTITY));
+        Tag tag = tagRepository.findTagByUserIdAndImageId(user.getId(), imageId)
+                .orElseThrow(() -> new TagException(ErrorCode.NOT_FOUND_TAG_ENTITY));
 
         // 2. categoryId로 furniture 객체 조회
-        Furniture furniture = furnitureRepository.findById(categoryId).orElseThrow(() -> new GeneralException(ErrorCode.NOT_FOUND_FURNITURE));
+        Furniture furniture = furnitureRepository.findById(categoryId)
+                .orElseThrow(() -> new GeneralException(ErrorCode.NOT_FOUND_FURNITURE));
 
         // 3. tagId와 categoryId(=furnitureId)로 furnitureTag 매핑 객체 조회
-        FurnitureTag furnitureTag = furnitureTagRepository.findByFurnitureAndTag(furniture, tag).orElseThrow(() -> new GeneralException(ErrorCode.NOT_FOUND_FURNITURE_TAG));
-
-        // 4. 네이버 API 호출
-        String searchKeyword = furnitureTag.getSearchKeyword(); // ← DB에서 매핑된 검색 키워드 꺼냄
-        List<NaverFurnitureProductDto> products = naverShopApiClient.searchProducts(searchKeyword, 20);
-
-        try {
-            // 5-1. 기준 가구(furnitureTag) 컬러 해시 계산
-            double[] baseColorHash = ColorHashUtil.getColorHistogramFromUrl(furnitureTag.getFurnitureUrl());
-
-            // 5-2. products 각각의 컬러 해시 계산 및 유사도 점수 부여
-            List<FurnitureProductsInfoResponse.FurnitureProductInfo> infos = products.stream()
-                    .map(dto -> {
-                        try {
-                            double[] productHash = ColorHashUtil.getColorHistogramFromUrl(dto.furnitureProductImageUrl());
-                            double similarity = ColorHashUtil.cosineSimilarity(baseColorHash, productHash);
-
-                            return new AbstractMap.SimpleEntry<>(
-                                    similarity,
-                                    FurnitureProductsInfoResponse.FurnitureProductInfo.of(
-                                            dto.furnitureProductImageUrl(),
-                                            dto.furnitureProductSiteUrl(),
-                                            dto.furnitureProductName(),
-                                            dto.furnitureProductMallName()
-                                    )
-                            );
-                        } catch (Exception e) {
-                            return new AbstractMap.SimpleEntry<>(
-                                    0.0,
-                                    FurnitureProductsInfoResponse.FurnitureProductInfo.of(
-                                            dto.furnitureProductImageUrl(),
-                                            dto.furnitureProductSiteUrl(),
-                                            dto.furnitureProductName(),
-                                            dto.furnitureProductMallName()
-                                    )
-                            );
-                        }
-                    })
-                    .sorted((a, b) -> Double.compare(b.getKey(), a.getKey()))
-                    .limit(5)
-                    .map(Map.Entry::getValue)
-                    .toList();
-
-            return FurnitureProductsInfoResponse.of(user.getName(), infos);
-
-        } catch (Exception e) {
-            throw new GeneralException(ErrorCode.IMAGE_PROCESSING_ERROR);
-        }
+        return furnitureTagRepository.findByFurnitureAndTag(furniture, tag)
+                .orElseThrow(() -> new GeneralException(ErrorCode.NOT_FOUND_FURNITURE_TAG));
     }
 
     @Override
