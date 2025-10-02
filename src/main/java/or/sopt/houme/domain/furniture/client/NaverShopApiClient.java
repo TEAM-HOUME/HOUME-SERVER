@@ -55,7 +55,10 @@ public class NaverShopApiClient {
         List<NaverFurnitureProductDto> results = new ArrayList<>();
 
         for (Map<String, Object> item : items) {
-            results.add(NaverFurnitureProductDto.from(item));
+            String mallName = (String) item.get("mallName");
+            if ("롯데ON".equals(mallName)) {
+                results.add(NaverFurnitureProductDto.from(item));
+            }
         }
 
         return results;
