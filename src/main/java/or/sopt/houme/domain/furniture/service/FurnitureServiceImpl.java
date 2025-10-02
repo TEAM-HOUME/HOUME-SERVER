@@ -62,7 +62,7 @@ public class FurnitureServiceImpl implements FurnitureService {
                         Collectors.collectingAndThen(
                                 Collectors.mapping(FurnitureItem::from, Collectors.toList()),
                                 list -> {
-                                    list.sort(Comparator.comparing(FurnitureItem::id));     // FurnitureItem 리스트 id 기준으로 정렬
+                                    list.sort(Comparator.comparing(FurnitureItem::id, Comparator.nullsLast(Comparator.naturalOrder())));     // FurnitureItem 리스트 id 기준으로 정렬
                                     return list;
                                 }
                         )
