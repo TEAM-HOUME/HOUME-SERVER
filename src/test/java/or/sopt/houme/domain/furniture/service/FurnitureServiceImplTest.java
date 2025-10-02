@@ -107,23 +107,25 @@ class FurnitureServiceImplTest {
 
         List<FurnitureType> categoryList = List.of(bedType, sofaType, storageType, tableType, selectiveType);
 
+        // 가구 식별자
+        Long furnitureId = 1L;
         // 2. 침대류
         List<Furniture> furnitureList = List.of(
-                createFurniture("SINGLE", "싱글", bedType),
-                createFurniture("SUPER_SINGLE", "슈퍼싱글", bedType),
-                createFurniture("DOUBLE", "더블", bedType),
-                createFurniture("QUEEN_OVER", "퀸 이상", bedType),
-                createFurniture("ONE_SEATER_SOFA", "1인용 소파", sofaType),
-                createFurniture("TWO_SEATER_SOFA", "2인용 소파", sofaType),
-                createFurniture("CLOSET", "옷장", storageType),
-                createFurniture("DRAWER", "서랍장", storageType),
-                createFurniture("DESK", "업무용 책상", tableType),
-                createFurniture("TABLE", "식탁", tableType),
-                createFurniture("LOW_TABLE", "좌식 테이블", tableType),
-                createFurniture("MOVABLE_TV", "이동식 TV", selectiveType),
-                createFurniture("FULL_LENGTH_MIRROR", "전신 거울", selectiveType),
-                createFurniture("BOOKSHELF", "책 선반", selectiveType),
-                createFurniture("DECORATIVE_CABINET", "장식장", selectiveType)
+                createFurniture(furnitureId++, "SINGLE", "싱글", bedType),
+                createFurniture(furnitureId++, "SUPER_SINGLE", "슈퍼싱글", bedType),
+                createFurniture(furnitureId++, "DOUBLE", "더블", bedType),
+                createFurniture(furnitureId++, "QUEEN_OVER", "퀸 이상", bedType),
+                createFurniture(furnitureId++, "ONE_SEATER_SOFA", "1인용 소파", sofaType),
+                createFurniture(furnitureId++, "TWO_SEATER_SOFA", "2인용 소파", sofaType),
+                createFurniture(furnitureId++, "CLOSET", "옷장", storageType),
+                createFurniture(furnitureId++, "DRAWER", "서랍장", storageType),
+                createFurniture(furnitureId++, "DESK", "업무용 책상", tableType),
+                createFurniture(furnitureId++, "TABLE", "식탁", tableType),
+                createFurniture(furnitureId++, "LOW_TABLE", "좌식 테이블", tableType),
+                createFurniture(furnitureId++, "MOVABLE_TV", "이동식 TV", selectiveType),
+                createFurniture(furnitureId++, "FULL_LENGTH_MIRROR", "전신 거울", selectiveType),
+                createFurniture(furnitureId++, "BOOKSHELF", "책 선반", selectiveType),
+                createFurniture(furnitureId++, "DECORATIVE_CABINET", "장식장", selectiveType)
         );
 
         when(furnitureTypeRepository.findAll()).thenReturn(categoryList);
@@ -249,11 +251,13 @@ class FurnitureServiceImplTest {
                 () -> furnitureService.getFurnitureCategoriesByStyle(user, imageId, List.of("Bed")));
     }
 
-    private Furniture createFurniture(String eng, String kr, FurnitureType type) {
+    private Furniture createFurniture(Long id, String eng, String kr, FurnitureType type) {
         return Furniture.builder()
+                .id(id)
                 .furnitureNameEng(eng)
                 .furnitureNameKr(kr)
                 .furnitureType(type)
                 .build();
     }
+
 }
