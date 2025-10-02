@@ -72,28 +72,4 @@ class GenerateImageRepositoryImplTest {
         em.flush();
         em.clear();
     }
-
-    @Test
-    @DisplayName("userId와 imageId로 GenerateImage 조회 성공")
-    void findGenerateImageByUserIdAndImageId_success() {
-        // when
-        Optional<GenerateImage> result = generateImageRepositoryImpl
-                .findGenerateImageByUserIdAndImageId(user.getId(), generateImage.getId());
-
-        // then
-        assertThat(result).isPresent();
-        assertThat(result.get().getId()).isEqualTo(generateImage.getId());
-        assertThat(result.get().getHouse().getUser().getId()).isEqualTo(user.getId());
-    }
-
-    @Test
-    @DisplayName("존재하지 않는 imageId 조회 시 empty 반환")
-    void findGenerateImageByUserIdAndImageId_notFound() {
-        // when
-        Optional<GenerateImage> result = generateImageRepositoryImpl
-                .findGenerateImageByUserIdAndImageId(user.getId(), 999L);
-
-        // then
-        assertThat(result).isEmpty();
-    }
 }

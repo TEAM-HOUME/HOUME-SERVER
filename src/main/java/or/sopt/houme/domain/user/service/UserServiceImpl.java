@@ -8,13 +8,15 @@ import or.sopt.houme.domain.generateImage.entity.GenerateImage;
 import or.sopt.houme.domain.generateImage.repository.GenerateImageRepository;
 import or.sopt.houme.domain.house.entity.House;
 import or.sopt.houme.domain.house.repository.HouseRepository;
-import or.sopt.houme.domain.preference.entity.Preference;
 import or.sopt.houme.domain.preference.entity.PromptPreference;
 import or.sopt.houme.domain.preference.repository.PreferenceRepository;
 import or.sopt.houme.domain.preference.repository.PromptPreferenceRepository;
 import or.sopt.houme.domain.taste.entity.Tag;
 import or.sopt.houme.domain.taste.repository.tag.TagRepository;
-import or.sopt.houme.domain.user.controller.dto.*;
+import or.sopt.houme.domain.user.controller.dto.ImageHistoriesResultPageResponse;
+import or.sopt.houme.domain.user.controller.dto.MyPageInfoResponse;
+import or.sopt.houme.domain.user.controller.dto.UserImageHistoryDTO;
+import or.sopt.houme.domain.user.controller.dto.UserImageHistoryListResponse;
 import or.sopt.houme.domain.user.entity.Gender;
 import or.sopt.houme.domain.user.entity.User;
 import or.sopt.houme.domain.user.repository.UserRepository;
@@ -84,12 +86,22 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional(readOnly = true)
-    public ImageHistoryResultPageResponse getImageHistoryResultPage(User user, Long imageId) {
+    public ImageHistoriesResultPageResponse getImageHistoryResultPage(User user, Long imageId) {
         User findUser = findUser(user);
-        House house = houseRepository.findHouseByUserIdAndImageId(findUser.getId(), imageId).orElseThrow(() -> new HouseException(ErrorCode.NOT_FOUND_HOUSE_ENTITY));
-        Tag tag = tagRepository.findTagByUserIdAndImageId(findUser.getId(), imageId).orElseThrow(() -> new TagException(ErrorCode.NOT_FOUND_TAG_ENTITY));
-        GenerateImage generateImage = generateImageRepository.findGenerateImageByUserIdAndImageId(findUser.getId(), imageId).orElseThrow(() -> new GenerateImageException(ErrorCode.NOT_FOUND_GENERATE_IMAGE_ENTITY));
-//        preferenceRepository.findPreferenceByUserIdAndImageId(findUser.getId(), imageId).ifPresent(preference -> { })
+
+        // 1. house, tag 조회
+        House house = houseRepository.findHouseByUserIdAndImageId(findUser.getId(), imageId)
+                .orElseThrow(() -> new HouseException(ErrorCode.NOT_FOUND_HOUSE_ENTITY));
+        Tag tag = tagRepository.findTagByUserIdAndImageId(findUser.getId(), imageId)
+                .orElseThrow(() -> new TagException(ErrorCode.NOT_FOUND_TAG_ENTITY));
+
+        // 2. houseId 에 해당하는 generateImage 리스트 조회
+        List<GenerateImage> generateImages = generateImageRepository.findGenerateImagesByHouseId(house.getId());
+        if (generateImages.isEmpty()) {
+            throw new GenerateImageException(ErrorCode.NOT_FOUND_GENERATE_IMAGE_ENTITY);
+        }
+
+       // 3. 최신 PromptPreference 조회 (선호 여부)
         Optional<PromptPreference> optionalPreference =
                 promptPreferenceRepository.findFirstByHouseIdOrderByIdDesc(house.getId());
 
@@ -103,7 +115,21 @@ public class UserServiceImpl implements UserService {
             isLike = preference.getPreference().isLike();
         }
 
-        return ImageHistoryResultPageResponse.of(house.getEquilibrium().getDescription(), house.getForm().toString(), tag.getTagNameKr(), findUser.getName(), generateImage.getUrl(), isLike);
+        // 4. GenerateImage 리스트 → DTO 리스트 변환
+        List<ImageHistoriesResultPageResponse.ImageHistoryResultPageResponse> histories =
+                generateImages.stream()
+                        .map(generateImage -> ImageHistoriesResultPageResponse.ImageHistoryResultPageResponse.of(
+                                house.getEquilibrium().getDescription(),
+                                house.getForm().toString(),
+                                tag.getTagNameKr(),
+                                findUser.getName(),
+                                generateImage.getUrl(),
+                                isLike
+                        ))
+                        .toList();
+
+        // 5. 응답 DTO 생성
+        return ImageHistoriesResultPageResponse.of(histories);
     }
 
     @Override

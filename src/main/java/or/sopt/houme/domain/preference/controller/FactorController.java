@@ -33,7 +33,8 @@ public class FactorController {
     @PostMapping("/generated-images/{imageId}/preference/factors/{factorId}")
     public ResponseEntity<ApiResponse<Void>> toggleFactorLog(
             @AuthenticationPrincipal CustomUserDetails user,
-            @PathVariable Long imageId, Long factorId
+            @PathVariable Long imageId,
+            @PathVariable Long factorId
     ) {
         // 유저와 이미지 사이 preference객체는 하나이지만, factor는 좋아요 객체에 매핑된 여러개의 객체가 존재
         // 유저와 이미지에 따른 요인 객체를 찾아 토글링합니다.

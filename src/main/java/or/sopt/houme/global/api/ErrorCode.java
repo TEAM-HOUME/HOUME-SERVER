@@ -36,10 +36,13 @@ public enum ErrorCode {
     // 좋아요 관련
     MISMATCHED_IS_LIKE(HttpStatus.BAD_REQUEST,40011 ,"좋아요와 요인의 선호 여부가 일치하지 않습니다."),
 
+    // 클라이언트가 JSON body를 잘못 보냈을 때
+    REQUEST_BODY_NOT_READABLE(HttpStatus.BAD_REQUEST, 40012, "요청 데이터 타입이 일치하지 않습니다."),
+
     // 어드민 FurnitureType 관련 예외
-    DUPLICATE_FURNITURE_TYPE_KR(HttpStatus.BAD_REQUEST, 40012, "중복된 가구타입 한글명입니다."),
-    DUPLICATE_FURNITURE_TYPE_ENG(HttpStatus.BAD_REQUEST, 40013, "중복된 가구타입 영어명입니다."),
-    CANNOT_DELETE_FURNITURE_TYPE_IN_USE(HttpStatus.BAD_REQUEST, 40014, "해당 가구 타입을 사용하는 가구들을 먼저 삭제해주세요."),
+    DUPLICATE_FURNITURE_TYPE_KR(HttpStatus.BAD_REQUEST, 40013, "중복된 가구타입 한글명입니다."),
+    DUPLICATE_FURNITURE_TYPE_ENG(HttpStatus.BAD_REQUEST, 40014, "중복된 가구타입 영어명입니다."),
+    CANNOT_DELETE_FURNITURE_TYPE_IN_USE(HttpStatus.BAD_REQUEST, 40015, "해당 가구 타입을 사용하는 가구들을 먼저 삭제해주세요."),
 
     /**
      * 401 UNAUTHORIZED
@@ -152,6 +155,8 @@ public enum ErrorCode {
     PROMPT_RETRY_EXCEPTION(HttpStatus.INTERNAL_SERVER_ERROR,50016,"생성된 이미지 좋아요,싫어요 시도 중 동시성 예외가 발생하였습니다, 서버 개발자에게 문의해주세요"),
     PROMPT_INTERRUPT_EXCEPTION(HttpStatus.INTERNAL_SERVER_ERROR,50017,"이미지 API 실행 중, INTERRUPT_EXCEPTION 가 발생하였습니다. 서버 개발자에게 문의해주세요"),
 
+    // DB 제약조건 위반 에러
+    DB_CONSTRAINT_VIOLATION(HttpStatus.INTERNAL_SERVER_ERROR, 50018, "DB 제약조건 문제 발생, 서버 개발자에게 문의해주세요"),
 
     /**
      * 504 GATEWAY_TIMEOUT

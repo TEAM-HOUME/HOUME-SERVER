@@ -1,7 +1,6 @@
 package or.sopt.houme.domain.user.service;
 
-import or.sopt.houme.domain.user.controller.dto.CreateUserRequest;
-import or.sopt.houme.domain.user.controller.dto.ImageHistoryResultPageResponse;
+import or.sopt.houme.domain.user.controller.dto.ImageHistoriesResultPageResponse;
 import or.sopt.houme.domain.user.controller.dto.MyPageInfoResponse;
 import or.sopt.houme.domain.user.controller.dto.UserImageHistoryListResponse;
 import or.sopt.houme.domain.user.entity.Gender;
@@ -14,7 +13,7 @@ public interface UserService {
 
     UserImageHistoryListResponse getUserImageHistoryList(User user);
 
-    ImageHistoryResultPageResponse getImageHistoryResultPage(User user, Long imageId);
+    ImageHistoriesResultPageResponse getImageHistoryResultPage(User user, Long imageId);
 
     String updateUser(User user, String name, Gender gender, LocalDate birthday);
 

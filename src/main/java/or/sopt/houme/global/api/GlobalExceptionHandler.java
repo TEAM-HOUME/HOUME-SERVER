@@ -2,8 +2,10 @@ package or.sopt.houme.global.api;
 
 import io.sentry.Sentry;
 import or.sopt.houme.global.api.handler.ImageFallbackException;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.HttpMediaTypeNotAcceptableException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -126,4 +128,27 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(ApiResponse.fail(HttpStatus.INTERNAL_SERVER_ERROR.value(), "서버 내부 오류입니다."));
     }
+
+    // 클라이언트가 JSON body를 잘못 보냈을 때 Valid로 안잡힌 경우
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<ApiResponse<Void>> handleHttpMessageNotReadable(HttpMessageNotReadableException e) {
+        ErrorCode errorCode = ErrorCode.REQUEST_BODY_NOT_READABLE;
+
+        Sentry.captureException(e);
+
+        return ResponseEntity.status(errorCode.getStatus())
+                .body(ApiResponse.fail(errorCode.getCode(), errorCode.getMsg()));
+    }
+
+    // DB 제약조건 위반
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<ApiResponse<Void>> handleDataIntegrityViolation(DataIntegrityViolationException e) {
+        ErrorCode errorCode = ErrorCode.DB_CONSTRAINT_VIOLATION;
+
+        Sentry.captureException(e);
+
+        return ResponseEntity.status(errorCode.getStatus())
+                .body(ApiResponse.fail(errorCode.getCode(), errorCode.getMsg()));
+    }
+
 }
