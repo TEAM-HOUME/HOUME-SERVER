@@ -56,8 +56,8 @@ public class FurnitureController {
 
     @Operation(summary = "가구 카테고리를 클릭하여 가구 제품 조회 API",
             description = "생성된 이미지의 큐레이션 탭에서 가구 카테고리를 클릭하여 네이버 쇼핑 API를 통한 가구 제품들을 검색합니다.")
-    @GetMapping("/api/v1/generated-images/{imageId}/curations/products/{categoryId}")
-    public ResponseEntity<ApiResponse<FurnitureProductsInfoResponse>> getFurnitureProductInfoFromNaverApi(@AuthenticationPrincipal CustomUserDetails userDetails, @PathVariable Long imageId, Long categoryId) {
+    @GetMapping("/generated-images/{imageId}/curations/products/{categoryId}")
+    public ResponseEntity<ApiResponse<FurnitureProductsInfoResponse>> getFurnitureProductInfoFromNaverApi(@AuthenticationPrincipal CustomUserDetails userDetails, @PathVariable Long imageId, @PathVariable Long categoryId) {
         FurnitureProductsInfoResponse response = furnitureFacade.getFurnitureProductInfoFromNaverApi(userDetails.getUser(), imageId, categoryId);
 
         return ResponseEntity.ok(ApiResponse.ok(response));
@@ -83,8 +83,8 @@ public class FurnitureController {
 //                    "\n1.SINGLE 2.SUPER_SINGLE 3.DOUBLE 4.QUEEN_OVER 5.DESK" +
 //                    "\n6.CLOSET 7.TABLE 8.ONE_SEATER_SOFA 9.DRAWER 10.MOVABLE_TV" +
 //                    "\n11.TWO_SEATER_SOFA 12.SITTING_TABLE 13.FULLBODY_MIRROR 14.BOOK_SHELF 15.DISPLAY_CABINET")
-//    @GetMapping("/api/v1/generated-images/{tagId}/curations/products/forplan/{furnitureId}")
-//    public ResponseEntity<ApiResponse<FurnitureProductsInfoResponseForPlan>> getFurnitureProductInfoFromNaverApiForPlan(@AuthenticationPrincipal CustomUserDetails userDetails, @PathVariable Long tagId, Long furnitureId, @RequestParam String searchKeyword, int searchProductsCount) {
+//    @GetMapping("/generated-images/{tagId}/curations/products/forplan/{furnitureId}")
+//    public ResponseEntity<ApiResponse<FurnitureProductsInfoResponseForPlan>> getFurnitureProductInfoFromNaverApiForPlan(@AuthenticationPrincipal CustomUserDetails userDetails, @PathVariable Long tagId, @PathVariable Long furnitureId, @RequestParam String searchKeyword, int searchProductsCount) {
 //        FurnitureProductsInfoResponseForPlan response = furnitureService.getFurnitureProductInfoFromNaverApiForPlan(userDetails.getUser(), tagId, furnitureId, searchKeyword, searchProductsCount);
 //
 //        return ResponseEntity.ok(ApiResponse.ok(response));
