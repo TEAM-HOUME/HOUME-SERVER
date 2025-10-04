@@ -43,7 +43,12 @@ public class NaverShopService {
                 throw new NaverApiException(ErrorCode.NAVER_API_EMPTY_RESPONSE);
             }
 
+            // mallName이 "롯데ON"인 상품만 필터링
             return response.items().stream()
+                    .filter(item -> {
+                        Object mallName = item.get("mallName");
+                        return mallName != null && "롯데ON".equals(mallName.toString().trim());
+                    })
                     .map(NaverFurnitureProductDto::from)
                     .toList();
 
