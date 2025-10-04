@@ -41,6 +41,7 @@ public enum ErrorCode {
 
     // 네이버 쇼핑 AP 관련 예외
     NAVER_API_DATA_PARSE_ERROR(HttpStatus.BAD_REQUEST, 40013, "네이버 API 응답의 productId 필드를 숫자로 변환하는 중 오류가 발생했습니다."),
+    NAVER_API_CLIENT_ERROR(HttpStatus.BAD_REQUEST, 40014, "네이버 API 요청이 잘못되었습니다."),
 
     /**
      * 401 UNAUTHORIZED
@@ -149,6 +150,13 @@ public enum ErrorCode {
     // Prompt 좋아요 | 생성된 이미지 관련 예외
     PROMPT_RETRY_EXCEPTION(HttpStatus.INTERNAL_SERVER_ERROR,50016,"생성된 이미지 좋아요,싫어요 시도 중 동시성 예외가 발생하였습니다, 서버 개발자에게 문의해주세요"),
     PROMPT_INTERRUPT_EXCEPTION(HttpStatus.INTERNAL_SERVER_ERROR,50017,"이미지 API 실행 중, INTERRUPT_EXCEPTION 가 발생하였습니다. 서버 개발자에게 문의해주세요"),
+
+
+    /**
+     * 502 BAD_GATEWAY
+     */
+    NAVER_API_SERVER_ERROR(HttpStatus.BAD_GATEWAY, 50200, "네이버 API 서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요."),
+    NAVER_API_EMPTY_RESPONSE(HttpStatus.BAD_GATEWAY, 50201, "네이버 API 응답이 비어 있습니다."),
 
 
     /**
