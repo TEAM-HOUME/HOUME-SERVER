@@ -39,9 +39,12 @@ public enum ErrorCode {
     // 이미지 관련 예외
     IMAGE_PROCESSING_ERROR(HttpStatus.BAD_REQUEST,40012 ,"이미지 컬러 해시값 계산 중 오류가 발생하였습니다."),
 
-    // 네이버 쇼핑 AP 관련 예외
+    // 네이버 쇼핑 API 관련 예외
     NAVER_API_DATA_PARSE_ERROR(HttpStatus.BAD_REQUEST, 40013, "네이버 API 응답의 productId 필드를 숫자로 변환하는 중 오류가 발생했습니다."),
     NAVER_API_CLIENT_ERROR(HttpStatus.BAD_REQUEST, 40014, "네이버 API 요청이 잘못되었습니다."),
+
+    // Fast API imageHash 관련 예외
+    IMAGE_HASH_CLIENT_ERROR(HttpStatus.BAD_REQUEST, 40015, "Fast API 요청이 잘못되었습니다."),
 
     /**
      * 401 UNAUTHORIZED
@@ -155,8 +158,13 @@ public enum ErrorCode {
     /**
      * 502 BAD_GATEWAY
      */
+    // 네이버 쇼핑 API 관련
     NAVER_API_SERVER_ERROR(HttpStatus.BAD_GATEWAY, 50200, "네이버 API 서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요."),
     NAVER_API_EMPTY_RESPONSE(HttpStatus.BAD_GATEWAY, 50201, "네이버 API 응답이 비어 있습니다."),
+
+    // FastAPI imageHash 관련
+    IMAGE_HASH_SERVER_ERROR(HttpStatus.BAD_GATEWAY, 50202, "Fast API 서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요."),
+    IMAGE_HASH_EMPTY_RESPONSE(HttpStatus.BAD_GATEWAY, 50203, "Fast API imageHash 응답이 비어 있습니다."),
 
 
     /**
