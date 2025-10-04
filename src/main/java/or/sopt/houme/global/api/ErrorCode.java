@@ -39,6 +39,9 @@ public enum ErrorCode {
     // 이미지 관련 예외
     IMAGE_PROCESSING_ERROR(HttpStatus.BAD_REQUEST,40012 ,"이미지 컬러 해시값 계산 중 오류가 발생하였습니다."),
 
+    // 네이버 쇼핑 AP 관련 예외
+    NAVER_API_DATA_PARSE_ERROR(HttpStatus.BAD_REQUEST, 40013, "네이버 API 응답의 productId 필드를 숫자로 변환하는 중 오류가 발생했습니다."),
+
     /**
      * 401 UNAUTHORIZED
      */
