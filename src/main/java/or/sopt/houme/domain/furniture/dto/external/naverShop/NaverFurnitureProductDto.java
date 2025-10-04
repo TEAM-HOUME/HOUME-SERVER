@@ -4,6 +4,9 @@ import or.sopt.houme.global.api.ErrorCode;
 import or.sopt.houme.global.api.GeneralException;
 
 import java.util.Map;
+import java.util.Objects;
+
+import static or.sopt.houme.global.util.HtmlTextCleaner.clean;
 
 public record NaverFurnitureProductDto(
         String furnitureProductImageUrl,
@@ -14,25 +17,15 @@ public record NaverFurnitureProductDto(
 ) {
     public static NaverFurnitureProductDto from(Map<String, Object> it) {
         return new NaverFurnitureProductDto(
-                (String) it.get("image"),
-                (String) it.get("link"),
-                cleanTitle((String) it.get("title")),
-                (String) it.get("mallName"),
+                safeToString(it.get("image")),
+                safeToString(it.get("link")),
+                clean(safeToString(it.get("title"))),
+                safeToString(it.get("mallName")),
                 parseLongSafely(it.get("productId"))
         );
     }
 
-    // 아래 예시와 같은 태그를 제거하여 문자열을 정제합니다.
-    // 예시: THE PI 원형 <b>러그</b> 160CM <b>핑크색</b> 160CM<b>러그</b> 원형<b>러그</b> 거실<b>러그</b>
-    private static String cleanTitle(String raw) {
-        if (raw == null) return "";
-        return raw.replaceAll("(?i)</?b>", "")
-                .replace("&amp;", "&")
-                .replace("&lt;", "<")
-                .replace("&gt;", ">")
-                .replace("&quot;", "\"");
-    }
-
+    // productId를 Long으로 파싱, + 데이터 파싱 에러 핸들링
     private static Long parseLongSafely(Object value) {
         if (value == null) return null;
         try {
@@ -40,5 +33,13 @@ public record NaverFurnitureProductDto(
         } catch (NumberFormatException e) {
             throw new GeneralException(ErrorCode.NAVER_API_DATA_PARSE_ERROR);
         }
+    }
+
+    /**
+     * Object → String 안전 변환
+     * null이면 null 반환
+     */
+    private static String safeToString(Object obj) {
+        return Objects.toString(obj, null);
     }
 }
