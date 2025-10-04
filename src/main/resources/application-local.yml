@@ -64,6 +64,11 @@ openai:
     background: auto
     output-format: png
 
+naver:
+  client-id: ${NAVER_CLIENT_ID}
+  client-secret: ${NAVER_CLIENT_SECRET}
+  allowed-malls: ${NAVER_ALLOWED_MALLS}  # 쉼표 구분 (예: 롯데ON,쿠팡,11번가)
+
 cloud:
   aws:
     s3:

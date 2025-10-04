@@ -36,13 +36,24 @@ public enum ErrorCode {
     // 좋아요 관련
     MISMATCHED_IS_LIKE(HttpStatus.BAD_REQUEST,40011 ,"좋아요와 요인의 선호 여부가 일치하지 않습니다."),
 
+    // 이미지 관련 예외
+    IMAGE_PROCESSING_ERROR(HttpStatus.BAD_REQUEST,40012 ,"이미지 컬러 해시값 계산 중 오류가 발생하였습니다."),
+
+    // 네이버 쇼핑 API 관련 예외
+    NAVER_API_DATA_PARSE_ERROR(HttpStatus.BAD_REQUEST, 40013, "네이버 API 응답의 productId 필드를 숫자로 변환하는 중 오류가 발생했습니다."),
+    NAVER_API_CLIENT_ERROR(HttpStatus.BAD_REQUEST, 40014, "네이버 API 요청이 잘못되었습니다."),
+
+    // Fast API imageHash 관련 예외
+    IMAGE_HASH_CLIENT_ERROR(HttpStatus.BAD_REQUEST, 40015, "Fast API 요청이 잘못되었습니다."),
+
     // 클라이언트가 JSON body를 잘못 보냈을 때
-    REQUEST_BODY_NOT_READABLE(HttpStatus.BAD_REQUEST, 40012, "요청 데이터 타입이 일치하지 않습니다."),
+    REQUEST_BODY_NOT_READABLE(HttpStatus.BAD_REQUEST, 40016, "요청 데이터 타입이 일치하지 않습니다."),
 
     // 어드민 FurnitureType 관련 예외
-    DUPLICATE_FURNITURE_TYPE_KR(HttpStatus.BAD_REQUEST, 40013, "중복된 가구타입 한글명입니다."),
-    DUPLICATE_FURNITURE_TYPE_ENG(HttpStatus.BAD_REQUEST, 40014, "중복된 가구타입 영어명입니다."),
-    CANNOT_DELETE_FURNITURE_TYPE_IN_USE(HttpStatus.BAD_REQUEST, 40015, "해당 가구 타입을 사용하는 가구들을 먼저 삭제해주세요."),
+    DUPLICATE_FURNITURE_TYPE_KR(HttpStatus.BAD_REQUEST, 40017, "중복된 가구타입 한글명입니다."),
+    DUPLICATE_FURNITURE_TYPE_ENG(HttpStatus.BAD_REQUEST, 40018, "중복된 가구타입 영어명입니다."),
+    CANNOT_DELETE_FURNITURE_TYPE_IN_USE(HttpStatus.BAD_REQUEST, 40019, "해당 가구 타입을 사용하는 가구들을 먼저 삭제해주세요."),
+
 
     /**
      * 401 UNAUTHORIZED
@@ -157,6 +168,18 @@ public enum ErrorCode {
 
     // DB 제약조건 위반 에러
     DB_CONSTRAINT_VIOLATION(HttpStatus.INTERNAL_SERVER_ERROR, 50018, "DB 제약조건 문제 발생, 서버 개발자에게 문의해주세요"),
+
+    /**
+     * 502 BAD_GATEWAY
+     */
+    // 네이버 쇼핑 API 관련
+    NAVER_API_SERVER_ERROR(HttpStatus.BAD_GATEWAY, 50200, "네이버 API 서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요."),
+    NAVER_API_EMPTY_RESPONSE(HttpStatus.BAD_GATEWAY, 50201, "네이버 API 응답이 비어 있습니다."),
+
+    // FastAPI imageHash 관련
+    IMAGE_HASH_SERVER_ERROR(HttpStatus.BAD_GATEWAY, 50202, "Fast API 서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요."),
+    IMAGE_HASH_EMPTY_RESPONSE(HttpStatus.BAD_GATEWAY, 50203, "Fast API imageHash 응답이 비어 있습니다."),
+
 
     /**
      * 504 GATEWAY_TIMEOUT
