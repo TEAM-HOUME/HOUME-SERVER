@@ -6,6 +6,7 @@ import or.sopt.houme.domain.furniture.client.NaverShopApiClient;
 import or.sopt.houme.domain.furniture.dto.external.naverShop.NaverFurnitureProductDto;
 import or.sopt.houme.domain.furniture.dto.external.naverShop.NaverShopResponse;
 import or.sopt.houme.global.api.handler.NaverApiException;
+import or.sopt.houme.global.config.NaverProperties;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import or.sopt.houme.global.api.ErrorCode;
@@ -17,15 +18,7 @@ import java.util.List;
 public class NaverShopService {
 
     private final NaverShopApiClient naverShopApiClient;
-
-    @Value("${naver.client-id}")
-    private String clientId;
-
-    @Value("${naver.client-secret}")
-    private String clientSecret;
-
-    @Value("${naver.allowed-malls}")
-    private List<String> allowedMalls;
+    private final NaverProperties naverProperties;
 
     /**
      * 네이버 쇼핑 API를 통해 특정 키워드로 상품 검색
@@ -35,6 +28,11 @@ public class NaverShopService {
      * @return 변환된 상품 DTO 리스트
      */
     public List<NaverFurnitureProductDto> search(String keyword, int display) {
+
+        String clientId = naverProperties.getClientId();
+        String clientSecret = naverProperties.getClientSecret();
+        List<String> allowedMalls = naverProperties.getAllowedMalls();
+
         try {
             NaverShopResponse response = naverShopApiClient.searchProducts(
                     clientId, clientSecret, keyword, display,
