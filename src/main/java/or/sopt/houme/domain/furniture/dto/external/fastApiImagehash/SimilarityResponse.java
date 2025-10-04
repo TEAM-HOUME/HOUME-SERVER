@@ -10,10 +10,12 @@ public record SimilarityResponse(
     }
 
     public record RankedProduct(
+            Long productId,
             String imageUrl,
-            String siteUrl,
-            String name,
-            String mallName,
             double similarity
-    ) {}
+    ) {
+        public static RankedProduct of(Long productId, String imageUrl, double similarity) {
+            return new RankedProduct(productId, imageUrl, similarity);
+        }
+    }
 }

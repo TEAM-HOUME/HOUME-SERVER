@@ -14,9 +14,7 @@ public record ImageHashRequest(
                 products.stream()
                         .map(p -> new Product(
                                 p.furnitureProductImageUrl(),
-                                p.furnitureProductSiteUrl(),
-                                p.furnitureProductName(),
-                                p.furnitureProductMallName()
+                                p.furnitureProductId()
                         ))
                         .toList()
         );
@@ -24,8 +22,6 @@ public record ImageHashRequest(
 
     public record Product(
             String imageUrl,
-            String siteUrl,
-            String name,
-            String mallName
+            Long productId
     ) {}
 }
