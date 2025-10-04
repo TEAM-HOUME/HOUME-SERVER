@@ -63,7 +63,13 @@ public class FurnitureServiceImpl implements FurnitureService {
         Map<Long, List<FurnitureItem>> furnitureByCategory = furnitureList.stream()
                 .collect(Collectors.groupingBy(
                         furniture -> furniture.getFurnitureType().getId(),  // FurnitureType Id 가져오기
-                        Collectors.mapping(FurnitureItem::from, Collectors.toList())
+                        Collectors.collectingAndThen(
+                                Collectors.mapping(FurnitureItem::from, Collectors.toList()),
+                                list -> {
+                                    list.sort(Comparator.comparing(FurnitureItem::id, Comparator.nullsLast(Comparator.naturalOrder())));     // FurnitureItem 리스트 id 기준으로 정렬
+                                    return list;
+                                }
+                        )
                 ));
 
         // 각 FurnitureType에 해당하는 FurnitureGroup 생성

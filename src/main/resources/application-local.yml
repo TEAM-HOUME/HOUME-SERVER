@@ -50,6 +50,10 @@ spring:
     access-token-validity-in-seconds: 3600
     refresh-token-validity-in-seconds: 2592000
 
+  web:
+    resources:
+      add-mappings: false
+
 openai:
   api-key: ${OPEN_AI_KEY}
   image:

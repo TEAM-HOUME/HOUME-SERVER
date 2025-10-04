@@ -82,6 +82,11 @@
             </a>
         </li>
         <li class="nav-item">
+            <a class="nav-link" href="#" data-target="furniture-type-management">
+                <i class="fas fa-layer-group"></i>가구 타입 관리
+            </a>
+        </li>
+        <li class="nav-item">
             <a class="nav-link" href="#" data-target="tag-management">
                 <i class="fas fa-tags"></i>태그 관리
             </a>
@@ -113,7 +118,12 @@
                 <form id="furniture-form">
                     <div class="mb-3"><label for="furnitureNameKr" class="form-label">가구 이름 (한글)</label><input type="text" class="form-control" id="furnitureNameKr" required></div>
                     <div class="mb-3"><label for="furnitureNameEng" class="form-label">가구 이름 (영어)</label><input type="text" class="form-control" id="furnitureNameEng" required></div>
-                    <div class="mb-3 form-check"><input type="checkbox" class="form-check-input" id="isBed"><label class="form-check-label" for="isBed">침대 여부</label></div>
+                    <div class="mb-3">
+                        <label for="furnitureTypeIdForNewFurniture" class="form-label">가구 타입 선택</label>
+                        <select class="form-select" id="furnitureTypeIdForNewFurniture" required>
+                            <option value="" selected disabled>가구 타입을 선택하세요...</option>
+                        </select>
+                    </div>
                     <button type="submit" class="btn btn-primary">가구 등록</button>
                 </form>
                 <div id="furniture-api-result" class="api-result"></div>
@@ -153,6 +163,41 @@
                     <button type="submit" class="btn btn-info">프롬프트 조회</button>
                 </form>
                 <div id="get-prompt-result" class="api-result"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 가구 타입 관리 섹션 -->
+    <div id="furniture-type-management" class="content-section">
+        <h2>가구 타입 관리</h2>
+        <div class="card">
+            <div class="card-header">등록된 가구 타입</div>
+            <div class="card-body">
+                <button id="get-furniture-types-button" class="btn btn-secondary">등록된 가구 타입 보기</button>
+                <div id="get-furniture-types-result" class="api-result"></div>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-header">신규 가구 타입 등록</div>
+            <div class="card-body">
+                <form id="furniture-type-form">
+                    <div class="mb-3"><label for="furnitureTypeNameKr" class="form-label">가구 타입 이름 (한글)</label><input type="text" class="form-control" id="furnitureTypeNameKr" required></div>
+                    <div class="mb-3"><label for="furnitureTypeNameEng" class="form-label">가구 타입 이름 (영어)</label><input type="text" class="form-control" id="furnitureTypeNameEng" required></div>
+                    <button type="submit" class="btn btn-primary">가구 타입 등록</button>
+                </form>
+                <div id="furniture-type-api-result" class="api-result"></div>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-header">가구 타입 정보 수정</div>
+            <div class="card-body">
+                <form id="update-furniture-type-form">
+                    <div class="mb-3"><label for="updateFurnitureTypeId" class="form-label">가구 타입 ID</label><input type="number" class="form-control" id="updateFurnitureTypeId" required></div>
+                    <div class="mb-3"><label for="updateFurnitureTypeNameKr" class="form-label">새 가구 타입 이름 (한글)</label><input type="text" class="form-control" id="updateFurnitureTypeNameKr"></div>
+                    <div class="mb-3"><label for="updateFurnitureTypeNameEng" class="form-label">새 가구 타입 이름 (영어)</label><input type="text" class="form-control" id="updateFurnitureTypeNameEng"></div>
+                    <button type="submit" class="btn btn-warning">가구 타입 수정</button>
+                </form>
+                <div id="update-furniture-type-api-result" class="api-result"></div>
             </div>
         </div>
     </div>
@@ -245,6 +290,7 @@
 
         populateTagDropdown();
         populateMoodboardTagDropdown();
+        populateFurnitureTypeDropdown();
 
         // Sidebar navigation
         document.querySelectorAll('#sidebar .nav-link').forEach(link => {
@@ -271,14 +317,16 @@
             testApiCall(accessToken, resultDiv, '/api/v1/admin/furnitures', 'GET', null, displayFurnituresAsTable);
         });
 
+        // 가구 등록 폼 제출 로직 수정 (isBed -> furnitureTypeId)
         document.getElementById('furniture-form').addEventListener('submit', function(event) {
             event.preventDefault();
             const accessToken = localStorage.getItem('accessToken');
             const resultDiv = document.getElementById('furniture-api-result');
+
             const furnitureData = {
                 furnitureNameKr: document.getElementById('furnitureNameKr').value,
                 furnitureNameEng: document.getElementById('furnitureNameEng').value,
-                isBed: document.getElementById('isBed').checked
+                furnitureType: parseInt(document.getElementById('furnitureTypeIdForNewFurniture').value, 10)
             };
             testApiCall(accessToken, resultDiv, '/api/v1/admin/furniture', 'POST', furnitureData);
         });
@@ -316,6 +364,40 @@
             const tagId = document.getElementById('promptQueryTagId').value;
             const endpoint = `/api/v1/admin/furniture/prompt?furnitureNameKr=${encodeURIComponent(furnitureNameKr)}&tagId=${tagId}`;
             testApiCall(accessToken, resultDiv, endpoint, 'GET', null);
+        });
+
+        // 가구 타입 관리
+        document.getElementById('get-furniture-types-button').addEventListener('click', function() {
+            const accessToken = localStorage.getItem('accessToken');
+            const resultDiv = document.getElementById('get-furniture-types-result');
+            if (resultDiv.innerHTML) {
+                resultDiv.innerHTML = '';
+                return;
+            }
+            testApiCall(accessToken, resultDiv, '/api/v1/admin/furniture/types', 'GET', null, displayFurnitureTypesAsTable);
+        });
+
+        document.getElementById('furniture-type-form').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const accessToken = localStorage.getItem('accessToken');
+            const resultDiv = document.getElementById('furniture-type-api-result');
+            const furnitureTypeData = {
+                furnitureTypeNameKr: document.getElementById('furnitureTypeNameKr').value,
+                furnitureTypeNameEng: document.getElementById('furnitureTypeNameEng').value
+            };
+            testApiCall(accessToken, resultDiv, '/api/v1/admin/furniture/type', 'POST', furnitureTypeData);
+        });
+
+        document.getElementById('update-furniture-type-form').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const accessToken = localStorage.getItem('accessToken');
+            const resultDiv = document.getElementById('update-furniture-type-api-result');
+            const updateData = {
+                id: parseInt(document.getElementById('updateFurnitureTypeId').value, 10),
+                furnitureTypeNameKr: document.getElementById('updateFurnitureTypeNameKr').value,
+                furnitureTypeNameEng: document.getElementById('updateFurnitureTypeNameEng').value
+            };
+            testApiCall(accessToken, resultDiv, '/api/v1/admin/furniture/type', 'PATCH', updateData);
         });
 
         document.getElementById('create-tag-form').addEventListener('submit', function(event) {
@@ -485,6 +567,32 @@
         .catch(error => console.error('Error populating moodboard tag dropdown:', error));
     }
 
+    function populateFurnitureTypeDropdown() {
+        const accessToken = localStorage.getItem('accessToken');
+        if (!accessToken) return;
+        fetch('/api/v1/admin/furniture/types', {
+            method: 'GET',
+            headers: {'Authorization': 'Bearer ' + accessToken, 'Content-Type': 'application/json'}
+        })
+            .then(response => response.json())
+            .then(data => {
+                const selectElement = document.getElementById('furnitureTypeIdForNewFurniture');
+                const furnitureTypes = data.data.furnitureTypeList;
+                if (Array.isArray(furnitureTypes)) {
+                    // 기존 옵션 제거
+                    selectElement.innerHTML = '<option value="" selected disabled>가구 타입을 선택하세요...</option>';
+
+                    furnitureTypes.forEach(type => {
+                        const option = document.createElement('option');
+                        option.value = type.furnitureTypeId;
+                        option.textContent = `${type.furnitureTypeNameKr} (ID: ${type.furnitureTypeId})`;
+                        selectElement.appendChild(option);
+                    });
+                }
+            })
+            .catch(error => console.error('Error populating furniture type dropdown:', error));
+    }
+
     function displayFurnituresAsTable(data, resultDiv) {
         const furnitures = data.data.furnitures;
         let tableHTML = '<table class="table table-hover"><thead><tr><th>ID</th><th>가구 이름</th><th>태그</th><th>작업</th></tr></thead><tbody>';
@@ -593,6 +701,46 @@
                 resultDiv.innerHTML = `<div class="alert alert-danger">오류: ${error.message}</div>`;
                 console.error('Upload Error:', error);
             });
+    }
+
+    // 가구 타입 목록을 테이블로 표시
+    function displayFurnitureTypesAsTable(data, resultDiv) {
+        const furnitureTypes = data.data.furnitureTypeList;
+
+        if (!Array.isArray(furnitureTypes) || furnitureTypes.length === 0) {
+            resultDiv.innerHTML = '<div class="alert alert-info">등록된 가구 타입이 없습니다.</div>';
+            return;
+        }
+
+        let tableHTML = '<table class="table table-hover"><thead><tr>';
+        tableHTML += '<th>ID</th><th>한글 이름</th><th>영어 이름</th><th>작업</th>';
+        tableHTML += '</tr></thead><tbody>';
+
+        furnitureTypes.forEach(type => {
+            tableHTML += `<tr>
+                        <td>${type.furnitureTypeId}</td>
+                        <td>${type.furnitureTypeNameKr}</td>
+                        <td>${type.furnitureTypeNameEng}</td>
+                        <td>
+                            <button class="btn btn-danger btn-sm" onclick="deleteFurnitureTypeById(${type.furnitureTypeId})">삭제</button>
+                        </td>
+                      </tr>`;
+        });
+
+        tableHTML += '</tbody></table>';
+        resultDiv.innerHTML = tableHTML;
+    }
+
+    function deleteFurnitureTypeById(furnitureTypeId) {
+        if (!confirm(`가구 타입 ID ${furnitureTypeId}를 정말로 삭제하시겠습니까?`)) return;
+
+        const accessToken = localStorage.getItem('accessToken');
+        const resultDiv = document.getElementById('get-furniture-types-result');
+
+        testApiCall(accessToken, resultDiv, '/api/v1/admin/furniture/type', 'DELETE', { furnitureTypeId }, () => {
+            alert('가구 타입이 삭제되었습니다.');
+            document.getElementById('get-furniture-types-button').click(); // 목록 새로고침
+        });
     }
 </script>
 </body>
