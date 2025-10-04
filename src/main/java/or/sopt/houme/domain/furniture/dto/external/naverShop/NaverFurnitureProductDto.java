@@ -1,19 +1,24 @@
 package or.sopt.houme.domain.furniture.dto.external.naverShop;
 
+import or.sopt.houme.global.api.ErrorCode;
+import or.sopt.houme.global.api.GeneralException;
+
 import java.util.Map;
 
 public record NaverFurnitureProductDto(
         String furnitureProductImageUrl,
         String furnitureProductSiteUrl,
         String furnitureProductName,
-        String furnitureProductMallName
+        String furnitureProductMallName,
+        Long furnitureProductId
 ) {
     public static NaverFurnitureProductDto from(Map<String, Object> it) {
         return new NaverFurnitureProductDto(
                 (String) it.get("image"),
                 (String) it.get("link"),
                 cleanTitle((String) it.get("title")),
-                (String) it.get("mallName")
+                (String) it.get("mallName"),
+                parseLongSafely(it.get("productId"))
         );
     }
 
@@ -26,5 +31,14 @@ public record NaverFurnitureProductDto(
                 .replace("&lt;", "<")
                 .replace("&gt;", ">")
                 .replace("&quot;", "\"");
+    }
+
+    private static Long parseLongSafely(Object value) {
+        if (value == null) return null;
+        try {
+            return Long.parseLong(value.toString());
+        } catch (NumberFormatException e) {
+            throw new GeneralException(ErrorCode.NAVER_API_DATA_PARSE_ERROR);
+        }
     }
 }
