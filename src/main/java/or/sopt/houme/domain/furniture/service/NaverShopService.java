@@ -24,6 +24,9 @@ public class NaverShopService {
     @Value("${naver.client-secret}")
     private String clientSecret;
 
+    @Value("${naver.allowed-malls}")
+    private List<String> allowedMalls;
+
     /**
      * 네이버 쇼핑 API를 통해 특정 키워드로 상품 검색
      *
@@ -47,7 +50,8 @@ public class NaverShopService {
             return response.items().stream()
                     .filter(item -> {
                         Object mallName = item.get("mallName");
-                        return mallName != null && "롯데ON".equals(mallName.toString().trim());
+                        return mallName != null &&
+                                allowedMalls.contains(mallName.toString().trim());
                     })
                     .map(NaverFurnitureProductDto::from)
                     .toList();

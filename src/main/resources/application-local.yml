@@ -63,6 +63,7 @@ openai:
 naver:
   client-id: ${NAVER_CLIENT_ID}
   client-secret: ${NAVER_CLIENT_SECRET}
+  allowed-malls: ${NAVER_ALLOWED_MALLS}
 
 cloud:
   aws:
