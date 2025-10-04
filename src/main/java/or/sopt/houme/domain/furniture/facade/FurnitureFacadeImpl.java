@@ -26,7 +26,7 @@ public class FurnitureFacadeImpl implements FurnitureFacade {
 
         // 2. 네이버 API 호출
         String keyword = furnitureTag.getSearchKeyword();
-        List<NaverFurnitureProductDto> products = naverShopService.search(keyword, 20);
+        List<NaverFurnitureProductDto> products = naverShopService.search(keyword, 100);
 
         // 3. FastAPI 호출 → 유사도 기반 상위 상품 리스트만 반환
         List<FurnitureProductsInfoResponse.FurnitureProductInfo> infos =
