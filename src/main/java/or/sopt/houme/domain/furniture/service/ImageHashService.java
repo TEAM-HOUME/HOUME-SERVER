@@ -9,6 +9,9 @@ import or.sopt.houme.domain.furniture.dto.external.naverShop.NaverFurnitureProdu
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -27,16 +30,24 @@ public class ImageHashService {
         // 외부 API 호출
         SimilarityResponse response = fastApiImageHashClient.getTopKSimilarImages(request);
 
-        // 응답 → 내부 Response DTO 매핑
+        // productId로 빠르게 매핑
+        Map<Long, NaverFurnitureProductDto> productMap = products.stream()
+                .collect(Collectors.toMap(NaverFurnitureProductDto::furnitureProductId, Function.identity()));
+
+        // FastAPI 응답 기반으로 상위 N개 상품 매핑
         return response.rankedProducts().stream()
                 .limit(topN)
-                .map(r -> FurnitureProductsInfoResponse.FurnitureProductInfo.of(
-                        r.imageUrl(),
-                        r.siteUrl(),
-                        r.name(),
-                        r.mallName(),
-                        r.similarity()
-                ))
+                .map(r -> {
+                    var product = productMap.get(r.productId());
+                    return FurnitureProductsInfoResponse.FurnitureProductInfo.of(
+                            product.furnitureProductImageUrl(),
+                            product.furnitureProductSiteUrl(),
+                            product.furnitureProductName(),
+                            product.furnitureProductMallName(),
+                            product.furnitureProductId(),
+                            r.similarity()
+                    );
+                })
                 .toList();
     }
 }
