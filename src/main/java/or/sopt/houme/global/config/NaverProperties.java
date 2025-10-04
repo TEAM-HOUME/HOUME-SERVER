@@ -1,27 +1,30 @@
 package or.sopt.houme.global.config;
 
 import jakarta.annotation.PostConstruct;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.stereotype.Component;
+import org.springframework.validation.annotation.Validated;
 
 import java.util.List;
 
-@Configuration
 @ConfigurationProperties(prefix = "naver")
 @Getter
 @Setter
+@Component
+@Validated
 public class NaverProperties {
 
+    @NotBlank(message = "네이버 클라이언트 ID는 필수입니다")
     private String clientId;
-    private String clientSecret;
-    private List<String> allowedMalls;
 
-    @PostConstruct
-    private void validate() {
-        if (allowedMalls == null || allowedMalls.isEmpty()) {
-            throw new IllegalStateException("naver.allowed-malls 설정이 비어있습니다.");
-        }
-    }
+    @NotBlank(message = "네이버 클라이언트 시크릿은 필수입니다")
+    private String clientSecret;
+
+    @NotEmpty(message = "허용된 쇼핑몰 목록은 최소 1개 이상이어야 합니다")
+    private List<String> allowedMalls;
 }
