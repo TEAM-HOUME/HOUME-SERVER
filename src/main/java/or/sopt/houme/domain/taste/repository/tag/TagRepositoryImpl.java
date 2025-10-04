@@ -28,18 +28,6 @@ public class TagRepositoryImpl implements TagRepositoryCustom {
         QHouseTaste houseTaste = QHouseTaste.houseTaste;
 
         return Optional.ofNullable(
-//                queryFactory
-//                        .selectFrom(tag)
-//                        .join(tasteTag).on(tasteTag.tag.eq(tag))
-//                        .join(tasteTag.taste, taste)
-//                        .join(houseTaste).on(houseTaste.taste.eq(taste))
-//                        .join(houseTaste.house, house)
-//                        .join(generateImage).on(generateImage.house.eq(house))
-//                        .where(
-//                                house.user.id.eq(userId),
-//                                generateImage.id.eq(imageId)
-//                        )
-//                        .fetchOne()
                 queryFactory
                         .select(tag)
                         .from(tag)
