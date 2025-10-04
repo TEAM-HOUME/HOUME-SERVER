@@ -23,5 +23,5 @@ public interface FurnitureService {
 
     FurnitureTag findFurnitureTag(User user, Long imageId, Long categoryId);
 
-    FurnitureProductsInfoResponseForPlan getFurnitureProductInfoFromNaverApiForPlan(User user, Long tagId, Long furnitureId, String searchKeyword, int searchProductsCount);
+//    FurnitureProductsInfoResponseForPlan getFurnitureProductInfoFromNaverApiForPlan(User user, Long tagId, Long furnitureId, String searchKeyword, int searchProductsCount);
 }

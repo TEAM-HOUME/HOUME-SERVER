@@ -154,71 +154,71 @@ public class FurnitureServiceImpl implements FurnitureService {
                 .orElseThrow(() -> new GeneralException(ErrorCode.NOT_FOUND_FURNITURE_TAG));
     }
 
-    @Override
-    public FurnitureProductsInfoResponseForPlan getFurnitureProductInfoFromNaverApiForPlan(User user, Long tagId, Long furnitureId, String searchKeyword, int searchProductsCount) {
-        // 1. tagId로 스타일 태그 조회
-        Tag tag = tagRepository.findById(tagId).orElseThrow(() -> new TagException(ErrorCode.NOT_FOUND_TAG_ENTITY));
-
-        // 2. categoryId로 furniture 객체 조회
-        Furniture furniture = furnitureRepository.findById(furnitureId).orElseThrow(() -> new GeneralException(ErrorCode.NOT_FOUND_FURNITURE));
-
-        // 3. tagId와 categoryId(=furnitureId)로 furnitureTag 매핑 객체 조회
-        FurnitureTag furnitureTag = furnitureTagRepository.findByFurnitureAndTag(furniture, tag).orElseThrow(() -> new GeneralException(ErrorCode.NOT_FOUND_FURNITURE_TAG));
-
-        // 4. 네이버 API 호출
-        List<NaverFurnitureProductDtoForPlan> products = naverShopApiClient.searchProductsForPlan(searchKeyword, searchProductsCount);
-
-        try {
-            // 5-1. 기준 가구(furnitureTag) 컬러 해시 계산
-            double[] baseColorHash = ColorHashUtil.getColorHistogramFromUrl(furnitureTag.getFurnitureUrl());
-
-            // 5-2. products 각각의 컬러 해시 계산 및 유사도 점수 부여
-            List<FurnitureProductsInfoResponseForPlan.FurnitureProductInfo> infos = products.stream()
-                    .map(dto -> {
-                        try {
-                            double[] productHash = ColorHashUtil.getColorHistogramFromUrl(dto.furnitureProductImageUrl());
-                            double similarity = ColorHashUtil.cosineSimilarity(baseColorHash, productHash);
-
-                            return new AbstractMap.SimpleEntry<>(
-                                    similarity,
-                                    FurnitureProductsInfoResponseForPlan.FurnitureProductInfo.of(
-                                            similarity,
-                                            dto.furnitureProductImageUrl(),
-                                            dto.furnitureProductSiteUrl(),
-                                            dto.furnitureProductName(),
-                                            dto.furnitureProductMallName(),
-                                            dto.furnitureProductLprice(),
-                                            dto.furnitureProductId(),
-                                            dto.furnitureProductBrand(),
-                                            dto.furnitureProductMaker()
-                                    )
-                            );
-                        } catch (Exception e) {
-                            return new AbstractMap.SimpleEntry<>(
-                                    0.0,
-                                    FurnitureProductsInfoResponseForPlan.FurnitureProductInfo.of(
-                                            0.0,
-                                            dto.furnitureProductImageUrl(),
-                                            dto.furnitureProductSiteUrl(),
-                                            dto.furnitureProductName(),
-                                            dto.furnitureProductMallName(),
-                                            dto.furnitureProductLprice(),
-                                            dto.furnitureProductId(),
-                                            dto.furnitureProductBrand(),
-                                            dto.furnitureProductMaker()
-                                    )
-                            );
-                        }
-                    })
-                    .sorted((a, b) -> Double.compare(b.getKey(), a.getKey()))
-                    .limit(searchProductsCount)
-                    .map(Map.Entry::getValue)
-                    .toList();
-
-            return FurnitureProductsInfoResponseForPlan.of(user.getName(), infos);
-
-        } catch (Exception e) {
-            throw new GeneralException(ErrorCode.IMAGE_PROCESSING_ERROR);
-        }
-    }
+//    @Override
+//    public FurnitureProductsInfoResponseForPlan getFurnitureProductInfoFromNaverApiForPlan(User user, Long tagId, Long furnitureId, String searchKeyword, int searchProductsCount) {
+//        // 1. tagId로 스타일 태그 조회
+//        Tag tag = tagRepository.findById(tagId).orElseThrow(() -> new TagException(ErrorCode.NOT_FOUND_TAG_ENTITY));
+//
+//        // 2. categoryId로 furniture 객체 조회
+//        Furniture furniture = furnitureRepository.findById(furnitureId).orElseThrow(() -> new GeneralException(ErrorCode.NOT_FOUND_FURNITURE));
+//
+//        // 3. tagId와 categoryId(=furnitureId)로 furnitureTag 매핑 객체 조회
+//        FurnitureTag furnitureTag = furnitureTagRepository.findByFurnitureAndTag(furniture, tag).orElseThrow(() -> new GeneralException(ErrorCode.NOT_FOUND_FURNITURE_TAG));
+//
+//        // 4. 네이버 API 호출
+//        List<NaverFurnitureProductDtoForPlan> products = naverShopApiClient.searchProductsForPlan(searchKeyword, searchProductsCount);
+//
+//        try {
+//            // 5-1. 기준 가구(furnitureTag) 컬러 해시 계산
+//            double[] baseColorHash = ColorHashUtil.getColorHistogramFromUrl(furnitureTag.getFurnitureUrl());
+//
+//            // 5-2. products 각각의 컬러 해시 계산 및 유사도 점수 부여
+//            List<FurnitureProductsInfoResponseForPlan.FurnitureProductInfo> infos = products.stream()
+//                    .map(dto -> {
+//                        try {
+//                            double[] productHash = ColorHashUtil.getColorHistogramFromUrl(dto.furnitureProductImageUrl());
+//                            double similarity = ColorHashUtil.cosineSimilarity(baseColorHash, productHash);
+//
+//                            return new AbstractMap.SimpleEntry<>(
+//                                    similarity,
+//                                    FurnitureProductsInfoResponseForPlan.FurnitureProductInfo.of(
+//                                            similarity,
+//                                            dto.furnitureProductImageUrl(),
+//                                            dto.furnitureProductSiteUrl(),
+//                                            dto.furnitureProductName(),
+//                                            dto.furnitureProductMallName(),
+//                                            dto.furnitureProductLprice(),
+//                                            dto.furnitureProductId(),
+//                                            dto.furnitureProductBrand(),
+//                                            dto.furnitureProductMaker()
+//                                    )
+//                            );
+//                        } catch (Exception e) {
+//                            return new AbstractMap.SimpleEntry<>(
+//                                    0.0,
+//                                    FurnitureProductsInfoResponseForPlan.FurnitureProductInfo.of(
+//                                            0.0,
+//                                            dto.furnitureProductImageUrl(),
+//                                            dto.furnitureProductSiteUrl(),
+//                                            dto.furnitureProductName(),
+//                                            dto.furnitureProductMallName(),
+//                                            dto.furnitureProductLprice(),
+//                                            dto.furnitureProductId(),
+//                                            dto.furnitureProductBrand(),
+//                                            dto.furnitureProductMaker()
+//                                    )
+//                            );
+//                        }
+//                    })
+//                    .sorted((a, b) -> Double.compare(b.getKey(), a.getKey()))
+//                    .limit(searchProductsCount)
+//                    .map(Map.Entry::getValue)
+//                    .toList();
+//
+//            return FurnitureProductsInfoResponseForPlan.of(user.getName(), infos);
+//
+//        } catch (Exception e) {
+//            throw new GeneralException(ErrorCode.IMAGE_PROCESSING_ERROR);
+//        }
+//    }
 }
