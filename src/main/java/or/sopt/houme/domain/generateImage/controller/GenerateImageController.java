@@ -88,6 +88,7 @@ public class GenerateImageController {
         try {
             generateImageLikeFacade.isLike(userDetails.getUser(), imageId, request);
         } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
             throw new GenerateImageException(ErrorCode.GENERATE_IMAGE_INTERRUPT_EXCEPTION);
         }
 
