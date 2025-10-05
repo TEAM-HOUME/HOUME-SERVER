@@ -15,7 +15,8 @@ public record ImageHistoriesResultPageResponse(
             String tasteTag,
             String name,
             String generatedImageUrl,
-            Boolean isLike
+            Boolean isLike,
+            String factorText
     ) {
         public static ImageHistoryResultPageResponse of(
                 String equilibrium,
@@ -23,10 +24,11 @@ public record ImageHistoriesResultPageResponse(
                 String tasteTag,
                 String name,
                 String generatedImageUrl,
-                Boolean isLike
+                Boolean isLike,
+                String factorText
         ) {
             return new ImageHistoryResultPageResponse(
-                    equilibrium, houseForm, tasteTag, name, generatedImageUrl, isLike
+                    equilibrium, houseForm, tasteTag, name, generatedImageUrl, isLike, factorText
             );
         }
     }

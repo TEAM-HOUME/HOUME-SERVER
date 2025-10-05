@@ -10,10 +10,10 @@ import or.sopt.houme.domain.house.entity.enums.Form;
 import or.sopt.houme.domain.house.repository.HouseRepository;
 import or.sopt.houme.domain.preference.entity.GenerateImagePreference;
 import or.sopt.houme.domain.preference.entity.Preference;
-import or.sopt.houme.domain.preference.entity.PromptPreference;
+import or.sopt.houme.domain.preference.repository.FactorRepository;
 import or.sopt.houme.domain.preference.repository.GenerateImagePreferenceRepository;
+import or.sopt.houme.domain.preference.repository.PreferenceFactorRepository;
 import or.sopt.houme.domain.preference.repository.PreferenceRepository;
-import or.sopt.houme.domain.preference.repository.PromptPreferenceRepository;
 import or.sopt.houme.domain.taste.entity.Tag;
 import or.sopt.houme.domain.taste.repository.tag.TagRepository;
 import or.sopt.houme.domain.user.controller.dto.*;
@@ -43,9 +43,10 @@ class UserServiceImplTest {
     private final TagRepository tagRepository = mock(TagRepository.class);
     private final GenerateImageRepository generateImageRepository = mock(GenerateImageRepository.class);
     private final CreditRepository creditRepository = mock(CreditRepository.class);
-    private final PreferenceRepository preferenceRepository = mock(PreferenceRepository.class);
-    private final PromptPreferenceRepository  promptPreferenceRepository = mock(PromptPreferenceRepository.class);
     private final GenerateImagePreferenceRepository generateImagePreferenceRepository = mock(GenerateImagePreferenceRepository.class);
+    private final FactorRepository factorRepository = mock(FactorRepository.class);
+    private final PreferenceRepository preferenceRepository = mock(PreferenceRepository.class);
+    private final PreferenceFactorRepository preferenceFactorRepository = mock(PreferenceFactorRepository.class);
 
     private final UserServiceImpl userService = new UserServiceImpl(
             userRepository,
@@ -53,9 +54,10 @@ class UserServiceImplTest {
             tagRepository,
             generateImageRepository,
             creditRepository,
+            generateImagePreferenceRepository,
+            factorRepository,
             preferenceRepository,
-            promptPreferenceRepository,
-            generateImagePreferenceRepository
+            preferenceFactorRepository
             );
 
     private User user;
