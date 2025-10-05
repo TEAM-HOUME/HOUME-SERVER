@@ -96,8 +96,6 @@ public class UserServiceImpl implements UserService {
         // 1. house, tag 조회
         House house = houseRepository.findHouseByUserIdAndImageId(findUser.getId(), imageId)
                 .orElseThrow(() -> new HouseException(ErrorCode.NOT_FOUND_HOUSE_ENTITY));
-        Tag tag = tagRepository.findTagByUserIdAndImageId(findUser.getId(), imageId)
-                .orElseThrow(() -> new TagException(ErrorCode.NOT_FOUND_TAG_ENTITY));
 
         // 2. houseId 에 해당하는 generateImage 리스트 조회 (오름차순 정렬)
         List<GenerateImage> generateImages = generateImageRepository.findGenerateImagesByHouseId(house.getId());
@@ -106,6 +104,7 @@ public class UserServiceImpl implements UserService {
         }
 
         List<Boolean> likes = new ArrayList<>();
+        List<Tag> tags = new ArrayList<>();
 
         // 3. 최신 GenerateImagePreference 조회 (선호 여부)
         for (GenerateImage generateImage : generateImages) {
@@ -117,6 +116,9 @@ public class UserServiceImpl implements UserService {
             } else {
                 likes.add(null);
             }
+
+            tags.add(tagRepository.findTagByUserIdAndImageId(user.getId(), generateImage.getId())
+                    .orElseThrow(() -> new TagException(ErrorCode.NOT_FOUND_TAG_ENTITY)));
         }
 
         // 4. GenerateImage 리스트와 likes 리스트를 함께 사용하여 DTO 변환
@@ -125,7 +127,7 @@ public class UserServiceImpl implements UserService {
                         .mapToObj(i -> {
                             GenerateImage generateImage = generateImages.get(i);
                             Boolean isLike = likes.get(i); // likes 리스트에서 해당 인덱스의 값 가져오기
-
+                            Tag tag = tags.get(i);
                             return ImageHistoriesResultPageResponse.ImageHistoryResultPageResponse.of(
                                     house.getEquilibrium().getDescription(),
                                     house.getForm().toString(),

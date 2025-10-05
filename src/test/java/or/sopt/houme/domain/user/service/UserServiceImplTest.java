@@ -169,13 +169,14 @@ class UserServiceImplTest {
         // given
         Long userId = 1L;
         Long imageId = 10L;
-
+        Long houseId = 20L;
         User user = User.builder()
                 .id(userId)
                 .name("테스트유저")
                 .build();
 
         House house = House.builder()
+                .id(houseId)
                 .form(Form.OFFICETEL)
                 .equilibrium(Equilibrium.UNDER_5)
                 .build();
@@ -185,30 +186,43 @@ class UserServiceImplTest {
                 .build();
 
         GenerateImage generateImage1 = GenerateImage.builder()
+                .id(1L)
                 .url("https://example.com/image1.png")
+                .house(house)
                 .build();
 
         GenerateImage generateImage2 = GenerateImage.builder()
+                .id(2L)
                 .url("https://example.com/image2.png")
+                .house(house)
                 .build();
 
-        Preference preference = Preference.builder()
-                .isLike(true)
-                .build();
-
-        GenerateImagePreference generateImagePreference = GenerateImagePreference.builder()
-                .preference(preference)
+        GenerateImagePreference generateImagePreference1 = GenerateImagePreference.builder()
+                .preference(Preference.builder().isLike(true).build())
                 .generateImage(generateImage1)
+                .build();
+
+        GenerateImagePreference generateImagePreference2 = GenerateImagePreference.builder()
+                .preference(Preference.builder().isLike(true).build())
+                .generateImage(generateImage2)
                 .build();
 
         given(userRepository.findById(userId)).willReturn(Optional.of(user));
         given(houseRepository.findHouseByUserIdAndImageId(userId, imageId)).willReturn(Optional.of(house));
-        given(tagRepository.findTagByUserIdAndImageId(userId, imageId)).willReturn(Optional.of(tag));
+
         // generateImages 리스트 2개 반환
         given(generateImageRepository.findGenerateImagesByHouseId(house.getId()))
                 .willReturn(List.of(generateImage1, generateImage2));
+
         given(generateImagePreferenceRepository.findFirstByGenerateImageIdOrderByIdDesc(generateImage1.getId()))
-                .willReturn(Optional.of(generateImagePreference));
+                .willReturn(Optional.of(generateImagePreference1));
+        given(generateImagePreferenceRepository.findFirstByGenerateImageIdOrderByIdDesc(generateImage2.getId()))
+                .willReturn(Optional.of(generateImagePreference2));
+
+        given(tagRepository.findTagByUserIdAndImageId(userId, generateImage1.getId()))
+                .willReturn(Optional.of(tag));
+        given(tagRepository.findTagByUserIdAndImageId(userId, generateImage2.getId()))
+                .willReturn(Optional.of(tag));
 
         // when
         ImageHistoriesResultPageResponse response = userService.getImageHistoryResultPage(user, imageId);
@@ -255,6 +269,8 @@ class UserServiceImplTest {
                 .willReturn(Optional.of(house));
         given(tagRepository.findTagByUserIdAndImageId(user.getId(), generateImage.getId()))
                 .willReturn(Optional.empty());
+        given(generateImageRepository.findGenerateImagesByHouseId(house.getId()))
+                .willReturn(List.of(generateImage));
 
         // when & then
         assertThatThrownBy(() -> userService.getImageHistoryResultPage(user, generateImage.getId()))
