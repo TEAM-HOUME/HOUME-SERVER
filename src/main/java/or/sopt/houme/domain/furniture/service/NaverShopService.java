@@ -36,7 +36,7 @@ public class NaverShopService {
         try {
             NaverShopResponse response = naverShopApiClient.searchProducts(
                     clientId, clientSecret, keyword, display,
-                    "used:rental:cbshop", "naverpay"
+                    "used:rental:cbshop", ""  // (임시) 네이버페이 필터링 옵션 제거
             );
 
             // 응답이 비었을때 에러 핸들링
@@ -46,11 +46,12 @@ public class NaverShopService {
 
             // mallName이 "롯데ON"인 상품만 필터링
             return response.items().stream()
-                    .filter(item -> {
-                        Object mallName = item.get("mallName");
-                        return mallName != null &&
-                                allowedMalls.contains(mallName.toString().trim());
-                    })
+                    // (임시) mallName 필터링 제거
+//                    .filter(item -> {
+//                        Object mallName = item.get("mallName");
+//                        return mallName != null &&
+//                                allowedMalls.contains(mallName.toString().trim());
+//                    })
                     .map(NaverFurnitureProductDto::from)
                     .toList();
 
