@@ -63,16 +63,6 @@ public class ImageGenerationLog extends BaseEntity {
     @Column(columnDefinition = "jsonb")
     private String selectedStyleTagNames;
 
-//    // 생성된 이미지 식별자들 (Json 타입으로 저장)
-//    @Comment(value = "생성된 이미지 식별자들 (Json 타입)")
-//    @Column(columnDefinition = "jsonb")
-//    private String generatedImageIds;
-//
-//    // 생성된 이미지 URL들 (Json 타입으로 저장)
-//    @Comment(value = "생성된 이미지 URL들 (Json 타입)")
-//    @Column(columnDefinition = "jsonb")
-//    private String generatedImageUrls;
-
     @OneToMany(mappedBy = "imageGenerationLog", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ImageGenerationDetail> imageGenerationDetailList = new ArrayList<>();
 

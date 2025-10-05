@@ -22,7 +22,6 @@ import java.util.List;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 public class ImageGenerationLogServiceImpl implements ImageGenerationLogService {
 
     private final ImageGenerationLogRepository imageGenerationLogRepository;
