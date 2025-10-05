@@ -26,15 +26,15 @@ public class PreferenceRepositoryImpl implements PreferenceRepositoryCustom {
         QUser user = QUser.user;
 
         return Optional.ofNullable(queryFactory
-                .select(preference) // Preference 엔티티를 선택
+                .select(preference) // Preference 엔티티 선택
                 .from(generateImagePreference) // generateImagePreference에서 시작
-                .join(generateImagePreference.preference, preference).fetchJoin() // Preference 페치 조인
-                .join(generateImagePreference.generateImage, generateImage).fetchJoin() // GenerateImage 페치 조인
-                .join(generateImage.house, house).fetchJoin() // House 페치 조인
-                .join(house.user, user).fetchJoin() // User 페치 조인 (User 정보가 필요하다면)
+                .join(generateImagePreference.preference, preference).fetchJoin()
+                .join(generateImagePreference.generateImage, generateImage).fetchJoin()
+                .join(generateImage.house, house).fetchJoin()
+                .join(house.user, user).fetchJoin()
                 .where(
-                        user.id.eq(userId), // House의 User ID 조건
-                        generateImage.id.eq(imageId) // GenerateImage ID 조건
+                        user.id.eq(userId),
+                        generateImage.id.eq(imageId)
                 )
                 .fetchOne());
     }
