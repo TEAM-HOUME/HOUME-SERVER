@@ -65,7 +65,7 @@ public class FurnitureController {
 
     @Operation(summary = "[기획 의사결정용 API] 가구 카테고리를 클릭하여 가구 제품 조회 API",
             description = "검색어로 네이버 검색합니다. 요청 설명서 작성 필요함")
-    @GetMapping("/generated-images/{imageId}/curations/products/{furnitureId}/for-plan")
+    @GetMapping("/generated-images/{tagId}/curations/products/{furnitureId}/for-plan")
     public ResponseEntity<ApiResponse<FurnitureProductsInfoResponseForPlan>> getFurnitureProductInfoFromNaverApiForPlan(
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @PathVariable Long tagId,
@@ -75,7 +75,15 @@ public class FurnitureController {
             @RequestParam int colorHash,
             @RequestParam int display
     ) {
-        FurnitureProductsInfoResponseForPlan response = furnitureFacade.getFurnitureProductInfoFromNaverApiForPlan(userDetails.getUser(), tagId, furnitureId, searchKeyword, pHash, colorHash, display);
+        FurnitureProductsInfoResponseForPlan response = furnitureFacade.getFurnitureProductInfoFromNaverApiForPlan(
+                userDetails.getUser(),
+                tagId,
+                furnitureId,
+                searchKeyword,
+                pHash,
+                colorHash,
+                display
+        );
 
         return ResponseEntity.ok(ApiResponse.ok(response));
     }
