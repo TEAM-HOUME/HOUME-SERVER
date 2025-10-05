@@ -64,7 +64,11 @@ public class FurnitureController {
     }
 
     @Operation(summary = "[기획 의사결정용 API] 가구 카테고리를 클릭하여 가구 제품 조회 API",
-            description = "검색어로 네이버 검색합니다. 요청 설명서 작성 필요함")
+            description = "- tagId와 furnitureId로 baseImage가 선택됩니다.\n" +
+                    "  - 각 id에 대한 값은 노션으로 전달하겠습니다.\n" +
+                    "- searchKeyword로 검색어를 커스텀할 수 있습니다.\n" +
+                    "- pHash(0~100)사이값을 입력하여, pHash와 colorHash의 비율을 커스텀할 수 있습니다.\n" +
+                    "  - colorHash는 100-pHash로 산정됩니다.")
     @GetMapping("/generated-images/{tagId}/curations/products/{furnitureId}/for-plan")
     public ResponseEntity<ApiResponse<FurnitureProductsInfoResponseForPlan>> getFurnitureProductInfoFromNaverApiForPlan(
             @AuthenticationPrincipal CustomUserDetails userDetails,
