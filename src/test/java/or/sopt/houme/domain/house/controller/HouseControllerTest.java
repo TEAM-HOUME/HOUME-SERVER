@@ -1,6 +1,5 @@
 package or.sopt.houme.domain.house.controller;
 
-import or.sopt.houme.domain.generateImage.facade.HouseLikeFacade;
 import or.sopt.houme.domain.house.dto.HouseOptionDTO;
 import or.sopt.houme.domain.house.dto.response.HouseOptionsResponse;
 import or.sopt.houme.domain.house.service.HouseService;
@@ -38,9 +37,6 @@ class HouseControllerTest {
 
     @MockBean
     private HouseService houseService;
-
-    @MockBean
-    private HouseLikeFacade houseLikeFacade;
 
     @Test
     @WithMockUser   // 인증된 사용자로 요청

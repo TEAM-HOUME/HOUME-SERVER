@@ -1,14 +1,16 @@
 package or.sopt.houme.domain.preference.service;
 
+import or.sopt.houme.domain.generateImage.entity.GenerateImage;
+import or.sopt.houme.domain.generateImage.repository.GenerateImageRepository;
 import or.sopt.houme.domain.house.entity.House;
 import or.sopt.houme.domain.house.entity.enums.Equilibrium;
 import or.sopt.houme.domain.house.entity.enums.Form;
 import or.sopt.houme.domain.house.entity.enums.Structure;
 import or.sopt.houme.domain.house.repository.HouseRepository;
+import or.sopt.houme.domain.preference.entity.GenerateImagePreference;
 import or.sopt.houme.domain.preference.entity.Preference;
-import or.sopt.houme.domain.preference.entity.PromptPreference;
+import or.sopt.houme.domain.preference.repository.GenerateImagePreferenceRepository;
 import or.sopt.houme.domain.preference.repository.PreferenceRepository;
-import or.sopt.houme.domain.preference.repository.PromptPreferenceRepository;
 import or.sopt.houme.domain.user.entity.*;
 import or.sopt.houme.domain.user.repository.UserRepository;
 import org.junit.jupiter.api.DisplayName;
@@ -30,10 +32,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 class PromptPreferenceServiceImplTest {
 
     @Autowired
-    PromptPreferenceService promptPreferenceService;
-
-    @Autowired
-    PromptPreferenceRepository promptPreferenceRepository;
+    GenerateImagePreferenceRepository generateImagePreferenceRepository;
 
     @Autowired
     PreferenceRepository preferenceRepository;
@@ -43,6 +42,11 @@ class PromptPreferenceServiceImplTest {
 
     @Autowired
     UserRepository userRepository;
+    @Autowired
+    GenerateImagePreferenceService generateImagePreferenceService;
+
+    @Autowired
+    GenerateImageRepository generateImageRepository;
 
     @Test
     @DisplayName("집 도면 좋아요를 생성 할 수 있다.")
@@ -73,13 +77,22 @@ class PromptPreferenceServiceImplTest {
                 .build();
         House saveHouse = houseRepository.save(house);
 
+        GenerateImage generateImage = GenerateImage.builder()
+                .house(saveHouse)
+                .url("https://www.example.com")
+                .fileExtension("JPG")
+                .originalFilename("image.jpg")
+                .filename("image.jpg")
+                .build();
+        GenerateImage saveImage = generateImageRepository.save(generateImage);
+
         // When
-        promptPreferenceService.togglePromptPreference(saveHouse, preference.isLike());
+        generateImagePreferenceService.toggleGenerateImagePreference(saveImage, preference.isLike());
 
         // Then
-        List<PromptPreference> all = promptPreferenceRepository.findAll();
+        List<GenerateImagePreference> all = generateImagePreferenceRepository.findAll();
         assertThat(all.size()).isEqualTo(1);
-        assertThat(all.get(0).getHouse()).isEqualTo(house);
+        assertThat(all.get(0).getGenerateImage()).isEqualTo(saveImage);
         assertThat(all.get(0).getPreference().isLike()).isEqualTo(preference.isLike());
     }
 }

@@ -8,8 +8,10 @@ import or.sopt.houme.domain.house.entity.House;
 import or.sopt.houme.domain.house.entity.enums.Equilibrium;
 import or.sopt.houme.domain.house.entity.enums.Form;
 import or.sopt.houme.domain.house.repository.HouseRepository;
+import or.sopt.houme.domain.preference.entity.GenerateImagePreference;
 import or.sopt.houme.domain.preference.entity.Preference;
 import or.sopt.houme.domain.preference.entity.PromptPreference;
+import or.sopt.houme.domain.preference.repository.GenerateImagePreferenceRepository;
 import or.sopt.houme.domain.preference.repository.PreferenceRepository;
 import or.sopt.houme.domain.preference.repository.PromptPreferenceRepository;
 import or.sopt.houme.domain.taste.entity.Tag;
@@ -43,6 +45,7 @@ class UserServiceImplTest {
     private final CreditRepository creditRepository = mock(CreditRepository.class);
     private final PreferenceRepository preferenceRepository = mock(PreferenceRepository.class);
     private final PromptPreferenceRepository  promptPreferenceRepository = mock(PromptPreferenceRepository.class);
+    private final GenerateImagePreferenceRepository generateImagePreferenceRepository = mock(GenerateImagePreferenceRepository.class);
 
     private final UserServiceImpl userService = new UserServiceImpl(
             userRepository,
@@ -51,7 +54,9 @@ class UserServiceImplTest {
             generateImageRepository,
             creditRepository,
             preferenceRepository,
-            promptPreferenceRepository);
+            promptPreferenceRepository,
+            generateImagePreferenceRepository
+            );
 
     private User user;
     private House house;
@@ -191,9 +196,9 @@ class UserServiceImplTest {
                 .isLike(true)
                 .build();
 
-        PromptPreference promptPreference = PromptPreference.builder()
+        GenerateImagePreference generateImagePreference = GenerateImagePreference.builder()
                 .preference(preference)
-                .house(house)
+                .generateImage(generateImage1)
                 .build();
 
         given(userRepository.findById(userId)).willReturn(Optional.of(user));
@@ -202,8 +207,8 @@ class UserServiceImplTest {
         // generateImages 리스트 2개 반환
         given(generateImageRepository.findGenerateImagesByHouseId(house.getId()))
                 .willReturn(List.of(generateImage1, generateImage2));
-        given(promptPreferenceRepository.findFirstByHouseIdOrderByIdDesc(house.getId()))
-                .willReturn(Optional.of(promptPreference));
+        given(generateImagePreferenceRepository.findFirstByGenerateImageIdOrderByIdDesc(generateImage1.getId()))
+                .willReturn(Optional.of(generateImagePreference));
 
         // when
         ImageHistoriesResultPageResponse response = userService.getImageHistoryResultPage(user, imageId);

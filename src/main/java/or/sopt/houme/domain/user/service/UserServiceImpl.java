@@ -8,7 +8,9 @@ import or.sopt.houme.domain.generateImage.entity.GenerateImage;
 import or.sopt.houme.domain.generateImage.repository.GenerateImageRepository;
 import or.sopt.houme.domain.house.entity.House;
 import or.sopt.houme.domain.house.repository.HouseRepository;
+import or.sopt.houme.domain.preference.entity.GenerateImagePreference;
 import or.sopt.houme.domain.preference.entity.PromptPreference;
+import or.sopt.houme.domain.preference.repository.GenerateImagePreferenceRepository;
 import or.sopt.houme.domain.preference.repository.PreferenceRepository;
 import or.sopt.houme.domain.preference.repository.PromptPreferenceRepository;
 import or.sopt.houme.domain.taste.entity.Tag;
@@ -29,6 +31,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.IntStream;
 
 @Service
 @RequiredArgsConstructor
@@ -41,6 +44,7 @@ public class UserServiceImpl implements UserService {
     private final CreditRepository creditRepository;
     private final PreferenceRepository preferenceRepository;
     private final PromptPreferenceRepository promptPreferenceRepository;
+    private final GenerateImagePreferenceRepository generateImagePreferenceRepository;
 
     @Override
     @Transactional(readOnly = true)
@@ -95,37 +99,42 @@ public class UserServiceImpl implements UserService {
         Tag tag = tagRepository.findTagByUserIdAndImageId(findUser.getId(), imageId)
                 .orElseThrow(() -> new TagException(ErrorCode.NOT_FOUND_TAG_ENTITY));
 
-        // 2. houseId 에 해당하는 generateImage 리스트 조회
+        // 2. houseId 에 해당하는 generateImage 리스트 조회 (오름차순 정렬)
         List<GenerateImage> generateImages = generateImageRepository.findGenerateImagesByHouseId(house.getId());
         if (generateImages.isEmpty()) {
             throw new GenerateImageException(ErrorCode.NOT_FOUND_GENERATE_IMAGE_ENTITY);
         }
 
-       // 3. 최신 PromptPreference 조회 (선호 여부)
-        Optional<PromptPreference> optionalPreference =
-                promptPreferenceRepository.findFirstByHouseIdOrderByIdDesc(house.getId());
+        List<Boolean> likes = new ArrayList<>();
 
-        boolean isLike;
-        if (optionalPreference.isEmpty()) {
-            // null이면 true인 로직
-            isLike = true;
-        } else {
-            PromptPreference preference = optionalPreference.get();
-            // 있으면 PromptPreference를 활용
-            isLike = preference.getPreference().isLike();
+        // 3. 최신 GenerateImagePreference 조회 (선호 여부)
+        for (GenerateImage generateImage : generateImages) {
+            Optional<GenerateImagePreference> optionalGenerateImagePreference =
+                    generateImagePreferenceRepository.findFirstByGenerateImageIdOrderByIdDesc(generateImage.getId());
+
+            if (optionalGenerateImagePreference.isPresent()){
+                likes.add(optionalGenerateImagePreference.get().getPreference().isLike());
+            } else {
+                likes.add(null);
+            }
         }
 
-        // 4. GenerateImage 리스트 → DTO 리스트 변환
+        // 4. GenerateImage 리스트와 likes 리스트를 함께 사용하여 DTO 변환
         List<ImageHistoriesResultPageResponse.ImageHistoryResultPageResponse> histories =
-                generateImages.stream()
-                        .map(generateImage -> ImageHistoriesResultPageResponse.ImageHistoryResultPageResponse.of(
-                                house.getEquilibrium().getDescription(),
-                                house.getForm().toString(),
-                                tag.getTagNameKr(),
-                                findUser.getName(),
-                                generateImage.getUrl(),
-                                isLike
-                        ))
+                IntStream.range(0, generateImages.size()) // 인덱스를 활용하여 스트림 생성
+                        .mapToObj(i -> {
+                            GenerateImage generateImage = generateImages.get(i);
+                            Boolean isLike = likes.get(i); // likes 리스트에서 해당 인덱스의 값 가져오기
+
+                            return ImageHistoriesResultPageResponse.ImageHistoryResultPageResponse.of(
+                                    house.getEquilibrium().getDescription(),
+                                    house.getForm().toString(),
+                                    tag.getTagNameKr(),
+                                    findUser.getName(),
+                                    generateImage.getUrl(),
+                                    isLike
+                            );
+                        })
                         .toList();
 
         // 5. 응답 DTO 생성
