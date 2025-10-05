@@ -2,6 +2,8 @@ package or.sopt.houme.domain.furniture.client;
 
 import or.sopt.houme.domain.furniture.dto.external.fastApiImagehash.ImageHashRequest;
 import or.sopt.houme.domain.furniture.dto.external.fastApiImagehash.SimilarityResponse;
+import or.sopt.houme.domain.furniture.dto.external.fastApiImagehash.forPlan.ImageHashRequestForPlan;
+import or.sopt.houme.domain.furniture.dto.external.fastApiImagehash.forPlan.SimilarityResponseForPlan;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -19,4 +21,11 @@ public interface FastApiImageHashClient {
             produces = MediaType.APPLICATION_JSON_VALUE
     )
     SimilarityResponse getTopKSimilarImages(@RequestBody ImageHashRequest request);
+
+    @PostMapping(
+            value = "/imagehash/similarity/for-plan",
+            consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    SimilarityResponseForPlan getTopKSimilarImagesForPlan(@RequestBody ImageHashRequestForPlan request);
 }

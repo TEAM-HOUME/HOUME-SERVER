@@ -5,7 +5,7 @@ import lombok.RequiredArgsConstructor;
 import or.sopt.houme.domain.furniture.dto.external.naverShop.FurnitureProductsInfoResponse;
 import or.sopt.houme.domain.furniture.dto.response.FurnitureAndActivityResponse;
 import or.sopt.houme.domain.furniture.dto.response.FurnitureCategoriesResponse;
-import or.sopt.houme.domain.furniture.dto.external.naverShop.FurnitureProductsInfoResponseForPlan;
+import or.sopt.houme.domain.furniture.dto.external.naverShop.forPlan.FurnitureProductsInfoResponseForPlan;
 import or.sopt.houme.domain.furniture.facade.FurnitureFacade;
 import or.sopt.houme.domain.furniture.service.FurnitureService;
 import or.sopt.houme.domain.user.controller.dto.CustomUserDetails;
@@ -63,31 +63,29 @@ public class FurnitureController {
         return ResponseEntity.ok(ApiResponse.ok(response));
     }
 
-//    @Operation(summary = "[기획 의사결정용 API] 가구 카테고리를 클릭하여 가구 제품 조회 API",
-//            description = "검색어로 네이버 검색합니다." +
-//                    "\n" +
-//                    "\n사용법:" +
-//                    "\n1. tagId와 furnitureId로 해시값을 계산할 가구 이미지를 선택합니다." +
-//                    "\n2. 검색어는 그대로 사용하셔도 되고, 검색어 최적화를 원하신다면 다른 검색어로 검색하셔도 됩니다." +
-//                    "\n3. searchProductsCount는 1~100만 가능합니다" +
-//                    "\n" +
-//                    "\ntagId:" +
-//                    "\n1.natural_woody" +
-//                    "\n2.romantic_pink" +
-//                    "\n3.modern_white" +
-//                    "\n4.vintage_green" +
-//                    "\n5.vintage_pattern" +
-//                    "\n6.midcentury_blue" +
-//                    "\n" +
-//                    "\nfurnitureId:" +
-//                    "\n1.SINGLE 2.SUPER_SINGLE 3.DOUBLE 4.QUEEN_OVER 5.DESK" +
-//                    "\n6.CLOSET 7.TABLE 8.ONE_SEATER_SOFA 9.DRAWER 10.MOVABLE_TV" +
-//                    "\n11.TWO_SEATER_SOFA 12.SITTING_TABLE 13.FULLBODY_MIRROR 14.BOOK_SHELF 15.DISPLAY_CABINET")
-//    @GetMapping("/generated-images/{tagId}/curations/products/forplan/{furnitureId}")
-//    public ResponseEntity<ApiResponse<FurnitureProductsInfoResponseForPlan>> getFurnitureProductInfoFromNaverApiForPlan(@AuthenticationPrincipal CustomUserDetails userDetails, @PathVariable Long tagId, @PathVariable Long furnitureId, @RequestParam String searchKeyword, int searchProductsCount) {
-//        FurnitureProductsInfoResponseForPlan response = furnitureService.getFurnitureProductInfoFromNaverApiForPlan(userDetails.getUser(), tagId, furnitureId, searchKeyword, searchProductsCount);
-//
-//        return ResponseEntity.ok(ApiResponse.ok(response));
-//    }
+    @Operation(summary = "[기획 의사결정용 API] 가구 카테고리를 클릭하여 가구 제품 조회 API",
+            description = "- tagId와 furnitureId로 baseImage가 선택됩니다.\n" +
+                    "  - 각 id에 대한 값은 노션으로 전달하겠습니다.\n" +
+                    "- searchKeyword로 검색어를 커스텀할 수 있습니다.\n" +
+                    "- pHash(0~100)사이값을 입력하여, pHash와 colorHash의 비율을 커스텀할 수 있습니다.\n" +
+                    "  - colorHash는 100-pHash로 산정됩니다.")
+    @GetMapping("/generated-images/{tagId}/curations/products/{furnitureId}/for-plan")
+    public ResponseEntity<ApiResponse<FurnitureProductsInfoResponseForPlan>> getFurnitureProductInfoFromNaverApiForPlan(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @PathVariable Long tagId,
+            @PathVariable Long furnitureId,
+            @RequestParam String searchKeyword,
+            @RequestParam int pHash
+    ) {
+        FurnitureProductsInfoResponseForPlan response = furnitureFacade.getFurnitureProductInfoFromNaverApiForPlan(
+                userDetails.getUser(),
+                tagId,
+                furnitureId,
+                searchKeyword,
+                pHash
+        );
+
+        return ResponseEntity.ok(ApiResponse.ok(response));
+    }
 }
 
