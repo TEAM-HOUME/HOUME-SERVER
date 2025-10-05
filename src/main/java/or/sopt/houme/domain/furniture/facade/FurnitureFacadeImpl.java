@@ -39,7 +39,7 @@ public class FurnitureFacadeImpl implements FurnitureFacade {
 
     // 기획의사결정용
     @Override
-    public FurnitureProductsInfoResponseForPlan getFurnitureProductInfoFromNaverApiForPlan(User user, Long tagId, Long furnitureId, String searchKeyword, int pHash, int colorHash, int display) {
+    public FurnitureProductsInfoResponseForPlan getFurnitureProductInfoFromNaverApiForPlan(User user, Long tagId, Long furnitureId, String searchKeyword, int pHash) {
         // 1. FurnitureTag 조회 (DB)
         FurnitureTag furnitureTag = furnitureService.findFurnitureTagForPlan(tagId, furnitureId);
 
@@ -48,7 +48,7 @@ public class FurnitureFacadeImpl implements FurnitureFacade {
 
         // 3. FastAPI 호출 → 유사도 기반 상위 상품 리스트만 반환
         List<FurnitureProductsInfoResponseForPlan.FurnitureProductInfo> infos =
-                imageHashService.rankByImageSimilarityForPlan(furnitureTag.getFurnitureUrl(), products, pHash, colorHash, display);
+                imageHashService.rankByImageSimilarityForPlan(furnitureTag.getFurnitureUrl(), products, pHash, 100-pHash, 5);
 
         // 4. 최종 응답 조립 (Facade 책임)
         return FurnitureProductsInfoResponseForPlan.of(user.getName(), infos);

@@ -71,18 +71,14 @@ public class FurnitureController {
             @PathVariable Long tagId,
             @PathVariable Long furnitureId,
             @RequestParam String searchKeyword,
-            @RequestParam int pHash,
-            @RequestParam int colorHash,
-            @RequestParam int display
+            @RequestParam int pHash
     ) {
         FurnitureProductsInfoResponseForPlan response = furnitureFacade.getFurnitureProductInfoFromNaverApiForPlan(
                 userDetails.getUser(),
                 tagId,
                 furnitureId,
                 searchKeyword,
-                pHash,
-                colorHash,
-                display
+                pHash
         );
 
         return ResponseEntity.ok(ApiResponse.ok(response));
