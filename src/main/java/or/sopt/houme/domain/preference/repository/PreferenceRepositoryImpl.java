@@ -7,6 +7,7 @@ import or.sopt.houme.domain.house.entity.QHouse;
 import or.sopt.houme.domain.preference.entity.Preference;
 import or.sopt.houme.domain.preference.entity.QGenerateImagePreference;
 import or.sopt.houme.domain.preference.entity.QPreference;
+import or.sopt.houme.domain.user.entity.QUser;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
@@ -22,15 +23,19 @@ public class PreferenceRepositoryImpl implements PreferenceRepositoryCustom {
         QGenerateImagePreference generateImagePreference = QGenerateImagePreference.generateImagePreference;
         QHouse house = QHouse.house;
         QGenerateImage generateImage = QGenerateImage.generateImage;
+        QUser user = QUser.user;
 
         return Optional.ofNullable(queryFactory
-                .selectFrom(preference)
-                .join(preference).on(generateImagePreference.preference.eq(preference)).fetchJoin()
-                .join(generateImage).on(generateImagePreference.generateImage.eq(generateImage)).fetchJoin()
-                .join(generateImage).on(generateImage.house.eq(house)).fetchJoin()
+                .select(preference) // Preference 엔티티를 선택
+                .from(generateImagePreference) // generateImagePreference에서 시작
+                .join(generateImagePreference.preference, preference).fetchJoin() // Preference 페치 조인
+                .join(generateImagePreference.generateImage, generateImage).fetchJoin() // GenerateImage 페치 조인
+                .join(generateImage.house, house).fetchJoin() // House 페치 조인
+                .join(house.user, user).fetchJoin() // User 페치 조인 (User 정보가 필요하다면)
                 .where(
-                        house.user.id.eq(userId),
-                        generateImage.id.eq(imageId)
-                ).fetchOne());
+                        user.id.eq(userId), // House의 User ID 조건
+                        generateImage.id.eq(imageId) // GenerateImage ID 조건
+                )
+                .fetchOne());
     }
 }
