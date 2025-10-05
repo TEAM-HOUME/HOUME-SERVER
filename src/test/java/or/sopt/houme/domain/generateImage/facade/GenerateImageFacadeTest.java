@@ -5,7 +5,10 @@ import or.sopt.houme.domain.furniture.service.FurnitureService;
 import or.sopt.houme.domain.generateImage.dto.request.GenerateImageRequest;
 import or.sopt.houme.domain.generateImage.dto.response.ImageInfoResponse;
 import or.sopt.houme.domain.generateImage.entity.GenerateImage;
+import or.sopt.houme.domain.generateImage.entity.ImageGenerationLog;
 import or.sopt.houme.domain.generateImage.service.GenerateImageService;
+import or.sopt.houme.domain.generateImage.service.imageGenerationLog.ImageGenerationLogService;
+import or.sopt.houme.domain.generateImage.service.imageGenerationLog.ImageGenerationTransactionService;
 import or.sopt.houme.domain.house.entity.House;
 import or.sopt.houme.domain.house.entity.enums.Activity;
 import or.sopt.houme.domain.house.entity.enums.Equilibrium;
@@ -16,6 +19,8 @@ import or.sopt.houme.domain.openai.facade.OpenAiFacade;
 import or.sopt.houme.domain.prompt.dto.PromptFurnitureListDTO;
 import or.sopt.houme.domain.prompt.dto.PromptRequestDTO;
 import or.sopt.houme.domain.taste.entity.Tag;
+import or.sopt.houme.domain.taste.entity.Taste;
+import or.sopt.houme.domain.taste.service.TasteService;
 import or.sopt.houme.domain.taste.service.TasteTagService;
 import or.sopt.houme.domain.user.entity.*;
 import or.sopt.houme.domain.user.service.UserService;
@@ -62,6 +67,15 @@ class GenerateImageFacadeTest {
 
     @Mock
     FurnitureService furnitureService;
+
+    @Mock
+    TasteService tasteService;
+
+    @Mock
+    ImageGenerationLogService imageGenerationLogService;
+
+    @Mock
+    ImageGenerationTransactionService imageGenerationTransactionService;
 
     @Test
     @DisplayName("받은 데이터들을 토대로 JAVA로 OpenAI를 사용해 이미지를 받을 수 있다.")
