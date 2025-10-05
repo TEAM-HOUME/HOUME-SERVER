@@ -40,9 +40,9 @@ public class ImageGenerationLog extends BaseEntity {
     private Integer generatedImageCount;
 
     // 선택한 무드보드 식별자들 (Json 타입으로 저장)
-    @Comment(value = "선택한 무드보드 식별자들 (Json 타입)")
-    @JdbcTypeCode(SqlTypes.JSON)
-    @Column(columnDefinition = "jsonb")
+    @Comment(value = "선택한 무드보드 식별자들 (Json 타입)") // 컬럼에 주석 추가하는 어노테이션
+    @JdbcTypeCode(SqlTypes.JSON)    // JSON 문자열 <-> PostgreSQL의 JSONB 타입 변환 처리
+    @Column(columnDefinition = "jsonb") // 컬럼 타입을 JSONB로 명시 지정
     private String selectedMoodboardIds;
 
     // 선택한 무드보드 이름들 (Json 타입으로 저장)
