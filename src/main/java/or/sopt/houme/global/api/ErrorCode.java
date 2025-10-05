@@ -158,6 +158,9 @@ public enum ErrorCode {
     // DB 제약조건 위반 에러
     DB_CONSTRAINT_VIOLATION(HttpStatus.INTERNAL_SERVER_ERROR, 50018, "DB 제약조건 문제 발생, 서버 개발자에게 문의해주세요"),
 
+    // 로그 저장시 objectMapper 에러
+    OBJECTMAPPER_EXCEPTION(HttpStatus.INTERNAL_SERVER_ERROR, 50019, "생성 로그 JSON 변환에 실패, 서버 개발자에게 문의해주세요"),
+
     /**
      * 504 GATEWAY_TIMEOUT
      */
