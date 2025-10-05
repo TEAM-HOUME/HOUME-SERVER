@@ -1,6 +1,6 @@
 package or.sopt.houme.domain.house.controller;
 
-import or.sopt.houme.domain.house.HouseLikeFacade;
+import or.sopt.houme.domain.generateImage.facade.HouseLikeFacade;
 import or.sopt.houme.domain.house.dto.HouseOptionDTO;
 import or.sopt.houme.domain.house.dto.response.HouseOptionsResponse;
 import or.sopt.houme.domain.house.service.HouseService;

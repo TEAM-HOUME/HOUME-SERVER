@@ -8,8 +8,12 @@ import or.sopt.houme.domain.generateImage.dto.request.GenerateImageRequest;
 import or.sopt.houme.domain.generateImage.dto.response.ImageInfoListResponse;
 import or.sopt.houme.domain.generateImage.dto.response.ImageInfoResponse;
 import or.sopt.houme.domain.generateImage.facade.GenerateImageFacade;
+import or.sopt.houme.domain.generateImage.facade.GenerateImageLikeFacade;
+import or.sopt.houme.domain.house.dto.request.IsLikeRequest;
 import or.sopt.houme.domain.user.controller.dto.CustomUserDetails;
 import or.sopt.houme.global.api.ApiResponse;
+import or.sopt.houme.global.api.ErrorCode;
+import or.sopt.houme.global.api.handler.GenerateImageException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -21,6 +25,7 @@ import org.springframework.web.bind.annotation.*;
 public class GenerateImageController {
 
     private final GenerateImageFacade generateImageFacade;
+    private final GenerateImageLikeFacade generateImageLikeFacade;
 
     @Operation(summary = "자바 스프링을 이용한 이미지 생성 API",
             description = "사용자가 요청한 내용을 기반으로 새로운 이미지를 생성합니다. 생성된 이미지는 저장되며, 별도의 조회 API를 통해 확인할 수 있습니다.")
@@ -72,5 +77,20 @@ public class GenerateImageController {
         return ResponseEntity.ok(ApiResponse.ok(fallBackImage));
     }
 
+    @Operation(summary = "생성된 이미지 선호 여부 API",
+            description = "생성된 이미지에 대한 선호도를 받습니다.")
+    @PostMapping("/v1/generated-images/{imageId}/preference")
+    public ResponseEntity<ApiResponse<Void>> generateImagePreference(
+            @PathVariable Long imageId,
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @RequestBody @Valid IsLikeRequest request
+    ){
+        try {
+            generateImageLikeFacade.isLike(userDetails.getUser(), imageId, request);
+        } catch (InterruptedException e) {
+            throw new GenerateImageException(ErrorCode.GENERATE_IMAGE_INTERRUPT_EXCEPTION);
+        }
 
+        return ResponseEntity.ok(ApiResponse.ok(null));
+    }
 }

@@ -4,16 +4,12 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import or.sopt.houme.domain.house.HouseLikeFacade;
 import or.sopt.houme.domain.house.dto.request.HouseSelectRequest;
-import or.sopt.houme.domain.house.dto.request.IsLikeRequest;
 import or.sopt.houme.domain.house.dto.response.HouseIdResponse;
 import or.sopt.houme.domain.house.dto.response.HouseOptionsResponse;
 import or.sopt.houme.domain.house.service.HouseService;
 import or.sopt.houme.domain.user.controller.dto.CustomUserDetails;
 import or.sopt.houme.global.api.ApiResponse;
-import or.sopt.houme.global.api.ErrorCode;
-import or.sopt.houme.global.api.handler.GenerateImageException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -25,7 +21,6 @@ import org.springframework.web.bind.annotation.*;
 public class HouseController {
 
     private final HouseService houseService;
-    private final HouseLikeFacade houseLikeFacade;
 
     // 집구조 제공 API
     @Operation(summary = "집구조 제공 API",
@@ -46,20 +41,4 @@ public class HouseController {
         return ResponseEntity.ok(ApiResponse.ok(houseId));
     }
 
-    @Operation(summary = "생성된 이미지 선호 여부 API",
-            description = "생성된 프롬프트에 따른 이미지에 대한 선호도를 받습니다.")
-    @PostMapping("/generated-images/{imageId}/preference")
-    public ResponseEntity<ApiResponse<Void>> generateImagePreference(
-            @PathVariable Long imageId,
-            @AuthenticationPrincipal CustomUserDetails userDetails,
-            @RequestBody @Valid IsLikeRequest request
-    ){
-        try {
-            houseLikeFacade.isLike(userDetails.getUser(), imageId, request);
-        } catch (InterruptedException e) {
-            throw new GenerateImageException(ErrorCode.PROMPT_INTERRUPT_EXCEPTION);
-        }
-
-        return ResponseEntity.ok(ApiResponse.ok(null));
-    }
 }
