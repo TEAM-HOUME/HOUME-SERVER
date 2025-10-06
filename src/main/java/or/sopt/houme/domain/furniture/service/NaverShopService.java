@@ -1,6 +1,7 @@
 package or.sopt.houme.domain.furniture.service;
 
 import feign.FeignException;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.RequiredArgsConstructor;
 import or.sopt.houme.domain.furniture.client.NaverShopApiClient;
 import or.sopt.houme.domain.furniture.dto.external.naverShop.NaverFurnitureProductDto;
@@ -45,7 +46,7 @@ public class NaverShopService {
             }
 
             // mallName이 "롯데ON"인 상품만 필터링
-            return response.items().stream()
+            List<NaverFurnitureProductDto> responseLists = response.items().stream()
                     // (임시) mallName 필터링 제거
 //                    .filter(item -> {
 //                        Object mallName = item.get("mallName");
@@ -54,6 +55,10 @@ public class NaverShopService {
 //                    })
                     .map(NaverFurnitureProductDto::from)
                     .toList();
+
+
+
+            return responseLists;
 
         } catch (FeignException e) {
             int status = e.status();
