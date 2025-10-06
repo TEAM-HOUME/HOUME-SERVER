@@ -30,4 +30,13 @@ public class PreferenceFactor {
                 .factor(factor)
                 .build();
     }
+
+    /**
+     * PreferenceFactor의 factor를 업데이트합니다.
+     * 주로 중복 factor 제거 시 기존 엔티티를 재사용할 때 사용됩니다.
+     * @param factor 새로운 Factor (null 불가)
+     */
+    public void updateFactor(Factor factor) {
+        this.factor = factor;
+    }
 }

@@ -52,12 +52,19 @@ public class FactorServiceImpl implements FactorService {
         }
 
         // preferenceFactor 존재 여부 확인
-        Optional<PreferenceFactor> existing = preferenceFactorRepository.findByPreferenceAndFactor(preference, factor);
+        Optional<PreferenceFactor> byPreference = preferenceFactorRepository.findByPreference(preference);
 
         // 매핑 객체를 토글링합니다.
-        if (existing.isPresent()) {
-            // 이미 있으면 삭제 (toggle off)
-            preferenceFactorRepository.delete(existing.get());
+        if (byPreference.isPresent()) {
+            PreferenceFactor preferenceFactor = byPreference.get();
+
+            // 이미 같은값이 있으면 삭제 (toggle off)
+            if (preferenceFactor.getFactor().getId().equals(factor.getId())) {
+                preferenceFactorRepository.delete(preferenceFactor);
+            } else {
+                // 다른 값이라면 업데이트
+                preferenceFactor.updateFactor(factor);
+            }
         } else {
             // 없으면 새로 저장 (toggle on)
             PreferenceFactor preferenceFactor = PreferenceFactor.of(preference, factor);
