@@ -28,9 +28,7 @@ public class JjymServiceImpl implements JjymService {
     private final RecommendFurnitureRepository recommendFurnitureRepository;
 
     @Override
-    public void jjymToggle(Long userId, Long recommendFurnitureId) {
-
-
+    public boolean jjymToggle(Long userId, Long recommendFurnitureId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new GeneralException(ErrorCode.USER_NOT_FOUND));
 
@@ -40,15 +38,13 @@ public class JjymServiceImpl implements JjymService {
         Optional<Jjym> existing = jjymRepository.findByUserIdAndRecommendFurnitureId(user.getId(), furniture.getId());
 
         if (existing.isPresent()) {
-            // 이미 찜되어 있으면 찜을 해제합니다
             jjymRepository.delete(existing.get());
+            return false;
         } else {
-            // 찜이 되어 있지 않으면 찜을 해제합니다
             Jjym jjym = Jjym.of(user, furniture);
             jjymRepository.save(jjym);
+            return true;
         }
-
-
     }
 
     @Transactional(readOnly = true)

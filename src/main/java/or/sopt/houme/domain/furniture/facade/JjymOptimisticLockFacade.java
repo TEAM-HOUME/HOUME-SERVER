@@ -16,15 +16,19 @@ public class JjymOptimisticLockFacade {
 
     private final JjymServiceImpl jjymService;
 
-    public void toggle(User user, Long recommendFurnitureId) throws InterruptedException {
+    public boolean toggle(User user, Long recommendFurnitureId) {
         int retryCount = 0;
         while (retryCount < MAX_RETRIES) {
             try {
-                jjymService.jjymToggle(user.getId(), recommendFurnitureId);
-                return;
+                return jjymService.jjymToggle(user.getId(), recommendFurnitureId);
             } catch (OptimisticLockException | DataIntegrityViolationException e) {
                 long backoffTime = (long) Math.pow(2, retryCount) * RETRY_DELAY_MS;
-                Thread.sleep(backoffTime);
+                try {
+                    Thread.sleep(backoffTime);
+                } catch (InterruptedException ie) {
+                    Thread.currentThread().interrupt();
+                    throw new DataIntegrityViolationException("찜 토글 처리 중 인터럽트가 발생했습니다", ie);
+                }
                 retryCount++;
             }
         }
@@ -33,4 +37,3 @@ public class JjymOptimisticLockFacade {
         throw new DataIntegrityViolationException("찜 시도가 정해진 횟수를 초과하였습니다");
     }
 }
-

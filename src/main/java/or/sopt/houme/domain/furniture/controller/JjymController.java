@@ -30,14 +30,8 @@ public class JjymController {
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @PathVariable Long recommendFurnitureId
     ) {
-        try {
-            jjymOptimisticLockFacade.toggle(userDetails.getUser(), recommendFurnitureId);
-        } catch (InterruptedException e) {
-            // 인터럽트 발생 시 런타임으로 전파하여 글로벌 핸들러에서 처리
-            Thread.currentThread().interrupt();
-            throw new RuntimeException("Jjym toggle interrupted", e);
-        }
-        return ResponseEntity.ok(ApiResponse.ok(new JjymToggleResponse()));
+        boolean favorited = jjymOptimisticLockFacade.toggle(userDetails.getUser(), recommendFurnitureId);
+        return ResponseEntity.ok(ApiResponse.ok(new JjymToggleResponse(favorited)));
     }
 
 
