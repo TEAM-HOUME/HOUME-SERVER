@@ -9,9 +9,18 @@ import org.hibernate.annotations.Comment;
 @Getter
 @Builder
 @Entity
-@Table(name = "recommend_furnitures", indexes = {
-        @Index(name = "idx_furniture_product_id", columnList = "furniture_product_id")
-})
+@Table(
+        name = "recommend_furnitures",
+        indexes = {
+                @Index(name = "idx_furniture_product_id", columnList = "furniture_product_id")
+        },
+        uniqueConstraints = {
+                @UniqueConstraint(
+                        name = "uk_furniture_product_id",
+                        columnNames = {"furniture_product_id"}
+                )
+        }
+)
 public class RecommendFurniture {
 
     @Id
@@ -37,4 +46,22 @@ public class RecommendFurniture {
     @Column(name = "furniture_product_id", nullable = false)
     @Comment("추천 가구 식별자")
     private Long furnitureProductId;
+
+
+
+    public RecommendFurniture from(
+            String furnitureProductImageUrl,
+            String furnitureProductSiteUrl,
+            String furnitureProductName,
+            String furnitureProductMallName,
+            Long furnitureProductId
+    ){
+        return RecommendFurniture.builder()
+                .furnitureProductImageUrl(furnitureProductImageUrl)
+                .furnitureProductSiteUrl(furnitureProductSiteUrl)
+                .furnitureProductName(furnitureProductName)
+                .furnitureProductMallName(furnitureProductMallName)
+                .furnitureProductId(furnitureProductId)
+                .build();
+    }
 }
