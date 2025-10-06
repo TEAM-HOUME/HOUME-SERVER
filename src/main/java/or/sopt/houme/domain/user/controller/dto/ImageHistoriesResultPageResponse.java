@@ -1,5 +1,7 @@
 package or.sopt.houme.domain.user.controller.dto;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+
 import java.util.List;
 
 public record ImageHistoriesResultPageResponse(
@@ -15,7 +17,11 @@ public record ImageHistoriesResultPageResponse(
             String tasteTag,
             String name,
             String generatedImageUrl,
+            @Schema(description = "좋아요 여부", nullable = true)
             Boolean isLike,
+            @Schema(description = "선호도 요인 식별자", nullable = true)
+            Long factorId,
+            @Schema(description = "선호도 요인", nullable = true)
             String factorText
     ) {
         public static ImageHistoryResultPageResponse of(
@@ -25,10 +31,11 @@ public record ImageHistoriesResultPageResponse(
                 String name,
                 String generatedImageUrl,
                 Boolean isLike,
+                Long factorId,
                 String factorText
         ) {
             return new ImageHistoryResultPageResponse(
-                    equilibrium, houseForm, tasteTag, name, generatedImageUrl, isLike, factorText
+                    equilibrium, houseForm, tasteTag, name, generatedImageUrl, isLike, factorId, factorText
             );
         }
     }

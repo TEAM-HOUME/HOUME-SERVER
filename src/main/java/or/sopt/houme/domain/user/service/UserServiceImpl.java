@@ -108,6 +108,9 @@ public class UserServiceImpl implements UserService {
         // 선택했던 factor 조회
         List<Factor> factors = new ArrayList<>();
 
+        // 좋아요 객체
+        Optional<Preference> preference;
+
         // 3. 최신 GenerateImagePreference 조회 (선호 여부)
         for (GenerateImage generateImage : generateImages) {
             Optional<GenerateImagePreference> optionalGenerateImagePreference =
@@ -122,8 +125,11 @@ public class UserServiceImpl implements UserService {
             tags.add(tagRepository.findTagByUserIdAndImageId(user.getId(), generateImage.getId())
                     .orElseThrow(() -> new TagException(ErrorCode.NOT_FOUND_TAG_ENTITY)));
 
+            // Preference 찾기
+            preference = preferenceRepository.findPreferenceByUserIdAndImageId(findUser.getId(), generateImage.getId());
+
             // Factor 관련
-            if (preferenceByUserIdAndImageId.isPresent()){
+            if (preference.isPresent()){
                 PreferenceFactor preferenceFactor = preferenceFactorRepository.findByPreference(preferenceByUserIdAndImageId.get())
                         .orElse(null);
 
@@ -154,6 +160,7 @@ public class UserServiceImpl implements UserService {
                                     findUser.getName(),
                                     generateImage.getUrl(),
                                     isLike,
+                                    factor == null ? null : factor.getId(),
                                     factor == null ? null : factor.getFactorText()
                             );
                         })
