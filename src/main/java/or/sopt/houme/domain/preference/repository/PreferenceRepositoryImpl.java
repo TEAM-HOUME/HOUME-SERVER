@@ -21,19 +21,14 @@ public class PreferenceRepositoryImpl implements PreferenceRepositoryCustom {
     public Optional<Preference> findPreferenceByUserIdAndImageId(Long userId, Long imageId) {
         QPreference preference = QPreference.preference;
         QGenerateImagePreference generateImagePreference = QGenerateImagePreference.generateImagePreference;
-        QHouse house = QHouse.house;
         QGenerateImage generateImage = QGenerateImage.generateImage;
-        QUser user = QUser.user;
 
         return Optional.ofNullable(queryFactory
-                .select(preference) // Preference 엔티티 선택
-                .from(generateImagePreference) // generateImagePreference에서 시작
-                .join(generateImagePreference.preference, preference).fetchJoin()
-                .join(generateImagePreference.generateImage, generateImage).fetchJoin()
-                .join(generateImage.house, house).fetchJoin()
-                .join(house.user, user).fetchJoin()
+                .selectFrom(preference) // Preference 엔티티 선택
+                .join(generateImagePreference).on(generateImagePreference.preference.eq(preference)).fetchJoin()
+                .join(generateImage).on(generateImagePreference.generateImage.eq(generateImage)).fetchJoin()
                 .where(
-                        user.id.eq(userId),
+                        generateImage.house.user.id.eq(userId),
                         generateImage.id.eq(imageId)
                 )
                 .fetchOne());
