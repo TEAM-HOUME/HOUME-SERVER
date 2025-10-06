@@ -12,6 +12,7 @@ import or.sopt.houme.domain.preference.service.PreferenceService;
 import or.sopt.houme.domain.user.entity.User;
 import or.sopt.houme.global.api.ErrorCode;
 import or.sopt.houme.global.api.handler.GenerateImageException;
+import or.sopt.houme.global.api.handler.PreferenceException;
 import or.sopt.houme.global.api.handler.UserException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Component;
@@ -74,6 +75,12 @@ public class GenerateImageLikeFacade {
 
         // GenerateImagePreference 삭제
         Long preferenceId = generateImagePreferenceService.deleteGenerateImagePreference(generateImage);
+
+        // 해당 Preference가 없다면 예외처리
+        if (preferenceId == null) {
+            throw new PreferenceException(ErrorCode.NOT_FOUND_PREFERENCE);
+        }
+
         // PreferenceFactor 삭제
         factorService.deletePreferenceFactor(preferenceId);
 

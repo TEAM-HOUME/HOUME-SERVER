@@ -98,7 +98,7 @@ public class GenerateImageController {
     @Operation(summary = "이미지 선호 삭제 API",
             description = "생성된 이미지에 대한 선호도를 삭제합니다.")
     @DeleteMapping("/v1/generated-images/{imageId}/preference")
-    public ResponseEntity<ApiResponse<Void>> generateImagePreference(
+    public ResponseEntity<ApiResponse<Void>> deleteGenerateImagePreference(
             @PathVariable Long imageId,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ){
