@@ -5,6 +5,7 @@ import or.sopt.houme.domain.generateImage.entity.GenerateImage;
 import or.sopt.houme.domain.preference.entity.GenerateImagePreference;
 import or.sopt.houme.domain.preference.entity.Preference;
 import or.sopt.houme.domain.preference.repository.GenerateImagePreferenceRepository;
+import or.sopt.houme.domain.preference.repository.PreferenceFactorRepository;
 import or.sopt.houme.domain.preference.repository.PreferenceRepository;
 import or.sopt.houme.global.api.ErrorCode;
 import or.sopt.houme.global.api.handler.PreferenceException;
@@ -20,6 +21,7 @@ public class GenerateImagePreferenceServiceImpl implements GenerateImagePreferen
 
     private final PreferenceRepository preferenceRepository;
     private final GenerateImagePreferenceRepository generateImagePreferenceRepository;
+    private final PreferenceFactorRepository preferenceFactorRepository;
 
     // 좋아요 or 싫어요
     @Transactional
@@ -35,6 +37,7 @@ public class GenerateImagePreferenceServiceImpl implements GenerateImagePreferen
 
             // 기존 상태와 요청 상태가 다를 경우에만 업데이트
             if (preference.isLike() != isLike) {
+                preferenceFactorRepository.deleteByPreference(preference);
                 preference.updateLike(isLike);
             }
 
