@@ -40,4 +40,7 @@ public class Jjym extends BaseEntity {
                 .recommendFurniture(recommendFurniture)
                 .build();
     }
+
+    @Version
+    private Long version;
 }

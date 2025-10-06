@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import or.sopt.houme.domain.furniture.dto.response.JjymListResponse;
 import or.sopt.houme.domain.furniture.dto.response.JjymToggleResponse;
+import or.sopt.houme.domain.furniture.facade.JjymOptimisticLockFacade;
 import or.sopt.houme.domain.furniture.service.JjymService;
 import or.sopt.houme.domain.user.controller.dto.CustomUserDetails;
 import or.sopt.houme.global.api.ApiResponse;
@@ -20,6 +21,7 @@ public class JjymController {
 
 
     private final JjymService jjymService;
+    private final JjymOptimisticLockFacade jjymOptimisticLockFacade;
 
 
     @Operation(summary = "추천 가구 찜 토글 API", description = "이미 찜이면 해제, 아니면 찜으로 저장합니다")
@@ -28,7 +30,13 @@ public class JjymController {
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @PathVariable Long recommendFurnitureId
     ) {
-        jjymService.jjymToggle(userDetails.getUser().getId(), recommendFurnitureId);
+        try {
+            jjymOptimisticLockFacade.toggle(userDetails.getUser(), recommendFurnitureId);
+        } catch (InterruptedException e) {
+            // 인터럽트 발생 시 런타임으로 전파하여 글로벌 핸들러에서 처리
+            Thread.currentThread().interrupt();
+            throw new RuntimeException("Jjym toggle interrupted", e);
+        }
         return ResponseEntity.ok(ApiResponse.ok(new JjymToggleResponse()));
     }
 
