@@ -22,13 +22,17 @@ public class PreferenceRepositoryImpl implements PreferenceRepositoryCustom {
         QPreference preference = QPreference.preference;
         QGenerateImagePreference generateImagePreference = QGenerateImagePreference.generateImagePreference;
         QGenerateImage generateImage = QGenerateImage.generateImage;
+        QHouse house = QHouse.house;
+        QUser user = QUser.user;
 
         return Optional.ofNullable(queryFactory
                 .selectFrom(preference) // Preference 엔티티 선택
                 .join(generateImagePreference).on(generateImagePreference.preference.eq(preference)).fetchJoin()
                 .join(generateImage).on(generateImagePreference.generateImage.eq(generateImage)).fetchJoin()
+                .join(house).on(generateImage.house.eq(house)).fetchJoin()
+                .join(user).on(house.user.eq(user)).fetchJoin()
                 .where(
-                        generateImage.house.user.id.eq(userId),
+                        user.id.eq(userId),
                         generateImage.id.eq(imageId)
                 )
                 .fetchOne());
