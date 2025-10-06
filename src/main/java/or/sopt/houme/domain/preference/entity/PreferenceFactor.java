@@ -30,4 +30,9 @@ public class PreferenceFactor {
                 .factor(factor)
                 .build();
     }
+
+    // Factor 업데이트
+    public void updateFactor(Factor factor) {
+        this.factor = factor;
+    }
 }
