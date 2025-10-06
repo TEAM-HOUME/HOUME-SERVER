@@ -102,7 +102,7 @@ public class GenerateImageController {
             @PathVariable Long imageId,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ){
-        generateImageLikeFacade.deletedPreference(userDetails.getUser(), imageId);
+        generateImageLikeFacade.deletePreference(userDetails.getUser(), imageId);
 
         return ResponseEntity.ok(ApiResponse.ok(null));
     }

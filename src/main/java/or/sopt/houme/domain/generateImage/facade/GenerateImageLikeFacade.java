@@ -66,7 +66,7 @@ public class GenerateImageLikeFacade {
 
     // 생성된 이미지 선호도 삭제
     @Transactional
-    public void deletedPreference(User user, Long generatedImageId){
+    public void deletePreference(User user, Long generatedImageId){
         // 생성된 이미지 조회
         GenerateImage generateImage = generateImageService.findGenerateImage(generatedImageId);
         if (!Objects.equals(generateImage.getHouse().getUser().getId(), user.getId())) {
