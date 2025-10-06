@@ -12,4 +12,7 @@ public interface PreferenceFactorRepository extends JpaRepository<PreferenceFact
 
     // Preference로 PreferenceFactor 조회
     Optional<PreferenceFactor> findByPreference(Preference preference);
+
+    // Preference로 PreferenceFactor 삭제하기
+    void deleteByPreference(Preference preference);
 }
