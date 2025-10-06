@@ -1,4 +1,4 @@
-package or.sopt.houme.domain.house;
+package or.sopt.houme.domain.generateImage.facade;
 
 import jakarta.persistence.OptimisticLockException;
 import lombok.RequiredArgsConstructor;
@@ -6,7 +6,7 @@ import or.sopt.houme.domain.generateImage.entity.GenerateImage;
 import or.sopt.houme.domain.generateImage.service.GenerateImageService;
 import or.sopt.houme.domain.house.dto.request.IsLikeRequest;
 import or.sopt.houme.domain.house.entity.House;
-import or.sopt.houme.domain.preference.service.PromptPreferenceService;
+import or.sopt.houme.domain.preference.service.GenerateImagePreferenceService;
 import or.sopt.houme.domain.user.entity.User;
 import or.sopt.houme.global.api.ErrorCode;
 import or.sopt.houme.global.api.handler.GenerateImageException;
@@ -19,10 +19,10 @@ import static or.sopt.houme.global.util.constant.OptimisticLockConstant.RETRY_DE
 
 @Component
 @RequiredArgsConstructor
-public class HouseLikeFacade {
+public class GenerateImageLikeFacade {
 
     private final GenerateImageService generateImageService;
-    private final PromptPreferenceService promptPreferenceService;
+    private final GenerateImagePreferenceService generateImagePreferenceService;
 
     // 생성된 이미지 선호도
     public void isLike(User user, Long generatedImageId, IsLikeRequest request) throws InterruptedException {
@@ -40,7 +40,7 @@ public class HouseLikeFacade {
 
         while (retryCount < MAX_RETRIES){
             try {
-                promptPreferenceService.togglePromptPreference(house, request.isLike());
+                generateImagePreferenceService.toggleGenerateImagePreference(generateImage, request.isLike());
                 // 성공시 종료
                 return;
             } catch (OptimisticLockException | DataIntegrityViolationException e){
@@ -53,7 +53,7 @@ public class HouseLikeFacade {
         }
 
         // 재시도 횟수 초과 시 예외 처리
-        throw new GenerateImageException(ErrorCode.PROMPT_RETRY_EXCEPTION);
+        throw new GenerateImageException(ErrorCode.GENERATE_IMAGE_RETRY_EXCEPTION);
     }
 
 }

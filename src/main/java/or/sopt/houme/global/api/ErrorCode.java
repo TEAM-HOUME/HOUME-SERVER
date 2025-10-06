@@ -162,9 +162,9 @@ public enum ErrorCode {
     // DB 관련
     DATA_INTEGRITY_VIOLATION(HttpStatus.INTERNAL_SERVER_ERROR,50015, "데이터 무결성 제약 조건을 위반했습니다. 서버 관리자에게 문의해주세요"),
 
-    // Prompt 좋아요 | 생성된 이미지 관련 예외
-    PROMPT_RETRY_EXCEPTION(HttpStatus.INTERNAL_SERVER_ERROR,50016,"생성된 이미지 좋아요,싫어요 시도 중 동시성 예외가 발생하였습니다, 서버 개발자에게 문의해주세요"),
-    PROMPT_INTERRUPT_EXCEPTION(HttpStatus.INTERNAL_SERVER_ERROR,50017,"이미지 API 실행 중, INTERRUPT_EXCEPTION 가 발생하였습니다. 서버 개발자에게 문의해주세요"),
+    // GenerateImage 좋아요 | 생성된 이미지 관련 예외
+    GENERATE_IMAGE_RETRY_EXCEPTION(HttpStatus.INTERNAL_SERVER_ERROR,50016,"생성된 이미지 좋아요,싫어요 시도 중 동시성 예외가 발생하였습니다, 서버 개발자에게 문의해주세요"),
+    GENERATE_IMAGE_INTERRUPT_EXCEPTION(HttpStatus.INTERNAL_SERVER_ERROR,50017,"이미지 API 실행 중, INTERRUPT_EXCEPTION 가 발생하였습니다. 서버 개발자에게 문의해주세요"),
 
     // DB 제약조건 위반 에러
     DB_CONSTRAINT_VIOLATION(HttpStatus.INTERNAL_SERVER_ERROR, 50018, "DB 제약조건 문제 발생, 서버 개발자에게 문의해주세요"),
