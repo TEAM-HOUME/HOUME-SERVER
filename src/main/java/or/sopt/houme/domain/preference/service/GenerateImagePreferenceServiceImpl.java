@@ -2,13 +2,12 @@ package or.sopt.houme.domain.preference.service;
 
 import lombok.RequiredArgsConstructor;
 import or.sopt.houme.domain.generateImage.entity.GenerateImage;
-import or.sopt.houme.domain.house.entity.House;
 import or.sopt.houme.domain.preference.entity.GenerateImagePreference;
 import or.sopt.houme.domain.preference.entity.Preference;
-import or.sopt.houme.domain.preference.entity.PromptPreference;
 import or.sopt.houme.domain.preference.repository.GenerateImagePreferenceRepository;
 import or.sopt.houme.domain.preference.repository.PreferenceRepository;
-import or.sopt.houme.domain.preference.repository.PromptPreferenceRepository;
+import or.sopt.houme.global.api.ErrorCode;
+import or.sopt.houme.global.api.handler.PreferenceException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -51,4 +50,20 @@ public class GenerateImagePreferenceServiceImpl implements GenerateImagePreferen
         }
     }
 
+    // 이미지 선호도 삭제 (요인도 삭제됨)
+    @Transactional
+    @Override
+    public Long deleteGenerateImagePreference(GenerateImage generateImage) {
+        // 생성된 이미지 선호도 조회
+        GenerateImagePreference generateImagePreference = generateImagePreferenceRepository.findFirstByGenerateImageIdOrderByIdDesc(generateImage.getId())
+                .orElseThrow(() -> new PreferenceException(ErrorCode.NOT_FOUND_PREFERENCE));
+
+        // preferenceId 추출
+        Preference preference = generateImagePreference.getPreference();
+
+        // 이미지 선호도 삭제
+        generateImagePreferenceRepository.delete(generateImagePreference);
+
+        return preference.getId();
+    }
 }

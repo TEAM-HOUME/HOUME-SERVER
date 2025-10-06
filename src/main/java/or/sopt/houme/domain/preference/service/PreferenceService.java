@@ -6,4 +6,7 @@ public interface PreferenceService {
 
     // 좋아요 생성
     Preference createPreference(boolean isLike);
+
+    // 좋아요 삭제
+    void deletePreference(Long preferenceId);
 }
