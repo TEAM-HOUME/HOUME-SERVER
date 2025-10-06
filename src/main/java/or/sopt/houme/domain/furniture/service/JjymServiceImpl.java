@@ -37,7 +37,7 @@ public class JjymServiceImpl implements JjymService {
         RecommendFurniture furniture = recommendFurnitureRepository.findById(recommendFurnitureId)
                 .orElseThrow(() -> new GeneralException(ErrorCode.NOT_FOUND_FURNITURE));
 
-        Optional<Jjym> existing = jjymRepository.findByUser_IdAndRecommendFurniture_Id(user.getId(), furniture.getId());
+        Optional<Jjym> existing = jjymRepository.findByUserIdAndRecommendFurnitureId(user.getId(), furniture.getId());
 
         if (existing.isPresent()) {
             // 이미 찜되어 있으면 찜을 해제합니다
