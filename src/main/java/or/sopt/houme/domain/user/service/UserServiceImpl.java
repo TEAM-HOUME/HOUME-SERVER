@@ -8,11 +8,8 @@ import or.sopt.houme.domain.generateImage.entity.GenerateImage;
 import or.sopt.houme.domain.generateImage.repository.GenerateImageRepository;
 import or.sopt.houme.domain.house.entity.House;
 import or.sopt.houme.domain.house.repository.HouseRepository;
-import or.sopt.houme.domain.preference.entity.GenerateImagePreference;
-import or.sopt.houme.domain.preference.entity.PromptPreference;
-import or.sopt.houme.domain.preference.repository.GenerateImagePreferenceRepository;
-import or.sopt.houme.domain.preference.repository.PreferenceRepository;
-import or.sopt.houme.domain.preference.repository.PromptPreferenceRepository;
+import or.sopt.houme.domain.preference.entity.*;
+import or.sopt.houme.domain.preference.repository.*;
 import or.sopt.houme.domain.taste.entity.Tag;
 import or.sopt.houme.domain.taste.repository.tag.TagRepository;
 import or.sopt.houme.domain.user.controller.dto.ImageHistoriesResultPageResponse;
@@ -30,6 +27,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.IntStream;
 
@@ -42,9 +40,10 @@ public class UserServiceImpl implements UserService {
     private final TagRepository tagRepository;
     private final GenerateImageRepository generateImageRepository;
     private final CreditRepository creditRepository;
-    private final PreferenceRepository preferenceRepository;
-    private final PromptPreferenceRepository promptPreferenceRepository;
     private final GenerateImagePreferenceRepository generateImagePreferenceRepository;
+    private final FactorRepository factorRepository;
+    private final PreferenceRepository preferenceRepository;
+    private final PreferenceFactorRepository preferenceFactorRepository;
 
     @Override
     @Transactional(readOnly = true)
@@ -96,8 +95,9 @@ public class UserServiceImpl implements UserService {
         // 1. house, tag 조회
         House house = houseRepository.findHouseByUserIdAndImageId(findUser.getId(), imageId)
                 .orElseThrow(() -> new HouseException(ErrorCode.NOT_FOUND_HOUSE_ENTITY));
+        Optional<Preference> preferenceByUserIdAndImageId = preferenceRepository.findPreferenceByUserIdAndImageId(findUser.getId(), imageId);
 
-        // 2. houseId 에 해당하는 generateImage 리스트 조회 (오름차순 정렬)
+        // 2. houseId 에 해당하는 generateImage 리스트 조회
         List<GenerateImage> generateImages = generateImageRepository.findGenerateImagesByHouseId(house.getId());
         if (generateImages.isEmpty()) {
             throw new GenerateImageException(ErrorCode.NOT_FOUND_GENERATE_IMAGE_ENTITY);
@@ -105,6 +105,8 @@ public class UserServiceImpl implements UserService {
 
         List<Boolean> likes = new ArrayList<>();
         List<Tag> tags = new ArrayList<>();
+        // 선택했던 factor 조회
+        List<Factor> factors = new ArrayList<>();
 
         // 3. 최신 GenerateImagePreference 조회 (선호 여부)
         for (GenerateImage generateImage : generateImages) {
@@ -119,6 +121,21 @@ public class UserServiceImpl implements UserService {
 
             tags.add(tagRepository.findTagByUserIdAndImageId(user.getId(), generateImage.getId())
                     .orElseThrow(() -> new TagException(ErrorCode.NOT_FOUND_TAG_ENTITY)));
+
+            // Factor 관련
+            if (preferenceByUserIdAndImageId.isPresent()){
+                PreferenceFactor preferenceFactor = preferenceFactorRepository.findByPreference(preferenceByUserIdAndImageId.get())
+                        .orElse(null);
+
+                if (preferenceFactor != null){
+                    factors.add(factorRepository.findById(preferenceFactor.getFactor().getId())
+                            .orElse(null));
+                } else {
+                    factors.add(null);
+                }
+            } else {
+                factors.add(null);
+            }
         }
 
         // 4. GenerateImage 리스트와 likes 리스트를 함께 사용하여 DTO 변환
@@ -128,13 +145,16 @@ public class UserServiceImpl implements UserService {
                             GenerateImage generateImage = generateImages.get(i);
                             Boolean isLike = likes.get(i); // likes 리스트에서 해당 인덱스의 값 가져오기
                             Tag tag = tags.get(i);
+                            Factor factor = factors.get(i);
+
                             return ImageHistoriesResultPageResponse.ImageHistoryResultPageResponse.of(
                                     house.getEquilibrium().getDescription(),
                                     house.getForm().toString(),
                                     tag.getTagNameKr(),
                                     findUser.getName(),
                                     generateImage.getUrl(),
-                                    isLike
+                                    isLike,
+                                    factor == null ? null : factor.getFactorText()
                             );
                         })
                         .toList();

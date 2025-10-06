@@ -73,13 +73,14 @@ public class FactorServiceImplTest {
     @DisplayName("toggleFactorLog - factor 없음 -> 예외 발생")
     void toggleFactorLog_notFoundFactor() {
         // given
+        Long factorId = 10L;
         User user = User.builder().id(1L).build();
         Preference preference = Preference.builder().id(1L).isLike(true).build();
         when(preferenceRepository.findPreferenceByUserIdAndImageId(1L, 100L)).thenReturn(Optional.of(preference));
-        when(factorRepository.findById(10L)).thenReturn(Optional.empty());
+        when(factorRepository.findById(factorId)).thenReturn(Optional.empty());
 
         // when & then
-        assertThatThrownBy(() -> factorService.toggleFactorLog(user, 100L, 10L))
+        assertThatThrownBy(() -> factorService.toggleFactorLog(user, 100L, factorId))
                 .isInstanceOf(PreferenceException.class)
                 .hasMessageContaining(ErrorCode.NOT_FOUND_FACTOR.getMsg());
     }
@@ -88,15 +89,16 @@ public class FactorServiceImplTest {
     @DisplayName("toggleFactorLog - isLike 불일치 -> 예외 발생")
     void toggleFactorLog_mismatchedIsLike() {
         // given
+        Long factorId = 10L;
         User user = User.builder().id(1L).build();
         Preference preference = Preference.builder().id(1L).isLike(true).build();
-        Factor factor = Factor.builder().id(10L).isLike(false).build();
+        Factor factor = Factor.builder().id(factorId).isLike(false).build();
 
         when(preferenceRepository.findPreferenceByUserIdAndImageId(1L, 100L)).thenReturn(Optional.of(preference));
-        when(factorRepository.findById(10L)).thenReturn(Optional.of(factor));
+        when(factorRepository.findById(factorId)).thenReturn(Optional.of(factor));
 
         // when & then
-        assertThatThrownBy(() -> factorService.toggleFactorLog(user, 100L, 10L))
+        assertThatThrownBy(() -> factorService.toggleFactorLog(user, 100L, factorId))
                 .isInstanceOf(PreferenceException.class)
                 .hasMessageContaining(ErrorCode.MISMATCHED_IS_LIKE.getMsg());
     }
@@ -105,17 +107,18 @@ public class FactorServiceImplTest {
     @DisplayName("toggleFactorLog - 이미 존재하면 삭제")
     void toggleFactorLog_deleteExisting() {
         // given
+        Long factorId = 10L;
         User user = User.builder().id(1L).build();
         Preference preference = Preference.builder().id(1L).isLike(true).build();
-        Factor factor = Factor.builder().id(10L).isLike(true).build();
+        Factor factor = Factor.builder().id(factorId).isLike(true).build();
         PreferenceFactor existing = PreferenceFactor.of(preference, factor);
 
         when(preferenceRepository.findPreferenceByUserIdAndImageId(1L, 100L)).thenReturn(Optional.of(preference));
-        when(factorRepository.findById(10L)).thenReturn(Optional.of(factor));
+        when(factorRepository.findById(factorId)).thenReturn(Optional.of(factor));
         when(preferenceFactorRepository.findByPreferenceAndFactor(preference, factor)).thenReturn(Optional.of(existing));
 
         // when
-        factorService.toggleFactorLog(user, 100L, 10L);
+        factorService.toggleFactorLog(user, 100L, factorId);
 
         // then
         verify(preferenceFactorRepository, times(1)).delete(existing);
@@ -125,16 +128,17 @@ public class FactorServiceImplTest {
     @DisplayName("toggleFactorLog - 존재하지 않으면 저장")
     void toggleFactorLog_saveNew() {
         // given
+        Long factorId = 10L;
         User user = User.builder().id(1L).build();
         Preference preference = Preference.builder().id(1L).isLike(true).build();
-        Factor factor = Factor.builder().id(10L).isLike(true).build();
+        Factor factor = Factor.builder().id(factorId).isLike(true).build();
 
         when(preferenceRepository.findPreferenceByUserIdAndImageId(1L, 100L)).thenReturn(Optional.of(preference));
-        when(factorRepository.findById(10L)).thenReturn(Optional.of(factor));
+        when(factorRepository.findById(factorId)).thenReturn(Optional.of(factor));
         when(preferenceFactorRepository.findByPreferenceAndFactor(preference, factor)).thenReturn(Optional.empty());
 
         // when
-        factorService.toggleFactorLog(user, 100L, 10L);
+        factorService.toggleFactorLog(user, 100L, factorId);
 
         // then
         verify(preferenceFactorRepository, times(1)).save(any(PreferenceFactor.class));

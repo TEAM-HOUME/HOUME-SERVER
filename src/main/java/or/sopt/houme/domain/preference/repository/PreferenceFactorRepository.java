@@ -9,4 +9,7 @@ import java.util.Optional;
 
 public interface PreferenceFactorRepository extends JpaRepository<PreferenceFactor, Long> {
     Optional<PreferenceFactor> findByPreferenceAndFactor(Preference preference, Factor factor);
+
+    // Preference로 PreferenceFactor 조회
+    Optional<PreferenceFactor> findByPreference(Preference preference);
 }
