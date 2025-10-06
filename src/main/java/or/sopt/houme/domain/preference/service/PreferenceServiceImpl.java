@@ -21,4 +21,11 @@ public class PreferenceServiceImpl implements PreferenceService {
 
         return preferenceRepository.save(preference);
     }
+
+    // Preference 삭제
+    @Transactional
+    @Override
+    public void deletePreference(Long preferenceId) {
+        preferenceRepository.deleteById(preferenceId);
+    }
 }

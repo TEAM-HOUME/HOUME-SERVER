@@ -64,4 +64,12 @@ public class FactorServiceImpl implements FactorService {
             preferenceFactorRepository.save(preferenceFactor);
         }
     }
+
+    // preferenceId로 PreferenceFactor 삭제
+    @Transactional
+    @Override
+    public void deletePreferenceFactor(Long preferenceId) {
+
+        factorRepository.findPreferenceFactorAndDeleteByPreferenceId(preferenceId);
+    }
 }

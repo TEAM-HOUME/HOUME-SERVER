@@ -6,13 +6,18 @@ import or.sopt.houme.domain.generateImage.entity.GenerateImage;
 import or.sopt.houme.domain.generateImage.service.GenerateImageService;
 import or.sopt.houme.domain.house.dto.request.IsLikeRequest;
 import or.sopt.houme.domain.house.entity.House;
+import or.sopt.houme.domain.preference.service.FactorService;
 import or.sopt.houme.domain.preference.service.GenerateImagePreferenceService;
+import or.sopt.houme.domain.preference.service.PreferenceService;
 import or.sopt.houme.domain.user.entity.User;
 import or.sopt.houme.global.api.ErrorCode;
 import or.sopt.houme.global.api.handler.GenerateImageException;
 import or.sopt.houme.global.api.handler.UserException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Objects;
 
 import static or.sopt.houme.global.util.constant.OptimisticLockConstant.MAX_RETRIES;
 import static or.sopt.houme.global.util.constant.OptimisticLockConstant.RETRY_DELAY_MS;
@@ -23,6 +28,8 @@ public class GenerateImageLikeFacade {
 
     private final GenerateImageService generateImageService;
     private final GenerateImagePreferenceService generateImagePreferenceService;
+    private final FactorService factorService;
+    private final PreferenceService preferenceService;
 
     // 생성된 이미지 선호도
     public void isLike(User user, Long generatedImageId, IsLikeRequest request) throws InterruptedException {
@@ -54,6 +61,24 @@ public class GenerateImageLikeFacade {
 
         // 재시도 횟수 초과 시 예외 처리
         throw new GenerateImageException(ErrorCode.GENERATE_IMAGE_RETRY_EXCEPTION);
+    }
+
+    // 생성된 이미지 선호도 삭제
+    @Transactional
+    public void deletedPreference(User user, Long generatedImageId){
+        // 생성된 이미지 조회
+        GenerateImage generateImage = generateImageService.findGenerateImage(generatedImageId);
+        if (!Objects.equals(generateImage.getHouse().getUser().getId(), user.getId())) {
+            throw new UserException(ErrorCode.USER_ROLE_EXCEPTION);
+        }
+
+        // GenerateImagePreference 삭제
+        Long preferenceId = generateImagePreferenceService.deleteGenerateImagePreference(generateImage);
+        // PreferenceFactor 삭제
+        factorService.deletePreferenceFactor(preferenceId);
+
+        // Preference 삭제
+        preferenceService.deletePreference(preferenceId);
     }
 
 }

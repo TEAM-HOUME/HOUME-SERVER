@@ -94,4 +94,16 @@ public class GenerateImageController {
 
         return ResponseEntity.ok(ApiResponse.ok(null));
     }
+
+    @Operation(summary = "이미지 선호 삭제 API",
+            description = "생성된 이미지에 대한 선호도를 삭제합니다.")
+    @DeleteMapping("/v1/generated-images/{imageId}/preference")
+    public ResponseEntity<ApiResponse<Void>> generateImagePreference(
+            @PathVariable Long imageId,
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ){
+        generateImageLikeFacade.deletedPreference(userDetails.getUser(), imageId);
+
+        return ResponseEntity.ok(ApiResponse.ok(null));
+    }
 }
