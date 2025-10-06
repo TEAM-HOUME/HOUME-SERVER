@@ -97,8 +97,7 @@ public class UserServiceImpl implements UserService {
                 .orElseThrow(() -> new HouseException(ErrorCode.NOT_FOUND_HOUSE_ENTITY));
         Optional<Preference> preferenceByUserIdAndImageId = preferenceRepository.findPreferenceByUserIdAndImageId(findUser.getId(), imageId);
 
-
-        // 2. houseId 에 해당하는 generateImage 리스트 조회 (오름차순 정렬)
+        // 2. houseId 에 해당하는 generateImage 리스트 조회
         List<GenerateImage> generateImages = generateImageRepository.findGenerateImagesByHouseId(house.getId());
         if (generateImages.isEmpty()) {
             throw new GenerateImageException(ErrorCode.NOT_FOUND_GENERATE_IMAGE_ENTITY);

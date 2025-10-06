@@ -1,4 +1,4 @@
-package or.sopt.houme.domain.furniture.dto.external.naverShop;
+package or.sopt.houme.domain.furniture.dto.external.naverShop.forPlan;
 
 import java.util.List;
 
@@ -11,37 +11,31 @@ public record FurnitureProductsInfoResponseForPlan(
     }
 
     public record FurnitureProductInfo(
-            Double similarity,
+            String baseFurnitureImageUrl,
             String furnitureProductImageUrl,
             String furnitureProductSiteUrl,
             String furnitureProductName,
             String furnitureProductMallName,
-            String furnitureProductLprice,
             String furnitureProductId,
-            String furnitureProductBrand,
-            String furnitureProductMaker
+            Double similarity
     ) {
         public static FurnitureProductsInfoResponseForPlan.FurnitureProductInfo of(
-                Double similarity,
+                String baseFurnitureImageUrl,
                 String furnitureProductImageUrl,
                 String furnitureProductSiteUrl,
                 String furnitureProductName,
                 String furnitureProductMallName,
-                String furnitureProductLprice,
                 String furnitureProductId,
-                String furnitureProductBrand,
-                String furnitureProductMaker
+                Double similarity
         ) {
             return new FurnitureProductsInfoResponseForPlan.FurnitureProductInfo(
-                    similarity,
+                    baseFurnitureImageUrl,
                     furnitureProductImageUrl,
                     furnitureProductSiteUrl,
                     furnitureProductName,
                     furnitureProductMallName,
-                    furnitureProductLprice,
                     furnitureProductId,
-                    furnitureProductBrand,
-                    furnitureProductMaker
+                    similarity
             );
         }
     }
