@@ -3,6 +3,8 @@ package or.sopt.houme.domain.furniture.service;
 import lombok.RequiredArgsConstructor;
 import or.sopt.houme.domain.furniture.entity.Jjym;
 import or.sopt.houme.domain.furniture.entity.RecommendFurniture;
+import or.sopt.houme.domain.furniture.dto.response.JjymItemResponse;
+import or.sopt.houme.domain.furniture.dto.response.JjymListResponse;
 import or.sopt.houme.domain.furniture.repository.JjymRepository;
 import or.sopt.houme.domain.furniture.repository.RecommendFurnitureRepository;
 import or.sopt.houme.domain.user.entity.User;
@@ -13,6 +15,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -44,6 +48,20 @@ public class JjymServiceImpl implements JjymService {
             jjymRepository.save(jjym);
         }
 
+
+    }
+
+    @Transactional(readOnly = true)
+    @Override
+    public JjymListResponse getMyJjyms(Long userId) {
+
+        List<Jjym> jjyms = jjymRepository.findAllByUserIdWithFurnitureOrderByCreatedAtDesc(userId);
+
+        List<JjymItemResponse> items = jjyms.stream()
+                .map(j -> JjymItemResponse.from(j.getRecommendFurniture()))
+                .collect(Collectors.toList());
+
+        return JjymListResponse.of(items);
 
     }
 }
