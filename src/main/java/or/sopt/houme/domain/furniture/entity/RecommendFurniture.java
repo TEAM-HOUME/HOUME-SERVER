@@ -49,7 +49,7 @@ public class RecommendFurniture {
 
 
 
-    public RecommendFurniture from(
+    public static RecommendFurniture from(
             String furnitureProductImageUrl,
             String furnitureProductSiteUrl,
             String furnitureProductName,

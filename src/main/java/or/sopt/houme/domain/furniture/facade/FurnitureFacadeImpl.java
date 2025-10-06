@@ -8,6 +8,7 @@ import or.sopt.houme.domain.furniture.entity.FurnitureTag;
 import or.sopt.houme.domain.furniture.service.FurnitureService;
 import or.sopt.houme.domain.furniture.service.ImageHashService;
 import or.sopt.houme.domain.furniture.service.NaverShopService;
+import or.sopt.houme.domain.furniture.service.RecommendFurnitureService;
 import or.sopt.houme.domain.user.entity.User;
 import org.springframework.stereotype.Component;
 
@@ -16,9 +17,11 @@ import java.util.List;
 @Component
 @RequiredArgsConstructor
 public class FurnitureFacadeImpl implements FurnitureFacade {
+
     private final NaverShopService naverShopService;
     private final ImageHashService imageHashService;
     private final FurnitureService furnitureService;
+    private final RecommendFurnitureService recommendFurnitureService;
 
     @Override
     public FurnitureProductsInfoResponse getFurnitureProductInfoFromNaverApi(User user, Long imageId, Long categoryId) {
@@ -32,6 +35,9 @@ public class FurnitureFacadeImpl implements FurnitureFacade {
         // 3. FastAPI 호출 → 유사도 기반 상위 상품 리스트만 반환
         List<FurnitureProductsInfoResponse.FurnitureProductInfo> infos =
                 imageHashService.rankByImageSimilarity(furnitureTag.getFurnitureUrl(), products, 5);
+
+        // 3-1. 최종반환된 리스트를 기반으로 추천가구 엔티티 저장
+        recommendFurnitureService.saveRecommendFurniture(infos);
 
         // 4. 최종 응답 조립 (Facade 책임)
         return FurnitureProductsInfoResponse.of(user.getName(), infos);
