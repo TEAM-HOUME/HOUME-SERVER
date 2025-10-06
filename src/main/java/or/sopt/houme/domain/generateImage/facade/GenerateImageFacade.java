@@ -13,6 +13,7 @@ import or.sopt.houme.domain.generateImage.entity.GenerateImage;
 import or.sopt.houme.domain.generateImage.service.AsyncGenerateImageService;
 import or.sopt.houme.domain.generateImage.service.GenerateImageService;
 import or.sopt.houme.domain.generateImage.service.GenerateImageTransactionService;
+import or.sopt.houme.domain.generateImage.service.imageGenerationLog.ImageGenerationTransactionService;
 import or.sopt.houme.domain.house.entity.House;
 import or.sopt.houme.domain.house.entity.enums.Activity;
 import or.sopt.houme.domain.house.entity.enums.Equilibrium;
@@ -23,7 +24,9 @@ import or.sopt.houme.domain.prompt.dto.PromptFurnitureListDTO;
 import or.sopt.houme.domain.prompt.dto.PromptRequestDTO;
 import or.sopt.houme.domain.taste.dto.response.TagDTO;
 import or.sopt.houme.domain.taste.entity.Tag;
+import or.sopt.houme.domain.taste.entity.Taste;
 import or.sopt.houme.domain.taste.service.TagService;
+import or.sopt.houme.domain.taste.service.TasteService;
 import or.sopt.houme.domain.taste.service.TasteTagService;
 import or.sopt.houme.domain.user.entity.User;
 import or.sopt.houme.domain.user.service.UserService;
@@ -62,6 +65,12 @@ public class GenerateImageFacade {
 
     // 별도의 트랜잭션 분리 클래스
     private final GenerateImageTransactionService generateImageTransactionService;
+
+    // 무드보드 서비스
+    private final TasteService tasteService;
+
+    // A/B 로그 저장 서비스
+    private final ImageGenerationTransactionService imageGenerationTransactionService;
 
     // 스프링을 이용한 이미지 생성
     @Transactional
@@ -262,6 +271,12 @@ public class GenerateImageFacade {
             // 이미지 생성 여부 업데이트
             userService.updateHasGeneratedImage(user);
 
+            /*
+             * 사용자 로그 저장 사용자, 무드보드 객체들, 이미지, 스타일 태그 객체들
+             * */
+            String type = "B";
+            saveLog(user.getId(), type, generateImageRequest.moodBoardIds(), List.of(imageInfoResponse));
+
             return imageInfoResponse;
         } catch (GenerateImageException e) {
             throw e;
@@ -411,6 +426,12 @@ public class GenerateImageFacade {
                 // DTO로 변환
                 ImageInfoListResponse imageInfoListResponse = ImageInfoListResponse.of(imageInfoResponses);
 
+                /*
+                 * 사용자 로그 저장 사용자, 무드보드 객체들, 이미지, 스타일 태그 객체들
+                 * */
+                String type = "A";
+                saveLog(user.getId(), type, generateImageRequest.moodBoardIds(), imageInfoResponses);
+
                 return imageInfoListResponse;
 
             } catch (CompletionException | CancellationException e) {
@@ -478,5 +499,18 @@ public class GenerateImageFacade {
         Tag tag = tagService.findTagByUserIdAndImageId(user.getId(), generateImage.getId());
 
         return ImageInfoResponse.of(generateImage.getId(), generateImage.getUrl(), isMirror, equilibrium, houseForm, tag.getTagNameKr(), user.getName());
+    }
+
+    // A/B 로그 저장 내부 메서드 (트랜잭션 하나로 처리)
+    private void saveLog(Long userId, String type, List<Long> moodBoardIds, List<ImageInfoResponse> imageInfoResponses) {
+        // 무드보드 객체들 조회
+        List<Taste> tasteList = tasteService.getTasteList(moodBoardIds);
+        // 무드보드 식별자로 Tag 객체들 조회
+        List<Tag> distinctTagsByTasteIds = tasteTagService.findDistinctTagsByTasteIds(moodBoardIds);
+        // 트랜잭션 하나로 처리하기
+        imageGenerationTransactionService.saveImageGenerationLog(
+                userId, type, imageInfoResponses.size(), tasteList,
+                distinctTagsByTasteIds, imageInfoResponses
+        );
     }
 }

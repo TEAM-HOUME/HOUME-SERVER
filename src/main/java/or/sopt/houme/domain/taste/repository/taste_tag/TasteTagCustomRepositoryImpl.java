@@ -64,4 +64,20 @@ public class TasteTagCustomRepositoryImpl implements TasteTagCustomRepository {
                 .limit(2)
                 .fetch();
     }
+
+    // tasteIds에 해당하는 모든 TasteTag 조회
+    @Override
+    public List<Tag> findDistinctTagsByTasteIdIn(List<Long> tasteIds) {
+        QTasteTag tasteTag = QTasteTag.tasteTag;
+        QTag tag = QTag.tag;
+
+        return queryFactory
+                .select(tasteTag.tag)
+                .distinct()     // 중복제거
+                .from(tasteTag)
+                .join(tasteTag.tag, tag)
+                .where(tasteTag.taste.id.in(tasteIds))
+                .orderBy(tag.priority.asc())        // 우선순위 정렬
+                .fetch();
+    }
 }

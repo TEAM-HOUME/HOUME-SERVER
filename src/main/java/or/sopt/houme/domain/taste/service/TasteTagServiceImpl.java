@@ -3,6 +3,7 @@ package or.sopt.houme.domain.taste.service;
 import lombok.RequiredArgsConstructor;
 import or.sopt.houme.domain.taste.dto.response.TagDTO;
 import or.sopt.houme.domain.taste.entity.Tag;
+import or.sopt.houme.domain.taste.entity.Taste;
 import or.sopt.houme.domain.taste.repository.taste_tag.TasteTagRepository;
 import or.sopt.houme.global.api.ErrorCode;
 import or.sopt.houme.global.api.GeneralException;
@@ -43,5 +44,12 @@ public class TasteTagServiceImpl implements TasteTagService {
         return bestTasteIdList.stream()
                 .map(TagDTO::of)
                 .toList();
+    }
+
+    @Override
+    public List<Tag> findDistinctTagsByTasteIds(List<Long> tasteIds) {
+
+        // tasteIds에 해당하는 tasteTag 조회
+        return tasteTagRepository.findDistinctTagsByTasteIdIn(tasteIds);
     }
 }

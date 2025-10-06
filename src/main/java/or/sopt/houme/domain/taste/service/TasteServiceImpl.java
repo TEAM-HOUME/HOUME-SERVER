@@ -3,6 +3,7 @@ package or.sopt.houme.domain.taste.service;
 import lombok.RequiredArgsConstructor;
 import or.sopt.houme.domain.taste.dto.response.MoodBoardListResponse;
 import or.sopt.houme.domain.taste.dto.response.MoodBoardResponse;
+import or.sopt.houme.domain.taste.entity.Taste;
 import or.sopt.houme.domain.taste.repository.taste.TasteRepository;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
@@ -30,5 +31,11 @@ public class TasteServiceImpl implements TasteService {
         Collections.shuffle(list);
 
         return MoodBoardListResponse.of(list);
+    }
+
+    @Override
+    public List<Taste> getTasteList(List<Long> tasteList) {
+
+        return tasteRepository.findAllById(tasteList);
     }
 }
