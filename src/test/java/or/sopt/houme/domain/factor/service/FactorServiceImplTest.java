@@ -115,7 +115,7 @@ public class FactorServiceImplTest {
 
         when(preferenceRepository.findPreferenceByUserIdAndImageId(1L, 100L)).thenReturn(Optional.of(preference));
         when(factorRepository.findById(factorId)).thenReturn(Optional.of(factor));
-        when(preferenceFactorRepository.findByPreferenceAndFactor(preference, factor)).thenReturn(Optional.of(existing));
+        when(preferenceFactorRepository.findByPreference(preference)).thenReturn(Optional.of(existing));
 
         // when
         factorService.toggleFactorLog(user, 100L, factorId);
@@ -135,7 +135,7 @@ public class FactorServiceImplTest {
 
         when(preferenceRepository.findPreferenceByUserIdAndImageId(1L, 100L)).thenReturn(Optional.of(preference));
         when(factorRepository.findById(factorId)).thenReturn(Optional.of(factor));
-        when(preferenceFactorRepository.findByPreferenceAndFactor(preference, factor)).thenReturn(Optional.empty());
+        when(preferenceFactorRepository.findByPreference(preference)).thenReturn(Optional.empty());
 
         // when
         factorService.toggleFactorLog(user, 100L, factorId);

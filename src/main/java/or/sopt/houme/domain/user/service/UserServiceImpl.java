@@ -8,8 +8,14 @@ import or.sopt.houme.domain.generateImage.entity.GenerateImage;
 import or.sopt.houme.domain.generateImage.repository.GenerateImageRepository;
 import or.sopt.houme.domain.house.entity.House;
 import or.sopt.houme.domain.house.repository.HouseRepository;
-import or.sopt.houme.domain.preference.entity.*;
-import or.sopt.houme.domain.preference.repository.*;
+import or.sopt.houme.domain.preference.entity.Factor;
+import or.sopt.houme.domain.preference.entity.GenerateImagePreference;
+import or.sopt.houme.domain.preference.entity.Preference;
+import or.sopt.houme.domain.preference.entity.PreferenceFactor;
+import or.sopt.houme.domain.preference.repository.FactorRepository;
+import or.sopt.houme.domain.preference.repository.GenerateImagePreferenceRepository;
+import or.sopt.houme.domain.preference.repository.PreferenceFactorRepository;
+import or.sopt.houme.domain.preference.repository.PreferenceRepository;
 import or.sopt.houme.domain.taste.entity.Tag;
 import or.sopt.houme.domain.taste.repository.tag.TagRepository;
 import or.sopt.houme.domain.user.controller.dto.ImageHistoriesResultPageResponse;
@@ -95,7 +101,6 @@ public class UserServiceImpl implements UserService {
         // 1. house, tag 조회
         House house = houseRepository.findHouseByUserIdAndImageId(findUser.getId(), imageId)
                 .orElseThrow(() -> new HouseException(ErrorCode.NOT_FOUND_HOUSE_ENTITY));
-        Optional<Preference> preferenceByUserIdAndImageId = preferenceRepository.findPreferenceByUserIdAndImageId(findUser.getId(), imageId);
 
         // 2. houseId 에 해당하는 generateImage 리스트 조회
         List<GenerateImage> generateImages = generateImageRepository.findGenerateImagesByHouseId(house.getId());
@@ -130,7 +135,7 @@ public class UserServiceImpl implements UserService {
 
             // Factor 관련
             if (preference.isPresent()){
-                PreferenceFactor preferenceFactor = preferenceFactorRepository.findByPreference(preferenceByUserIdAndImageId.get())
+                PreferenceFactor preferenceFactor = preferenceFactorRepository.findByPreference(preference.get())
                         .orElse(null);
 
                 if (preferenceFactor != null){
