@@ -68,4 +68,15 @@ public class UserController {
 
         return ResponseEntity.ok(ApiResponse.ok(username));
     }
+
+    @DeleteMapping("/user")
+    @Operation(summary = "회원 탈퇴 API",
+    description = "회원을 삭제합니다. <br><br>" +
+            "정책 상, 한 번 삭제된 회원은 **절대 되돌릴 수 없으니** 주의해주세요.")
+    public ResponseEntity<ApiResponse<String>> deleteUser(@AuthenticationPrincipal CustomUserDetails userDetails) {
+
+        userService.delete(userDetails.getUser().getId());
+
+        return ResponseEntity.ok(ApiResponse.ok("회원이 정상적으로 삭제되었습니다."));
+    }
 }

@@ -6,5 +6,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface InvalidHouseRequestRepository extends JpaRepository<InvalidHouseRequest, Long> {
-
+    void deleteByUserId(Long userId);
 }

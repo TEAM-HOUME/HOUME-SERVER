@@ -6,4 +6,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface HouseFurnitureRepository extends JpaRepository<HouseFurniture, Long> {
+    void deleteByHouseId(Long houseId);
 }

@@ -6,4 +6,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface HouseTasteRepository extends JpaRepository<HouseTaste, Long> {
+    void deleteByHouseId(Long houseId);
 }

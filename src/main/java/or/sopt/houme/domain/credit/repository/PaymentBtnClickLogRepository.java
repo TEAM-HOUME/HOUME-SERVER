@@ -6,4 +6,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface PaymentBtnClickLogRepository extends JpaRepository<PaymentBtnClickLog, Long> {
+    void deleteByUserId(Long userId);
 }
