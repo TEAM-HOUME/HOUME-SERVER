@@ -6,6 +6,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import or.sopt.houme.domain.user.controller.dto.*;
 import or.sopt.houme.domain.user.entity.Gender;
+import or.sopt.houme.domain.user.service.UserDeletionService;
 import or.sopt.houme.domain.user.service.UserService;
 import or.sopt.houme.global.api.ApiResponse;
 import or.sopt.houme.global.api.ErrorCode;
@@ -21,7 +22,9 @@ import java.time.LocalDate;
 @RequestMapping("/api/v1")
 @Tag(name = "회원 관련 api")
 public class UserController {
+
     private final UserService userService;
+    private final UserDeletionService userDeletionService;
 
     @GetMapping(value = "/mypage/user")  // 유저의 이름, 사용가능한 크레딧 개수 조회
     @Operation(summary = "마이페이지 기본 정보 제공 API")
@@ -75,7 +78,7 @@ public class UserController {
             "정책 상, 한 번 삭제된 회원은 **절대 되돌릴 수 없으니** 주의해주세요.")
     public ResponseEntity<ApiResponse<String>> deleteUser(@AuthenticationPrincipal CustomUserDetails userDetails) {
 
-        userService.delete(userDetails.getUser().getId());
+        userDeletionService.delete(userDetails.getUser().getId());
 
         return ResponseEntity.ok(ApiResponse.ok("회원이 정상적으로 삭제되었습니다."));
     }
