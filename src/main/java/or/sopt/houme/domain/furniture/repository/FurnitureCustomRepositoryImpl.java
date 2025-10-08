@@ -35,6 +35,7 @@ public class FurnitureCustomRepositoryImpl implements FurnitureCustomRepository 
                 .selectFrom(furniture)
                 .leftJoin(furniture.furnitureTags, furnitureTag).fetchJoin()
                 .leftJoin(furnitureTag.tag, tag).fetchJoin()
+                .orderBy(furniture.id.asc())
                 .distinct()
                 .fetch();
     }
