@@ -767,7 +767,7 @@
         if (!confirm(`'${furnitureNameKr}' 가구를 정말로 삭제하시겠습니까?`)) return;
         const accessToken = localStorage.getItem('accessToken');
         const resultDiv = document.getElementById('get-furnitures-result');
-        testApiCall(accessToken, resultDiv, '/api/v1/admin/furniture', 'DELETE', { furnitureNameKr, tagId: 0 }, () => {
+        testApiCall(accessToken, resultDiv, '/api/v1/admin/furniture', 'DELETE', { furnitureNameKr }, () => {
             alert('가구가 삭제되었습니다.');
             document.getElementById('get-furnitures-button').click();
         });
