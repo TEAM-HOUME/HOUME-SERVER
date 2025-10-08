@@ -11,7 +11,16 @@ public record AdminFurniturePromptRequestDTO(
         String prompt,
 
         @Schema(description = "가구의 스타일 태그 입니다")
-        Long tagId
+        Long tagId,
+
+        @Schema(description = "가구의 검색 키워드입니다")
+        String searchKeyword,
+
+        @Schema(description = "가구의 우선순위입니다")
+        Integer priority,
+
+        String imageExtension,
+        String originalFilename
 
 ) {
 }

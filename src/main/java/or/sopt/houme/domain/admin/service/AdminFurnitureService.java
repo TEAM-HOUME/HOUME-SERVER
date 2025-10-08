@@ -9,7 +9,7 @@ public interface AdminFurnitureService {
 
     void registerFurniture(AdminFurnitureRequestDTO dto);
 
-    void registerFurniturePrompt (AdminFurniturePromptRequestDTO dto);
+    AdminFurniturePromptCreateResponseDTO registerFurniturePrompt(AdminFurniturePromptRequestDTO dto, String contentType);
 
     AdminFurnitureGetDTO getFurniture();
 

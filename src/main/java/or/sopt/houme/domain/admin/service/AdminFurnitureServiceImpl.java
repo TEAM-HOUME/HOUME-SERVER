@@ -17,6 +17,8 @@ import or.sopt.houme.domain.taste.repository.tag.TagRepository;
 import or.sopt.houme.global.api.ErrorCode;
 import or.sopt.houme.global.api.GeneralException;
 import or.sopt.houme.global.api.handler.AdminException;
+import or.sopt.houme.global.dto.S3PresignedUrlResponseDTO;
+import or.sopt.houme.global.util.S3PresignedUtil;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -33,6 +35,7 @@ public class AdminFurnitureServiceImpl implements AdminFurnitureService {
     private final FurnitureTagRepository furnitureTagRepository;
     private final FurnitureTypeRepository furnitureTypeRepository;
     private final TagRepository tagRepository;
+    private final S3PresignedUtil s3PresignedUtil;
 
 
     /**
@@ -72,7 +75,7 @@ public class AdminFurnitureServiceImpl implements AdminFurnitureService {
      * @throws GeneralException 입력받은 가구를 찾지 못했을때 예외 발생
      * */
     @Override
-    public void registerFurniturePrompt(AdminFurniturePromptRequestDTO dto){
+    public AdminFurniturePromptCreateResponseDTO registerFurniturePrompt(AdminFurniturePromptRequestDTO dto, String contentType){
 
 
         Tag byIdTag = tagRepository.findById(dto.tagId())
@@ -82,12 +85,26 @@ public class AdminFurnitureServiceImpl implements AdminFurnitureService {
         Furniture byFurnitureNameKr = furnitureRepository.findByFurnitureNameKr(dto.furnitureNameKr())
                 .orElseThrow(()-> new GeneralException(ErrorCode.NOT_FOUND_FURNITURE));;
 
+        S3PresignedUrlResponseDTO presignedUrl;
+
+        try {
+            presignedUrl = s3PresignedUtil.createPresignedUrl(dto.imageExtension(), "furniture", contentType);
+        }catch (Exception e) {
+            throw new GeneralException(ErrorCode.IMAGE_UPLOAD_AMAZON_EXCEPTION);
+        }
 
         FurnitureTag newFurnitureTage = FurnitureTag.createByAdminFurniturePromptRequestDTO(
-                dto,byFurnitureNameKr,byIdTag
+                dto,
+                byFurnitureNameKr,
+                byIdTag,
+                presignedUrl.publicUrl(),
+                dto.searchKeyword(),
+                dto.priority()
         );
 
-        furnitureTagRepository.save(newFurnitureTage);
+        FurnitureTag saved = furnitureTagRepository.save(newFurnitureTage);
+
+        return new AdminFurniturePromptCreateResponseDTO(presignedUrl.uploadUrl(), saved.getId());
 
     }
 
@@ -106,8 +123,13 @@ public class AdminFurnitureServiceImpl implements AdminFurnitureService {
                 .map(furniture -> {
                     List<AdminFurnitureGetDTO.TagInfo> tagInfos = furniture.getFurnitureTags().stream()
                             .map(furnitureTag -> new AdminFurnitureGetDTO.TagInfo(
+                                    furnitureTag.getId(),
                                     furnitureTag.getTag().getId(),
-                                    furnitureTag.getTag().getTagNameKr()))
+                                    furnitureTag.getTag().getTagNameKr(),
+                                    furnitureTag.getFurnitureUrl(),
+                                    furnitureTag.getSearchKeyword(),
+                                    furnitureTag.getPriority()
+                            ))
                             .toList();
 
                     return new AdminFurnitureGetDTO.FurnitureInfo(

@@ -42,11 +42,17 @@ public class FurnitureTag {
 
     public static FurnitureTag createByAdminFurniturePromptRequestDTO(AdminFurniturePromptRequestDTO dto,
                                                                       Furniture furniture,
-                                                                      Tag tag){
+                                                                      Tag tag,
+                                                                      String furnitureUrl,
+                                                                      String searchKeyword,
+                                                                      Integer priority){
         return FurnitureTag.builder()
                 .furniturePrompt(dto.prompt())
                 .furniture(furniture)
                 .tag(tag)
+                .furnitureUrl(furnitureUrl)
+                .searchKeyword(searchKeyword)
+                .priority(priority)
                 .build();
     }
 

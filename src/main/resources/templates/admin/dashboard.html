@@ -133,9 +133,37 @@
             <div class="card-header">가구 프롬프트 등록</div>
             <div class="card-body">
                 <form id="furniture-prompt-form">
-                    <div class="mb-3"><label for="promptFurnitureNameKr" class="form-label">가구 이름 (한글)</label><input type="text" class="form-control" id="promptFurnitureNameKr" required></div>
-                    <div class="mb-3"><label for="prompt" class="form-label">프롬프트</label><textarea class="form-control" id="prompt" rows="3" required></textarea></div>
-                    <div class="mb-3"><label for="tagId" class="form-label">스타일 태그</label><select class="form-select" id="tagId" required><option value="" selected disabled>태그를 선택하세요...</option></select></div>
+                    <div class="mb-3">
+                        <label for="promptFurnitureNameKr" class="form-label">가구 이름 (한글)</label>
+                        <input type="text" class="form-control" id="promptFurnitureNameKr" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="prompt" class="form-label">프롬프트</label>
+                        <textarea class="form-control" id="prompt" rows="3" required></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="tagId" class="form-label">스타일 태그</label>
+                        <select class="form-select" id="tagId" required>
+                            <option value="" selected disabled>태그를 선택하세요...</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="searchKeyword" class="form-label">검색 키워드</label>
+                        <input type="text" class="form-control" id="searchKeyword" placeholder="예: 침대, 수납, 원목" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="priority" class="form-label">우선순위</label>
+                        <input type="number" class="form-control" id="priority" min="0" value="0" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="furniture-image" class="form-label">가구 대표 이미지</label>
+                        <input type="file" class="form-control" id="furniture-image" accept="image/*" required>
+                        <div class="form-text">이미지의 Content-Type과 확장자 정보가 필요합니다.</div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="original-filename" class="form-label">원본 파일 이름(표시용)</label>
+                        <input type="text" class="form-control" id="original-filename" placeholder="예: 북유럽 원목 침대" required>
+                    </div>
                     <button type="submit" class="btn btn-success">프롬프트 등록</button>
                 </form>
                 <div id="furniture-prompt-api-result" class="api-result"></div>
@@ -335,12 +363,59 @@
             event.preventDefault();
             const accessToken = localStorage.getItem('accessToken');
             const resultDiv = document.getElementById('furniture-prompt-api-result');
+
+            const imageFile = document.getElementById('furniture-image').files[0];
+            if (!imageFile) {
+                resultDiv.innerHTML = '<div class="alert alert-danger">이미지 파일을 선택해주세요.</div>';
+                return;
+            }
+
+            const imageExtension = imageFile.name.split('.').pop();
             const promptData = {
                 furnitureNameKr: document.getElementById('promptFurnitureNameKr').value,
                 prompt: document.getElementById('prompt').value,
-                tagId: parseInt(document.getElementById('tagId').value, 10)
+                tagId: parseInt(document.getElementById('tagId').value, 10),
+                searchKeyword: document.getElementById('searchKeyword').value,
+                priority: document.getElementById('priority').value ? parseInt(document.getElementById('priority').value, 10) : 0,
+                imageExtension: imageExtension,
+                originalFilename: document.getElementById('original-filename').value
             };
-            testApiCall(accessToken, resultDiv, '/api/v1/admin/furniture/prompt', 'POST', promptData);
+
+            // 1) 서버에서 presigned URL 발급 받기
+            fetch(`/api/v1/admin/furniture/prompt?contentType=${encodeURIComponent(imageFile.type)}`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': 'Bearer ' + accessToken,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(promptData)
+            })
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(err => { throw new Error(err.msg || '서버 오류'); });
+                }
+                return response.json();
+            })
+            .then(data => {
+                const presignedUrl = data.data.presignedUrl;
+                resultDiv.innerHTML = '<div class="alert alert-info">Presigned URL을 받았습니다. 이미지 업로드를 시작합니다...</div>';
+
+                // 2) 발급 받은 URL로 S3 업로드
+                return fetch(presignedUrl, {
+                    method: 'PUT',
+                    body: imageFile
+                });
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('S3에 이미지 업로드를 실패했습니다.');
+                }
+                resultDiv.innerHTML = '<div class="alert alert-success">프롬프트와 이미지 등록이 완료되었습니다!</div>';
+            })
+            .catch(error => {
+                resultDiv.innerHTML = `<div class="alert alert-danger">오류: ${error.message}</div>`;
+                console.error('Upload Error:', error);
+            });
         });
 
         document.getElementById('update-furniture-form').addEventListener('submit', function(event) {
@@ -595,12 +670,24 @@
 
     function displayFurnituresAsTable(data, resultDiv) {
         const furnitures = data.data.furnitures;
-        let tableHTML = '<table class="table table-hover"><thead><tr><th>ID</th><th>가구 이름</th><th>태그</th><th>작업</th></tr></thead><tbody>';
+        let tableHTML = '<table class="table table-hover"><thead>'+
+                        '<tr><th>ID</th><th>가구 이름</th><th>태그/이미지/정보</th><th>작업</th></tr>'+
+                        '</thead><tbody>';
         furnitures.forEach(furniture => {
-            let tagsHTML = Array.isArray(furniture.tags) ? furniture.tags.map(tag =>
-                `<span class="badge bg-info me-1">${tag.tagName} (ID: ${tag.tagId}) <button class="btn btn-sm btn-danger" onclick="deleteFurnitureTag('${furniture.furnitureNameKr}', ${tag.tagId})">x</button></span>`
-            ).join(' ') : '';
-            let actionsHTML = `<button class="btn btn-danger btn-sm" onclick="deleteFurniture('${furniture.furnitureNameKr}')">가구 삭제</button>`;
+            let tagsHTML = '';
+            if (Array.isArray(furniture.tags)) {
+                tagsHTML = furniture.tags.map(tag => {
+                    const img = tag.imageUrl ? `<img src="${tag.imageUrl}" alt="${tag.tagName}" style="width: 60px; height: auto; border-radius: 4px; margin-right:8px;">` : '';
+                    const meta = `<div style=\"display:inline-block; vertical-align:top;\">`
+                                + `<div><strong>${tag.tagName}</strong> (Tag ID: ${tag.tagId})</div>`
+                                + `<div class=\"text-muted\" style=\"font-size: 0.9em;\">키워드: ${tag.searchKeyword ?? ''}</div>`
+                                + `<div class=\"text-muted\" style=\"font-size: 0.9em;\">우선순위: ${tag.priority ?? ''}</div>`
+                                + `</div>`;
+                    const removeBtn = `<button class=\"btn btn-sm btn-danger ms-2\" onclick=\"deleteFurnitureTag('${furniture.furnitureNameKr}', ${tag.tagId})\">삭제</button>`;
+                    return `<div class=\"d-flex align-items-center mb-2\">${img}${meta}${removeBtn}</div>`;
+                }).join('');
+            }
+            let actionsHTML = `<button class=\"btn btn-danger btn-sm\" onclick=\"deleteFurniture('${furniture.furnitureNameKr}')\">가구 삭제</button>`;
             tableHTML += `<tr><td>${furniture.furnitureId}</td><td>${furniture.furnitureNameKr}</td><td>${tagsHTML}</td><td>${actionsHTML}</td></tr>`;
         });
         tableHTML += '</tbody></table>';

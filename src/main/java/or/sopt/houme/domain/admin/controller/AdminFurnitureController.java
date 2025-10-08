@@ -41,10 +41,12 @@ public class AdminFurnitureController {
 
     @PostMapping("/furniture/prompt")
     @Operation(summary = "가구 프롬프트 등록 API")
-    public ResponseEntity<ApiResponse<String>> adminFurniturePrompt(@RequestBody AdminFurniturePromptRequestDTO dto) {
-        adminFurnitureService.registerFurniturePrompt(dto);
+    public ResponseEntity<ApiResponse<AdminFurniturePromptCreateResponseDTO>> adminFurniturePrompt(
+            @RequestBody AdminFurniturePromptRequestDTO dto,
+            @RequestParam("contentType") String contentType) {
+        AdminFurniturePromptCreateResponseDTO response = adminFurnitureService.registerFurniturePrompt(dto, contentType);
 
-        return ResponseEntity.ok(ApiResponse.ok("가구가 등록되었습니다"));
+        return ResponseEntity.ok(ApiResponse.ok(response));
     }
 
 
