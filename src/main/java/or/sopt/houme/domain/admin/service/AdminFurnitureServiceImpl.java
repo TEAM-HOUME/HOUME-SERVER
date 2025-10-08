@@ -104,7 +104,8 @@ public class AdminFurnitureServiceImpl implements AdminFurnitureService {
 
         FurnitureTag saved = furnitureTagRepository.save(newFurnitureTage);
 
-        return new AdminFurniturePromptCreateResponseDTO(presignedUrl.uploadUrl(), saved.getId());
+        Long furnitureTagId = (saved != null) ? saved.getId() : null;
+        return new AdminFurniturePromptCreateResponseDTO(presignedUrl.uploadUrl(), furnitureTagId);
 
     }
 

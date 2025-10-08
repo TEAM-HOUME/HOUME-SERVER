@@ -30,6 +30,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -49,6 +50,9 @@ class AdminFurnitureServiceImplTest {
 
     @Mock
     private TagRepository tagRepository;
+
+    @Mock
+    private or.sopt.houme.global.util.S3PresignedUtil s3PresignedUtil;
 
     private FurnitureType bedType;
 
@@ -101,18 +105,23 @@ class AdminFurnitureServiceImplTest {
 
 
     @Test
-    @DisplayName("registerFurniturePrompt()는 가구 프롬프트를 성공적으로 등록한다")
+    @DisplayName("registerFurniturePrompt()는 가구 프롬프트를 성공적으로 등록한다 (presigned URL 발급)")
     void registerFurniturePrompt_success() {
         // given
-        AdminFurniturePromptRequestDTO requestDTO = new AdminFurniturePromptRequestDTO("테스트 가구", "테스트 프롬프트", 1L);
+        AdminFurniturePromptRequestDTO requestDTO = new AdminFurniturePromptRequestDTO(
+                "테스트 가구", "테스트 프롬프트", 1L, "키워드", 0, "jpg", "orig"
+        );
         Tag tag = Tag.builder().id(1L).build();
         Furniture furniture = Furniture.builder().furnitureNameKr("테스트 가구").build();
 
         when(tagRepository.findById(1L)).thenReturn(Optional.of(tag));
         when(furnitureRepository.findByFurnitureNameKr("테스트 가구")).thenReturn(Optional.of(furniture));
+        when(s3PresignedUtil.createPresignedUrl(anyString(), anyString(), anyString())).thenReturn(
+                new or.sopt.houme.global.dto.S3PresignedUrlResponseDTO("http://u","http://p","k","d")
+        );
 
         // when
-        adminFurnitureService.registerFurniturePrompt(requestDTO);
+        adminFurnitureService.registerFurniturePrompt(requestDTO, "image/jpeg");
 
         // then
         verify(furnitureTagRepository, times(1)).save(any(FurnitureTag.class));
@@ -123,12 +132,13 @@ class AdminFurnitureServiceImplTest {
     @DisplayName("registerFurniturePrompt()는 존재하지 않는 태그 ID로 등록 시 예외를 발생시킨다")
     void registerFurniturePrompt_tagNotFound() {
         // given
-        AdminFurniturePromptRequestDTO requestDTO = new AdminFurniturePromptRequestDTO("테스트 가구", "테스트 프롬프트", 99L);
+        AdminFurniturePromptRequestDTO requestDTO = new AdminFurniturePromptRequestDTO(
+                "테스트 가구", "테스트 프롬프트", 99L, "키워드", 0, "jpg", "orig");
         when(tagRepository.findById(99L)).thenReturn(Optional.empty());
 
         // when & then
         GeneralException exception = assertThrows(GeneralException.class, () -> {
-            adminFurnitureService.registerFurniturePrompt(requestDTO);
+            adminFurnitureService.registerFurniturePrompt(requestDTO, "image/jpeg");
         });
         assertEquals(ErrorCode.NOT_FOUND_TAG_ENTITY, exception.getErrorCode());
     }
@@ -138,7 +148,8 @@ class AdminFurnitureServiceImplTest {
     @DisplayName("registerFurniturePrompt()는 존재하지 않는 가구 이름으로 등록 시 예외를 발생시킨다")
     void registerFurniturePrompt_furnitureNotFound() {
         // given
-        AdminFurniturePromptRequestDTO requestDTO = new AdminFurniturePromptRequestDTO("없는 가구", "테스트 프롬프트", 1L);
+        AdminFurniturePromptRequestDTO requestDTO = new AdminFurniturePromptRequestDTO(
+                "없는 가구", "테스트 프롬프트", 1L, "키워드", 0, "jpg", "orig");
         Tag tag = Tag.builder().id(1L).build();
 
         when(tagRepository.findById(1L)).thenReturn(Optional.of(tag));
@@ -146,7 +157,7 @@ class AdminFurnitureServiceImplTest {
 
         // when & then
         GeneralException exception = assertThrows(GeneralException.class, () -> {
-            adminFurnitureService.registerFurniturePrompt(requestDTO);
+            adminFurnitureService.registerFurniturePrompt(requestDTO, "image/jpeg");
         });
         assertEquals(ErrorCode.NOT_FOUND_FURNITURE, exception.getErrorCode());
     }
@@ -206,7 +217,8 @@ class AdminFurnitureServiceImplTest {
     @DisplayName("updateFurniture()는 가구 정보를 성공적으로 업데이트한다")
     void updateFurniture_success() {
         // given
-        AdminFurnitureUpdateRequestDTO requestDTO = new AdminFurnitureUpdateRequestDTO("침대", 1L, "new bed eng", "new prompt");
+        AdminFurnitureUpdateRequestDTO requestDTO = new AdminFurnitureUpdateRequestDTO(
+                "침대", 1L, "new bed eng", "new prompt", null, null, null, null);
         Furniture furniture = Furniture.builder().furnitureNameKr("침대").build();
         Tag tag = Tag.builder().id(1L).build();
         FurnitureTag furnitureTag = FurnitureTag.builder().furniture(furniture).tag(tag).build();
@@ -216,7 +228,7 @@ class AdminFurnitureServiceImplTest {
         when(furnitureTagRepository.findByFurnitureAndTag(furniture, tag)).thenReturn(Optional.of(furnitureTag));
 
         // when
-        adminFurnitureService.updateFurniture(requestDTO);
+        adminFurnitureService.updateFurniture(requestDTO, null);
 
         // then
         assertThat(furniture.getFurnitureNameEng()).isEqualTo("new bed eng");
@@ -228,12 +240,13 @@ class AdminFurnitureServiceImplTest {
     @DisplayName("updateFurniture()는 존재하지 않는 가구 이름으로 업데이트 시 예외를 발생시킨다")
     void updateFurniture_furnitureNotFound() {
         // given
-        AdminFurnitureUpdateRequestDTO requestDTO = new AdminFurnitureUpdateRequestDTO("없는 가구", 1L, "new bed eng", "new prompt");
+        AdminFurnitureUpdateRequestDTO requestDTO = new AdminFurnitureUpdateRequestDTO(
+                "없는 가구", 1L, "new bed eng", "new prompt", null, null, null, null);
         when(furnitureRepository.findByFurnitureNameKr("없는 가구")).thenReturn(Optional.empty());
 
         // when & then
         GeneralException exception = assertThrows(GeneralException.class, () -> {
-            adminFurnitureService.updateFurniture(requestDTO);
+            adminFurnitureService.updateFurniture(requestDTO, null);
         });
         assertEquals(ErrorCode.NOT_FOUND_FURNITURE, exception.getErrorCode());
     }
@@ -243,7 +256,8 @@ class AdminFurnitureServiceImplTest {
     @DisplayName("updateFurniture()는 존재하지 않는 태그 ID로 업데이트 시 예외를 발생시킨다")
     void updateFurniture_tagNotFound() {
         // given
-        AdminFurnitureUpdateRequestDTO requestDTO = new AdminFurnitureUpdateRequestDTO("침대", 99L, "new bed eng", "new prompt");
+        AdminFurnitureUpdateRequestDTO requestDTO = new AdminFurnitureUpdateRequestDTO(
+                "침대", 99L, "new bed eng", "new prompt", null, null, null, null);
         Furniture furniture = Furniture.builder().furnitureNameKr("침대").build();
 
         when(furnitureRepository.findByFurnitureNameKr("침대")).thenReturn(Optional.of(furniture));
@@ -251,7 +265,7 @@ class AdminFurnitureServiceImplTest {
 
         // when & then
         GeneralException exception = assertThrows(GeneralException.class, () -> {
-            adminFurnitureService.updateFurniture(requestDTO);
+            adminFurnitureService.updateFurniture(requestDTO, null);
         });
         assertEquals(ErrorCode.NOT_FOUND_TAG_ENTITY, exception.getErrorCode());
     }
@@ -261,7 +275,8 @@ class AdminFurnitureServiceImplTest {
     @DisplayName("updateFurniture()는 존재하지 않는 가구-태그 매핑으로 업데이트 시 예외를 발생시킨다")
     void updateFurniture_furnitureTagNotFound() {
         // given
-        AdminFurnitureUpdateRequestDTO requestDTO = new AdminFurnitureUpdateRequestDTO("침대", 1L, "new bed eng", "new prompt");
+        AdminFurnitureUpdateRequestDTO requestDTO = new AdminFurnitureUpdateRequestDTO(
+                "침대", 1L, "new bed eng", "new prompt", null, null, null, null);
         Furniture furniture = Furniture.builder().furnitureNameKr("침대").build();
         Tag tag = Tag.builder().id(1L).build();
 
@@ -271,7 +286,7 @@ class AdminFurnitureServiceImplTest {
 
         // when & then
         GeneralException exception = assertThrows(GeneralException.class, () -> {
-            adminFurnitureService.updateFurniture(requestDTO);
+            adminFurnitureService.updateFurniture(requestDTO, null);
         });
         assertEquals(ErrorCode.NOT_FOUND_FURNITURE_TAG, exception.getErrorCode());
     }
