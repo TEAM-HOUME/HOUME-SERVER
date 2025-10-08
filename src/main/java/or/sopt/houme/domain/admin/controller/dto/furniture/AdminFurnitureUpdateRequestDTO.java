@@ -13,6 +13,18 @@ public record AdminFurnitureUpdateRequestDTO(
         String newFurnitureNameEng,
 
         @Schema(description = "새로운 프롬프트")
-        String newPrompt
+        String newPrompt,
+
+        @Schema(description = "새로운 검색 키워드")
+        String newSearchKeyword,
+
+        @Schema(description = "새로운 우선순위")
+        Integer newPriority,
+
+        @Schema(description = "이미지 업데이트 시 사용할 확장자 (예: jpg, png)")
+        String imageExtension,
+
+        @Schema(description = "이미지 업데이트 시 표시용 원본 파일명")
+        String originalFilename
 ) {
 }

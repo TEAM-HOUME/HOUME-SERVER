@@ -171,7 +171,7 @@ public class AdminFurnitureServiceImpl implements AdminFurnitureService {
      * @throws GeneralException 가구와 태그의 매핑테이블 엔티티 정보를 찾을 수 없을때 예외 발생
      * */
     @Override
-    public void updateFurniture(AdminFurnitureUpdateRequestDTO dto){
+    public AdminFurnitureUpdateResponseDTO updateFurniture(AdminFurnitureUpdateRequestDTO dto, String contentType){
 
         Furniture byFurnitureNameKr = furnitureRepository.findByFurnitureNameKr(dto.furnitureNameKr())
                 .orElseThrow(()-> new GeneralException(ErrorCode.NOT_FOUND_FURNITURE));
@@ -189,6 +189,28 @@ public class AdminFurnitureServiceImpl implements AdminFurnitureService {
         if (dto.newPrompt() != null && !dto.newPrompt().isBlank()){
             byFurnitureIdAndTag.updatePrompt(dto.newPrompt());
         }
+
+        if (dto.newSearchKeyword() != null && !dto.newSearchKeyword().isBlank()){
+            byFurnitureIdAndTag.updateSearchKeyword(dto.newSearchKeyword());
+        }
+
+        if (dto.newPriority() != null){
+            byFurnitureIdAndTag.updatePriority(dto.newPriority());
+        }
+
+        // 이미지 업데이트 요청이 있는 경우 presigned URL 발급 및 publicUrl 갱신
+        if (dto.imageExtension() != null && !dto.imageExtension().isBlank() && contentType != null && !contentType.isBlank()) {
+            S3PresignedUrlResponseDTO presignedUrl;
+            try {
+                presignedUrl = s3PresignedUtil.createPresignedUrl(dto.imageExtension(), "furniture", contentType);
+            } catch (Exception e) {
+                throw new GeneralException(ErrorCode.IMAGE_UPLOAD_AMAZON_EXCEPTION);
+            }
+            byFurnitureIdAndTag.updateFurnitureUrl(presignedUrl.publicUrl());
+            return AdminFurnitureUpdateResponseDTO.of(presignedUrl.uploadUrl(), byFurnitureIdAndTag.getId());
+        }
+
+        return AdminFurnitureUpdateResponseDTO.of(null, byFurnitureIdAndTag.getId());
     }
 
 

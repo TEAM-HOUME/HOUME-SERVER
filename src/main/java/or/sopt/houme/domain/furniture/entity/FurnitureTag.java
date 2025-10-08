@@ -59,4 +59,16 @@ public class FurnitureTag {
     public void updatePrompt(String prompt) {
         this.furniturePrompt = prompt;
     }
+
+    public void updateSearchKeyword(String searchKeyword) {
+        this.searchKeyword = searchKeyword;
+    }
+
+    public void updatePriority(Integer priority) {
+        this.priority = priority;
+    }
+
+    public void updateFurnitureUrl(String furnitureUrl) {
+        this.furnitureUrl = furnitureUrl;
+    }
 }

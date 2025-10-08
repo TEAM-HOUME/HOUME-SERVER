@@ -75,10 +75,12 @@ public class AdminFurnitureController {
 
     @PatchMapping("/furniture")
     @Operation(summary = "가구 정보 수정 API")
-    public ResponseEntity<ApiResponse<String>> updateFurniture(@RequestBody AdminFurnitureUpdateRequestDTO dto) {
-        adminFurnitureService.updateFurniture(dto);
+    public ResponseEntity<ApiResponse<AdminFurnitureUpdateResponseDTO>> updateFurniture(
+            @RequestBody AdminFurnitureUpdateRequestDTO dto,
+            @RequestParam(value = "contentType", required = false) String contentType) {
+        AdminFurnitureUpdateResponseDTO response = adminFurnitureService.updateFurniture(dto, contentType);
 
-        return ResponseEntity.ok(ApiResponse.ok("업데이트가 성공적으로 완료되었습니다"));
+        return ResponseEntity.ok(ApiResponse.ok(response));
     }
 
     @PatchMapping("/furniture/type")

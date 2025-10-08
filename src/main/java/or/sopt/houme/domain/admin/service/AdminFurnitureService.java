@@ -15,7 +15,7 @@ public interface AdminFurnitureService {
 
     AdminFurnitureTagGetDTO getFurnitureTag();
 
-    void updateFurniture(AdminFurnitureUpdateRequestDTO dto);
+    AdminFurnitureUpdateResponseDTO updateFurniture(AdminFurnitureUpdateRequestDTO dto, String contentType);
 
     void deleteFurnitureTag(AdminFurnitureTagDeleteDTO dto);
 

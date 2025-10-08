@@ -177,6 +177,10 @@
                     <div class="mb-3"><label for="updateTagId" class="form-label">태그 ID</label><input type="number" class="form-control" id="updateTagId" required></div>
                     <div class="mb-3"><label for="newFurnitureNameEng" class="form-label">새 가구 이름 (영어)</label><input type="text" class="form-control" id="newFurnitureNameEng"></div>
                     <div class="mb-3"><label for="newPrompt" class="form-label">새 프롬프트</label><textarea class="form-control" id="newPrompt" rows="3"></textarea></div>
+                    <div class="mb-3"><label for="newSearchKeyword" class="form-label">새 검색 키워드</label><input type="text" class="form-control" id="newSearchKeyword" placeholder="예: 침대, 수납, 원목"></div>
+                    <div class="mb-3"><label for="newPriority" class="form-label">새 우선순위</label><input type="number" class="form-control" id="newPriority" min="0"></div>
+                    <div class="mb-3"><label for="update-furniture-image" class="form-label">대표 이미지 교체</label><input type="file" class="form-control" id="update-furniture-image" accept="image/*"></div>
+                    <div class="mb-3"><label for="update-original-filename" class="form-label">원본 파일 이름(표시용)</label><input type="text" class="form-control" id="update-original-filename" placeholder="예: 북유럽 원목 침대"></div>
                     <button type="submit" class="btn btn-warning">가구 정보 수정</button>
                 </form>
                 <div id="update-furniture-api-result" class="api-result"></div>
@@ -422,13 +426,57 @@
             event.preventDefault();
             const accessToken = localStorage.getItem('accessToken');
             const resultDiv = document.getElementById('update-furniture-api-result');
+
+            const imageFile = document.getElementById('update-furniture-image').files[0];
+            const hasImage = !!imageFile;
+            const imageExtension = hasImage ? imageFile.name.split('.').pop() : null;
+
             const updateData = {
                 furnitureNameKr: document.getElementById('updateFurnitureNameKr').value,
                 tagId: parseInt(document.getElementById('updateTagId').value, 10),
                 newFurnitureNameEng: document.getElementById('newFurnitureNameEng').value,
-                newPrompt: document.getElementById('newPrompt').value
+                newPrompt: document.getElementById('newPrompt').value,
+                newSearchKeyword: document.getElementById('newSearchKeyword').value,
+                newPriority: document.getElementById('newPriority').value ? parseInt(document.getElementById('newPriority').value, 10) : null,
+                imageExtension: imageExtension,
+                originalFilename: document.getElementById('update-original-filename').value
             };
-            testApiCall(accessToken, resultDiv, '/api/v1/admin/furniture', 'PATCH', updateData);
+
+            const endpoint = hasImage
+                ? `/api/v1/admin/furniture?contentType=${encodeURIComponent(imageFile.type)}`
+                : '/api/v1/admin/furniture';
+
+            // 1) 서버에 수정 요청 (필요 시 presigned URL 수신)
+            fetch(endpoint, {
+                method: 'PATCH',
+                headers: {
+                    'Authorization': 'Bearer ' + accessToken,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(updateData)
+            })
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(err => { throw new Error(err.msg || '서버 오류'); });
+                }
+                return response.json();
+            })
+            .then(data => {
+                const presignedUrl = data.data && data.data.presignedUrl ? data.data.presignedUrl : null;
+                if (hasImage && presignedUrl) {
+                    resultDiv.innerHTML = '<div class="alert alert-info">Presigned URL을 받았습니다. 이미지 업로드를 시작합니다...</div>';
+                    // 2) S3 업로드
+                    return fetch(presignedUrl, { method: 'PUT', body: imageFile })
+                        .then(resp => { if (!resp.ok) throw new Error('S3 업로드 실패'); });
+                }
+            })
+            .then(() => {
+                resultDiv.innerHTML = '<div class="alert alert-success">가구 정보가 성공적으로 수정되었습니다.</div>';
+            })
+            .catch(error => {
+                resultDiv.innerHTML = `<div class=\"alert alert-danger\">오류: ${error.message}</div>`;
+                console.error('Update Error:', error);
+            });
         });
 
         document.getElementById('get-prompt-form').addEventListener('submit', function(event) {
