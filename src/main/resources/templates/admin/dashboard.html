@@ -227,6 +227,51 @@
                 <div id="for-plan-result" class="api-result"></div>
             </div>
         </div>
+
+        <div class="card">
+            <div class="card-header">[기획 의사결정용 V2] 가구 제품 조회 (mall/NPay 필터)</div>
+            <div class="card-body">
+                <form id="for-plan-v2-form">
+                    <div class="row g-3">
+                        <div class="col-md-3">
+                            <label for="forPlanV2TagId" class="form-label">태그 ID</label>
+                            <input type="number" class="form-control" id="forPlanV2TagId" placeholder="예: 1" required>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="forPlanV2FurnitureId" class="form-label">가구 ID</label>
+                            <input type="number" class="form-control" id="forPlanV2FurnitureId" placeholder="예: 2" required>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="forPlanV2SearchKeyword" class="form-label">검색 키워드</label>
+                            <input type="text" class="form-control" id="forPlanV2SearchKeyword" placeholder="예: 원목 침대, 소파" required>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="forPlanV2PHash" class="form-label">pHash (0~100)</label>
+                            <input type="number" class="form-control" id="forPlanV2PHash" min="0" max="100" value="50" required>
+                        </div>
+                    </div>
+
+                    <div class="row g-3 mt-1">
+                        <div class="col-md-8">
+                            <label for="forPlanV2AllowedMalls" class="form-label">허용 몰 목록 (콤마로 구분)</label>
+                            <input type="text" class="form-control" id="forPlanV2AllowedMalls" placeholder="예: 롯데ON,쿠팡,11번가">
+                            <div class="form-text">비워두면 mall 필터 미적용. 콤마로 구분하거나 반복 파라미터로 전달됩니다.</div>
+                        </div>
+                        <div class="col-md-4 d-flex align-items-end">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="forPlanV2ApplyNaverPay">
+                                <label class="form-check-label" for="forPlanV2ApplyNaverPay">네이버페이 상품만</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-3">
+                        <button type="submit" class="btn btn-primary">V2 제품 조회</button>
+                    </div>
+                </form>
+                <div id="for-plan-v2-result" class="api-result"></div>
+            </div>
+        </div>
     </div>
 
     <!-- 가구 타입 관리 섹션 -->
@@ -531,6 +576,32 @@
             const pHash = document.getElementById('forPlanPHash').value;
 
             const endpoint = `/api/v1/generated-images/${tagId}/curations/products/${furnitureId}/for-plan?searchKeyword=${encodeURIComponent(searchKeyword)}&pHash=${encodeURIComponent(pHash)}`;
+
+            testApiCallWithLoading(accessToken, resultDiv, endpoint, 'GET', null, displayForPlanProductsAsTable, 'table');
+        });
+
+        // [기획 의사결정용 V2] for-plan API 호출 (mall/NPay 필터)
+        document.getElementById('for-plan-v2-form').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const accessToken = localStorage.getItem('accessToken');
+            const resultDiv = document.getElementById('for-plan-v2-result');
+
+            const tagId = document.getElementById('forPlanV2TagId').value;
+            const furnitureId = document.getElementById('forPlanV2FurnitureId').value;
+            const searchKeyword = document.getElementById('forPlanV2SearchKeyword').value;
+            const pHash = document.getElementById('forPlanV2PHash').value;
+            const allowedMallsRaw = document.getElementById('forPlanV2AllowedMalls').value;
+            const applyNaverPay = document.getElementById('forPlanV2ApplyNaverPay').checked;
+
+            let endpoint = `/api/v1/generated-images/${tagId}/curations/products/${furnitureId}/for-plan/v2?searchKeyword=${encodeURIComponent(searchKeyword)}&pHash=${encodeURIComponent(pHash)}&applyNaverPay=${applyNaverPay}`;
+
+            if (allowedMallsRaw && allowedMallsRaw.trim().length > 0) {
+                // 콤마 기준 분리하여 반복 파라미터로 추가
+                const malls = allowedMallsRaw.split(',').map(s => s.trim()).filter(s => s.length > 0);
+                malls.forEach(m => {
+                    endpoint += `&allowedMalls=${encodeURIComponent(m)}`;
+                });
+            }
 
             testApiCallWithLoading(accessToken, resultDiv, endpoint, 'GET', null, displayForPlanProductsAsTable, 'table');
         });
