@@ -9,13 +9,13 @@ public interface AdminFurnitureService {
 
     void registerFurniture(AdminFurnitureRequestDTO dto);
 
-    void registerFurniturePrompt (AdminFurniturePromptRequestDTO dto);
+    AdminFurniturePromptCreateResponseDTO registerFurniturePrompt(AdminFurniturePromptRequestDTO dto, String contentType);
 
     AdminFurnitureGetDTO getFurniture();
 
     AdminFurnitureTagGetDTO getFurnitureTag();
 
-    void updateFurniture(AdminFurnitureUpdateRequestDTO dto);
+    AdminFurnitureUpdateResponseDTO updateFurniture(AdminFurnitureUpdateRequestDTO dto, String contentType);
 
     void deleteFurnitureTag(AdminFurnitureTagDeleteDTO dto);
 

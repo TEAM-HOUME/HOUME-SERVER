@@ -42,15 +42,33 @@ public class FurnitureTag {
 
     public static FurnitureTag createByAdminFurniturePromptRequestDTO(AdminFurniturePromptRequestDTO dto,
                                                                       Furniture furniture,
-                                                                      Tag tag){
+                                                                      Tag tag,
+                                                                      String furnitureUrl,
+                                                                      String searchKeyword,
+                                                                      Integer priority){
         return FurnitureTag.builder()
                 .furniturePrompt(dto.prompt())
                 .furniture(furniture)
                 .tag(tag)
+                .furnitureUrl(furnitureUrl)
+                .searchKeyword(searchKeyword)
+                .priority(priority)
                 .build();
     }
 
     public void updatePrompt(String prompt) {
         this.furniturePrompt = prompt;
+    }
+
+    public void updateSearchKeyword(String searchKeyword) {
+        this.searchKeyword = searchKeyword;
+    }
+
+    public void updatePriority(Integer priority) {
+        this.priority = priority;
+    }
+
+    public void updateFurnitureUrl(String furnitureUrl) {
+        this.furnitureUrl = furnitureUrl;
     }
 }

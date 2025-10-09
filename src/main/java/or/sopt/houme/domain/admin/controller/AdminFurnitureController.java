@@ -41,10 +41,12 @@ public class AdminFurnitureController {
 
     @PostMapping("/furniture/prompt")
     @Operation(summary = "가구 프롬프트 등록 API")
-    public ResponseEntity<ApiResponse<String>> adminFurniturePrompt(@RequestBody AdminFurniturePromptRequestDTO dto) {
-        adminFurnitureService.registerFurniturePrompt(dto);
+    public ResponseEntity<ApiResponse<AdminFurniturePromptCreateResponseDTO>> adminFurniturePrompt(
+            @RequestBody AdminFurniturePromptRequestDTO dto,
+            @RequestParam("contentType") String contentType) {
+        AdminFurniturePromptCreateResponseDTO response = adminFurnitureService.registerFurniturePrompt(dto, contentType);
 
-        return ResponseEntity.ok(ApiResponse.ok("가구가 등록되었습니다"));
+        return ResponseEntity.ok(ApiResponse.ok(response));
     }
 
 
@@ -73,10 +75,12 @@ public class AdminFurnitureController {
 
     @PatchMapping("/furniture")
     @Operation(summary = "가구 정보 수정 API")
-    public ResponseEntity<ApiResponse<String>> updateFurniture(@RequestBody AdminFurnitureUpdateRequestDTO dto) {
-        adminFurnitureService.updateFurniture(dto);
+    public ResponseEntity<ApiResponse<AdminFurnitureUpdateResponseDTO>> updateFurniture(
+            @RequestBody AdminFurnitureUpdateRequestDTO dto,
+            @RequestParam(value = "contentType", required = false) String contentType) {
+        AdminFurnitureUpdateResponseDTO response = adminFurnitureService.updateFurniture(dto, contentType);
 
-        return ResponseEntity.ok(ApiResponse.ok("업데이트가 성공적으로 완료되었습니다"));
+        return ResponseEntity.ok(ApiResponse.ok(response));
     }
 
     @PatchMapping("/furniture/type")
