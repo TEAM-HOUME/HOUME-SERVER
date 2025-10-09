@@ -125,10 +125,10 @@ class AdminTagServiceImplTest {
     @DisplayName("update()는 태그를 성공적으로 업데이트한다")
     void update_success() {
         // given
-        AdminTagUpdateRequestDTO requestDTO = new AdminTagUpdateRequestDTO("미니멀", 2, "new minimal", "a new minimal mood");
-        Tag tag = Tag.builder().tagName("minimal").priority(1).tagNameKr("미니멀").tagPrompt("a minimal mood").build();
+        AdminTagUpdateRequestDTO requestDTO = new AdminTagUpdateRequestDTO(1L, 2, "new minimal", "a new minimal mood", null);
+        Tag tag = Tag.builder().id(1L).tagName("minimal").priority(1).tagNameKr("미니멀").tagPrompt("a minimal mood").build();
 
-        when(tagRepository.findByTagNameKr("미니멀")).thenReturn(Optional.of(tag));
+        when(tagRepository.findById(1L)).thenReturn(Optional.of(tag));
         when(tagRepository.findByPriority(2)).thenReturn(Optional.empty());
 
         // when
@@ -142,11 +142,11 @@ class AdminTagServiceImplTest {
 
 
     @Test
-    @DisplayName("update()는 존재하지 않는 태그 이름으로 업데이트 시 예외를 발생시킨다")
+    @DisplayName("update()는 존재하지 않는 식별자로 업데이트 시 예외를 발생시킨다")
     void update_tagNotFound() {
         // given
-        AdminTagUpdateRequestDTO requestDTO = new AdminTagUpdateRequestDTO("없는 태그", 2, "new minimal", "a new minimal mood");
-        when(tagRepository.findByTagNameKr("없는 태그")).thenReturn(Optional.empty());
+        AdminTagUpdateRequestDTO requestDTO = new AdminTagUpdateRequestDTO(999L, 2, "new minimal", "a new minimal mood", null);
+        when(tagRepository.findById(999L)).thenReturn(Optional.empty());
 
         // when & then
         GeneralException exception = assertThrows(GeneralException.class, () -> {
@@ -160,10 +160,10 @@ class AdminTagServiceImplTest {
     @DisplayName("update()는 이미 존재하는 우선순위로 업데이트 시 예외를 발생시킨다")
     void update_alreadyExistPriority() {
         // given
-        AdminTagUpdateRequestDTO requestDTO = new AdminTagUpdateRequestDTO("미니멀", 2, "new minimal", "a new minimal mood");
-        Tag tag = Tag.builder().tagName("minimal").priority(1).tagNameKr("미니멀").tagPrompt("a minimal mood").build();
+        AdminTagUpdateRequestDTO requestDTO = new AdminTagUpdateRequestDTO(1L, 2, "new minimal", "a new minimal mood", null);
+        Tag tag = Tag.builder().id(1L).tagName("minimal").priority(1).tagNameKr("미니멀").tagPrompt("a minimal mood").build();
 
-        when(tagRepository.findByTagNameKr("미니멀")).thenReturn(Optional.of(tag));
+        when(tagRepository.findById(1L)).thenReturn(Optional.of(tag));
         when(tagRepository.findByPriority(2)).thenReturn(Optional.of(Tag.builder().build()));
 
         // when & then
@@ -178,9 +178,9 @@ class AdminTagServiceImplTest {
     @DisplayName("delete()는 태그를 성공적으로 삭제한다")
     void delete_success() {
         // given
-        AdminTagDeleteRequestDTO requestDTO = new AdminTagDeleteRequestDTO("미니멀");
-        Tag tag = Tag.builder().build();
-        when(tagRepository.findByTagNameKr("미니멀")).thenReturn(Optional.of(tag));
+        AdminTagDeleteRequestDTO requestDTO = new AdminTagDeleteRequestDTO(1L);
+        Tag tag = Tag.builder().id(1L).build();
+        when(tagRepository.findById(1L)).thenReturn(Optional.of(tag));
 
         // when
         adminTagService.delete(requestDTO);
@@ -191,11 +191,11 @@ class AdminTagServiceImplTest {
 
 
     @Test
-    @DisplayName("delete()는 존재하지 않는 태그 이름으로 삭제 시 예외를 발생시킨다")
+    @DisplayName("delete()는 존재하지 않는 식별자로 삭제 시 예외를 발생시킨다")
     void delete_tagNotFound() {
         // given
-        AdminTagDeleteRequestDTO requestDTO = new AdminTagDeleteRequestDTO("없는 태그");
-        when(tagRepository.findByTagNameKr("없는 태그")).thenReturn(Optional.empty());
+        AdminTagDeleteRequestDTO requestDTO = new AdminTagDeleteRequestDTO(999L);
+        when(tagRepository.findById(999L)).thenReturn(Optional.empty());
 
         // when & then
         GeneralException exception = assertThrows(GeneralException.class, () -> {
@@ -209,9 +209,9 @@ class AdminTagServiceImplTest {
     @DisplayName("delete()는 외래키 제약 조건 위반 시 예외를 발생시킨다")
     void delete_foreignKeyConstraintFail() {
         // given
-        AdminTagDeleteRequestDTO requestDTO = new AdminTagDeleteRequestDTO("미니멀");
-        Tag tag = Tag.builder().build();
-        when(tagRepository.findByTagNameKr("미니멀")).thenReturn(Optional.of(tag));
+        AdminTagDeleteRequestDTO requestDTO = new AdminTagDeleteRequestDTO(1L);
+        Tag tag = Tag.builder().id(1L).build();
+        when(tagRepository.findById(1L)).thenReturn(Optional.of(tag));
         doThrow(new DataIntegrityViolationException("")).when(tagRepository).delete(tag);
 
         // when & then

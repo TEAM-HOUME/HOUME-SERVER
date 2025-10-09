@@ -90,16 +90,29 @@ public class AdminTagServiceImpl implements AdminTagService {
     @Override
     public void update(AdminTagUpdateRequestDTO dto){
 
-        Tag byTagNameKr = tagRepository.findByTagNameKr(dto.tagNameKr())
-                .orElseThrow(()-> new GeneralException(ErrorCode.NOT_FOUND_TAG_ENTITY));
+        log.info("------------업데이트를 시작합니다------------");
 
-        Optional<Tag> byPriority = tagRepository.findByPriority(dto.newPriority());
+        Tag tag = tagRepository.findById(dto.tagId())
+                .orElseThrow(() -> new GeneralException(ErrorCode.NOT_FOUND_TAG_ENTITY));
 
-        if (byPriority.isPresent()){
-            throw new GeneralException(ErrorCode.ALREADY_EXIST_PRIORITY);
+        log.info("------------태그 ID를 찾았습니다------------");
+
+        log.info("------------우선순위를 업데이트 합니다------------");
+        if (dto.newPriority() != null) {
+            Optional<Tag> byPriority = tagRepository.findByPriority(dto.newPriority());
+            if (byPriority.isPresent() && (byPriority.get().getId() == null || !byPriority.get().getId().equals(tag.getId()))) {
+                throw new GeneralException(ErrorCode.ALREADY_EXIST_PRIORITY);
+            }
         }
 
-        byTagNameKr.update(dto);
+        if (dto.newTagNameKr() != null && !dto.newTagNameKr().isBlank()) {
+            Optional<Tag> byTagNameKr = tagRepository.findByTagNameKr(dto.newTagNameKr());
+            if (byTagNameKr.isPresent() && (byTagNameKr.get().getId() == null || !byTagNameKr.get().getId().equals(tag.getId()))) {
+                throw new GeneralException(ErrorCode.ALREADY_EXIST_TAG);
+            }
+        }
+
+        tag.update(dto);
     }
 
 
@@ -111,11 +124,11 @@ public class AdminTagServiceImpl implements AdminTagService {
      * */
     @Override
     public void delete(AdminTagDeleteRequestDTO dto){
-        Tag byTagNameKr = tagRepository.findByTagNameKr(dto.tagNameKr())
+        Tag tag = tagRepository.findById(dto.tagId())
                 .orElseThrow(() -> new GeneralException(ErrorCode.NOT_FOUND_TAG_ENTITY));
 
         try {
-            tagRepository.delete(byTagNameKr);
+            tagRepository.delete(tag);
         } catch (DataIntegrityViolationException e) {
             throw new GeneralException(ErrorCode.FOREIGN_KEY_CONSTRAINT_FAIL);
         }
