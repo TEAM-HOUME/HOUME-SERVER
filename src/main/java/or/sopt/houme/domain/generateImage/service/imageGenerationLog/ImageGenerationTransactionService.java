@@ -27,18 +27,17 @@ public class ImageGenerationTransactionService {
 
         ImageGenerationLog imageGenerationLog = imageGenerationLogService.saveImageGenerationLog(userId, abType, imageCount, tasteList, tagList);
 
-        int i = 0;
-        for (ImageInfoResponse response : imageInfoResponse){
+        for (int i = 0; i < imageInfoResponse.size(); i++) {
+            ImageInfoResponse response = imageInfoResponse.get(i);
+            SelectedTagInfo selectedTagInfo = selectedTagInfoList.get(i);
+
             // 같은 태그 값 찾기
             Tag tag = tagList.stream().filter(t -> t.getTagNameKr().equals(response.tagName()))
                     .findAny()
                     .orElseThrow(() -> new TagException(ErrorCode.NOT_FOUND_TAG_ENTITY));
 
             // 상세 로그 저장하기
-            imageGenerationLogService.saveImageGenerationDetail(imageGenerationLog, response, tag, selectedTagInfoList.get(i).getSelectionStrategy());
-
-            // i로 태그 선정방식 넣기
-            i++;
+            imageGenerationLogService.saveImageGenerationDetail(imageGenerationLog, response, tag, selectedTagInfo.getSelectionStrategy());
         }
     }
 }

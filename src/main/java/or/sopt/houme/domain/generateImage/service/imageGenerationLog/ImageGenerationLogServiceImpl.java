@@ -68,7 +68,7 @@ public class ImageGenerationLogServiceImpl implements ImageGenerationLogService 
     // A/B 요청 이미지 상세 저장
     @Transactional
     @Override
-    public void saveImageGenerationDetail(ImageGenerationLog imageGenerationLog, ImageInfoResponse imageInfoResponse, Tag tag, String selectionTagInfo) {
+    public void saveImageGenerationDetail(ImageGenerationLog imageGenerationLog, ImageInfoResponse imageInfoResponse, Tag tag, String selectionStrategy) {
 
         imageGenerationDetailRepository.save(ImageGenerationDetail.builder()
                 .imageId(imageInfoResponse.imageId())
@@ -76,7 +76,7 @@ public class ImageGenerationLogServiceImpl implements ImageGenerationLogService 
                 .styleTagName(tag.getTagName())
                 .styleTagId(tag.getId())
                 .imageGenerationLog(imageGenerationLog)
-                .selectionStrategy(selectionTagInfo)
+                .selectionStrategy(selectionStrategy)
                 .build());
     }
 

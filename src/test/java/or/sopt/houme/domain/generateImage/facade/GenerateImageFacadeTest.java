@@ -18,6 +18,8 @@ import or.sopt.houme.domain.openai.facade.OpenAiFacade;
 import or.sopt.houme.domain.prompt.dto.PromptFurnitureListDTO;
 import or.sopt.houme.domain.prompt.dto.PromptRequestDTO;
 import or.sopt.houme.domain.taste.entity.Tag;
+import or.sopt.houme.domain.taste.entity.Taste;
+import or.sopt.houme.domain.taste.service.TagService;
 import or.sopt.houme.domain.taste.service.TasteService;
 import or.sopt.houme.domain.taste.service.TasteTagService;
 import or.sopt.houme.domain.user.entity.*;
@@ -74,6 +76,9 @@ class GenerateImageFacadeTest {
 
     @Mock
     ImageGenerationTransactionService imageGenerationTransactionService;
+
+    @Mock
+    TagService tagService;
 
     @Test
     @DisplayName("받은 데이터들을 토대로 JAVA로 OpenAI를 사용해 이미지를 받을 수 있다.")
@@ -186,9 +191,25 @@ class GenerateImageFacadeTest {
                 .isValid(true)
                 .build();
 
+        Taste taste1 = Taste.builder()
+                .id(1L)
+                .url("exm")
+                .originalFilename("exm")
+                .filename("exm")
+                .fileExtension("exm")
+                .build();
+
+        Taste taste2 = Taste.builder()
+                .id(2L)
+                .url("exm1")
+                .originalFilename("exm1")
+                .filename("exm1")
+                .fileExtension("exm1")
+                .build();
+
         GenerateImageRequest generateImageRequest = new GenerateImageRequest(
                 1L, "UNDER_5", new GenerateImageRequest.FloorPlanInfo(1L, false),
-                List.of(3L), "READING", List.of(1L)
+                List.of(1L, 2L), "READING", List.of(1L)
         );
 
         Tag tag = Tag.builder()
@@ -235,7 +256,15 @@ class GenerateImageFacadeTest {
                 .house(house)
                 .build();
 
+        List<Long> moodBoardIds = List.of(1L, 2L);
+        List<Taste> tasteList = List.of(taste1, taste2);
+        List<Tag> tagList = List.of(tag);
+
         when(generateImageService.createGenerateImage(imageUploadResponseDTO, house)).thenReturn(generateImage);
+        when(tasteService.getTasteList(moodBoardIds)).thenReturn(tasteList);
+        when(tagService.findTagByTasteId(moodBoardIds.get(0))).thenReturn(tag);
+        when(tagService.findTagByTasteId(moodBoardIds.get(1))).thenReturn(tag);
+        when(tasteTagService.findDistinctTagsByTasteIds(moodBoardIds)).thenReturn(tagList);
 
         // When
         ImageInfoResponse imageInfoResponse = generateImageFacade.generateImageByFastApi(user, generateImageRequest);
