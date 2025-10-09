@@ -79,7 +79,7 @@ class AdminTagControllerTest {
     @DisplayName("PATCH /api/v1/admin/tag 요청으로 태그를 업데이트할 수 있다")
     void updateTag_success() throws Exception {
         // given
-        AdminTagUpdateRequestDTO requestDTO = new AdminTagUpdateRequestDTO("미니멀", 2, "new minimal", "a new minimal mood");
+        AdminTagUpdateRequestDTO requestDTO = new AdminTagUpdateRequestDTO(1L, 2, "new minimal", "a new minimal mood", null);
 
         // when & then
         mockMvc.perform(patch("/api/v1/admin/tag")
@@ -96,7 +96,7 @@ class AdminTagControllerTest {
     @DisplayName("DELETE /api/v1/admin/tag 요청으로 태그를 삭제할 수 있다")
     void deleteTag_success() throws Exception {
         // given
-        AdminTagDeleteRequestDTO requestDTO = new AdminTagDeleteRequestDTO("미니멀");
+        AdminTagDeleteRequestDTO requestDTO = new AdminTagDeleteRequestDTO(1L);
 
         // when & then
         mockMvc.perform(delete("/api/v1/admin/tag")

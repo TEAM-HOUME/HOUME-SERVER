@@ -46,14 +46,17 @@ public class Tag {
 
     public void update(AdminTagUpdateRequestDTO dto) {
 
-        if (dto.newTagNameEng() != null) {
+        if (dto.newTagNameEng() != null && !dto.newTagNameEng().isBlank()) {
             this.tagName = dto.newTagNameEng();
         }
         if (dto.newPriority() != null) {
             this.priority = dto.newPriority();
         }
-        if (dto.newTagPrompt() != null) {
+        if (dto.newTagPrompt() != null && !dto.newTagPrompt().isBlank()) {
             this.tagPrompt = dto.newTagPrompt();
+        }
+        if (dto.newTagNameKr() != null && !dto.newTagNameKr().isBlank()) {
+            this.tagNameKr = dto.newTagNameKr();
         }
     }
 

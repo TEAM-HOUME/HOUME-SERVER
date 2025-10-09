@@ -174,7 +174,7 @@
             <div class="card-body">
                 <form id="update-furniture-form">
                     <div class="mb-3"><label for="updateFurnitureNameKr" class="form-label">가구 이름 (한글)</label><input type="text" class="form-control" id="updateFurnitureNameKr" required></div>
-                    <div class="mb-3"><label for="updateTagId" class="form-label">태그 ID</label><input type="number" class="form-control" id="updateTagId" required></div>
+                    <div class="mb-3"><label for="updateFurnitureTagId" class="form-label">태그 ID</label><input type="number" class="form-control" id="updateFurnitureTagId" required></div>
                     <div class="mb-3"><label for="newFurnitureNameEng" class="form-label">새 가구 이름 (영어)</label><input type="text" class="form-control" id="newFurnitureNameEng"></div>
                     <div class="mb-3"><label for="newPrompt" class="form-label">새 프롬프트</label><textarea class="form-control" id="newPrompt" rows="3"></textarea></div>
                     <div class="mb-3"><label for="newSearchKeyword" class="form-label">새 검색 키워드</label><input type="text" class="form-control" id="newSearchKeyword" placeholder="예: 침대, 수납, 원목"></div>
@@ -336,9 +336,10 @@
             <div class="card-header">태그 수정</div>
             <div class="card-body">
                 <form id="update-tag-form">
-                    <div class="mb-3"><label for="updateTagNameKr" class="form-label">태그 이름 (한글)</label><input type="text" class="form-control" id="updateTagNameKr" required></div>
+                    <div class="mb-3"><label for="updateTagId" class="form-label">태그 ID</label><input type="number" class="form-control" id="updateTagId" required></div>
                     <div class="mb-3"><label for="updateTagPriority" class="form-label">새 우선순위</label><input type="number" class="form-control" id="updateTagPriority"></div>
                     <div class="mb-3"><label for="updateTagNameEng" class="form-label">새 태그 이름 (영어)</label><input type="text" class="form-control" id="updateTagNameEng"></div>
+                    <div class="mb-3"><label for="updateTagNameKr" class="form-label">새 태그 이름 (한글)</label><input type="text" class="form-control" id="updateTagNameKr"></div>
                     <div class="mb-3"><label for="updateTagPrompt" class="form-label">새 태그 프롬프트</label><textarea class="form-control" id="updateTagPrompt" rows="3"></textarea></div>
                     <button type="submit" class="btn btn-warning">태그 수정</button>
                 </form>
@@ -508,7 +509,7 @@
 
             const updateData = {
                 furnitureNameKr: document.getElementById('updateFurnitureNameKr').value,
-                tagId: parseInt(document.getElementById('updateTagId').value, 10),
+                tagId: parseInt(document.getElementById('updateFurnitureTagId').value, 10),
                 newFurnitureNameEng: document.getElementById('newFurnitureNameEng').value,
                 newPrompt: document.getElementById('newPrompt').value,
                 newSearchKeyword: document.getElementById('newSearchKeyword').value,
@@ -667,11 +668,20 @@
             event.preventDefault();
             const accessToken = localStorage.getItem('accessToken');
             const resultDiv = document.getElementById('update-tag-api-result');
+            const tagIdInput = document.getElementById('updateTagId').value;
+            if (!tagIdInput || tagIdInput.trim().length === 0) {
+                resultDiv.innerHTML = '<div class="alert alert-danger">태그 ID를 입력해주세요.</div>';
+                return;
+            }
+            const newTagNameEngVal = document.getElementById('updateTagNameEng').value.trim();
+            const newTagPromptVal = document.getElementById('updateTagPrompt').value.trim();
+            const newTagNameKrVal = document.getElementById('updateTagNameKr').value.trim();
             const updateData = {
-                tagNameKr: document.getElementById('updateTagNameKr').value,
+                tagId: parseInt(tagIdInput, 10),
                 newPriority: document.getElementById('updateTagPriority').value ? parseInt(document.getElementById('updateTagPriority').value, 10) : null,
-                newTagNameEng: document.getElementById('updateTagNameEng').value,
-                newTagPrompt: document.getElementById('updateTagPrompt').value
+                newTagNameEng: newTagNameEngVal.length > 0 ? newTagNameEngVal : null,
+                newTagPrompt: newTagPromptVal.length > 0 ? newTagPromptVal : null,
+                newTagNameKr: newTagNameKrVal.length > 0 ? newTagNameKrVal : null
             };
             testApiCall(accessToken, resultDiv, '/api/v1/admin/tag', 'PATCH', updateData);
         });
@@ -861,14 +871,15 @@
 
     function displayTagsAsTable(data, resultDiv) {
         const tags = data.data.tagGetResponseDTOS;
-        let tableHTML = '<table class="table table-hover"><thead><tr><th>우선순위</th><th>태그 이름 (영문)</th><th>태그 이름 (한글)</th><th>프롬프트</th><th>작업</th></tr></thead><tbody>';
+        let tableHTML = '<table class="table table-hover"><thead><tr><th>ID</th><th>우선순위</th><th>태그 이름 (영문)</th><th>태그 이름 (한글)</th><th>프롬프트</th><th>작업</th></tr></thead><tbody>';
         tags.forEach((tag, index) => {
             tableHTML += `<tr>
+                            <td>${tag.id}</td>
                             <td>${tag.priority}</td>
                             <td>${tag.tagName}</td>
                             <td>${tag.tag_name_kr}</td>
                             <td><button class="btn btn-sm btn-info" onclick="togglePrompt('prompt-${index}')">보기</button><pre id="prompt-${index}" style="display:none;">${tag.tag_prompt}</pre></td>
-                            <td><button class="btn btn-danger btn-sm" onclick="deleteTag('${tag.tag_name_kr}')">삭제</button></td>
+                            <td><button class="btn btn-danger btn-sm" onclick="deleteTag(${tag.id}, '${tag.tag_name_kr}')">삭제</button></td>
                           </tr>`;
         });
         tableHTML += '</tbody></table>';
@@ -900,11 +911,11 @@
         });
     }
 
-    function deleteTag(tagNameKr) {
-        if (!confirm(`'${tagNameKr}' 태그를 정말로 삭제하시겠습니까?`)) return;
+    function deleteTag(tagId, tagNameKr) {
+        if (!confirm(`'${tagNameKr}' 태그(ID: ${tagId})를 정말로 삭제하시겠습니까?`)) return;
         const accessToken = localStorage.getItem('accessToken');
         const resultDiv = document.getElementById('get-all-tags-result');
-        testApiCall(accessToken, resultDiv, '/api/v1/admin/tag', 'DELETE', { tagNameKr }, () => {
+        testApiCall(accessToken, resultDiv, '/api/v1/admin/tag', 'DELETE', { tagId }, () => {
             alert('태그가 삭제되었습니다.');
             document.getElementById('get-all-tags-button').click();
         });
