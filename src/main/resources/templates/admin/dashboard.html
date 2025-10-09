@@ -186,7 +186,7 @@
                 <div id="update-furniture-api-result" class="api-result"></div>
             </div>
         </div>
-         <div class="card">
+        <div class="card">
             <div class="card-header">프롬프트 조회</div>
             <div class="card-body">
                 <form id="get-prompt-form">
@@ -195,6 +195,36 @@
                     <button type="submit" class="btn btn-info">프롬프트 조회</button>
                 </form>
                 <div id="get-prompt-result" class="api-result"></div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">[기획 의사결정용] 가구 제품 조회 (for-plan)</div>
+            <div class="card-body">
+                <form id="for-plan-form">
+                    <div class="row g-3">
+                        <div class="col-md-3">
+                            <label for="forPlanTagId" class="form-label">태그 ID</label>
+                            <input type="number" class="form-control" id="forPlanTagId" placeholder="예: 1" required>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="forPlanFurnitureId" class="form-label">가구 ID</label>
+                            <input type="number" class="form-control" id="forPlanFurnitureId" placeholder="예: 2" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="forPlanSearchKeyword" class="form-label">검색 키워드</label>
+                            <input type="text" class="form-control" id="forPlanSearchKeyword" placeholder="예: 원목 침대, 소파" required>
+                        </div>
+                        <div class="col-md-2">
+                            <label for="forPlanPHash" class="form-label">pHash (0~100)</label>
+                            <input type="number" class="form-control" id="forPlanPHash" min="0" max="100" value="50" required>
+                        </div>
+                    </div>
+                    <div class="mt-3">
+                        <button type="submit" class="btn btn-primary">제품 조회</button>
+                    </div>
+                </form>
+                <div id="for-plan-result" class="api-result"></div>
             </div>
         </div>
     </div>
@@ -487,6 +517,22 @@
             const tagId = document.getElementById('promptQueryTagId').value;
             const endpoint = `/api/v1/admin/furniture/prompt?furnitureNameKr=${encodeURIComponent(furnitureNameKr)}&tagId=${tagId}`;
             testApiCall(accessToken, resultDiv, endpoint, 'GET', null);
+        });
+
+        // [기획 의사결정용] for-plan API 호출
+        document.getElementById('for-plan-form').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const accessToken = localStorage.getItem('accessToken');
+            const resultDiv = document.getElementById('for-plan-result');
+
+            const tagId = document.getElementById('forPlanTagId').value;
+            const furnitureId = document.getElementById('forPlanFurnitureId').value;
+            const searchKeyword = document.getElementById('forPlanSearchKeyword').value;
+            const pHash = document.getElementById('forPlanPHash').value;
+
+            const endpoint = `/api/v1/generated-images/${tagId}/curations/products/${furnitureId}/for-plan?searchKeyword=${encodeURIComponent(searchKeyword)}&pHash=${encodeURIComponent(pHash)}`;
+
+            testApiCall(accessToken, resultDiv, endpoint, 'GET', null, displayForPlanProductsAsTable);
         });
 
         // 가구 타입 관리
@@ -836,6 +882,59 @@
                 resultDiv.innerHTML = `<div class="alert alert-danger">오류: ${error.message}</div>`;
                 console.error('Upload Error:', error);
             });
+    }
+
+    // [기획 의사결정용] 결과 테이블 렌더링
+    function displayForPlanProductsAsTable(data, resultDiv) {
+        if (!data || !data.data) {
+            resultDiv.innerHTML = '<div class="alert alert-warning">데이터가 비어있습니다.</div>';
+            return;
+        }
+
+        const userName = data.data.userName ?? '';
+        const products = Array.isArray(data.data.products) ? data.data.products : [];
+
+        if (products.length === 0) {
+            resultDiv.innerHTML = '<div class="alert alert-info">검색 결과가 없습니다.</div>';
+            return;
+        }
+
+        let html = '';
+        if (userName) {
+            html += `<div class="mb-2"><strong>요청 사용자:</strong> ${userName}</div>`;
+        }
+        html += '<div class="table-responsive">';
+        html += '<table class="table table-hover align-middle">';
+        html += '<thead><tr>' +
+                '<th style="width:200px">이미지</th>' +
+                '<th>상품명</th>' +
+                '<th>몰명</th>' +
+                '<th>상품 ID</th>' +
+                '<th>유사도</th>' +
+                '</tr></thead><tbody>';
+
+        products.forEach(item => {
+            const baseImg = item.baseFurnitureImageUrl ? `<img src="${item.baseFurnitureImageUrl}" alt="base" style="width:96px;height:auto;border-radius:4px;object-fit:cover;margin-right:8px;">` : '';
+            const prodImg = item.furnitureProductImageUrl ? `<img src="${item.furnitureProductImageUrl}" alt="product" style="width:96px;height:auto;border-radius:4px;object-fit:cover;">` : '';
+            const imageCell = `<div class="d-flex align-items-center">${baseImg}${prodImg}</div>`;
+            const nameCell = item.furnitureProductSiteUrl
+                ? `<a href="${item.furnitureProductSiteUrl}" target="_blank" rel="noopener noreferrer">${item.furnitureProductName || '상품 링크'}</a>`
+                : (item.furnitureProductName || '');
+            const mallCell = item.furnitureProductMallName || '';
+            const idCell = item.furnitureProductId || '';
+            const simCell = (item.similarity != null) ? (Math.round(item.similarity * 100) / 100) : '';
+
+            html += `<tr>
+                        <td>${imageCell}</td>
+                        <td>${nameCell}</td>
+                        <td>${mallCell}</td>
+                        <td>${idCell}</td>
+                        <td>${simCell}</td>
+                    </tr>`;
+        });
+
+        html += '</tbody></table></div>';
+        resultDiv.innerHTML = html;
     }
 
     // 가구 타입 목록을 테이블로 표시
