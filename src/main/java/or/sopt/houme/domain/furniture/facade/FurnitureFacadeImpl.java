@@ -11,6 +11,8 @@ import or.sopt.houme.domain.furniture.service.ImageHashService;
 import or.sopt.houme.domain.furniture.service.NaverShopService;
 import or.sopt.houme.domain.furniture.service.RecommendFurnitureService;
 import or.sopt.houme.domain.user.entity.User;
+import or.sopt.houme.global.api.ErrorCode;
+import or.sopt.houme.global.api.GeneralException;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -95,7 +97,7 @@ public class FurnitureFacadeImpl implements FurnitureFacade {
         log.info("--------네이버 API 호출이 완료됐습니다--------");
 
         if (products == null || products.isEmpty()) {
-            log.info("응답값이 비어있음");
+            throw new GeneralException(ErrorCode.NAVER_RESPONSE_EMPTY);
         }
         log.info(products.get(0).furnitureProductName());
 

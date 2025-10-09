@@ -117,6 +117,7 @@ public enum ErrorCode {
 
     // Admin 가구 타입 관련 예외
     NOT_FOUND_FURNITURE_TYPE(HttpStatus.NOT_FOUND, 40421, "가구 타입을 찾을 수 없습니다."),
+    NAVER_RESPONSE_EMPTY(HttpStatus.NOT_FOUND,40422,"네이버 API 응답 결과가 없습니다."),
 
     /**
      * 405 METHOD_NOT_ALLOWED
