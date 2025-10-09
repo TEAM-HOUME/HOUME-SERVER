@@ -12,6 +12,7 @@ public record ImageHistoriesResultPageResponse(
     }
 
     public record ImageHistoryResultPageResponse(
+            Long imageId,
             String equilibrium,
             String houseForm,
             String tasteTag,
@@ -25,6 +26,7 @@ public record ImageHistoriesResultPageResponse(
             String factorText
     ) {
         public static ImageHistoryResultPageResponse of(
+                Long imageId,
                 String equilibrium,
                 String houseForm,
                 String tasteTag,
@@ -35,7 +37,7 @@ public record ImageHistoriesResultPageResponse(
                 String factorText
         ) {
             return new ImageHistoryResultPageResponse(
-                    equilibrium, houseForm, tasteTag, name, generatedImageUrl, isLike, factorId, factorText
+                    imageId, equilibrium, houseForm, tasteTag, name, generatedImageUrl, isLike, factorId, factorText
             );
         }
     }
