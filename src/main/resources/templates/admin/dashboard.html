@@ -532,7 +532,7 @@
 
             const endpoint = `/api/v1/generated-images/${tagId}/curations/products/${furnitureId}/for-plan?searchKeyword=${encodeURIComponent(searchKeyword)}&pHash=${encodeURIComponent(pHash)}`;
 
-            testApiCall(accessToken, resultDiv, endpoint, 'GET', null, displayForPlanProductsAsTable);
+            testApiCallWithLoading(accessToken, resultDiv, endpoint, 'GET', null, displayForPlanProductsAsTable, 'table');
         });
 
         // 가구 타입 관리
@@ -975,6 +975,91 @@
             alert('가구 타입이 삭제되었습니다.');
             document.getElementById('get-furniture-types-button').click(); // 목록 새로고침
         });
+    }
+
+    // --- Loading helpers (skeleton UI) and loader-aware API call ---
+    function showLoading(resultDiv, variant = 'default') {
+        resultDiv.setAttribute('data-loading', 'true');
+        if (variant === 'table') {
+            let rows = '';
+            for (let i = 0; i < 5; i++) {
+                rows += `<tr>
+                            <td><span class=\"placeholder col-12\" style=\"height:72px; display:block;\"></span></td>
+                            <td><span class=\"placeholder col-10\"></span><br><span class=\"placeholder col-6\"></span></td>
+                            <td><span class=\"placeholder col-6\"></span></td>
+                            <td><span class=\"placeholder col-8\"></span></td>
+                            <td><span class=\"placeholder col-4\"></span></td>
+                         </tr>`;
+            }
+            resultDiv.innerHTML = `
+                <div class=\"placeholder-glow\">
+                  <div class=\"mb-2\"><span class=\"placeholder col-3\"></span></div>
+                  <div class=\"table-responsive\">
+                    <table class=\"table align-middle\">
+                      <thead>
+                        <tr>
+                          <th style=\"width:200px\"><span class=\"placeholder col-6\"></span></th>
+                          <th><span class=\"placeholder col-3\"></span></th>
+                          <th><span class=\"placeholder col-2\"></span></th>
+                          <th><span class=\"placeholder col-2\"></span></th>
+                          <th><span class=\"placeholder col-2\"></span></th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        ${rows}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>`;
+            return;
+        }
+        resultDiv.innerHTML = `
+            <div class=\"placeholder-glow\">
+              <span class=\"placeholder col-7\"></span>
+              <span class=\"placeholder col-4\"></span>
+              <span class=\"placeholder col-4\"></span>
+              <span class=\"placeholder col-6\"></span>
+              <span class=\"placeholder col-8\"></span>
+            </div>`;
+    }
+
+    function testApiCallWithLoading(accessToken, resultDiv, endpoint, method, body = null, successCallback = null, loadingVariant = 'default') {
+        if (!accessToken) {
+            resultDiv.removeAttribute('data-loading');
+            resultDiv.innerHTML = '<div class=\"alert alert-danger\">액세스 토큰을 찾을 수 없습니다.</div>';
+            return;
+        }
+        showLoading(resultDiv, loadingVariant);
+        const fetchOptions = {
+            method: method,
+            headers: {
+                'Authorization': 'Bearer ' + accessToken,
+                'Content-Type': 'application/json'
+            },
+            body: body ? JSON.stringify(body) : null
+        };
+        fetch(endpoint, fetchOptions)
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(err => { throw new Error(err.msg || '서버 오류'); });
+                }
+                return response.status === 204 || response.headers.get('Content-Length') === '0' ? null : response.json();
+            })
+            .then(data => {
+                resultDiv.removeAttribute('data-loading');
+                if (successCallback) {
+                    successCallback(data, resultDiv);
+                } else if (data) {
+                    resultDiv.innerHTML = '<div class=\"alert alert-success\">API 응답: <pre>' + JSON.stringify(data.data, null, 2) + '</pre></div>';
+                } else {
+                    resultDiv.innerHTML = '<div class=\"alert alert-success\">요청이 성공적으로 처리되었습니다.</div>';
+                }
+            })
+            .catch(error => {
+                resultDiv.removeAttribute('data-loading');
+                resultDiv.innerHTML = `<div class=\"alert alert-danger\">오류: ${error.message}</div>`;
+                console.error('Upload Error:', error);
+            });
     }
 </script>
 </body>
