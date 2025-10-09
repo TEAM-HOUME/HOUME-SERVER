@@ -556,7 +556,7 @@ public class GenerateImageFacade {
         // 위에 해당하면, 2개 중 우선순위를 통해 고름
         // 아니라면, 가장 많은 태그를 고름
         String topReason = topTiedByPriority
-                ? SelectionStrategy.TOP2_BY_priority.getStrategy()
+                ? SelectionStrategy.TOP2_BY_PRIORITY.getStrategy()
                 : SelectionStrategy.TOP1.getStrategy();
 
         result.add(new SelectedTagInfo(topTag, topReason));
@@ -591,7 +591,7 @@ public class GenerateImageFacade {
             // 위에 해당하면, 2개 중 우선순위를 통해 고름
             // 아니라면, 가장 많은 태그를 고름
             String secondReason = secondTiedByPriority
-                    ? SelectionStrategy.TOP2_BY_priority.getStrategy()
+                    ? SelectionStrategy.TOP2_BY_PRIORITY.getStrategy()
                     : SelectionStrategy.TOP1.getStrategy();
 
             result.add(new SelectedTagInfo(secondTag, secondReason));
