@@ -87,5 +87,33 @@ public class FurnitureController {
 
         return ResponseEntity.ok(ApiResponse.ok(response));
     }
+
+    @Operation(summary = "[기획 의사결정용 API V2] 가구 카테고리를 클릭하여 가구 제품 조회 API",
+            description = "- tagId와 furnitureId로 baseImage가 선택됩니다.\n" +
+                    "- searchKeyword로 검색어를 커스텀할 수 있습니다.\n" +
+                    "- pHash(0~100)사이값을 입력하여, pHash와 colorHash의 비율을 커스텀할 수 있습니다.\n" +
+                    "- V2: mallName/네이버페이 필터 파라미터 적용 (allowedMalls는 서버 프로퍼티 사용, payFilter는 빈 값)" )
+    @GetMapping("/generated-images/{tagId}/curations/products/{furnitureId}/for-plan/v2")
+    public ResponseEntity<ApiResponse<FurnitureProductsInfoResponseForPlan>> getFurnitureProductInfoFromNaverApiForPlanV2(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @PathVariable Long tagId,
+            @PathVariable Long furnitureId,
+            @RequestParam String searchKeyword,
+            @RequestParam int pHash,
+            @RequestParam(required = false) List<String> allowedMalls,
+            @RequestParam(required = false, defaultValue = "false") Boolean applyNaverPay
+    ) {
+        FurnitureProductsInfoResponseForPlan response = furnitureFacade.getFurnitureProductInfoFromNaverApiForPlanV2(
+                userDetails.getUser(),
+                tagId,
+                furnitureId,
+                searchKeyword,
+                pHash,
+                allowedMalls,
+                applyNaverPay
+        );
+
+        return ResponseEntity.ok(ApiResponse.ok(response));
+    }
 }
 

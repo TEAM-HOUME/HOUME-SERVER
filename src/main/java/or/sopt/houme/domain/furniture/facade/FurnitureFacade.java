@@ -8,4 +8,14 @@ public interface FurnitureFacade {
     FurnitureProductsInfoResponse getFurnitureProductInfoFromNaverApi(User user, Long imageId, Long categoryId);
 
     FurnitureProductsInfoResponseForPlan getFurnitureProductInfoFromNaverApiForPlan(User user, Long tagId, Long furnitureId, String searchKeyword, int pHash);
+
+    FurnitureProductsInfoResponseForPlan getFurnitureProductInfoFromNaverApiForPlanV2(
+            User user,
+            Long tagId,
+            Long furnitureId,
+            String searchKeyword,
+            int pHash,
+            java.util.List<String> allowedMalls,
+            Boolean applyNaverPay
+    );
 }
