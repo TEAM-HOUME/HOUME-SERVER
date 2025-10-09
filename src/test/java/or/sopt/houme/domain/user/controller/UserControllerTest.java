@@ -5,6 +5,7 @@ import or.sopt.houme.domain.user.controller.dto.CustomUserDetailsService;
 import or.sopt.houme.domain.user.controller.dto.MyPageInfoResponse;
 import or.sopt.houme.domain.user.entity.*;
 import or.sopt.houme.domain.user.repository.BlacklistTokenRepository;
+import or.sopt.houme.domain.user.service.UserDeletionService;
 import or.sopt.houme.domain.user.service.UserService;
 import or.sopt.houme.global.config.JWTConfig;
 import or.sopt.houme.global.jwt.JWTUtil;
@@ -47,6 +48,9 @@ class UserControllerTest {
 
     @MockBean
     private UserService userService;
+
+    @MockBean
+    private UserDeletionService userDeletionService;
 
     @MockBean
     private JWTConfig jwtConfig;

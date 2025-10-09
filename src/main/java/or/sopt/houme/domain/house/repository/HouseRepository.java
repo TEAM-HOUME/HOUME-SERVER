@@ -6,5 +6,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface HouseRepository extends JpaRepository<House, Long>, HouseCustomRepository {
-
+    java.util.List<House> findByUserId(Long userId);
 }

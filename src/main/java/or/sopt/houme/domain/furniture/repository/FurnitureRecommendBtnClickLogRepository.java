@@ -6,4 +6,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface FurnitureRecommendBtnClickLogRepository extends JpaRepository<FurnitureRecommendBtnClickLog, Long> {
+    void deleteByUserId(Long userId);
 }

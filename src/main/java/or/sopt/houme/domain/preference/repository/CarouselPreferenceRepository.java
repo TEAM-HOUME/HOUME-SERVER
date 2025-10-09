@@ -14,4 +14,7 @@ public interface CarouselPreferenceRepository extends JpaRepository<CarouselPref
 
     @Query("SELECT cp FROM CarouselPreference cp JOIN FETCH cp.preference")
     List<CarouselPreference> findAllWithPreference();
+
+    List<CarouselPreference> findByUserId(Long userId);
+
 }

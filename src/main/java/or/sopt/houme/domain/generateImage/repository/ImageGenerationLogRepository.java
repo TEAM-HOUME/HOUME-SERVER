@@ -6,4 +6,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface ImageGenerationLogRepository extends JpaRepository<ImageGenerationLog, Long> {
+    void deleteByUserId(Long userId);
 }
