@@ -14,7 +14,6 @@ import or.sopt.houme.domain.taste.entity.Taste;
 import or.sopt.houme.global.api.ErrorCode;
 import or.sopt.houme.global.api.handler.GenerateImageException;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
@@ -69,7 +68,7 @@ public class ImageGenerationLogServiceImpl implements ImageGenerationLogService 
     // A/B 요청 이미지 상세 저장
     @Transactional
     @Override
-    public void saveImageGenerationDetail(ImageGenerationLog imageGenerationLog, ImageInfoResponse imageInfoResponse, Tag tag) {
+    public void saveImageGenerationDetail(ImageGenerationLog imageGenerationLog, ImageInfoResponse imageInfoResponse, Tag tag, String selectionTagInfo) {
 
         imageGenerationDetailRepository.save(ImageGenerationDetail.builder()
                 .imageId(imageInfoResponse.imageId())
@@ -77,6 +76,7 @@ public class ImageGenerationLogServiceImpl implements ImageGenerationLogService 
                 .styleTagName(tag.getTagName())
                 .styleTagId(tag.getId())
                 .imageGenerationLog(imageGenerationLog)
+                .selectionStrategy(selectionTagInfo)
                 .build());
     }
 
