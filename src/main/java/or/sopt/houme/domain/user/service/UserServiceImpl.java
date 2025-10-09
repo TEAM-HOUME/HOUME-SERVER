@@ -40,6 +40,7 @@ import java.util.stream.IntStream;
 @RequiredArgsConstructor
 @Transactional
 public class UserServiceImpl implements UserService {
+
     private final UserRepository userRepository;
     private final HouseRepository houseRepository;
     private final TagRepository tagRepository;
@@ -206,4 +207,5 @@ public class UserServiceImpl implements UserService {
     private User findUser(User user) {
         return userRepository.findById(user.getId()).orElseThrow(() -> new UserException(ErrorCode.USER_NOT_FOUND));
     }
+
 }

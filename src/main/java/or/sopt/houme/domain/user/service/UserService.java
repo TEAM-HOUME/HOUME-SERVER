@@ -19,4 +19,5 @@ public interface UserService {
 
     // 사용자 이미지 생성 여부 저장
     void updateHasGeneratedImage(User user);
+
 }

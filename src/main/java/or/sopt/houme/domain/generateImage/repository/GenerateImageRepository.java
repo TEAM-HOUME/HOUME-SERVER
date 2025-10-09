@@ -8,4 +8,6 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface GenerateImageRepository extends JpaRepository<GenerateImage, Long>, GenerateImageRepositoryCustom {
+    void deleteByHouseId(Long houseId);
+    void flush();
 }

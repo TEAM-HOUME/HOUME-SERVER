@@ -13,4 +13,6 @@ public interface HouseFloorPlanRepository extends JpaRepository<HouseFloorPlan, 
 
     @Query("SELECT hfp FROM HouseFloorPlan hfp WHERE hfp.house.id = :houseId")
     Optional<HouseFloorPlan> findHouseFloorPlanByHouseId(@Param("houseId") Long houseId);
+
+    void deleteByHouseId(Long houseId);
 }
