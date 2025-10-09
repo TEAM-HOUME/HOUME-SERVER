@@ -56,6 +56,7 @@ public class HouseCustomRepositoryImpl implements HouseCustomRepository {
                 .where(
                         house.user.id.eq(userId)
                 )
+                .orderBy(house.id.desc())
                 .fetch();
     }
 }

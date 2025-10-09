@@ -96,11 +96,11 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional(readOnly = true)
-    public ImageHistoriesResultPageResponse getImageHistoryResultPage(User user, Long imageId) {
+    public ImageHistoriesResultPageResponse getImageHistoryResultPage(User user, Long houseId) {
         User findUser = findUser(user);
 
         // 1. house, tag 조회
-        House house = houseRepository.findHouseByUserIdAndImageId(findUser.getId(), imageId)
+        House house = houseRepository.findById(houseId)
                 .orElseThrow(() -> new HouseException(ErrorCode.NOT_FOUND_HOUSE_ENTITY));
 
         // 2. houseId 에 해당하는 generateImage 리스트 조회

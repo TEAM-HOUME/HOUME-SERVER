@@ -42,10 +42,10 @@ public class UserController {
         return ResponseEntity.ok(ApiResponse.ok(userImageHistoryListResponse));
     }
 
-    @GetMapping(value = "/mypage/images/{imageId}")
+    @GetMapping(value = "/mypage/images/{houseId}")
     @Operation(summary = "마이페이지에서 이미지 생성 이력 클릭시 결과 페이지 제공 API")
-    public ResponseEntity<ApiResponse<ImageHistoriesResultPageResponse>> getImageHistoryResultPage(@AuthenticationPrincipal CustomUserDetails userDetails, @PathVariable Long imageId) {
-        ImageHistoriesResultPageResponse imageHistoryResultPageResponse = userService.getImageHistoryResultPage(userDetails.getUser(), imageId);
+    public ResponseEntity<ApiResponse<ImageHistoriesResultPageResponse>> getImageHistoryResultPage(@AuthenticationPrincipal CustomUserDetails userDetails, @PathVariable Long houseId) {
+        ImageHistoriesResultPageResponse imageHistoryResultPageResponse = userService.getImageHistoryResultPage(userDetails.getUser(), houseId);
 
         return ResponseEntity.ok(ApiResponse.ok(imageHistoryResultPageResponse));
     }
