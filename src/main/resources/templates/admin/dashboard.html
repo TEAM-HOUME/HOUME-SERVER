@@ -593,7 +593,7 @@
             const allowedMallsRaw = document.getElementById('forPlanV2AllowedMalls').value;
             const applyNaverPay = document.getElementById('forPlanV2ApplyNaverPay').checked;
 
-            let endpoint = `/api/v1/generated-images/${tagId}/curations/products/${furnitureId}/for-plan/v2?searchKeyword=${encodeURIComponent(searchKeyword)}&pHash=${encodeURIComponent(pHash)}&applyNaverPay=${applyNaverPay}`;
+            let endpoint = `/api/v1/generated-images/${tagId}/curations/products/${furnitureId}/for-plan/detail?searchKeyword=${encodeURIComponent(searchKeyword)}&pHash=${encodeURIComponent(pHash)}&applyNaverPay=${applyNaverPay}`;
 
             if (allowedMallsRaw && allowedMallsRaw.trim().length > 0) {
                 // 콤마 기준 분리하여 반복 파라미터로 추가

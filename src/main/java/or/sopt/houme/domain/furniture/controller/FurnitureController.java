@@ -93,7 +93,7 @@ public class FurnitureController {
                     "- searchKeyword로 검색어를 커스텀할 수 있습니다.\n" +
                     "- pHash(0~100)사이값을 입력하여, pHash와 colorHash의 비율을 커스텀할 수 있습니다.\n" +
                     "- V2: mallName/네이버페이 필터 파라미터 적용 (allowedMalls는 서버 프로퍼티 사용, payFilter는 빈 값)" )
-    @GetMapping("/generated-images/{tagId}/curations/products/{furnitureId}/for-plan/v2")
+    @GetMapping("/generated-images/{tagId}/curations/products/{furnitureId}/for-plan/detail")
     public ResponseEntity<ApiResponse<FurnitureProductsInfoResponseForPlan>> getFurnitureProductInfoFromNaverApiForPlanV2(
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @PathVariable Long tagId,
