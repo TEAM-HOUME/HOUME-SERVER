@@ -81,6 +81,7 @@ public class UserServiceImpl implements UserService {
 
             // 4. DTO 생성
             UserImageHistoryDTO dto = new UserImageHistoryDTO(
+                    house.getId(),
                     generateImage.get().getId(),
                     generateImage.get().getUrl(),
                     representativeTag.get().getTagNameKr(),
@@ -159,6 +160,7 @@ public class UserServiceImpl implements UserService {
                             Factor factor = factors.get(i);
 
                             return ImageHistoriesResultPageResponse.ImageHistoryResultPageResponse.of(
+                                    generateImage.getId(),
                                     house.getEquilibrium().getDescription(),
                                     house.getForm().toString(),
                                     tag.getTagNameKr(),
