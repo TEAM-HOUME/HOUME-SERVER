@@ -11,6 +11,7 @@ public record FurnitureProductsInfoResponse(
     }
 
     public record FurnitureProductInfo(
+            Long id,
             String furnitureProductImageUrl,
             String furnitureProductSiteUrl,
             String furnitureProductName,
@@ -19,6 +20,7 @@ public record FurnitureProductsInfoResponse(
             double similarity
     ) {
         public static FurnitureProductInfo of(
+                Long id,
                 String furnitureProductImageUrl,
                 String furnitureProductSiteUrl,
                 String furnitureProductName,
@@ -27,6 +29,7 @@ public record FurnitureProductsInfoResponse(
                 double similarity
         ) {
             return new FurnitureProductInfo(
+                    id,
                     furnitureProductImageUrl,
                     furnitureProductSiteUrl,
                     furnitureProductName,

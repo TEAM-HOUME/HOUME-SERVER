@@ -7,7 +7,9 @@ import or.sopt.houme.domain.furniture.repository.RecommendFurnitureRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @Transactional
@@ -18,9 +20,8 @@ public class RecommendFurnitureServiceImpl implements RecommendFurnitureService 
 
 
     @Override
-    public void saveRecommendFurniture(List<FurnitureProductsInfoResponse.FurnitureProductInfo> requestDto) {
-
-        saveSingleRecommendFurniture(requestDto);
+    public Map<Long, Long> saveRecommendFurniture(List<FurnitureProductsInfoResponse.FurnitureProductInfo> requestDto) {
+        return saveSingleRecommendFurniture(requestDto);
     }
 
 
@@ -29,27 +30,33 @@ public class RecommendFurnitureServiceImpl implements RecommendFurnitureService 
      *
      * 리스트 형식으로 input을 받아 가구들을 저장합니다
      * */
-    private void saveSingleRecommendFurniture(List<FurnitureProductsInfoResponse.FurnitureProductInfo> requestDto) {
+    private Map<Long, Long> saveSingleRecommendFurniture(List<FurnitureProductsInfoResponse.FurnitureProductInfo> requestDto) {
+        Map<Long, Long> idMapByProductId = new HashMap<>();
 
         for (FurnitureProductsInfoResponse.FurnitureProductInfo furnitureProductInfo : requestDto) {
+            Long productId = furnitureProductInfo.furnitureProductId();
 
-            boolean existsByFurnitureProductId = recommendFurnitureRepository.existsByFurnitureProductId(furnitureProductInfo.furnitureProductId());
+            RecommendFurniture entity;
 
-            if (existsByFurnitureProductId) {
-                continue;
+            boolean exists = recommendFurnitureRepository.existsByFurnitureProductId(productId);
+            if (exists) {
+                entity = recommendFurnitureRepository.findByFurnitureProductId(productId)
+                        .orElseThrow();
+            } else {
+                entity = RecommendFurniture.from(
+                        furnitureProductInfo.furnitureProductImageUrl(),
+                        furnitureProductInfo.furnitureProductSiteUrl(),
+                        furnitureProductInfo.furnitureProductName(),
+                        furnitureProductInfo.furnitureProductMallName(),
+                        productId
+                );
+                entity = recommendFurnitureRepository.save(entity);
             }
 
-            RecommendFurniture from = RecommendFurniture.from(
-                    furnitureProductInfo.furnitureProductImageUrl(),
-                    furnitureProductInfo.furnitureProductSiteUrl(),
-                    furnitureProductInfo.furnitureProductName(),
-                    furnitureProductInfo.furnitureProductMallName(),
-                    furnitureProductInfo.furnitureProductId()
-            );
-
-            recommendFurnitureRepository.save(from);
+            idMapByProductId.put(productId, entity.getId());
         }
 
+        return idMapByProductId;
     }
 
 }
