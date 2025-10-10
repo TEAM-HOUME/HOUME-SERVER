@@ -16,6 +16,8 @@ import or.sopt.houme.global.api.GeneralException;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Map;
+
 import or.sopt.houme.global.config.NaverProperties;
 
 @Component
@@ -42,11 +44,23 @@ public class FurnitureFacadeImpl implements FurnitureFacade {
         List<FurnitureProductsInfoResponse.FurnitureProductInfo> infos =
                 imageHashService.rankByImageSimilarity(furnitureTag.getFurnitureUrl(), products, 5);
 
-        // 3-1. 최종반환된 리스트를 기반으로 추천가구 엔티티 저장
-        recommendFurnitureService.saveRecommendFurniture(infos);
+        // 3-1. 최종반환된 리스트를 기반으로 추천가구 엔티티 저장하고, 엔티티 id 매핑 반환
+        Map<Long, Long> idMapByProductId = recommendFurnitureService.saveRecommendFurniture(infos);
 
-        // 4. 최종 응답 조립 (Facade 책임)
-        return FurnitureProductsInfoResponse.of(user.getName(), infos);
+        // 4. 최종 응답 조립 (Facade 책임) - id 포함
+        List<FurnitureProductsInfoResponse.FurnitureProductInfo> responseInfos = infos.stream()
+                .map(info -> FurnitureProductsInfoResponse.FurnitureProductInfo.of(
+                        idMapByProductId.get(info.furnitureProductId()),
+                        info.furnitureProductImageUrl(),
+                        info.furnitureProductSiteUrl(),
+                        info.furnitureProductName(),
+                        info.furnitureProductMallName(),
+                        info.furnitureProductId(),
+                        info.similarity()
+                ))
+                .toList();
+
+        return FurnitureProductsInfoResponse.of(user.getName(), responseInfos);
     }
 
     // 기획의사결정용
@@ -99,7 +113,6 @@ public class FurnitureFacadeImpl implements FurnitureFacade {
         if (products == null || products.isEmpty()) {
             throw new GeneralException(ErrorCode.NAVER_RESPONSE_EMPTY);
         }
-        log.info(products.get(0).furnitureProductName());
 
         // 3. FastAPI 호출 → 유사도 기반 상위 상품 리스트만 반환
         List<FurnitureProductsInfoResponseForPlan.FurnitureProductInfo> infos =

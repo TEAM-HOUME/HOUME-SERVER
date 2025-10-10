@@ -49,9 +49,10 @@ public class ImageHashService {
             return response.rankedProducts().stream()
                     .limit(topN)
                     .map(r -> {
-                        var product = productMap.get(r.productId());
+                        NaverFurnitureProductDto product = productMap.get(r.productId());
 
                         return FurnitureProductsInfoResponse.FurnitureProductInfo.of(
+                                null, // ID는 추후 추가됩니다
                                 product.furnitureProductImageUrl(),
                                 product.furnitureProductSiteUrl(),
                                 product.furnitureProductName(),
