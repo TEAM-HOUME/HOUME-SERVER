@@ -210,7 +210,7 @@ class UserServiceImplTest {
                 .build();
 
         given(userRepository.findById(userId)).willReturn(Optional.of(user));
-        given(houseRepository.findHouseByUserIdAndImageId(userId, imageId)).willReturn(Optional.of(house));
+        given(houseRepository.findById(houseId)).willReturn(Optional.of(house));
 
         // generateImages 리스트 2개 반환
         given(generateImageRepository.findGenerateImagesByHouseId(house.getId()))
@@ -227,7 +227,7 @@ class UserServiceImplTest {
                 .willReturn(Optional.of(tag));
 
         // when
-        ImageHistoriesResultPageResponse response = userService.getImageHistoryResultPage(user, imageId);
+        ImageHistoriesResultPageResponse response = userService.getImageHistoryResultPage(user, houseId);
 
         // then
         assertThat(response.histories()).hasSize(2);
@@ -267,15 +267,17 @@ class UserServiceImplTest {
     void getImageHistoryResultPage_notFoundTag() {
         // given
         given(userRepository.findById(1L)).willReturn(Optional.of(user));
-        given(houseRepository.findHouseByUserIdAndImageId(user.getId(), generateImage.getId()))
+        given(houseRepository.findById(house.getId()))
                 .willReturn(Optional.of(house));
-        given(tagRepository.findTagByUserIdAndImageId(user.getId(), generateImage.getId()))
-                .willReturn(Optional.empty());
         given(generateImageRepository.findGenerateImagesByHouseId(house.getId()))
                 .willReturn(List.of(generateImage));
+        given(generateImagePreferenceRepository.findFirstByGenerateImageIdOrderByIdDesc(generateImage.getId()))
+                .willReturn(Optional.empty());
+        given(tagRepository.findTagByUserIdAndImageId(user.getId(), generateImage.getId()))
+                .willReturn(Optional.empty());
 
         // when & then
-        assertThatThrownBy(() -> userService.getImageHistoryResultPage(user, generateImage.getId()))
+        assertThatThrownBy(() -> userService.getImageHistoryResultPage(user, house.getId()))
                 .isInstanceOf(TagException.class)
                 .hasMessageContaining("태그 객체를 찾을 수 없습니다.");
     }
@@ -285,7 +287,7 @@ class UserServiceImplTest {
     void getImageHistoryResultPage_notFoundGenerateImage() {
         // given
         given(userRepository.findById(1L)).willReturn(Optional.of(user));
-        given(houseRepository.findHouseByUserIdAndImageId(user.getId(), generateImage.getId()))
+        given(houseRepository.findById(house.getId()))
                 .willReturn(Optional.of(house));
         given(tagRepository.findTagByUserIdAndImageId(user.getId(), generateImage.getId()))
                 .willReturn(Optional.of(tag));
@@ -293,7 +295,7 @@ class UserServiceImplTest {
                 .willReturn(Collections.emptyList());
 
         // when & then
-        assertThatThrownBy(() -> userService.getImageHistoryResultPage(user, generateImage.getId()))
+        assertThatThrownBy(() -> userService.getImageHistoryResultPage(user, house.getId()))
                 .isInstanceOf(GenerateImageException.class)
                 .hasMessageContaining("생성된 이미지 객체를 찾을 수 없습니다.");
     }

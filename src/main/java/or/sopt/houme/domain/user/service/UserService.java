@@ -13,7 +13,7 @@ public interface UserService {
 
     UserImageHistoryListResponse getUserImageHistoryList(User user);
 
-    ImageHistoriesResultPageResponse getImageHistoryResultPage(User user, Long imageId);
+    ImageHistoriesResultPageResponse getImageHistoryResultPage(User user, Long houseId);
 
     String updateUser(User user, String name, Gender gender, LocalDate birthday);
 
