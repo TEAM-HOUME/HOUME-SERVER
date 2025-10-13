@@ -13,5 +13,5 @@ public interface ImageGenerationLogService {
     ImageGenerationLog saveImageGenerationLog(Long userId, String abType, int imageCount, List<Taste> tasteList, List<Tag> tagList);
 
     // 요청 Image 상세 저장
-    void saveImageGenerationDetail(ImageGenerationLog imageGenerationLog, ImageInfoResponse imageInfoResponse, Tag tag);
+    void saveImageGenerationDetail(ImageGenerationLog imageGenerationLog, ImageInfoResponse imageInfoResponse, Tag tag, String selectionStrategy);
 }

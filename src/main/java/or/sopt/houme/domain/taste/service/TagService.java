@@ -7,5 +7,6 @@ public interface TagService {
     // userId와 imageId로 1순위 태그 찾기
     Tag findTagByUserIdAndImageId(Long userId, Long imageId);
 
-
+    // 무드보드 Id (tasteId)로 Tag 찾기
+    Tag findTagByTasteId(Long tasteId);
 }

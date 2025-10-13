@@ -2,6 +2,7 @@ package or.sopt.houme.domain.generateImage.service.imageGenerationLog;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import or.sopt.houme.domain.generateImage.dto.SelectedTagInfo;
 import or.sopt.houme.domain.generateImage.dto.response.ImageInfoResponse;
 import or.sopt.houme.domain.generateImage.entity.ImageGenerationLog;
 import or.sopt.houme.domain.taste.entity.Tag;
@@ -22,19 +23,21 @@ public class ImageGenerationTransactionService {
 
     @Transactional
     public void saveImageGenerationLog(Long userId, String abType, int imageCount, List<Taste> tasteList, List<Tag> tagList,
-                                       List<ImageInfoResponse> imageInfoResponse) {
+                                       List<ImageInfoResponse> imageInfoResponse, List<SelectedTagInfo> selectedTagInfoList) {
 
         ImageGenerationLog imageGenerationLog = imageGenerationLogService.saveImageGenerationLog(userId, abType, imageCount, tasteList, tagList);
 
-        for (ImageInfoResponse response : imageInfoResponse){
-            log.info(response.tagName());
-            Tag tag = tagList.stream().filter(t -> {
-                        return t.getTagNameKr().equals(response.tagName());
-                    })
+        for (int i = 0; i < imageInfoResponse.size(); i++) {
+            ImageInfoResponse response = imageInfoResponse.get(i);
+            SelectedTagInfo selectedTagInfo = selectedTagInfoList.get(i);
+
+            // 같은 태그 값 찾기
+            Tag tag = tagList.stream().filter(t -> t.getTagNameKr().equals(response.tagName()))
                     .findAny()
                     .orElseThrow(() -> new TagException(ErrorCode.NOT_FOUND_TAG_ENTITY));
 
-            imageGenerationLogService.saveImageGenerationDetail(imageGenerationLog, response, tag);
+            // 상세 로그 저장하기
+            imageGenerationLogService.saveImageGenerationDetail(imageGenerationLog, response, tag, selectedTagInfo.getSelectionStrategy());
         }
     }
 }

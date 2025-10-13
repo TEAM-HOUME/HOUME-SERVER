@@ -6,10 +6,12 @@ import or.sopt.houme.domain.credit.entity.Credit;
 import or.sopt.houme.domain.credit.entity.CreditStatus;
 import or.sopt.houme.domain.credit.service.CreditService;
 import or.sopt.houme.domain.furniture.service.FurnitureService;
+import or.sopt.houme.domain.generateImage.dto.SelectedTagInfo;
 import or.sopt.houme.domain.generateImage.dto.request.GenerateImageRequest;
 import or.sopt.houme.domain.generateImage.dto.response.ImageInfoListResponse;
 import or.sopt.houme.domain.generateImage.dto.response.ImageInfoResponse;
 import or.sopt.houme.domain.generateImage.entity.GenerateImage;
+import or.sopt.houme.domain.generateImage.entity.SelectionStrategy;
 import or.sopt.houme.domain.generateImage.service.AsyncGenerateImageService;
 import or.sopt.houme.domain.generateImage.service.GenerateImageService;
 import or.sopt.houme.domain.generateImage.service.GenerateImageTransactionService;
@@ -35,14 +37,13 @@ import or.sopt.houme.global.api.GeneralException;
 import or.sopt.houme.global.api.handler.CreditException;
 import or.sopt.houme.global.api.handler.GenerateImageException;
 import or.sopt.houme.global.api.handler.ImageFallbackException;
+import or.sopt.houme.global.api.handler.TagException;
 import or.sopt.houme.global.dto.ImageUploadResponseDTO;
 import or.sopt.houme.global.util.constant.S3Constant;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.*;
 import java.util.stream.Collectors;
 
@@ -503,14 +504,100 @@ public class GenerateImageFacade {
 
     // A/B 로그 저장 내부 메서드 (트랜잭션 하나로 처리)
     private void saveLog(Long userId, String type, List<Long> moodBoardIds, List<ImageInfoResponse> imageInfoResponses) {
-        // 무드보드 객체들 조회
+
         List<Taste> tasteList = tasteService.getTasteList(moodBoardIds);
-        // 무드보드 식별자로 Tag 객체들 조회
+
+        // 태그 빈도 계산
+        List<Tag> choiceTagList = moodBoardIds.stream()
+                .map(tagService::findTagByTasteId)
+                .toList();
+
+        List<SelectedTagInfo> selectedTagInfoList = getTagInfoList(choiceTagList);
+
+        // 로그 저장
         List<Tag> distinctTagsByTasteIds = tasteTagService.findDistinctTagsByTasteIds(moodBoardIds);
-        // 트랜잭션 하나로 처리하기
+
         imageGenerationTransactionService.saveImageGenerationLog(
                 userId, type, imageInfoResponses.size(), tasteList,
-                distinctTagsByTasteIds, imageInfoResponses
+                distinctTagsByTasteIds, imageInfoResponses, selectedTagInfoList
         );
+    }
+
+    // Tag 순위 선정 방식이 담긴 리스트 받기
+    private List<SelectedTagInfo> getTagInfoList(List<Tag> choiceTagList){
+        Map<Tag, Long> tagCountMap = choiceTagList.stream()
+                .collect(Collectors.groupingBy(tag -> tag, Collectors.counting()));
+
+        List<SelectedTagInfo> result = new ArrayList<>();
+
+        // 1위 선정
+        List<Map.Entry<Tag, Long>> sortedList = tagCountMap.entrySet().stream()
+                .sorted((e1, e2) -> {
+                    int compare = Long.compare(e2.getValue(), e1.getValue());
+                    if (compare == 0) {
+                        return Integer.compare(e1.getKey().getPriority(), e2.getKey().getPriority());
+                    }
+                    return compare;
+                })
+                .toList();
+
+        // 만약 비어있으면 null 처리 (실제로는 없음, 무드보드 선택이 안됐다는 뜻)
+        if (sortedList.isEmpty()) throw new TagException(ErrorCode.NOT_FOUND_TAG_ENTITY);
+
+        // 가장 우선시 되는 태그 꺼내기
+        Tag topTag = sortedList.get(0).getKey();
+        // 가장 우선시 되는 빈도 수 확인하기
+        long topCount = sortedList.get(0).getValue();
+
+        // 우선순위 리스트가 1보다 크고, 2순위에 있는 태그의 빈도가 1순위와 같은지
+        boolean topTiedByPriority = sortedList.size() > 1 &&
+                sortedList.get(1).getValue().equals(topCount);
+
+        // 위에 해당하면, 2개 중 우선순위를 통해 고름
+        // 아니라면, 가장 많은 태그를 고름
+        String topReason = topTiedByPriority
+                ? SelectionStrategy.TOP2_BY_PRIORITY.getStrategy()
+                : SelectionStrategy.TOP1.getStrategy();
+
+        result.add(new SelectedTagInfo(topTag, topReason));
+
+        // 1위 제외 후 2위 선정
+        Map<Tag, Long> remaining = new HashMap<>(tagCountMap);
+        // 1위에 있던 태그 제거
+        remaining.remove(topTag);
+
+        // 제거 후 안 비어있으면
+        if (!remaining.isEmpty()) {
+            // 또 다시 1순위 선정
+            List<Map.Entry<Tag, Long>> secondSorted = remaining.entrySet().stream()
+                    .sorted((e1, e2) -> {
+                        int compare = Long.compare(e2.getValue(), e1.getValue());
+                        if (compare == 0) {
+                            return Integer.compare(e1.getKey().getPriority(), e2.getKey().getPriority());
+                        }
+                        return compare;
+                    })
+                    .toList();
+
+            // 가장 우선시 되는 태그 꺼내기
+            Tag secondTag = secondSorted.get(0).getKey();
+            // 가장 우선시 되는 빈도 수 확인하기
+            long secondCount = secondSorted.get(0).getValue();
+
+            // 우선순위 리스트가 1보다 크고, 2순위에 있는 태그의 빈도가 1순위와 같은지
+            boolean secondTiedByPriority = secondSorted.size() > 1 &&
+                    secondSorted.get(1).getValue().equals(secondCount);
+
+            // 위에 해당하면, 2개 중 우선순위를 통해 고름
+            // 아니라면, 가장 많은 태그를 고름
+            String secondReason = secondTiedByPriority
+                    ? SelectionStrategy.TOP2_BY_PRIORITY.getStrategy()
+                    : SelectionStrategy.TOP1.getStrategy();
+
+            result.add(new SelectedTagInfo(secondTag, secondReason));
+        }
+
+        // 반환
+        return result;
     }
 }

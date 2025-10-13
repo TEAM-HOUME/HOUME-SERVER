@@ -3,7 +3,6 @@ package or.sopt.houme.domain.taste.service;
 import lombok.RequiredArgsConstructor;
 import or.sopt.houme.domain.taste.dto.response.TagDTO;
 import or.sopt.houme.domain.taste.entity.Tag;
-import or.sopt.houme.domain.taste.entity.Taste;
 import or.sopt.houme.domain.taste.repository.taste_tag.TasteTagRepository;
 import or.sopt.houme.global.api.ErrorCode;
 import or.sopt.houme.global.api.GeneralException;

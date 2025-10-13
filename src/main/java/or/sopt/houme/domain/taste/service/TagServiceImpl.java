@@ -21,4 +21,12 @@ public class TagServiceImpl implements TagService {
 
         return tag;
     }
+
+    @Override
+    public Tag findTagByTasteId(Long tasteId) {
+        Tag tag = tagRepository.findTagByTasteId(tasteId)
+                .orElseThrow(() -> new TagException(ErrorCode.NOT_FOUND_TAG_ENTITY));
+
+        return tag;
+    }
 }

@@ -72,4 +72,23 @@ public class TagRepositoryImpl implements TagRepositoryCustom {
                 .limit(1)
                 .fetchOne());
     }
+
+    // tasteId로 Tag 반환
+    @Override
+    public Optional<Tag> findTagByTasteId(Long tasteId) {
+        QTaste taste = QTaste.taste;
+        QTag tag = QTag.tag;
+        QTasteTag tasteTag = QTasteTag.tasteTag;
+
+        return Optional.ofNullable(queryFactory
+                .select(tag)
+                .from(tasteTag)
+                .join(tasteTag.tag, tag)
+                .join(tasteTag.taste, taste)
+                .where(
+                        taste.id.eq(tasteId)
+                )
+                .fetchOne()
+        );
+    }
 }

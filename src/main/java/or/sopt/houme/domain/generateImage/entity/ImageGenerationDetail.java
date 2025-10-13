@@ -4,8 +4,6 @@ import jakarta.persistence.*;
 import lombok.*;
 import or.sopt.houme.global.entity.BaseEntity;
 import org.hibernate.annotations.Comment;
-import org.hibernate.annotations.JdbcTypeCode;
-import org.hibernate.type.SqlTypes;
 
 @Entity
 @Table(name = "image_generation_details")
@@ -32,6 +30,9 @@ public class ImageGenerationDetail extends BaseEntity {
     @Comment(value = "이미지 생성때 사용된 스타일 태그 이름")
     private String selectedStyleTagName;
 
+    @Comment(value = "이미지 생성때 사용된 스타일 태그 선정 방식")
+    private String selectionStrategy;
+
     @Setter
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "log_id", nullable = false)
@@ -42,11 +43,12 @@ public class ImageGenerationDetail extends BaseEntity {
      */
     @Builder
     public ImageGenerationDetail(String imageUrl, Long imageId, Long styleTagId,
-                                 String styleTagName, ImageGenerationLog imageGenerationLog) {
+                                 String styleTagName, ImageGenerationLog imageGenerationLog, String selectionStrategy) {
         this.generatedImageUrl = imageUrl;
         this.generatedImageId = imageId;
         this.selectedStyleTagId = styleTagId;
         this.selectedStyleTagName = styleTagName;
         this.imageGenerationLog = imageGenerationLog;
+        this.selectionStrategy = selectionStrategy;
     }
 }

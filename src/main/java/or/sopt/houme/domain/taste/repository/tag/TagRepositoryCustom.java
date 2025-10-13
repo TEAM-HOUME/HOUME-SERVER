@@ -9,4 +9,7 @@ public interface TagRepositoryCustom {
     Optional<Tag> findTagByUserIdAndImageId(Long userId, Long imageId);
 
     Optional<Tag> findMostFrequentTagByHouseId(Long houseId);
+
+    // tasteId로 Tag 반환
+    Optional<Tag> findTagByTasteId(Long tasteId);
 }
