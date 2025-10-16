@@ -16,6 +16,8 @@ import org.springframework.web.method.annotation.HandlerMethodValidationExceptio
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.servlet.NoHandlerFoundException;
 
+import java.util.concurrent.RejectedExecutionException;
+
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
@@ -151,4 +153,14 @@ public class GlobalExceptionHandler {
                 .body(ApiResponse.fail(errorCode.getCode(), errorCode.getMsg()));
     }
 
+    // 비동기 요청에서 스레드 풀 크기를 넘어선 경우 예외 발생
+    @ExceptionHandler(RejectedExecutionException.class)
+    public ResponseEntity<ApiResponse<Void>> handleRejected(RejectedExecutionException e){
+        ErrorCode errorCode = ErrorCode.ASYNC_POOL_OVERFLOW;
+
+        Sentry.captureException(e);
+
+        return ResponseEntity.status(errorCode.getStatus())
+                .body(ApiResponse.fail(errorCode.getCode(), errorCode.getMsg()));
+    }
 }
