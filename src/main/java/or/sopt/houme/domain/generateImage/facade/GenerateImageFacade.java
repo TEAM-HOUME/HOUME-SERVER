@@ -34,10 +34,7 @@ import or.sopt.houme.domain.user.entity.User;
 import or.sopt.houme.domain.user.service.UserService;
 import or.sopt.houme.global.api.ErrorCode;
 import or.sopt.houme.global.api.GeneralException;
-import or.sopt.houme.global.api.handler.CreditException;
-import or.sopt.houme.global.api.handler.GenerateImageException;
-import or.sopt.houme.global.api.handler.ImageFallbackException;
-import or.sopt.houme.global.api.handler.TagException;
+import or.sopt.houme.global.api.handler.*;
 import or.sopt.houme.global.dto.ImageUploadResponseDTO;
 import or.sopt.houme.global.util.constant.S3Constant;
 import org.springframework.stereotype.Component;
@@ -75,112 +72,7 @@ public class GenerateImageFacade {
 
     // 스프링을 이용한 이미지 생성
     @Transactional
-    public ImageInfoResponse generateImage(User user, GenerateImageRequest generateImageRequest){
-
-            /**
-             * redis 저장 (user랑 상태값)
-             * 재요청시 user 조회 (상태값은 이미지 받았는지 판단)
-             * 상태값이 요청 후 받았다( -> 재요청 가능 )
-             */
-
-            // 크레딧 감소
-            creditService.decreaseCreditAtomically(user);
-
-            Activity activity;
-            try {
-                    activity = Activity.valueOf(generateImageRequest.activity());
-            } catch (IllegalArgumentException e){
-                    throw new GeneralException(ErrorCode.NOT_VALID_EXCEPTION);
-            }
-            // 주요 활동 업데이트
-            House house = houseService.updateHouseActivity(generateImageRequest.houseId(), activity);
-
-            // house_floor_plan 생성 및 저장
-            houseService.saveHouseFloorPlan(house, generateImageRequest.floorPlan().floorPlanId());
-
-            // 침대 ID 찾기
-            Optional<Long> bedId = furnitureService.findBedId(generateImageRequest.selectiveIds());
-
-            // 복층이 아닌 경우 침대 추가
-            if (!house.getStructure().equals(Structure.DUPLEX) && bedId.isPresent()) {
-                log.info("복층이 아닌 경우 침대 추가");
-                generateImageRequest.selectiveIds().add(bedId.get());
-            }
-
-            // house furniture 저장
-            houseService.saveHouseFurniture(house, generateImageRequest.selectiveIds());
-
-            // 가구 식별자 ID
-            PromptFurnitureListDTO promptFurnitureListDTO = PromptFurnitureListDTO.of(generateImageRequest.selectiveIds());
-
-            Equilibrium equilibrium;
-            try {
-                equilibrium = Equilibrium.valueOf(generateImageRequest.equilibrium());
-            } catch (IllegalArgumentException e){
-                throw new GeneralException(ErrorCode.NOT_VALID_EXCEPTION);
-            }
-
-            // House와 무드보드들 저장
-            houseService.saveHouseTaste(house, generateImageRequest.moodBoardIds());
-
-            // 가장 우선순위가 높은 무드보드 id 제공
-            Tag tag = tasteTagService.getPriorityId(generateImageRequest.moodBoardIds());
-
-            PromptRequestDTO promptRequestDTO = PromptRequestDTO.of(
-                    generateImageRequest.floorPlan().floorPlanId(),
-                    tag.getId(),
-                    equilibrium,
-                    promptFurnitureListDTO
-            );
-
-        try {
-
-            // OpenAI로 image 생성
-            ImageUploadResponseDTO imageUploadResponseDTO = openAiFacade.makeImage(promptRequestDTO);
-
-            // house에 프롬프트 저장
-            houseService.saveHousePrompt(house, imageUploadResponseDTO.getPullPrompt());
-
-            GenerateImage generateImage;
-
-            try {
-                // 도면 이미지 생성
-                generateImage = generateImageService.createGenerateImage(imageUploadResponseDTO, house);
-
-            } catch (Exception e){
-
-                // 이미지 재요청 시도하라는 예외 처리
-                throw new GeneralException(ErrorCode.RETRY_GET_IMAGE);
-            }
-
-            // 이미지 반환 ImageInfoResponse 생성
-            ImageInfoResponse imageInfoResponse = ImageInfoResponse.of(generateImage.getId(), generateImage.getUrl(),
-                    generateImageRequest.floorPlan().isMirror(),
-                    house.getEquilibrium().getDescription(), house.getForm().getDescription(),
-                    tag.getTagNameKr(), user.getName());
-
-            // 만약 Fallback 이미지라면, 예외처리
-            if (generateImage.getUrl().equals(S3Constant.FALL_BACK_IMAGE)){
-                throw new ImageFallbackException(ErrorCode.GENERATED_IMAGE_EXCEPTION, imageInfoResponse);
-            }
-
-            // 먼저 예외 처리 하고 업데이트하기
-            // 이미지 생성 여부 업데이트
-            userService.updateHasGeneratedImage(user);
-
-            return imageInfoResponse;
-
-        } catch (GenerateImageException e) {
-          throw e;
-        } catch (Exception e){
-            log.info("Image 생성 중 오류 발생 {}", e.getMessage());
-            throw new GenerateImageException(ErrorCode.GENERATED_IMAGE_EXCEPTION);
-        }
-    }
-
-
-    @Transactional
-    public ImageInfoResponse generateImageByFastApi(User user, GenerateImageRequest generateImageRequest){
+    public ImageInfoResponse generateImage(User user, GenerateImageRequest generateImageRequest) {
 
         /**
          * redis 저장 (user랑 상태값)
@@ -191,12 +83,10 @@ public class GenerateImageFacade {
         // 크레딧 감소
         creditService.decreaseCreditAtomically(user);
 
-        Activity activity;
-        try {
-            activity = Activity.valueOf(generateImageRequest.activity());
-        } catch (IllegalArgumentException e){
-            throw new GeneralException(ErrorCode.NOT_VALID_EXCEPTION);
-        }
+        // Enum 타입의 유효성 검증
+        Activity activity = enumValueOf(Activity.class, generateImageRequest.activity());
+        Equilibrium equilibrium = enumValueOf(Equilibrium.class, generateImageRequest.equilibrium());
+
         // 주요 활동 업데이트
         House house = houseService.updateHouseActivity(generateImageRequest.houseId(), activity);
 
@@ -218,12 +108,101 @@ public class GenerateImageFacade {
         // 가구 식별자 ID
         PromptFurnitureListDTO promptFurnitureListDTO = PromptFurnitureListDTO.of(generateImageRequest.selectiveIds());
 
-        Equilibrium equilibrium;
+        // House와 무드보드들 저장
+        houseService.saveHouseTaste(house, generateImageRequest.moodBoardIds());
+
+        // 가장 우선순위가 높은 무드보드 id 제공
+        Tag tag = tasteTagService.getPriorityId(generateImageRequest.moodBoardIds());
+
+        PromptRequestDTO promptRequestDTO = PromptRequestDTO.of(generateImageRequest.floorPlan().floorPlanId(),
+                tag.getId(), equilibrium, promptFurnitureListDTO);
+
         try {
-            equilibrium = Equilibrium.valueOf(generateImageRequest.equilibrium());
-        } catch (IllegalArgumentException e){
-            throw new GeneralException(ErrorCode.NOT_VALID_EXCEPTION);
+
+            // OpenAI로 image 생성
+            ImageUploadResponseDTO imageUploadResponseDTO = openAiFacade.makeImage(promptRequestDTO);
+
+            // house에 프롬프트 저장
+            houseService.saveHousePrompt(house, imageUploadResponseDTO.getPullPrompt());
+
+            GenerateImage generateImage;
+
+            try {
+                // 도면 이미지 생성
+                generateImage = generateImageService.createGenerateImage(imageUploadResponseDTO, house);
+
+            } catch (Exception e) {
+
+                // 이미지 재요청 시도하라는 예외 처리
+                throw new GeneralException(ErrorCode.RETRY_GET_IMAGE);
+            }
+
+            // 이미지 반환 ImageInfoResponse 생성
+            ImageInfoResponse imageInfoResponse = ImageInfoResponse.of(generateImage.getId(), generateImage.getUrl(),
+                    generateImageRequest.floorPlan().isMirror(), house.getEquilibrium().getDescription(),
+                    house.getForm().getDescription(), tag.getTagNameKr(), user.getName());
+
+            // 만약 Fallback 이미지라면, 예외처리
+            if (generateImage.getUrl().equals(S3Constant.FALL_BACK_IMAGE)) {
+                log.error("폴백 이미지가 생성되었습니다.");
+                throw new ImageFallbackException(ErrorCode.GENERATED_IMAGE_EXCEPTION, imageInfoResponse);
+            }
+
+            // 먼저 예외 처리 하고 업데이트하기
+            // 이미지 생성 여부 업데이트
+            userService.updateHasGeneratedImage(user);
+
+            return imageInfoResponse;
+
+        } catch (ValidException validException) {
+            // 유효값 검증 실패시
+            log.error("유효값 검증 실패: {}", validException.getMessage(), validException);
+            throw new ValidException(ErrorCode.NOT_VALID_EXCEPTION);
+        } catch (GenerateImageException e) {
+            throw e;
+        } catch (Exception e) {
+            log.info("Image 생성 중 오류 발생 {}", e.getMessage());
+            throw new GenerateImageException(ErrorCode.GENERATED_IMAGE_EXCEPTION);
         }
+    }
+
+
+    @Transactional
+    public ImageInfoResponse generateImageByFastApi(User user, GenerateImageRequest generateImageRequest) {
+
+        /**
+         * redis 저장 (user랑 상태값)
+         * 재요청시 user 조회 (상태값은 이미지 받았는지 판단)
+         * 상태값이 요청 후 받았다( -> 재요청 가능 )
+         */
+
+        // 크레딧 감소
+        creditService.decreaseCreditAtomically(user);
+
+        // Enum 타입의 유효성 검증
+        Activity activity = enumValueOf(Activity.class, generateImageRequest.activity());
+        Equilibrium equilibrium = enumValueOf(Equilibrium.class, generateImageRequest.equilibrium());
+
+        // 주요 활동 업데이트
+        House house = houseService.updateHouseActivity(generateImageRequest.houseId(), activity);
+
+        // house_floor_plan 생성 및 저장
+        houseService.saveHouseFloorPlan(house, generateImageRequest.floorPlan().floorPlanId());
+
+        // 침대 ID 찾기
+        Optional<Long> bedId = furnitureService.findBedId(generateImageRequest.selectiveIds());
+
+        // 복층이 아닌 경우 침대 추가
+        if (!house.getStructure().equals(Structure.DUPLEX) && bedId.isPresent()) {
+            log.info("복층이 아닌 경우 침대 추가");
+            generateImageRequest.selectiveIds().add(bedId.get());
+        }
+
+        // house furniture 저장
+        houseService.saveHouseFurniture(house, generateImageRequest.selectiveIds());
+
+        // 가구 식별자 ID
+        PromptFurnitureListDTO promptFurnitureListDTO = PromptFurnitureListDTO.of(generateImageRequest.selectiveIds());
 
         // House와 무드보드들 저장
         houseService.saveHouseTaste(house, generateImageRequest.moodBoardIds());
@@ -231,12 +210,8 @@ public class GenerateImageFacade {
         // 최고 순위 찾기
         Tag tag = tasteTagService.getPriorityId(generateImageRequest.moodBoardIds());
 
-        PromptRequestDTO promptRequestDTO = PromptRequestDTO.of(
-                generateImageRequest.floorPlan().floorPlanId(),
-                tag.getId(),
-                equilibrium,
-                promptFurnitureListDTO
-        );
+        PromptRequestDTO promptRequestDTO = PromptRequestDTO.of(generateImageRequest.floorPlan().floorPlanId(),
+                tag.getId(), equilibrium, promptFurnitureListDTO);
 
         try {
 
@@ -252,7 +227,7 @@ public class GenerateImageFacade {
                 // 도면 이미지 생성
                 generateImage = generateImageService.createGenerateImage(imageUploadResponseDTO, house);
 
-            } catch (Exception e){
+            } catch (Exception e) {
 
                 // 이미지 생성 중 오류가 발생하면 재요청하라는 예외 반환
                 throw new GeneralException(ErrorCode.RETRY_GET_IMAGE);
@@ -260,12 +235,12 @@ public class GenerateImageFacade {
 
             // 이미지 반환 ImageInfoResponse 생성
             ImageInfoResponse imageInfoResponse = ImageInfoResponse.of(generateImage.getId(), generateImage.getUrl(),
-                    generateImageRequest.floorPlan().isMirror(),
-                    house.getEquilibrium().getDescription(), house.getForm().getDescription(),
-                    tag.getTagNameKr(), user.getName());
+                    generateImageRequest.floorPlan().isMirror(), house.getEquilibrium().getDescription(),
+                    house.getForm().getDescription(), tag.getTagNameKr(), user.getName());
 
             // 만약 Fallback 이미지라면, 예외처리
-            if (generateImage.getUrl().equals(S3Constant.FALL_BACK_IMAGE)){
+            if (generateImage.getUrl().equals(S3Constant.FALL_BACK_IMAGE)) {
+                log.error("폴백 이미지가 생성되었습니다.");
                 throw new ImageFallbackException(ErrorCode.GENERATED_IMAGE_EXCEPTION, imageInfoResponse);
             }
 
@@ -279,9 +254,13 @@ public class GenerateImageFacade {
             saveLog(user.getId(), type, generateImageRequest.moodBoardIds(), List.of(imageInfoResponse));
 
             return imageInfoResponse;
+        } catch (ValidException validException) {
+            // 유효값 검증 실패시
+            log.error("유효값 검증 실패: {}", validException.getMessage(), validException);
+            throw new ValidException(ErrorCode.NOT_VALID_EXCEPTION);
         } catch (GenerateImageException e) {
             throw e;
-        } catch (Exception e){
+        } catch (Exception e) {
             log.info("Image 생성 중 오류 발생 {}", e.getMessage());
             throw new GenerateImageException(ErrorCode.GENERATED_IMAGE_EXCEPTION);
         }
@@ -297,14 +276,9 @@ public class GenerateImageFacade {
             // 크레딧 락 획득 및 상태 변경 (짧은 트랜잭션)
             lockedCredit = creditService.tryLockAndGetCredit(user);
 
-            Activity activity;
-            try {
-                // 활동범위에 값이 유효하지 않으면 예외처리
-                activity = Activity.valueOf(generateImageRequest.activity());
-            } catch (IllegalArgumentException e) {
-                log.error("활동범위가 유효하지 않음: {}", generateImageRequest.activity());
-                throw new GeneralException(ErrorCode.NOT_VALID_EXCEPTION);
-            }
+            // Enum 타입의 유효성 검증
+            Activity activity = enumValueOf(Activity.class, generateImageRequest.activity());
+            Equilibrium equilibrium = enumValueOf(Equilibrium.class, generateImageRequest.equilibrium());
 
             // 기존 house에 주요활동 업데이트하기 (저장)
             House house = houseService.updateHouseActivity(generateImageRequest.houseId(), activity);
@@ -327,15 +301,6 @@ public class GenerateImageFacade {
             // 가구 식별자 ID
             PromptFurnitureListDTO promptFurnitureListDTO = PromptFurnitureListDTO.of(generateImageRequest.selectiveIds());
 
-            Equilibrium equilibrium;
-            try {
-                // 평형범위에 값이 유효하지 않으면 예외처리
-                equilibrium = Equilibrium.valueOf(generateImageRequest.equilibrium());
-            } catch (IllegalArgumentException e) {
-                log.error("평형범위가 유효하지 않음: {}", generateImageRequest.equilibrium());
-                throw new GeneralException(ErrorCode.NOT_VALID_EXCEPTION);
-            }
-
             // House와 무드보드들 저장
             houseService.saveHouseTaste(house, generateImageRequest.moodBoardIds());
 
@@ -346,12 +311,8 @@ public class GenerateImageFacade {
             List<CompletableFuture<ImageUploadResponseDTO>> futures = new ArrayList<>();
 
             // 이미지 생성 태그 1번 준비
-            PromptRequestDTO promptRequestDTO1 = PromptRequestDTO.of(
-                    generateImageRequest.floorPlan().floorPlanId(),
-                    priorityIdList.get(0).id(),
-                    equilibrium,
-                    promptFurnitureListDTO
-            );
+            PromptRequestDTO promptRequestDTO1 = PromptRequestDTO.of(generateImageRequest.floorPlan().floorPlanId(),
+                    priorityIdList.get(0).id(), equilibrium, promptFurnitureListDTO);
 
             // OpenAI로 image 비동기 생성
             // 1번 이미지 (항상 실행됨)
@@ -360,12 +321,8 @@ public class GenerateImageFacade {
             // 2번째 태그가 존재할 시에 2번 이미지 준비
             if (priorityIdList.size() > 1) {
                 // 이미지 생성 태그 2번 준비
-                PromptRequestDTO promptRequestDTO2 = PromptRequestDTO.of(
-                        generateImageRequest.floorPlan().floorPlanId(),
-                        priorityIdList.get(1).id(),
-                        equilibrium,
-                        promptFurnitureListDTO
-                );
+                PromptRequestDTO promptRequestDTO2 = PromptRequestDTO.of(generateImageRequest.floorPlan().floorPlanId(),
+                        priorityIdList.get(1).id(), equilibrium, promptFurnitureListDTO);
 
                 // OpenAI로 image 비동기 생성
                 // 2번 이미지
@@ -382,12 +339,10 @@ public class GenerateImageFacade {
                 allFutures.orTimeout(200, TimeUnit.SECONDS).join();
 
                 // 모든 비동기 작업이 성공했을 때만 DB에 결과를 저장
-                List<ImageUploadResponseDTO> results = futures.stream()
-                        .map(CompletableFuture::join)
-                        .collect(Collectors.toList());
+                List<ImageUploadResponseDTO> results = futures.stream().map(CompletableFuture::join).collect(Collectors.toList());
 
                 // 리스트가 비어있다면, 재요청 시도하라는 반환 (429, Too_Many_Requests)
-                if (results.isEmpty()){
+                if (results.isEmpty()) {
                     throw new GeneralException(ErrorCode.RETRY_GET_IMAGE);
                 }
 
@@ -396,32 +351,22 @@ public class GenerateImageFacade {
 
                 // 만들어진 이미지가 Fallback 이미지라면, 예외처리
                 for (int i = 0; i < results.size(); i++) {
-                    if (results.get(i).getImageLink().equals(S3Constant.FALL_BACK_IMAGE)){
-                        fallbackResponses.add(
-                                ImageInfoResponse.of(null, results.get(i).getImageLink(),
-                                        generateImageRequest.floorPlan().isMirror(),
-                                        generateImageRequest.equilibrium(),
-                                        house.getForm().getDescription(),
-                                        priorityIdList.get(i).tagNameKr(),
-                                        user.getName()
-                                )
-                        );
+                    if (results.get(i).getImageLink().equals(S3Constant.FALL_BACK_IMAGE)) {
+                        fallbackResponses.add(ImageInfoResponse.of(null, results.get(i).getImageLink(),
+                                generateImageRequest.floorPlan().isMirror(), generateImageRequest.equilibrium(),
+                                house.getForm().getDescription(), priorityIdList.get(i).tagNameKr(), user.getName()));
                     }
                 }
                 // fallback 이미지가 포함되어 있다면 예외처리
                 if (!fallbackResponses.isEmpty()) {
+                    log.error("폴백 이미지가 생성되었습니다.");
                     throw new ImageFallbackException(ErrorCode.GENERATED_IMAGE_EXCEPTION, fallbackResponses);
                 }
 
                 // DB 작업을 별도의 트랜잭션 클래스의 메서드로 분리하여 호출 (크레딧 차감은 여기서)
                 List<ImageInfoResponse> imageInfoResponses = generateImageTransactionService.saveResultsAndCreateResponse(
-                                user,
-                                house,
-                                results,
-                                generateImageRequest,
-                                priorityIdList,
-                                lockedCredit
-                        );
+                        user, house, results, generateImageRequest, priorityIdList, lockedCredit
+                );
 
 
                 // DTO로 변환
@@ -454,29 +399,33 @@ public class GenerateImageFacade {
                     throw new GenerateImageException(ErrorCode.GENERATED_IMAGE_EXCEPTION);
                 }
             }
-        } catch (GenerateImageException | ImageFallbackException | CreditException e){
+        } catch (ValidException validException) {
+            // 유효값 검증 실패시
+            log.error("유효값 검증 실패: {}", validException.getMessage(), validException);
+            throw new ValidException(ErrorCode.NOT_VALID_EXCEPTION);
+        } catch (GenerateImageException | ImageFallbackException | CreditException e) {
             // 이미지 생성 중 어떤 예외라도 발생하면 크레딧 상태 복구
-            if (lockedCredit != null && lockedCredit.getStatus() == CreditStatus.PENDING){
+            if (lockedCredit != null && lockedCredit.getStatus() == CreditStatus.PENDING) {
                 creditService.rollbackCreditPending(lockedCredit);
             }
             throw e;
-        } catch (Exception e){
+        } catch (Exception e) {
             log.error("이미지 생성 중 예상치 못한 오류 발생: {}", e.getMessage(), e);
             // 예상치 못한 예외 발생 시에도 크레딧 상태 복구
-            if (lockedCredit != null && lockedCredit.getStatus() == CreditStatus.PENDING){
+            if (lockedCredit != null && lockedCredit.getStatus() == CreditStatus.PENDING) {
                 creditService.rollbackCreditPending(lockedCredit);
             }
             throw new GenerateImageException(ErrorCode.GENERATED_IMAGE_EXCEPTION);
         } finally {
             // 어떤 경우든 락 최종 해제
-            if (lockedCredit != null){
+            if (lockedCredit != null) {
                 creditService.releaseLock(user);
             }
         }
     }
 
     // houseId로 결과 이미지 찾아오기
-    public ImageInfoResponse getFallBackImage(User user, Long houseId){
+    public ImageInfoResponse getFallBackImage(User user, Long houseId) {
         House houseById = houseService.findHouseById(houseId);
 
         GenerateImage generateImage;
@@ -499,7 +448,8 @@ public class GenerateImageFacade {
         // 태그 찾기
         Tag tag = tagService.findTagByUserIdAndImageId(user.getId(), generateImage.getId());
 
-        return ImageInfoResponse.of(generateImage.getId(), generateImage.getUrl(), isMirror, equilibrium, houseForm, tag.getTagNameKr(), user.getName());
+        return ImageInfoResponse.of(generateImage.getId(), generateImage.getUrl(), isMirror,
+                equilibrium, houseForm, tag.getTagNameKr(), user.getName());
     }
 
     // A/B 로그 저장 내부 메서드 (트랜잭션 하나로 처리)
@@ -508,23 +458,19 @@ public class GenerateImageFacade {
         List<Taste> tasteList = tasteService.getTasteList(moodBoardIds);
 
         // 태그 빈도 계산
-        List<Tag> choiceTagList = moodBoardIds.stream()
-                .map(tagService::findTagByTasteId)
-                .toList();
+        List<Tag> choiceTagList = moodBoardIds.stream().map(tagService::findTagByTasteId).toList();
 
         List<SelectedTagInfo> selectedTagInfoList = getTagInfoList(choiceTagList);
 
         // 로그 저장
         List<Tag> distinctTagsByTasteIds = tasteTagService.findDistinctTagsByTasteIds(moodBoardIds);
 
-        imageGenerationTransactionService.saveImageGenerationLog(
-                userId, type, imageInfoResponses.size(), tasteList,
-                distinctTagsByTasteIds, imageInfoResponses, selectedTagInfoList
-        );
+        imageGenerationTransactionService.saveImageGenerationLog(userId, type, imageInfoResponses.size(),
+                tasteList, distinctTagsByTasteIds, imageInfoResponses, selectedTagInfoList);
     }
 
     // Tag 순위 선정 방식이 담긴 리스트 받기
-    private List<SelectedTagInfo> getTagInfoList(List<Tag> choiceTagList){
+    private List<SelectedTagInfo> getTagInfoList(List<Tag> choiceTagList) {
         Map<Tag, Long> tagCountMap = choiceTagList.stream()
                 .collect(Collectors.groupingBy(tag -> tag, Collectors.counting()));
 
@@ -533,13 +479,12 @@ public class GenerateImageFacade {
         // 1위 선정
         List<Map.Entry<Tag, Long>> sortedList = tagCountMap.entrySet().stream()
                 .sorted((e1, e2) -> {
-                    int compare = Long.compare(e2.getValue(), e1.getValue());
-                    if (compare == 0) {
-                        return Integer.compare(e1.getKey().getPriority(), e2.getKey().getPriority());
-                    }
-                    return compare;
-                })
-                .toList();
+            int compare = Long.compare(e2.getValue(), e1.getValue());
+            if (compare == 0) {
+                return Integer.compare(e1.getKey().getPriority(), e2.getKey().getPriority());
+            }
+            return compare;
+        }).toList();
 
         // 만약 비어있으면 null 처리 (실제로는 없음, 무드보드 선택이 안됐다는 뜻)
         if (sortedList.isEmpty()) throw new TagException(ErrorCode.NOT_FOUND_TAG_ENTITY);
@@ -550,14 +495,11 @@ public class GenerateImageFacade {
         long topCount = sortedList.get(0).getValue();
 
         // 우선순위 리스트가 1보다 크고, 2순위에 있는 태그의 빈도가 1순위와 같은지
-        boolean topTiedByPriority = sortedList.size() > 1 &&
-                sortedList.get(1).getValue().equals(topCount);
+        boolean topTiedByPriority = sortedList.size() > 1 && sortedList.get(1).getValue().equals(topCount);
 
         // 위에 해당하면, 2개 중 우선순위를 통해 고름
         // 아니라면, 가장 많은 태그를 고름
-        String topReason = topTiedByPriority
-                ? SelectionStrategy.TOP2_BY_PRIORITY.getStrategy()
-                : SelectionStrategy.TOP1.getStrategy();
+        String topReason = topTiedByPriority ? SelectionStrategy.TOP2_BY_PRIORITY.getStrategy() : SelectionStrategy.TOP1.getStrategy();
 
         result.add(new SelectedTagInfo(topTag, topReason));
 
@@ -571,13 +513,12 @@ public class GenerateImageFacade {
             // 또 다시 1순위 선정
             List<Map.Entry<Tag, Long>> secondSorted = remaining.entrySet().stream()
                     .sorted((e1, e2) -> {
-                        int compare = Long.compare(e2.getValue(), e1.getValue());
-                        if (compare == 0) {
-                            return Integer.compare(e1.getKey().getPriority(), e2.getKey().getPriority());
-                        }
-                        return compare;
-                    })
-                    .toList();
+                int compare = Long.compare(e2.getValue(), e1.getValue());
+                if (compare == 0) {
+                    return Integer.compare(e1.getKey().getPriority(), e2.getKey().getPriority());
+                }
+                return compare;
+            }).toList();
 
             // 가장 우선시 되는 태그 꺼내기
             Tag secondTag = secondSorted.get(0).getKey();
@@ -585,14 +526,11 @@ public class GenerateImageFacade {
             long secondCount = secondSorted.get(0).getValue();
 
             // 우선순위 리스트가 1보다 크고, 2순위에 있는 태그의 빈도가 1순위와 같은지
-            boolean secondTiedByPriority = secondSorted.size() > 1 &&
-                    secondSorted.get(1).getValue().equals(secondCount);
+            boolean secondTiedByPriority = secondSorted.size() > 1 && secondSorted.get(1).getValue().equals(secondCount);
 
             // 위에 해당하면, 2개 중 우선순위를 통해 고름
             // 아니라면, 가장 많은 태그를 고름
-            String secondReason = secondTiedByPriority
-                    ? SelectionStrategy.TOP2_BY_PRIORITY.getStrategy()
-                    : SelectionStrategy.TOP1.getStrategy();
+            String secondReason = secondTiedByPriority ? SelectionStrategy.TOP2_BY_PRIORITY.getStrategy() : SelectionStrategy.TOP1.getStrategy();
 
             result.add(new SelectedTagInfo(secondTag, secondReason));
         }
@@ -600,4 +538,15 @@ public class GenerateImageFacade {
         // 반환
         return result;
     }
+
+    // Enum 타입의 유효성 검증 로직
+    private <E extends Enum<E>> E enumValueOf(Class<E> enumType, String value) {
+        try {
+            return Enum.valueOf(enumType, value);
+        } catch (IllegalArgumentException e) {
+            log.warn("유효성 검증 실패 {}: {}", enumType.getSimpleName(), value);
+            throw new ValidException(ErrorCode.NOT_VALID_EXCEPTION);
+        }
+    }
+
 }
