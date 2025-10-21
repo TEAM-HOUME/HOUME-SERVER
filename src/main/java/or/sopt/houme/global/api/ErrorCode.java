@@ -133,7 +133,7 @@ public enum ErrorCode {
      * 429 Too_Many_Requests
      */
     RETRY_GET_IMAGE(HttpStatus.TOO_MANY_REQUESTS, 42900, "너무 많은 요청이 들어왔습니다. 잠시 후에 재요청하세요."),
-
+    ASYNC_POOL_OVERFLOW(HttpStatus.TOO_MANY_REQUESTS, 42901, "현재 요청이 너무 많습니다. 잠시 후 다시 시도해주세요."),
 
     /**
      * 500 INTERNAL_SERVER_ERROR
