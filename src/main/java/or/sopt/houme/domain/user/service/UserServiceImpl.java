@@ -57,7 +57,7 @@ public class UserServiceImpl implements UserService {
         User findUser = findUser(user);
         String name = findUser.getName();
         Long creditCount = userRepository.countByMemberIdAndStatus(findUser.getId());
-        return MyPageInfoResponse.of(name, creditCount);
+        return MyPageInfoResponse.of(findUser.getId(), name, creditCount);
     }
 
     @Override
