@@ -101,14 +101,14 @@ public class FurnitureServiceImpl implements FurnitureService {
         House house = houseRepository.findHouseByUserIdAndImageId(user.getId(), imageId).orElseThrow(() -> new HouseException(ErrorCode.NOT_FOUND_HOUSE_ENTITY));
         List<Furniture> selectedFurnitures = furnitureRepository.findAllByHouseId(house.getId());
 
-        // 3. 2번 과정에서 생성된 selectedFurnitures의 'object365Word' 필드와 FurnitureCategoriesRequest의 furnitureNames를 비교하여 교집합 산출
+        // 3. 2번 과정에서 생성된 selectedFurnitures의 'furniture_name_eng' 필드와 FurnitureCategoriesRequest의 furnitureNames를 비교하여 교집합 산출
         Set<String> requestedObjects = detectedObjects.stream()
                 .map(String::toLowerCase) // 소문자로 변환
                 .collect(Collectors.toSet());
 
         List<Furniture> intersectedFurnitures = selectedFurnitures.stream()
-                .filter(f -> f.getObject365Word() != null
-                        && requestedObjects.contains(f.getObject365Word().toLowerCase()))  // 소문자로 비교하기
+                .filter(f -> f.getFurnitureNameEng() != null
+                        && requestedObjects.contains(f.getFurnitureNameEng().toLowerCase()))  // 소문자로 비교하기
                 .toList();
 
         // 4. 교집합으로 산출된 가구들과 스타일 태그에 해당하는 매핑 객체를 furniture_tags에서 조회

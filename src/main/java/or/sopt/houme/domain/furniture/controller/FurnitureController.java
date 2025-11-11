@@ -46,16 +46,7 @@ public class FurnitureController {
 
     @Operation(summary = "생성된 이미지에서 가구 카테고리 조회 API",
             description = "생성된 이미지에서 소파, 침대, 스탠드, 러그와 같은 카테고리를 제공합니다.\n" +
-                    "각 가구 카테고리의 순서는 스타일에 따라 다릅니다.")
-    @GetMapping("/generated-images/{imageId}/curations/categories")
-    public ResponseEntity<ApiResponse<FurnitureCategoriesResponse>> getFurnitureCategories(@AuthenticationPrincipal CustomUserDetails userDetails, @PathVariable Long imageId, @RequestParam List<String> detectedObjects) {
-        FurnitureCategoriesResponse response = furnitureService.getFurnitureCategoriesByStyle(userDetails.getUser(), imageId, detectedObjects);
-
-        return ResponseEntity.ok(ApiResponse.ok(response));
-    }
-
-    @Operation(summary = "가구 카테고리를 클릭하여 가구 제품 조회 API",
-            description = "생성된 이미지의 큐레이션 탭에서 가구 카테고리를 클릭하여 네이버 쇼핑 API를 통한 가구 제품들을 검색합니다." +
+                    "각 가구 카테고리의 순서는 스타일에 따라 다릅니다.\n" +
                     "- 가구 영단어\n" +
                     "- 침대(모든 종류) : SINGLE\n" +
                     "- 업무용 책상 : OFFICE_DESK\n" +
@@ -69,6 +60,15 @@ public class FurnitureController {
                     "- 책 선반 : WHITE_BOOKSHELF\n" +
                     "- 장식장 : DISPLAY_CABINET\n" +
                     "- 2인용 : TWO_SEATER_SOFA")
+    @GetMapping("/generated-images/{imageId}/curations/categories")
+    public ResponseEntity<ApiResponse<FurnitureCategoriesResponse>> getFurnitureCategories(@AuthenticationPrincipal CustomUserDetails userDetails, @PathVariable Long imageId, @RequestParam List<String> detectedObjects) {
+        FurnitureCategoriesResponse response = furnitureService.getFurnitureCategoriesByStyle(userDetails.getUser(), imageId, detectedObjects);
+
+        return ResponseEntity.ok(ApiResponse.ok(response));
+    }
+
+    @Operation(summary = "가구 카테고리를 클릭하여 가구 제품 조회 API",
+            description = "생성된 이미지의 큐레이션 탭에서 가구 카테고리를 클릭하여 네이버 쇼핑 API를 통한 가구 제품들을 검색합니다.")
     @GetMapping("/generated-images/{imageId}/curations/products/{categoryId}")
     public ResponseEntity<ApiResponse<FurnitureProductsInfoResponse>> getFurnitureProductInfoFromNaverApi(@AuthenticationPrincipal CustomUserDetails userDetails, @PathVariable Long imageId, @PathVariable Long categoryId) {
         FurnitureProductsInfoResponse response = furnitureFacade.getFurnitureProductInfoFromNaverApi(userDetails.getUser(), imageId, categoryId);
