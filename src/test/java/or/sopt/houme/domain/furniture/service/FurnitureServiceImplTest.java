@@ -163,25 +163,25 @@ class FurnitureServiceImplTest {
         Furniture bed = Furniture.builder()
                 .id(1L)
                 .furnitureNameKr("침대")
-                .object365Word("Bed")
+                .furnitureNameEng("Bed")
                 .build();
 
         Furniture chair = Furniture.builder()
                 .id(2L)
                 .furnitureNameKr("의자")
-                .object365Word("Chair")
+                .furnitureNameEng("Chair")
                 .build();
 
         Furniture tv = Furniture.builder()
                 .id(3L)
                 .furnitureNameKr("TV")
-                .object365Word("Monitor/TV")
+                .furnitureNameEng("Monitor/TV")
                 .build();
 
         Furniture dining = Furniture.builder()
                 .id(4L)
                 .furnitureNameKr("식탁")
-                .object365Word("Dining Table")
+                .furnitureNameEng("Dining Table")
                 .build();
 
         // 레포지토리 Stubbing
