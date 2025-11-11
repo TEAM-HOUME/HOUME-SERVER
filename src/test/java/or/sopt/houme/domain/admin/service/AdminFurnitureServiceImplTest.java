@@ -231,8 +231,27 @@ class AdminFurnitureServiceImplTest {
         adminFurnitureService.updateFurniture(requestDTO, null);
 
         // then
-        assertThat(furniture.getFurnitureNameEng()).isEqualTo("new bed eng");
+        assertThat(furniture.getFurnitureNameEng()).isEqualTo("NEW_BED_ENG");
         assertThat(furnitureTag.getFurniturePrompt()).isEqualTo("new prompt");
+    }
+
+
+    @Test
+    @DisplayName("registerFurniture()는 영어명을 대문자+언더스코어로 정규화하여 저장한다")
+    void registerFurniture_normalizesEnglishName() {
+        // given
+        AdminFurnitureRequestDTO requestDTO = new AdminFurnitureRequestDTO("정규화 테스트", "test furniture", 1L);
+        when(furnitureRepository.findByFurnitureNameKr("정규화 테스트")).thenReturn(Optional.empty());
+        when(furnitureTypeRepository.findById(1L)).thenReturn(Optional.of(bedType));
+
+        // when
+        adminFurnitureService.registerFurniture(requestDTO);
+
+        // then
+        org.mockito.ArgumentCaptor<Furniture> captor = org.mockito.ArgumentCaptor.forClass(Furniture.class);
+        verify(furnitureRepository, times(1)).save(captor.capture());
+        Furniture saved = captor.getValue();
+        assertThat(saved.getFurnitureNameEng()).isEqualTo("TEST_FURNITURE");
     }
 
 
