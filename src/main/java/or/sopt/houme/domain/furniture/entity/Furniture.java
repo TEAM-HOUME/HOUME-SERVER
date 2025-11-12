@@ -53,12 +53,24 @@ public class Furniture {
     public static Furniture createByAdminFurnitureRequestDTO(AdminFurnitureRequestDTO dto, FurnitureType furnitureType){
         return Furniture.builder()
                 .furnitureNameKr(dto.furnitureNameKr())
-                .furnitureNameEng(dto.furnitureNameEng())
+                .furnitureNameEng(normalizeEngName(dto.furnitureNameEng()))
                 .furnitureType(furnitureType)
                 .build();
     }
 
     public void updateFurnitureNameEng(String furnitureNameEng) {
-        this.furnitureNameEng = furnitureNameEng;
+        this.furnitureNameEng = normalizeEngName(furnitureNameEng);
+    }
+
+
+    /**
+     * 가구의 이름을 후처리합니다.
+     *
+     * 1. 소문자인 경우, 대문자로 저장합니다
+     * 2. 띄어쓰기가 있는 경우 언더바로 대체합니다
+     * */
+    private static String normalizeEngName(String name) {
+        if (name == null) return null;
+        return name.trim().replace(' ', '_').toUpperCase();
     }
 }
