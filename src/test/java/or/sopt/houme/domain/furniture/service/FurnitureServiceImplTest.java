@@ -149,7 +149,7 @@ class FurnitureServiceImplTest {
     void categories_intersection_sorted() {
         // Given
         Long imageId = 10L;
-        List<String> detectedObjects = List.of("Bed", "Desk", "Bed", "Desk", "Chair", "Box", "Dining Table");
+        List<String> detectedObjects = List.of("SINGLE", "OFFICE_DESK", "Bed", "CLOSET", "DINING_TABLE", "BOX", "WHITE_BOOKSHELF");
 
         Tag tag = Tag.builder()
                 .id(100L)
@@ -159,17 +159,17 @@ class FurnitureServiceImplTest {
                 .id(200L)
                 .build();
 
-        // 이미지 생성 과정에서 사용자가 선택한 가구: Bed, Chair, TV, Dining Table
+        // 이미지 생성 과정에서 사용자가 선택한 가구
         Furniture bed = Furniture.builder()
                 .id(1L)
                 .furnitureNameKr("침대")
-                .furnitureNameEng("Bed")
+                .furnitureNameEng("DOUBLE")
                 .build();
 
         Furniture chair = Furniture.builder()
                 .id(2L)
                 .furnitureNameKr("의자")
-                .furnitureNameEng("Chair")
+                .furnitureNameEng("OFFICE_DESK")
                 .build();
 
         Furniture tv = Furniture.builder()
@@ -181,7 +181,7 @@ class FurnitureServiceImplTest {
         Furniture dining = Furniture.builder()
                 .id(4L)
                 .furnitureNameKr("식탁")
-                .furnitureNameEng("Dining Table")
+                .furnitureNameEng("DINING_TABLE")
                 .build();
 
         // 레포지토리 Stubbing

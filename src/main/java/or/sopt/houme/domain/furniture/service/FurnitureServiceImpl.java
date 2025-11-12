@@ -106,9 +106,21 @@ public class FurnitureServiceImpl implements FurnitureService {
                 .map(String::toLowerCase) // 소문자로 변환
                 .collect(Collectors.toSet());
 
+        // alias map 정의 (확장 키워드 처리)
+        Map<String, List<String>> keywordAliasMap = Map.of(
+                "single", List.of("single", "super_single", "double", "queen_over")
+        );
+
+        // 확장된 요청 키워드 집합 만들기
+        Set<String> expandedRequestedObjects = requestedObjects.stream()
+                .flatMap(req -> keywordAliasMap.getOrDefault(req, List.of(req)).stream())
+                .map(String::toLowerCase)
+                .collect(Collectors.toSet());
+
+        // 교집합 가구 추출
         List<Furniture> intersectedFurnitures = selectedFurnitures.stream()
                 .filter(f -> f.getFurnitureNameEng() != null
-                        && requestedObjects.contains(f.getFurnitureNameEng().toLowerCase()))  // 소문자로 비교하기
+                        && expandedRequestedObjects.contains(f.getFurnitureNameEng().toLowerCase()))  // 소문자로 비교하기
                 .toList();
 
         // 4. 교집합으로 산출된 가구들과 스타일 태그에 해당하는 매핑 객체를 furniture_tags에서 조회
