@@ -95,49 +95,28 @@ public class FurnitureServiceImpl implements FurnitureService {
     public FurnitureCategoriesResponse getFurnitureCategoriesByStyle(User user, Long imageId, List<String> detectedObjects) {
 
         // 1. userId와 imageId로 해당하는 스타일 태그 조회
-        Tag tag = tagRepository.findTagByUserIdAndImageId(user.getId(), imageId).orElseThrow(() -> new TagException(ErrorCode.NOT_FOUND_TAG_ENTITY));
+        Tag tag = findTag(user, imageId);
 
         // 2. userId와 imageId로 이미지 생성시 선택했던 가구들을 조회
-        House house = houseRepository.findHouseByUserIdAndImageId(user.getId(), imageId).orElseThrow(() -> new HouseException(ErrorCode.NOT_FOUND_HOUSE_ENTITY));
-        List<Furniture> selectedFurnitures = furnitureRepository.findAllByHouseId(house.getId());
+        List<Furniture> selectedFurnitures = findSelectedFurnitures(user, imageId);
 
-        // 3. 2번 과정에서 생성된 selectedFurnitures의 'furniture_name_eng' 필드와 FurnitureCategoriesRequest의 furnitureNames를 비교하여 교집합 산출
-        Set<String> requestedObjects = detectedObjects.stream()
-                .map(String::toLowerCase) // 소문자로 변환
-                .collect(Collectors.toSet());
+        // 3. alias map 정의, 침대의 키워드의 확장
+        Set<String> expandedRequestedObjects = expandKeywords(detectedObjects);
 
-        // alias map 정의 (확장 키워드 처리)
-        Map<String, List<String>> keywordAliasMap = Map.of(
-                "single", List.of("single", "super_single", "double", "queen_over")
-        );
+        // 4. selectedFurnitures와 expandedRequestedObjects의 교집합 산출
+        List<Furniture> intersectedFurnitures = filterIntersectedFurnitures(selectedFurnitures, expandedRequestedObjects);
 
-        // 확장된 요청 키워드 집합 만들기
-        Set<String> expandedRequestedObjects = requestedObjects.stream()
-                .flatMap(req -> keywordAliasMap.getOrDefault(req, List.of(req)).stream())
-                .map(String::toLowerCase)
-                .collect(Collectors.toSet());
+        // 5. 교집합으로 산출된 가구들과 스타일 태그에 해당하는 매핑 객체를 furniture_tags에서 조회
+        List<FurnitureTag> matchedTags = furnitureTagRepository.findAllByTagIdAndFurnitureIn(tag.getId(), intersectedFurnitures);
 
-        // 교집합 가구 추출
-        List<Furniture> intersectedFurnitures = selectedFurnitures.stream()
-                .filter(f -> f.getFurnitureNameEng() != null
-                        && expandedRequestedObjects.contains(f.getFurnitureNameEng().toLowerCase()))  // 소문자로 비교하기
+        // 6. priority 기준 오름차순 정렬 → 응답 DTO 변환
+        List<FurnitureCategoriesResponse.FurnitureCategoryResponse> categoryResponses = matchedTags.stream()
+                .sorted(Comparator.comparingInt(FurnitureTag::getPriority))
+                .map(ft -> FurnitureCategoriesResponse.FurnitureCategoryResponse.of(
+                        ft.getFurniture().getId(),
+                        ft.getFurniture().getFurnitureNameKr()
+                ))
                 .toList();
-
-        // 4. 교집합으로 산출된 가구들과 스타일 태그에 해당하는 매핑 객체를 furniture_tags에서 조회
-        List<FurnitureTag> styleMappedFurnitureTags = furnitureTagRepository.findAllByTagIdAndFurnitureIn(
-                tag.getId(),
-                intersectedFurnitures
-        );
-
-        // 5. priority 기준 오름차순 정렬 → 응답 DTO 변환
-        List<FurnitureCategoriesResponse.FurnitureCategoryResponse> categoryResponses =
-                styleMappedFurnitureTags.stream()
-                        .sorted(Comparator.comparingInt(FurnitureTag::getPriority))
-                        .map(ft -> FurnitureCategoriesResponse.FurnitureCategoryResponse.of(
-                                ft.getFurniture().getId(),
-                                ft.getFurniture().getFurnitureNameKr()
-                        ))
-                        .toList();
 
         return FurnitureCategoriesResponse.of(categoryResponses);
     }
@@ -180,5 +159,42 @@ public class FurnitureServiceImpl implements FurnitureService {
 
         // 3. tagId와 categoryId(=furnitureId)로 furnitureTag 매핑 객체 조회
         return furnitureTagRepository.findByFurnitureAndTag(furniture, tag).orElseThrow(() -> new GeneralException(ErrorCode.NOT_FOUND_FURNITURE_TAG));
+    }
+
+    /**
+     * 보조 메서드 (비즈니스 로직 가독성을 위해 분리했습니다.)
+     */
+    private Tag findTag(User user, Long imageId) {
+        return tagRepository.findTagByUserIdAndImageId(user.getId(), imageId)
+                .orElseThrow(() -> new TagException(ErrorCode.NOT_FOUND_TAG_ENTITY));
+    }
+
+    private List<Furniture> findSelectedFurnitures(User user, Long imageId) {
+        House house = houseRepository.findHouseByUserIdAndImageId(user.getId(), imageId)
+                .orElseThrow(() -> new HouseException(ErrorCode.NOT_FOUND_HOUSE_ENTITY));
+        return furnitureRepository.findAllByHouseId(house.getId());
+    }
+
+    // single 침대 키워드를 현재는 구분하지 않고 있기 때문에, 다른 침대 종류와도 확장 매핑합니다.
+    private Set<String> expandKeywords(List<String> detectedObjects) {
+        Set<String> requestedObjects = detectedObjects.stream()
+                .map(String::toLowerCase)
+                .collect(Collectors.toSet());
+
+        Map<String, List<String>> keywordAliasMap = Map.of(
+                "single", List.of("single", "super_single", "double", "queen_over")
+        );
+
+        return requestedObjects.stream()
+                .flatMap(req -> keywordAliasMap.getOrDefault(req, List.of(req)).stream())
+                .map(String::toLowerCase)
+                .collect(Collectors.toSet());
+    }
+
+    private List<Furniture> filterIntersectedFurnitures(List<Furniture> furnitures, Set<String> keywords) {
+        return furnitures.stream()
+                .filter(f -> f.getFurnitureNameEng() != null
+                        && keywords.contains(f.getFurnitureNameEng().toLowerCase()))
+                .toList();
     }
 }
