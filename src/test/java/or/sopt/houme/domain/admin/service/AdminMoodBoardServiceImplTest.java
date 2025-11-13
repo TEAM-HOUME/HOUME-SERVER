@@ -1,5 +1,7 @@
 package or.sopt.houme.domain.admin.service;
 
+import or.sopt.houme.domain.house.entity.mapping.HouseTaste;
+import or.sopt.houme.domain.house.repository.HouseTasteRepository;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 import or.sopt.houme.domain.admin.controller.dto.moodboard.AdminMoodBoardCreateRequestDTO;
@@ -49,6 +51,9 @@ class AdminMoodBoardServiceImplTest {
 
     @Mock
     private TagRepository tagRepository;
+
+    @Mock
+    private HouseTasteRepository houseTasteRepository;
 
     @Mock
     private TasteTagRepository tasteTagRepository;
@@ -118,9 +123,11 @@ class AdminMoodBoardServiceImplTest {
         // given
         String filename = "test.jpg";
         Taste taste = Taste.builder().filename(filename).build();
+        HouseTaste houseTaste = HouseTaste.builder().taste(taste).build();
         TasteTag tasteTag = TasteTag.builder().taste(taste).build();
 
         when(tasteRepository.findByFilename(filename)).thenReturn(Optional.of(taste));
+        when(houseTasteRepository.findByTaste(taste)).thenReturn(Optional.of(houseTaste));
         when(tasteTagRepository.findByTaste(taste)).thenReturn(Optional.of(tasteTag));
 
         // when
@@ -154,8 +161,10 @@ class AdminMoodBoardServiceImplTest {
         // given
         String filename = "test.jpg";
         Taste taste = Taste.builder().filename(filename).build();
+        HouseTaste houseTaste = HouseTaste.builder().taste(taste).build();
 
         when(tasteRepository.findByFilename(filename)).thenReturn(Optional.of(taste));
+        when(houseTasteRepository.findByTaste(taste)).thenReturn(Optional.of(houseTaste));
         when(tasteTagRepository.findByTaste(taste)).thenReturn(Optional.empty());
 
         // when & then
@@ -207,9 +216,11 @@ class AdminMoodBoardServiceImplTest {
         // given
         String filename = "test.jpg";
         Taste taste = Taste.builder().filename(filename).build();
+        HouseTaste houseTaste = HouseTaste.builder().taste(taste).build();
         TasteTag tasteTag = TasteTag.builder().taste(taste).build();
 
         when(tasteRepository.findByFilename(filename)).thenReturn(Optional.of(taste));
+        when(houseTasteRepository.findByTaste(taste)).thenReturn(Optional.of(houseTaste));
         when(tasteTagRepository.findByTaste(taste)).thenReturn(Optional.of(tasteTag));
         doThrow(new DataIntegrityViolationException("")).when(tasteTagRepository).delete(tasteTag);
 
@@ -227,9 +238,11 @@ class AdminMoodBoardServiceImplTest {
         // given
         String filename = "test.jpg";
         Taste taste = Taste.builder().filename(filename).build();
+        HouseTaste houseTaste = HouseTaste.builder().taste(taste).build();
         TasteTag tasteTag = TasteTag.builder().taste(taste).build();
 
         when(tasteRepository.findByFilename(filename)).thenReturn(Optional.of(taste));
+        when(houseTasteRepository.findByTaste(taste)).thenReturn(Optional.of(houseTaste));
         when(tasteTagRepository.findByTaste(taste)).thenReturn(Optional.of(tasteTag));
         doThrow(new RuntimeException()).when(s3Util).delete(filename);
 
