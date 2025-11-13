@@ -5,10 +5,10 @@ import or.sopt.houme.domain.taste.entity.Taste;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import java.util.Optional;
+import java.util.List;
 
 @Repository
 public interface HouseTasteRepository extends JpaRepository<HouseTaste, Long> {
     void deleteByHouseId(Long houseId);
-    Optional<HouseTaste> findByTaste(Taste taste);
+    List<HouseTaste> findAllByTaste(Taste taste);
 }

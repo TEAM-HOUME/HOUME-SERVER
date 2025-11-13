@@ -127,7 +127,7 @@ class AdminMoodBoardServiceImplTest {
         TasteTag tasteTag = TasteTag.builder().taste(taste).build();
 
         when(tasteRepository.findByFilename(filename)).thenReturn(Optional.of(taste));
-        when(houseTasteRepository.findByTaste(taste)).thenReturn(Optional.of(houseTaste));
+        when(houseTasteRepository.findAllByTaste(taste)).thenReturn(List.of(houseTaste));
         when(tasteTagRepository.findByTaste(taste)).thenReturn(Optional.of(tasteTag));
 
         // when
@@ -164,7 +164,7 @@ class AdminMoodBoardServiceImplTest {
         HouseTaste houseTaste = HouseTaste.builder().taste(taste).build();
 
         when(tasteRepository.findByFilename(filename)).thenReturn(Optional.of(taste));
-        when(houseTasteRepository.findByTaste(taste)).thenReturn(Optional.of(houseTaste));
+        when(houseTasteRepository.findAllByTaste(taste)).thenReturn(List.of(houseTaste));
         when(tasteTagRepository.findByTaste(taste)).thenReturn(Optional.empty());
 
         // when & then
@@ -220,7 +220,7 @@ class AdminMoodBoardServiceImplTest {
         TasteTag tasteTag = TasteTag.builder().taste(taste).build();
 
         when(tasteRepository.findByFilename(filename)).thenReturn(Optional.of(taste));
-        when(houseTasteRepository.findByTaste(taste)).thenReturn(Optional.of(houseTaste));
+        when(houseTasteRepository.findAllByTaste(taste)).thenReturn(List.of(houseTaste));
         when(tasteTagRepository.findByTaste(taste)).thenReturn(Optional.of(tasteTag));
         doThrow(new DataIntegrityViolationException("")).when(tasteTagRepository).delete(tasteTag);
 
@@ -242,7 +242,7 @@ class AdminMoodBoardServiceImplTest {
         TasteTag tasteTag = TasteTag.builder().taste(taste).build();
 
         when(tasteRepository.findByFilename(filename)).thenReturn(Optional.of(taste));
-        when(houseTasteRepository.findByTaste(taste)).thenReturn(Optional.of(houseTaste));
+        when(houseTasteRepository.findAllByTaste(taste)).thenReturn(List.of(houseTaste));
         when(tasteTagRepository.findByTaste(taste)).thenReturn(Optional.of(tasteTag));
         doThrow(new RuntimeException()).when(s3Util).delete(filename);
 

@@ -114,15 +114,14 @@ public class AdminMoodBoardServiceImpl implements AdminMoodBoardService {
         Taste byFilename = tasteRepository.findByFilename(filename)
                 .orElseThrow(()-> new GeneralException(ErrorCode.NOT_FOUND_TASTE));
 
-        HouseTaste houseTaste = houseTasteRepository.findByTaste(byFilename)
-                .orElseThrow(() -> new GeneralException(ErrorCode.NOT_FOUND_HOUSE_TASTE));
+        List<HouseTaste> houseTastes = houseTasteRepository.findAllByTaste(byFilename);
 
         TasteTag byTaste = tasteTagRepository.findByTaste(byFilename)
                 .orElseThrow(() -> new GeneralException(ErrorCode.NOT_FOUND_TASTE));
 
         try {
             tasteTagRepository.delete(byTaste);
-            houseTasteRepository.delete(houseTaste);
+            houseTasteRepository.deleteAll(houseTastes);
             tasteRepository.delete(byFilename);
         } catch (DataIntegrityViolationException e){
             throw new GeneralException(ErrorCode.DATA_INTEGRITY_VIOLATION);
