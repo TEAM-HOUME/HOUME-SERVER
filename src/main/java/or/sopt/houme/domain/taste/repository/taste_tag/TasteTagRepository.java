@@ -11,5 +11,5 @@ import java.util.Optional;
 @Repository
 public interface TasteTagRepository extends JpaRepository<TasteTag, Long>, TasteTagCustomRepository {
 
-    Optional<TasteTag> findByTaste(Taste taste);
+    List<TasteTag> findAllByTaste(Taste taste);
 }
