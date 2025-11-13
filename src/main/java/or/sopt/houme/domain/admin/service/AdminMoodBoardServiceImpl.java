@@ -6,6 +6,8 @@ import or.sopt.houme.domain.admin.controller.dto.moodboard.AdminMoodBoardCreateR
 import or.sopt.houme.domain.admin.controller.dto.moodboard.AdminMoodBoardCreateResponseDTO;
 import or.sopt.houme.domain.admin.controller.dto.moodboard.AdminMoodBoardGetAllResponseDTO;
 import or.sopt.houme.domain.admin.controller.dto.moodboard.AdminMoodBoardGetResponseDTO;
+import or.sopt.houme.domain.house.entity.mapping.HouseTaste;
+import or.sopt.houme.domain.house.repository.HouseTasteRepository;
 import or.sopt.houme.domain.taste.entity.Tag;
 import or.sopt.houme.domain.taste.entity.Taste;
 import or.sopt.houme.domain.taste.entity.TasteTag;
@@ -37,6 +39,7 @@ public class AdminMoodBoardServiceImpl implements AdminMoodBoardService {
     private final TasteRepository tasteRepository;
     private final TagRepository tagRepository;
     private final TasteTagRepository tasteTagRepository;
+    private final HouseTasteRepository houseTasteRepository;
 
 
 
@@ -111,13 +114,15 @@ public class AdminMoodBoardServiceImpl implements AdminMoodBoardService {
         Taste byFilename = tasteRepository.findByFilename(filename)
                 .orElseThrow(()-> new GeneralException(ErrorCode.NOT_FOUND_TASTE));
 
-        TasteTag byTaste = tasteTagRepository.findByTaste(byFilename)
-                .orElseThrow(() -> new GeneralException(ErrorCode.NOT_FOUND_TASTE));
+        List<HouseTaste> houseTastes = houseTasteRepository.findAllByTaste(byFilename);
+
+        List<TasteTag> tasteTags = tasteTagRepository.findAllByTaste(byFilename);
 
         try {
-            tasteTagRepository.delete(byTaste);
+            tasteTagRepository.deleteAll(tasteTags);
+            houseTasteRepository.deleteAll(houseTastes);
             tasteRepository.delete(byFilename);
-        }catch (DataIntegrityViolationException e){
+        } catch (DataIntegrityViolationException e){
             throw new GeneralException(ErrorCode.DATA_INTEGRITY_VIOLATION);
         }
 
