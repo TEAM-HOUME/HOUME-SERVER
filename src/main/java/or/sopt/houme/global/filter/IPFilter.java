@@ -10,7 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 import or.sopt.houme.global.api.ApiResponse;
 import or.sopt.houme.global.api.ErrorCode;
 import org.springframework.context.annotation.Profile;
-import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
@@ -22,9 +22,9 @@ import java.time.Duration;
 import java.util.Optional;
 
 /**
- * 동일한 IP에서 1분 내 2번 이상 요청이 들어오면 차단하는 필터입니다.
- * - 첫 요청은 허용하고, Redis에 60초 TTL 키를 저장합니다.
- * - 같은 IP로 TTL이 남아있는 동안 재요청 시 429로 응답하고 체인을 중단합니다.
+ * 동일한 IP에서 1분 내 요청이 20회를 초과하면 차단하는 필터입니다.
+ * - 매 요청마다 Redis 카운터를 1 증가시키고, 첫 증가 시 60초 TTL을 설정합니다.
+ * - 1분 동안 누적 요청 수가 21번째가 되면 429로 응답하고 체인을 중단합니다.
  *
  * 참고 사항:
  * - CORS Preflight(OPTIONS)는 필터링하지 않습니다.
@@ -38,8 +38,9 @@ public class IPFilter extends OncePerRequestFilter {
 
     private static final String RATE_KEY_PREFIX = "ip:rate:";
     private static final Duration WINDOW = Duration.ofMinutes(1);
+    private static final long LIMIT = 20L; // 1분당 허용 횟수
 
-    private final RedisTemplate<String, Object> redisTemplate;
+    private final StringRedisTemplate redisTemplate;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Override
@@ -68,16 +69,17 @@ public class IPFilter extends OncePerRequestFilter {
         String key = RATE_KEY_PREFIX + clientIp;
 
         try {
-            Boolean exists = redisTemplate.hasKey(key);
+            Long count = redisTemplate.opsForValue().increment(key);
+            if (count != null && count == 1L) {
+                // 첫 요청: 키에 TTL(1분) 설정
+                redisTemplate.expire(key, WINDOW);
+            }
 
-            if (Boolean.TRUE.equals(exists)) {
-                // 같은 IP로 1분 내 재요청 발생 → 차단
+            if (count != null && count > LIMIT) {
+                // 1분 내 요청 횟수 초과 → 차단 (21번째부터 차단)
                 writeTooManyRequests(response);
                 return;
             }
-
-            // 첫 요청: 짧은 TTL(1분) 키 저장
-            redisTemplate.opsForValue().set(key, 1, WINDOW);
         } catch (Exception e) {
             // Fail-open 전략: Redis 에러 시 서비스 중단 방지 위해 통과
             log.warn("IPFilter encountered an error; allowing request. ip={}, err={}", clientIp, e.toString());
