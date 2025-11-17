@@ -82,7 +82,7 @@ public class IPFilter extends OncePerRequestFilter {
             }
         } catch (Exception e) {
             // Fail-open 전략: Redis 에러 시 서비스 중단 방지 위해 통과
-            log.warn("IPFilter encountered an error; allowing request. ip={}, err={}", clientIp, e.toString());
+            log.warn("IPFilter 처리 중 오류 발생, 요청을 허용합니다. IP={}, 오류={}", clientIp, e.toString());
         }
 
         filterChain.doFilter(request, response);
