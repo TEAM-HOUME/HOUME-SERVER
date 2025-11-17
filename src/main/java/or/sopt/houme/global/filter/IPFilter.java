@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import or.sopt.houme.global.api.ApiResponse;
 import or.sopt.houme.global.api.ErrorCode;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.context.annotation.Profile;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.HttpMethod;
@@ -33,6 +34,7 @@ import java.util.Optional;
 @Slf4j
 @Component
 @Profile("!test")
+@ConditionalOnBean(StringRedisTemplate.class)
 @RequiredArgsConstructor
 public class IPFilter extends OncePerRequestFilter {
 

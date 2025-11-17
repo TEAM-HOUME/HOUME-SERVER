@@ -7,6 +7,7 @@ import or.sopt.houme.domain.user.controller.dto.CustomUserDetails;
 import or.sopt.houme.domain.user.service.OAuthService;
 import or.sopt.houme.global.jwt.JWTFilter;
 import or.sopt.houme.global.filter.IPFilter;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Role;
@@ -34,7 +35,7 @@ import java.util.List;
 public class SecurityConfig {
 
     private final JWTFilter jwtFilter;
-    private final IPFilter ipFilter;
+    private final ObjectProvider<IPFilter> ipFilterProvider;
     private final OAuthService oAuthService;
 
     @Bean
@@ -116,8 +117,11 @@ public class SecurityConfig {
 
         http.logout(AbstractHttpConfigurer::disable);
 
-        // IP 요청 제한 필터를 JWT 처리 이전에 적용
-        http.addFilterBefore(ipFilter, UsernamePasswordAuthenticationFilter.class);
+        // IP 요청 제한 필터를 JWT 처리 이전에 적용 (빈이 존재할 때만)
+        IPFilter ipFilter = ipFilterProvider.getIfAvailable();
+        if (ipFilter != null) {
+            http.addFilterBefore(ipFilter, UsernamePasswordAuthenticationFilter.class);
+        }
         // JWT 인증 필터
         http.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
