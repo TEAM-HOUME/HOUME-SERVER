@@ -35,7 +35,6 @@ houme-api/src/main/resources/application-test.yml
 houme-api/src/main/resources/application.yml
 houme-api/src/main/resources/application-blue.yml
 houme-api/src/main/resources/application-green.yml
-houme-api/src/main/resources/application-local.yml
 **/src/main/generated
 
 # Common secret files
