@@ -1,1 +1,3 @@
 rootProject.name = 'houme'
+
+include 'houme-api', 'houme-domain', 'houme-infrastructure', 'houme-common'

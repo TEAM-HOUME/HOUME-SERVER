@@ -1,0 +1,79 @@
+plugins {
+    id 'java'
+    id 'org.springframework.boot' version '3.2.3'
+    id 'io.spring.dependency-management' version '1.1.4'
+    id 'com.google.cloud.tools.jib' version '3.4.5'
+    id 'jacoco'
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
+}
+
+dependencies {
+    implementation project(':houme-domain')
+    implementation project(':houme-infrastructure')
+    implementation project(':houme-common')
+
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-security'
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.3.0'
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
+    implementation 'io.micrometer:micrometer-registry-prometheus'
+    implementation 'io.sentry:sentry-spring-boot-starter-jakarta:7.9.0'
+    implementation 'org.springframework.cloud:spring-cloud-starter-openfeign'
+    compileOnly 'org.projectlombok:lombok:1.18.30'
+    annotationProcessor 'org.projectlombok:lombok:1.18.30'
+    compileOnly 'org.springframework.boot:spring-boot-starter-data-jpa'
+
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    testImplementation 'org.springframework.security:spring-security-test'
+}
+
+dependencyManagement {
+    imports {
+        mavenBom "org.springframework.cloud:spring-cloud-dependencies:${springCloudVersion}"
+    }
+}
+
+tasks.named('test') {
+    useJUnitPlatform()
+    finalizedBy 'jacocoTestReport'
+}
+
+jib {
+    from {
+        image = 'eclipse-temurin:17-jdk'
+    }
+    to {
+        image = project.hasProperty('jibToImage') ? project.getProperty('jibToImage') : 'default/image'
+        tags = project.hasProperty('jibTag') ? [project.getProperty('jibTag')] : ['default']
+        credHelper = 'ecr-login'
+    }
+    container {
+        jvmFlags = ["-Xms512m", "-Xmx512m"]
+        creationTime = "USE_CURRENT_TIMESTAMP"
+        format = 'Docker'
+    }
+}
+
+jacoco {
+    toolVersion = '0.8.12'
+}
+
+jacocoTestReport {
+    dependsOn test
+    reports {
+        html.required.set(true)
+        xml.required.set(true)
+        csv.required.set(true)
+        html.destination file("${project.layout.buildDirectory.get().asFile}/reports/jacoco/index/html")
+        xml.destination file("${project.layout.buildDirectory.get().asFile}/reports/jacoco/index/jacoco.xml")
+        csv.destination file("${project.layout.buildDirectory.get().asFile}/reports/jacoco/index/jacoco.csv")
+    }
+}

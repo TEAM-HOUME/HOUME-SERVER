@@ -1,200 +1,38 @@
 plugins {
-    id 'java'
-    id 'org.springframework.boot' version '3.2.3'
-    id 'io.spring.dependency-management' version '1.1.4'
-    id 'com.google.cloud.tools.jib' version '3.4.5'       // Jib 플러그인
-    id 'jacoco'
+    // parent-only aggregator; plugins applied in subprojects
 }
 
-group = 'or.sopt'
-version = '0.0.1-SNAPSHOT'
+allprojects {
+    group = 'or.sopt'
+    version = '0.0.1-SNAPSHOT'
 
-java {
-    toolchain {
-        languageVersion = JavaLanguageVersion.of(17)
+    repositories {
+        mavenCentral()
     }
 }
 
-configurations {
-    compileOnly {
-        extendsFrom annotationProcessor
+subprojects {
+    plugins.withId('java') {
+        java {
+            toolchain {
+                languageVersion = JavaLanguageVersion.of(17)
+            }
+        }
+        configurations {
+            compileOnly {
+                extendsFrom annotationProcessor
+            }
+        }
     }
-}
-
-repositories {
-    mavenCentral()
 }
 
 ext {
     set('springCloudVersion', "2023.0.1")
 }
 
-dependencyManagement {
-    imports {
-        mavenBom "org.springframework.cloud:spring-cloud-dependencies:${springCloudVersion}"
-    }
-}
-
-dependencies {
-    testImplementation 'org.springframework.boot:spring-boot-starter-test'
-    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
-
-    // JPA
-    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
-
-    // lombok
-    compileOnly 'org.projectlombok:lombok'
-    annotationProcessor 'org.projectlombok:lombok'
-
-    // web
-    implementation 'org.springframework.boot:spring-boot-starter-web'
-
-    // JWT
-    implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
-    runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.11.5'
-    runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.11.5'
-
-    // Spring Security
-    implementation 'org.springframework.boot:spring-boot-starter-security'
-    testImplementation 'org.springframework.security:spring-security-test'
-
-    // Spring Security OAuth2
-    implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
-
-    // open feign
-    implementation 'org.springframework.cloud:spring-cloud-starter-openfeign'
-    implementation 'io.github.openfeign:feign-jackson:13.6'
-
-    // Swagger
-    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.3.0'
-
-    // redis
-    implementation 'org.springframework.boot:spring-boot-starter-data-redis'
-
-    // H2
-    runtimeOnly 'com.h2database:h2'
-
-    // Spring Cloud Starter
-    implementation 'org.springframework.cloud:spring-cloud-starter-aws:2.2.6.RELEASE'
-
-    // AWS SDK for Java v2 - S3 Presigner
-    implementation platform('software.amazon.awssdk:bom:2.25.20')
-    implementation 'software.amazon.awssdk:s3'
-    implementation 'software.amazon.awssdk:auth'
-
-    // Spring Actuator
-    implementation 'org.springframework.boot:spring-boot-starter-actuator'
-
-    // postgresql
-    runtimeOnly 'org.postgresql:postgresql:42.7.3'
-
-    // QueryDSL
-    implementation "com.querydsl:querydsl-jpa:5.0.0:jakarta"
-    annotationProcessor "com.querydsl:querydsl-apt:5.0.0:jakarta"
-    annotationProcessor "jakarta.annotation:jakarta.annotation-api"
-    annotationProcessor "jakarta.persistence:jakarta.persistence-api"
-
-    // Bean Validation Provider
-    implementation 'org.hibernate.validator:hibernate-validator:8.0.1.Final'
-
-    // EL (Expression Language) 구현체
-    implementation 'org.glassfish:jakarta.el:4.0.2'
-
-    // sentry
-    implementation 'io.sentry:sentry-spring-boot-starter-jakarta:7.9.0'
-
-    // prometheus
-    implementation 'io.micrometer:micrometer-registry-prometheus'
-
-    // cache
-    implementation 'org.springframework.boot:spring-boot-starter-cache'
-
-    // fallback
-    implementation 'io.github.resilience4j:resilience4j-spring-boot3'
-    implementation 'io.github.resilience4j:resilience4j-feign'
-
-    // circuit-breaker
-    implementation 'io.github.resilience4j:resilience4j-circuitbreaker'
-    implementation 'io.github.resilience4j:resilience4j-core'
-
-    // spring AOP
-    implementation 'org.springframework.boot:spring-boot-starter-aop'
-
-    // thymeleaf
-    implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
-
-    // redisson 의존성 추가
-    implementation 'org.redisson:redisson-spring-boot-starter:3.27.2'
-
-}
-
-def querydslDir = 'src/main/generated'
-
-tasks.withType(JavaCompile) {
-    options.getGeneratedSourceOutputDirectory().set(file(querydslDir))
-}
-
-sourceSets {
-    main.java.srcDirs += [querydslDir]
-}
-
-clean {
-    delete file(querydslDir)
-}
-
-tasks.named('test') {
-    useJUnitPlatform()
-    finalizedBy 'jacocoTestReport'
-}
-
-jib {
-    from {
-        image = 'eclipse-temurin:17-jdk' // 베이스 이미지 지정
-    }
-    to {
-        image = project.hasProperty('jibToImage') ? project.getProperty('jibToImage') : 'default/image'
-// 배포전용
-//        if (!project.hasProperty('jibToImage')){
-//            throw new GradleException("'-PjibToImage=xxx' 프로퍼티가 필요합니다.")
-//        }
-//        image = project.property('jibToImage').toString()
-        // runId 기반 태그 (ex: 16063719236) 와 latest 모두 추가
-        tags = project.hasProperty('jibTag')
-                ? [project.getProperty('jibTag')]
-                : ['default']
-        credHelper = 'ecr-login'
-    }
-    container {
-        jvmFlags = ["-Xms512m", "-Xmx512m"]
-        creationTime = "USE_CURRENT_TIMESTAMP"
-        format = 'Docker'
-    }
-}
-
-jacoco {
-    toolVersion = '0.8.12'
-}
-
-jacocoTestReport {
-    dependsOn test
-    reports {
-        html.required.set(true)
-        xml.required.set(true)
-        csv.required.set(true)
-        html.destination file("${project.layout.buildDirectory.get().asFile}/reports/jacoco/index/html")
-        xml.destination file("${project.layout.buildDirectory.get().asFile}/reports/jacoco/index/jacoco.xml")
-        csv.destination file("${project.layout.buildDirectory.get().asFile}/reports/jacoco/index/jacoco.csv")
-    }
-
-    afterEvaluate {
-        classDirectories.setFrom(
-                files(classDirectories.files.collect {
-                    fileTree(dir: it, excludes: [
-                            "or/sopt/houme/global/**",
-                            "**/Q*.class"
-                            // 여기에 제외할 테스트 영역을 설정 할 수 있습니다. 이 부분은 논의 후 설정하면 좋을 것 같습니다
-                    ])
-                })
-        )
-    }
+// Convenience task to run the application from the root
+tasks.register('bootRun') {
+    group = 'application'
+    description = 'Runs houme-api Spring Boot application'
+    dependsOn(':houme-api:bootRun')
 }
