@@ -1,9 +1,7 @@
 HELP.md
 .gradle
-build/
+**/build/
 !gradle/wrapper/gradle-wrapper.jar
-!**/src/main/**/build/
-!**/src/test/**/build/
 
 ### STS ###
 .apt_generated
@@ -13,18 +11,14 @@ build/
 .settings
 .springBeans
 .sts4-cache
-bin/
-!**/src/main/**/bin/
-!**/src/test/**/bin/
+**/bin/
 
 ### IntelliJ IDEA ###
 .idea
 *.iws
 *.iml
 *.ipr
-out/
-!**/src/main/**/out/
-!**/src/test/**/out/
+**/out/
 
 ### NetBeans ###
 /nbproject/private/
@@ -36,12 +30,27 @@ out/
 ### VS Code ###
 .vscode/
 
-src/main/resources/application-dev.yml
-src/main/resources/application-test.yml
-src/main/resources/application.yml
-src/main/resources/application-blue.yml
-src/main/resources/application-green.yml
-src/main/generated
+houme-api/src/main/resources/application-dev.yml
+houme-api/src/main/resources/application-test.yml
+houme-api/src/main/resources/application.yml
+houme-api/src/main/resources/application-blue.yml
+houme-api/src/main/resources/application-green.yml
+houme-api/src/main/resources/application-local.yml
+**/src/main/generated
+
+# Common secret files
+.env
+**/*.pem
+**/*.p12
+**/*.jks
+**/*.keystore
+**/*.crt
+**/*.key
+**/secrets/**
+**/credentials/**
+**/*service-account*.json
+**/*credentials*.json
+**/*.log
 
 ### initialize 무시 ###
 **/*initialize*.java
