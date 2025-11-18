@@ -31,14 +31,7 @@ import static org.mockito.BDDMockito.given;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@WebMvcTest(
-        controllers = UserController.class,
-        excludeAutoConfiguration = {
-                SecurityAutoConfiguration.class,
-                org.springframework.boot.autoconfigure.security.servlet.SecurityFilterAutoConfiguration.class,
-                org.springframework.boot.autoconfigure.security.oauth2.client.servlet.OAuth2ClientAutoConfiguration.class
-        }
-)
+@WebMvcTest(controllers = UserController.class)
 @AutoConfigureMockMvc(addFilters = false)
 @ActiveProfiles("test")
 class UserControllerTest {
@@ -98,8 +91,9 @@ class UserControllerTest {
         given(userService.getMyPageInfo(mockUser)).willReturn(mockResponse);
 
         // SecurityContext에 수동 주입
+        // @AuthenticationPrincipal CustomUserDetails 로 주입되도록 Principal 자체를 CustomUserDetails로 설정
         UsernamePasswordAuthenticationToken auth =
-                new UsernamePasswordAuthenticationToken(mockUser, null, mockUserDetails.getAuthorities());
+                new UsernamePasswordAuthenticationToken(mockUserDetails, null, mockUserDetails.getAuthorities());
         SecurityContextHolder.getContext().setAuthentication(auth);
 
         // When & Then
