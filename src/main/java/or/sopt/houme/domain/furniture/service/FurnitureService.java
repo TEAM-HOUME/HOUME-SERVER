@@ -18,7 +18,6 @@ public interface FurnitureService {
     // 가구 중 침대 ID 조회
     Optional<Long> findBedId(List<Long> furnitureIds);
 
-
     FurnitureTag findFurnitureTag(User user, Long imageId, Long categoryId);
 
     FurnitureTag findFurnitureTagForPlan(Long tagId, Long furnitureId);

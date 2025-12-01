@@ -166,86 +166,68 @@ public class GenerateImageFacade {
         }
     }
 
-
-    @Transactional
     public ImageInfoResponse generateImageByFastApi(User user, GenerateImageRequest generateImageRequest) {
 
         /**
-         * redis 저장 (user랑 상태값)
-         * 재요청시 user 조회 (상태값은 이미지 받았는지 판단)
-         * 상태값이 요청 후 받았다( -> 재요청 가능 )
+         * [짧은 트랜잭션이 일어나는 부분] (하나의 로직으로 처리)
+         * - house 주요 활동 업데이트
+         * - house furniture 저장
+         * - house 무드보드들 저장
+         * - house prompt 저장
+         * - 이미지 생성 여부 업데이트
+         * - 이미지 저장
+         * - 크레딧 차감 확정
+         * =====================
+         * [본 로직에서 일어나는 부분]
+         * 로그 처리 (이것도 하나의 로직 => 트랜잭션 처리됨)
+         * 크레딧 락 획득 및 상태 변경
          */
 
-        // 크레딧 감소
-        creditService.decreaseCreditAtomically(user);
-
-        // Enum 타입의 유효성 검증
-        Activity activity = enumValueOf(Activity.class, generateImageRequest.activity());
-        Equilibrium equilibrium = enumValueOf(Equilibrium.class, generateImageRequest.equilibrium());
-
-        // 주요 활동 업데이트
-        House house = houseService.updateHouseActivity(generateImageRequest.houseId(), activity);
-
-        // house_floor_plan 생성 및 저장
-        houseService.saveHouseFloorPlan(house, generateImageRequest.floorPlan().floorPlanId());
-
-        // 침대 ID 찾기
-        Optional<Long> bedId = furnitureService.findBedId(generateImageRequest.selectiveIds());
-
-        // 복층이 아닌 경우 침대 추가
-        if (!house.getStructure().equals(Structure.DUPLEX) && bedId.isPresent()) {
-            log.info("복층이 아닌 경우 침대 추가");
-            generateImageRequest.selectiveIds().add(bedId.get());
+        // 이미 생성된 이미지가 존재하는 houseId면 fall api로 요청하라고 넘기기
+        try{
+            GenerateImage generateImageByHouseId = generateImageService.findGenerateImageByHouseId(generateImageRequest.houseId());
+            if (generateImageByHouseId != null) {
+                log.info("houseId: {}로 생성된 이미지 존재함", generateImageRequest.houseId());
+                // 이미지 생성 중 오류가 발생하면 재요청하라는 예외 반환
+                throw new GeneralException(ErrorCode.RETRY_GET_IMAGE);
+            }
+        } catch (GenerateImageException e) {
+            // 이미지 생성 진행
+            log.info("houseId: {}로 생성된 이미지 없음", generateImageRequest.houseId());
         }
 
-        // house furniture 저장
-        houseService.saveHouseFurniture(house, generateImageRequest.selectiveIds());
-
-        // 가구 식별자 ID
-        PromptFurnitureListDTO promptFurnitureListDTO = PromptFurnitureListDTO.of(generateImageRequest.selectiveIds());
-
-        // House와 무드보드들 저장
-        houseService.saveHouseTaste(house, generateImageRequest.moodBoardIds());
-
-        // 최고 순위 찾기
-        Tag tag = tasteTagService.getPriorityId(generateImageRequest.moodBoardIds());
-
-        PromptRequestDTO promptRequestDTO = PromptRequestDTO.of(generateImageRequest.floorPlan().floorPlanId(),
-                tag.getId(), equilibrium, promptFurnitureListDTO);
-
+        Credit lockedCredit = null;
+        // 크레딧 감소
         try {
+
+            // 크레딧 락 획득 및 상태 변경 (짧은 트랜잭션)
+            lockedCredit = creditService.tryLockAndGetCredit(user);
+
+            // Enum 타입의 유효성 검증
+            Activity activity = enumValueOf(Activity.class, generateImageRequest.activity());
+            Equilibrium equilibrium = enumValueOf(Equilibrium.class, generateImageRequest.equilibrium());
+
+            // 가구 식별자 ID
+            PromptFurnitureListDTO promptFurnitureListDTO = PromptFurnitureListDTO.of(generateImageRequest.selectiveIds());
+
+            // 최고 순위 찾기
+            Tag priorityTag = tasteTagService.getPriorityId(generateImageRequest.moodBoardIds());
+
+            PromptRequestDTO promptRequestDTO = PromptRequestDTO.of(generateImageRequest.floorPlan().floorPlanId(),
+                    priorityTag.getId(), equilibrium, promptFurnitureListDTO);
 
             // OpenAI로 image 생성
             ImageUploadResponseDTO imageUploadResponseDTO = openAiFacade.makeImageByFastApi(promptRequestDTO);
 
-            // house에 프롬프트 저장
-            houseService.saveHousePrompt(house, imageUploadResponseDTO.getPullPrompt());
-
-            GenerateImage generateImage;
-
-            try {
-                // 도면 이미지 생성
-                generateImage = generateImageService.createGenerateImage(imageUploadResponseDTO, house);
-
-            } catch (Exception e) {
-
-                // 이미지 생성 중 오류가 발생하면 재요청하라는 예외 반환
-                throw new GeneralException(ErrorCode.RETRY_GET_IMAGE);
-            }
-
-            // 이미지 반환 ImageInfoResponse 생성
-            ImageInfoResponse imageInfoResponse = ImageInfoResponse.of(generateImage.getId(), generateImage.getUrl(),
-                    generateImageRequest.floorPlan().isMirror(), house.getEquilibrium().getDescription(),
-                    house.getForm().getDescription(), tag.getTagNameKr(), user.getName());
+            ImageInfoResponse imageInfoResponse = generateImageTransactionService.saveAllDataAndConfirmCredit(
+                    user, lockedCredit, generateImageRequest, imageUploadResponseDTO, priorityTag, activity
+            );
 
             // 만약 Fallback 이미지라면, 예외처리
-            if (generateImage.getUrl().equals(S3Constant.FALL_BACK_IMAGE)) {
+            if (imageInfoResponse.imageUrl().equals(S3Constant.FALL_BACK_IMAGE)) {
                 log.error("폴백 이미지가 생성되었습니다.");
                 throw new ImageFallbackException(ErrorCode.GENERATED_IMAGE_EXCEPTION, imageInfoResponse);
             }
-
-            // 이미지 생성 여부 업데이트
-            userService.updateHasGeneratedImage(user);
 
             /*
              * 사용자 로그 저장 사용자, 무드보드 객체들, 이미지, 스타일 태그 객체들
@@ -257,12 +239,26 @@ public class GenerateImageFacade {
         } catch (ValidException validException) {
             // 유효값 검증 실패시
             log.error("유효값 검증 실패: {}", validException.getMessage(), validException);
+            if (lockedCredit != null && lockedCredit.getStatus() == CreditStatus.PENDING) {
+                creditService.rollbackCreditPending(lockedCredit);
+            }
             throw new ValidException(ErrorCode.NOT_VALID_EXCEPTION);
         } catch (GenerateImageException e) {
+            if (lockedCredit != null && lockedCredit.getStatus() == CreditStatus.PENDING) {
+                creditService.rollbackCreditPending(lockedCredit);
+            }
             throw e;
         } catch (Exception e) {
             log.info("Image 생성 중 오류 발생 {}", e.getMessage());
+            if (lockedCredit != null && lockedCredit.getStatus() == CreditStatus.PENDING) {
+                creditService.rollbackCreditPending(lockedCredit);
+            }
             throw new GenerateImageException(ErrorCode.GENERATED_IMAGE_EXCEPTION);
+        } finally {
+            // 어떤 경우든 락 최종 해제
+            if (lockedCredit != null) {
+                creditService.releaseLock(user);
+            }
         }
     }
 
@@ -402,6 +398,9 @@ public class GenerateImageFacade {
         } catch (ValidException validException) {
             // 유효값 검증 실패시
             log.error("유효값 검증 실패: {}", validException.getMessage(), validException);
+            if (lockedCredit != null && lockedCredit.getStatus() == CreditStatus.PENDING) {
+                creditService.rollbackCreditPending(lockedCredit);
+            }
             throw new ValidException(ErrorCode.NOT_VALID_EXCEPTION);
         } catch (GenerateImageException | ImageFallbackException | CreditException e) {
             // 이미지 생성 중 어떤 예외라도 발생하면 크레딧 상태 복구

@@ -1,11 +1,13 @@
 package or.sopt.houme.domain.generateImage.facade;
 
+import or.sopt.houme.domain.credit.entity.Credit;
 import or.sopt.houme.domain.credit.service.CreditService;
 import or.sopt.houme.domain.furniture.service.FurnitureService;
 import or.sopt.houme.domain.generateImage.dto.request.GenerateImageRequest;
 import or.sopt.houme.domain.generateImage.dto.response.ImageInfoResponse;
 import or.sopt.houme.domain.generateImage.entity.GenerateImage;
 import or.sopt.houme.domain.generateImage.service.GenerateImageService;
+import or.sopt.houme.domain.generateImage.service.GenerateImageTransactionService;
 import or.sopt.houme.domain.generateImage.service.imageGenerationLog.ImageGenerationLogService;
 import or.sopt.houme.domain.generateImage.service.imageGenerationLog.ImageGenerationTransactionService;
 import or.sopt.houme.domain.house.entity.House;
@@ -76,6 +78,9 @@ class GenerateImageFacadeTest {
 
     @Mock
     ImageGenerationTransactionService imageGenerationTransactionService;
+
+    @Mock
+    GenerateImageTransactionService generateImageTransactionService;
 
     @Mock
     TagService tagService;
@@ -212,6 +217,8 @@ class GenerateImageFacadeTest {
                 List.of(1L, 2L), "READING", List.of(1L)
         );
 
+        Credit lockedCredit = null;
+
         Tag tag = Tag.builder()
                 .id(1L)
                 .priority(1)
@@ -219,11 +226,6 @@ class GenerateImageFacadeTest {
                 .tagNameKr("모던")
                 .tagPrompt("취향 프롬프트")
                 .build();
-
-        when(houseService.updateHouseActivity(generateImageRequest.houseId(), Activity.valueOf(generateImageRequest.activity()))).thenReturn(house);
-
-        // 침대 Id 찾기
-        when(furnitureService.findBedId(generateImageRequest.selectiveIds())).thenReturn(Optional.empty());
 
         when(tasteTagService.getPriorityId(generateImageRequest.moodBoardIds()))
                 .thenReturn(tag);
@@ -238,6 +240,10 @@ class GenerateImageFacadeTest {
         String imageLink = "image_link";
         String contentType = "content_type";
         String pullPrompt = "pull_prompt";
+
+        ImageInfoResponse tempImageInfoResponse = new ImageInfoResponse(
+                1L, imageLink, false, house.getEquilibrium().getDescription(), house.getForm().getDescription(), tag.getTagNameKr(), user.getName()
+                );
 
         ImageUploadResponseDTO imageUploadResponseDTO = ImageUploadResponseDTO.from(
                 filename, originalFilename, imageLink, contentType
@@ -260,11 +266,11 @@ class GenerateImageFacadeTest {
         List<Taste> tasteList = List.of(taste1, taste2);
         List<Tag> tagList = List.of(tag);
 
-        when(generateImageService.createGenerateImage(imageUploadResponseDTO, house)).thenReturn(generateImage);
         when(tasteService.getTasteList(moodBoardIds)).thenReturn(tasteList);
         when(tagService.findTagByTasteId(moodBoardIds.get(0))).thenReturn(tag);
         when(tagService.findTagByTasteId(moodBoardIds.get(1))).thenReturn(tag);
         when(tasteTagService.findDistinctTagsByTasteIds(moodBoardIds)).thenReturn(tagList);
+        when(generateImageTransactionService.saveAllDataAndConfirmCredit(user, lockedCredit, generateImageRequest, imageUploadResponseDTO, tag, Activity.valueOf(generateImageRequest.activity()))).thenReturn(tempImageInfoResponse);
 
         // When
         ImageInfoResponse imageInfoResponse = generateImageFacade.generateImageByFastApi(user, generateImageRequest);

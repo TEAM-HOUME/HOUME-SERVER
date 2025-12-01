@@ -7,12 +7,15 @@ import or.sopt.houme.domain.generateImage.dto.request.GenerateImageRequest;
 import or.sopt.houme.domain.generateImage.dto.response.ImageInfoResponse;
 import or.sopt.houme.domain.generateImage.entity.GenerateImage;
 import or.sopt.houme.domain.house.entity.House;
+import or.sopt.houme.domain.house.entity.enums.Activity;
 import or.sopt.houme.domain.house.service.HouseService;
 import or.sopt.houme.domain.taste.dto.response.TagDTO;
+import or.sopt.houme.domain.taste.entity.Tag;
 import or.sopt.houme.domain.user.entity.User;
 import or.sopt.houme.domain.user.service.UserService;
 import or.sopt.houme.global.dto.ImageUploadResponseDTO;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
@@ -60,5 +63,44 @@ public class GenerateImageTransactionService {
             );
         }
         return imageInfoResponses;
+    }
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW) // 확실하게 분리된 트랜잭션 보장
+    public ImageInfoResponse saveAllDataAndConfirmCredit(
+            User user,
+            Credit lockedCredit,
+            GenerateImageRequest request,
+            ImageUploadResponseDTO imageResponse,
+            Tag priorityTag,
+            Activity activity
+    ) {
+        // 1. House 정보 업데이트
+        House house = houseService.updateHouseActivity(request.houseId(), activity);
+
+        // 2. 가구 및 무드보드, 프롬프트 저장
+        houseService.saveHouseFloorPlan(house, request.floorPlan().floorPlanId());
+        houseService.saveHouseFurniture(house, request.selectiveIds());
+        houseService.saveHouseTaste(house, request.moodBoardIds());
+        houseService.saveHousePrompt(house, imageResponse.getPullPrompt());
+
+        // 3. 이미지 엔티티 생성 및 저장
+        GenerateImage generateImage = generateImageService.createGenerateImage(imageResponse, house);
+
+        // 4. 크레딧 차감 확정 (PENDING -> DELETE)
+        creditService.commitCreditDeletion(lockedCredit);
+
+        // 5. 유저 상태 업데이트
+        userService.updateHasGeneratedImage(user);
+
+        // 6. 응답 DTO 생성
+        return ImageInfoResponse.of(
+                generateImage.getId(),
+                generateImage.getUrl(),
+                request.floorPlan().isMirror(),
+                house.getEquilibrium().getDescription(),
+                house.getForm().getDescription(),
+                priorityTag.getTagNameKr(),
+                user.getName()
+        );
     }
 }

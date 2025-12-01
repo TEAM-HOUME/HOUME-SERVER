@@ -7,6 +7,7 @@ import or.sopt.houme.domain.house.dto.response.HouseOptionsResponse;
 import or.sopt.houme.domain.house.entity.House;
 import or.sopt.houme.domain.house.entity.enums.Activity;
 import or.sopt.houme.domain.user.entity.User;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -22,6 +23,7 @@ public interface HouseService {
     LatestHouseConditionDTO findLatestHouse(User user);
 
     // house에 주요활동 저장하기
+    @Transactional
     House updateHouseActivity(Long houseId, Activity activity);
 
     // 생성된 이미지 가져오기 (가장 최신 1개)
