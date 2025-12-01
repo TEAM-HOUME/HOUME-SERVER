@@ -5,4 +5,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 
 public interface JjymRepository extends JpaRepository<Jjym, Long>, JjymRepositoryCustom {
+    void deleteByUserId(Long userId);
 }
