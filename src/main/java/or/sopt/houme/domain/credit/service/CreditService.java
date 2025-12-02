@@ -2,6 +2,7 @@ package or.sopt.houme.domain.credit.service;
 
 import or.sopt.houme.domain.credit.entity.Credit;
 import or.sopt.houme.domain.user.entity.User;
+import org.springframework.transaction.annotation.Transactional;
 
 public interface CreditService {
 
@@ -9,6 +10,7 @@ public interface CreditService {
     void decreaseCreditAtomically(User user);
 
     // 락 획득 및 크레딧 상태 PENDING 으로 변경
+    @Transactional
     Credit tryLockAndGetCredit(User user);
 
     // 크레딧 최종 삭제 (이미지 생성 성공 시)

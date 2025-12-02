@@ -5,6 +5,7 @@ import or.sopt.houme.domain.user.controller.dto.MyPageInfoResponse;
 import or.sopt.houme.domain.user.controller.dto.UserImageHistoryListResponse;
 import or.sopt.houme.domain.user.entity.Gender;
 import or.sopt.houme.domain.user.entity.User;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 
@@ -18,6 +19,7 @@ public interface UserService {
     String updateUser(User user, String name, Gender gender, LocalDate birthday);
 
     // 사용자 이미지 생성 여부 저장
+    @Transactional
     void updateHasGeneratedImage(User user);
 
 }
