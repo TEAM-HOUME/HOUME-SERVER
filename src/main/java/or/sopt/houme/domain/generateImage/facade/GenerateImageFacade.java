@@ -248,6 +248,12 @@ public class GenerateImageFacade {
                 creditService.rollbackCreditPending(lockedCredit);
             }
             throw e;
+        } catch (CreditException e){
+            log.info("Credit 락 경합 {}", e.getMessage());
+            if (lockedCredit != null && lockedCredit.getStatus() == CreditStatus.PENDING) {
+                creditService.rollbackCreditPending(lockedCredit);
+            }
+            throw new CreditException(ErrorCode.CREDIT_LOCK_FAILED);
         } catch (Exception e) {
             log.info("Image 생성 중 오류 발생 {}", e.getMessage());
             if (lockedCredit != null && lockedCredit.getStatus() == CreditStatus.PENDING) {
