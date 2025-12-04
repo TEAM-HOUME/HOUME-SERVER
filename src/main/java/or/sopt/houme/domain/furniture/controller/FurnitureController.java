@@ -52,14 +52,14 @@ public class FurnitureController {
                     "- 업무용 책상 : OFFICE_DESK\n" +
                     "- 옷장 : CLOSET\n" +
                     "- 식탁 : DINING_TABLE\n" +
-                    "- 1인용 : SINGLE_SOFA\n" +
+                    "- 1인용 소파 : SINGLE_SOFA\n" +
                     "- 수납장 : DRAWER\n" +
                     "- 이동식 TV : MOVABLE_TV\n" +
                     "- 좌식 테이블 : SITTING_TABLE\n" +
                     "- 전신 거울 : MIRROR\n" +
                     "- 책 선반 : WHITE_BOOKSHELF\n" +
                     "- 장식장 : DISPLAY_CABINET\n" +
-                    "- 2인용 : TWO_SEATER_SOFA")
+                    "- 2인용 소파 : TWO_SEATER_SOFA")
     @GetMapping("/generated-images/{imageId}/curations/categories")
     public ResponseEntity<ApiResponse<FurnitureCategoriesResponse>> getFurnitureCategories(@AuthenticationPrincipal CustomUserDetails userDetails, @PathVariable Long imageId, @RequestParam List<String> detectedObjects) {
         FurnitureCategoriesResponse response = furnitureService.getFurnitureCategoriesByStyle(userDetails.getUser(), imageId, detectedObjects);
