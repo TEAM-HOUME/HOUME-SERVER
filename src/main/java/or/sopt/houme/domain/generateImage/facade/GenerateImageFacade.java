@@ -243,7 +243,8 @@ public class GenerateImageFacade {
                 creditService.rollbackCreditPending(lockedCredit);
             }
             throw new ValidException(ErrorCode.NOT_VALID_EXCEPTION);
-        } catch (GenerateImageException e) {
+        } catch (GenerateImageException | ImageFallbackException | CreditException e) {
+            // 이미지 생성 중 어떤 예외라도 발생하면 크레딧 상태 복구
             if (lockedCredit != null && lockedCredit.getStatus() == CreditStatus.PENDING) {
                 creditService.rollbackCreditPending(lockedCredit);
             }
