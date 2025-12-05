@@ -55,9 +55,8 @@ public class FurnitureServiceImpl implements FurnitureService {
         // 모든 카테고리 가져오기
         List<FurnitureType> furnitureTypes = furnitureTypeRepository.findAll();
 
-        // 모든 가구 조회 (없는 경우는 빈 리스트)
-        List<Furniture> furnitureList = Optional.of(furnitureRepository.findAll())
-                .orElse(Collections.emptyList());
+        // findAllWithFurnitureType() 으로 N+1 방지
+        List<Furniture> furnitureList = furnitureRepository.findAllWithFurnitureType();
 
         // FurnitureType 별로 그룹화
         Map<Long, List<FurnitureItem>> furnitureByCategory = furnitureList.stream()
