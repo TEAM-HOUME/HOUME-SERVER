@@ -129,7 +129,7 @@ class FurnitureServiceImplTest {
         );
 
         when(furnitureTypeRepository.findAll()).thenReturn(categoryList);
-        when(furnitureRepository.findAll()).thenReturn(furnitureList);
+        when(furnitureRepository.findAllWithFurnitureType()).thenReturn(furnitureList);
 
         // When
         FurnitureAndActivityResponse furnitureAndActivity = furnitureService.getFurnitureAndActivity();

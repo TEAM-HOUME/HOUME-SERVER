@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import or.sopt.houme.domain.furniture.entity.Furniture;
 import or.sopt.houme.domain.furniture.entity.QFurniture;
 import or.sopt.houme.domain.furniture.entity.QFurnitureTag;
+import or.sopt.houme.domain.furniture.entity.QFurnitureType;
 import or.sopt.houme.domain.house.entity.QHouse;
 import or.sopt.houme.domain.house.entity.mapping.QHouseFurniture;
 import or.sopt.houme.domain.taste.entity.QTag;
@@ -54,6 +55,18 @@ public class FurnitureCustomRepositoryImpl implements FurnitureCustomRepository 
                 .join(houseFurniture.furniture, furniture)
                 .join(houseFurniture.house, house)
                 .where(house.id.eq(houseId))
+                .fetch();
+    }
+
+    @Override
+    public List<Furniture> findAllWithFurnitureType() {
+        QFurniture furniture = QFurniture.furniture;
+        QFurnitureType furnitureType = QFurnitureType.furnitureType;
+
+        return queryFactory
+                .selectFrom(furniture)
+                .join(furniture.furnitureType, furnitureType).fetchJoin() // Fetch Join
+                .orderBy(furniture.id.asc())
                 .fetch();
     }
 }
