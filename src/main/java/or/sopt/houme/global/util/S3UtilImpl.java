@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.util.UUID;
 
 import static or.sopt.houme.global.util.constant.S3ExtensionConstant.EXTENSION_PNG;
+import static or.sopt.houme.global.util.constant.S3ExtensionConstant.EXTENSION_WEBP;
 
 @Component
 @RequiredArgsConstructor
@@ -78,9 +79,8 @@ public class S3UtilImpl implements S3Util {
     @Override
     public ImageUploadResponseDTO uploadByByte(String dirName, byte[] imageBytes) {
 
-        String originalFileName = UUID.randomUUID() + EXTENSION_PNG;
-        log.info(EXTENSION_PNG);
-        String contentType = "image/png";
+        String originalFileName = UUID.randomUUID() + EXTENSION_WEBP;
+        String contentType = "image/webp";
 
         String fileName = dirName + "/" + UUID.randomUUID() + "-" + originalFileName;
 
