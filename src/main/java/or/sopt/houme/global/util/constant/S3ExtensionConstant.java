@@ -5,4 +5,5 @@ import org.springframework.stereotype.Component;
 public class S3ExtensionConstant {
 
     public static final String EXTENSION_PNG = ".png";
+    public static final String EXTENSION_WEBP = ".webp";
 }

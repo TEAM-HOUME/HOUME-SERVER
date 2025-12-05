@@ -62,7 +62,7 @@ openai:
     size: 1024x1024
     quality: medium
     background: auto
-    output-format: png
+    output-format: webp
 
 naver:
   client-id: ${NAVER_CLIENT_ID}
