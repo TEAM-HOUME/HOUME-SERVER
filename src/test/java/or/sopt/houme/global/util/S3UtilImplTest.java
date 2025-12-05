@@ -121,7 +121,7 @@ class S3UtilImplTest {
         // then
         assertNotNull(response);
         assertTrue(response.getFilename().contains(dirName));
-        assertTrue(response.getOriginalFilename().endsWith(".png"));
+        assertTrue(response.getOriginalFilename().endsWith(".webp"));
         assertEquals("http://mock-url.com", response.getImageLink());
     }
 
