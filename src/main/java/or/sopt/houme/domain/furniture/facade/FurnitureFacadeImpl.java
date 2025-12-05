@@ -42,17 +42,17 @@ public class FurnitureFacadeImpl implements FurnitureFacade {
         String formatted = now.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
 
         // 1. FurnitureTag 조회 (DB)
-        log.info("//---------------------연관된 가구들을 조회합니다:{}---------------------//",formatted);
+        log.info("연관된 가구들을 조회합니다:{}",formatted);
         FurnitureTag furnitureTag = furnitureService.findFurnitureTag(user, imageId, categoryId);
 
         // 2. 네이버 API 호출
-        log.info("//---------------------네이버 API 호출을 시작합니다---------------------//");
+        log.info("네이버 API 호출을 시작합니다");
         String keyword = furnitureTag.getSearchKeyword();
         List<NaverFurnitureProductDto> products = naverShopService.search(keyword, 50);
 
         // 3. FastAPI 호출 → 유사도 기반 상위 상품 리스트만 반환
         // 12/05 FAST API 삭제
-        log.info("//---------------------유사도 기반 상품 조회를 시작합니다---------------------//");
+        log.info("유사도 기반 상품 조회를 시작합니다");
         List<FurnitureProductsInfoResponse.FurnitureProductInfo> infos =
                 imageHashService.rankByImageSimilarity(furnitureTag.getFurnitureUrl(), products, 5);
 
