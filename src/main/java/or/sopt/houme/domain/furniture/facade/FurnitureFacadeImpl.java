@@ -15,6 +15,8 @@ import or.sopt.houme.global.api.ErrorCode;
 import or.sopt.houme.global.api.GeneralException;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
@@ -33,21 +35,30 @@ public class FurnitureFacadeImpl implements FurnitureFacade {
 
     @Override
     public FurnitureProductsInfoResponse getFurnitureProductInfoFromNaverApi(User user, Long imageId, Long categoryId) {
+
+
+        LocalDateTime now = LocalDateTime.now();
         // 1. FurnitureTag 조회 (DB)
+        log.info("//---------------------연관된 가구들을 조회합니다:{}---------------------//",now);
         FurnitureTag furnitureTag = furnitureService.findFurnitureTag(user, imageId, categoryId);
 
         // 2. 네이버 API 호출
+        log.info("//---------------------네이버 API 호출을 시작합니다---------------------//");
         String keyword = furnitureTag.getSearchKeyword();
         List<NaverFurnitureProductDto> products = naverShopService.search(keyword, 100);
 
         // 3. FastAPI 호출 → 유사도 기반 상위 상품 리스트만 반환
+        // 12/05 FAST API 삭제
+        log.info("//---------------------유사도 기반 상품 조회를 시작합니다---------------------//");
         List<FurnitureProductsInfoResponse.FurnitureProductInfo> infos =
                 imageHashService.rankByImageSimilarity(furnitureTag.getFurnitureUrl(), products, 5);
 
         // 3-1. 최종반환된 리스트를 기반으로 추천가구 엔티티 저장하고, 엔티티 id 매핑 반환
+        log.info("//---------------------최종반환된 리스트를 기반으로 추천가구 엔티티 저장하고, 엔티티 id 매핑 반환합니다---------------------//");
         Map<Long, Long> idMapByProductId = recommendFurnitureService.saveRecommendFurniture(infos);
 
         // 4. 최종 응답 조립 (Facade 책임) - id 포함
+        log.info("//---------------------------------------------------최종 응답 조립 (Facade 책임) - id 포함---------------------------------------------------//");
         List<FurnitureProductsInfoResponse.FurnitureProductInfo> responseInfos = infos.stream()
                 .map(info -> FurnitureProductsInfoResponse.FurnitureProductInfo.of(
                         idMapByProductId.get(info.furnitureProductId()),
@@ -60,6 +71,7 @@ public class FurnitureFacadeImpl implements FurnitureFacade {
                 ))
                 .toList();
 
+        log.info("//---------------------------------------------------큐레이션 종료:{}---------------------------------------------------//",now);
         return FurnitureProductsInfoResponse.of(user.getName(), responseInfos);
     }
 
