@@ -11,7 +11,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 
 @FeignClient(
         name = "imageHashClient",
-        url = "${external.image-api.base-url}"
+        url = "${external.image-api.base-url}",
+        primary = false
 )
 public interface FastApiImageHashClient {
 

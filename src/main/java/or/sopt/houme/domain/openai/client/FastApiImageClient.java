@@ -9,7 +9,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 
 @FeignClient(
         name = "imageClient",
-        url = "${external.image-api.base-url}"
+        url = "${external.image-api.base-url}",
+        primary = false
 )
 public interface FastApiImageClient {
 
