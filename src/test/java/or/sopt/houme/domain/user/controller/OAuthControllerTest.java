@@ -62,7 +62,7 @@ class OAuthControllerTest {
     @DisplayName("GET /oauth/kakao 요청 시 카카오 인증서버로 리다이렉트된다")
     void testKakaoOAuthRedirect() throws Exception {
         // given
-        when(oAuthService.requestRedirect()).thenReturn("https://kauth.kakao.com/oauth");
+        when(oAuthService.requestRedirect(any(HttpServletRequest.class))).thenReturn("https://kauth.kakao.com/oauth");
 
         // when & then
         mockMvc.perform(get("/oauth/kakao"))
@@ -74,7 +74,7 @@ class OAuthControllerTest {
     @DisplayName("GET /oauth/kakao/callback 요청 시 카카오 로그인 성공 여부가 반환된다")
     void testKakaoLoginCallback() throws Exception {
         // given
-        when(oAuthService.kakaoLogin(eq("abc123"), any(HttpServletResponse.class))).thenReturn(true);
+        when(oAuthService.kakaoLogin(eq("abc123"), any(HttpServletRequest.class), any(HttpServletResponse.class))).thenReturn(true);
 
         // when & then
         mockMvc.perform(get("/oauth/kakao/callback")
