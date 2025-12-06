@@ -71,6 +71,8 @@ public class OAuthService {
         String encodedRedirect = URLEncoder.encode(redirectUri, StandardCharsets.UTF_8);
         String encodedScope = URLEncoder.encode(kaKaoConfig.getScope(), StandardCharsets.UTF_8);
 
+        log.info("소셜로그인 주소입니다: {}", encodedRedirect);
+
         return String.format(
                 "https://kauth.kakao.com/oauth/authorize?client_id=%s&redirect_uri=%s&response_type=code&scope=%s",
                 kaKaoConfig.getClientId(), encodedRedirect, encodedScope
@@ -96,6 +98,9 @@ public class OAuthService {
             String redirectBase = resolveRedirectBase(request);
             String redirectUri = redirectBase + "/oauth/kakao/callback";
             authorizationCode = getKaKaoOAuthTokenDTO(accessCode, redirectUri);
+
+            log.info("인가코드를 발급하기 위한 리다이렉트 주소입니다: {}", redirectUri);
+
         } catch (FeignException e) {
             log.info(e.getMessage());
             throw new UserException(ErrorCode.KAKAO_AUTH_CODE_INVALID);
