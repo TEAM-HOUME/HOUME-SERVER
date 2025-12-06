@@ -2,7 +2,6 @@ package or.sopt.houme.domain.user.service;
 
 import feign.FeignException;
 import jakarta.servlet.http.Cookie;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,7 +25,12 @@ import or.sopt.houme.global.config.KaKaoConfig;
 import or.sopt.houme.global.jwt.JWTUtil;
 import or.sopt.houme.global.util.CookieUtil;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
+import jakarta.servlet.http.HttpServletRequest;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -55,15 +59,26 @@ public class OAuthService {
      * 현재 fallback 로직이 구현되어있지 않습니다. 아직 Feign의 fallback factory에 대한 학습이 부족해서...
      * 앱잼기간내에 구현해보겠습니다 FIXME
      * */
-    public String requestRedirect() {
+
+    /**
+     *
+     *
+     * */
+    public String requestRedirect(HttpServletRequest request) {
+        String redirectBase = resolveRedirectBase(request);
+        String redirectUri = redirectBase + "/oauth/kakao/callback";
+
+        String encodedRedirect = URLEncoder.encode(redirectUri, StandardCharsets.UTF_8);
+        String encodedScope = URLEncoder.encode(kaKaoConfig.getScope(), StandardCharsets.UTF_8);
+
         return String.format(
-                "https://kauth.kakao.com/oauth/authorize?client_id=%s&redirect_uri=%s&response_type=code",
-                kaKaoConfig.getClientId(), kaKaoConfig.getRedirectUri()
+                "https://kauth.kakao.com/oauth/authorize?client_id=%s&redirect_uri=%s&response_type=code&scope=%s",
+                kaKaoConfig.getClientId(), encodedRedirect, encodedScope
         );
     }
 
 
-    public Boolean kakaoLogin(String accessCode, HttpServletResponse response) {
+    public Boolean kakaoLogin(String accessCode, HttpServletRequest request, HttpServletResponse response) {
 
         // 신규회원인지 검증하는 필드
         Boolean isNewUser = false;
@@ -78,7 +93,9 @@ public class OAuthService {
         KaKaoOAuthTokenDTO authorizationCode;
         try {
             log.info("액세스 토큰 발급을 시작합니다");
-            authorizationCode = getKaKaoOAuthTokenDTO(accessCode);
+            String redirectBase = resolveRedirectBase(request);
+            String redirectUri = redirectBase + "/oauth/kakao/callback";
+            authorizationCode = getKaKaoOAuthTokenDTO(accessCode, redirectUri);
         } catch (FeignException e) {
             log.info(e.getMessage());
             throw new UserException(ErrorCode.KAKAO_AUTH_CODE_INVALID);
@@ -177,13 +194,30 @@ public class OAuthService {
 
 
 
-    private KaKaoOAuthTokenDTO getKaKaoOAuthTokenDTO(String accessCode) {
-
+    private KaKaoOAuthTokenDTO getKaKaoOAuthTokenDTO(String accessCode, String redirectUri) {
         return kaKaoOAuthClient.getToken(
                 "authorization_code",
                 kaKaoConfig.getClientId(),
-                kaKaoConfig.getRedirectUri(),
+                redirectUri,
                 accessCode
         );
+    }
+
+    private String resolveRedirectBase(HttpServletRequest request) {
+        String origin = request.getHeader("Origin");
+        if (StringUtils.hasText(origin)) {
+            return origin;
+        }
+
+        String scheme = java.util.Objects.toString(request.getHeader("X-Forwarded-Proto"), request.getScheme());
+        String forwardedHost = request.getHeader("X-Forwarded-Host");
+        if (StringUtils.hasText(forwardedHost)) {
+            return scheme + "://" + forwardedHost;
+        }
+
+        String host = request.getServerName();
+        int port = request.getServerPort();
+        boolean isDefault = ("http".equalsIgnoreCase(scheme) && port == 80) || ("https".equalsIgnoreCase(scheme) && port == 443);
+        return scheme + "://" + host + (isDefault ? "" : ":" + port);
     }
 }
