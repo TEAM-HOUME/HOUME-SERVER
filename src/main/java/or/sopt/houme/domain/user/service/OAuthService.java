@@ -64,8 +64,8 @@ public class OAuthService {
      *
      *
      * */
-    public String requestRedirect(HttpServletRequest request) {
-        String redirectBase = resolveRedirectBase(request);
+    public String requestRedirect(HttpServletRequest request, String env) {
+        String redirectBase = resolveRedirectBase(request, env);
         String redirectUri = redirectBase + "/oauth/kakao/callback";
 
         String encodedRedirect = URLEncoder.encode(redirectUri, StandardCharsets.UTF_8);
@@ -80,7 +80,7 @@ public class OAuthService {
     }
 
 
-    public Boolean kakaoLogin(String accessCode, HttpServletRequest request, HttpServletResponse response) {
+    public Boolean kakaoLogin(String accessCode, String env, HttpServletRequest request, HttpServletResponse response) {
 
         // 신규회원인지 검증하는 필드
         Boolean isNewUser = false;
@@ -95,7 +95,7 @@ public class OAuthService {
         KaKaoOAuthTokenDTO authorizationCode;
         try {
             log.info("액세스 토큰 발급을 시작합니다");
-            String redirectBase = resolveRedirectBase(request);
+            String redirectBase = resolveRedirectBase(request, env);
             String redirectUri = redirectBase + "/oauth/kakao/callback";
             authorizationCode = getKaKaoOAuthTokenDTO(accessCode, redirectUri);
 
@@ -224,5 +224,20 @@ public class OAuthService {
         int port = request.getServerPort();
         boolean isDefault = ("http".equalsIgnoreCase(scheme) && port == 80) || ("https".equalsIgnoreCase(scheme) && port == 443);
         return scheme + "://" + host + (isDefault ? "" : ":" + port);
+    }
+
+    /**
+     * 로컬 환경이면 로컬주소, 배포환경이면 배포환경의 주소로 리다이렉트 합니다.
+     * */
+    private String resolveRedirectBase(HttpServletRequest request, String env) {
+        if (StringUtils.hasText(env)) {
+            if ("local".equalsIgnoreCase(env)) {
+                return "http://localhost:5173";
+            }
+            if ("dev".equalsIgnoreCase(env)) {
+                return "https://www.houme.kr";
+            }
+        }
+        return resolveRedirectBase(request);
     }
 }
