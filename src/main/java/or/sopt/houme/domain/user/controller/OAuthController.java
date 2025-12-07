@@ -29,11 +29,16 @@ public class OAuthController {
     @GetMapping("/oauth/kakao")
     @Operation(summary = "카카오 소셜로그인 API",
             description = "카카오 인증서버로 리다이렉트합니다. <br><br>" +
-                    "요청의 Origin(예: http://localhost:5173, https://www.houme.kr)을 기반으로 동적으로 redirect_uri를 계산합니다. <br><br>" +
+                    "env 파라미터(local|dev)를 전달하면 해당 환경 기준으로 redirect_uri를 고정 생성합니다. <br>" +
+                    "env 미전달 시 기존 로직(헤더 기반 추정)으로 동작합니다. <br><br>" +
                     "프론트에서 인가코드(code)를 파싱하여 아래 콜백 API로 전달하세요.")
-    public void kakaoOAuthCallback(HttpServletRequest request, HttpServletResponse response) throws IOException {
+    public void kakaoOAuthCallback(@RequestParam(value = "env", required = false) String env,
+                                   HttpServletRequest request,
+                                   HttpServletResponse response) throws IOException {
 
-        String redirectAddress = oAuthService.requestRedirect(request);
+        String redirectAddress = (env == null)
+                ? oAuthService.requestRedirect(request)
+                : oAuthService.requestRedirect(request, env);
         response.sendRedirect(redirectAddress);
     }
 
@@ -42,9 +47,14 @@ public class OAuthController {
     description = "프론트에서 전달한 code를 이용해 토큰 교환 및 로그인 처리를 수행합니다. <br><br>" +
             "액세스 토큰은 헤더에, 리프레시 토큰은 쿠키에 담아 반환합니다.")
     @GetMapping("/oauth/kakao/callback")
-    public ResponseEntity<ApiResponse<Boolean>> kakaoLogin(@RequestParam("code") String accessCode, HttpServletRequest request, HttpServletResponse response) {
+    public ResponseEntity<ApiResponse<Boolean>> kakaoLogin(@RequestParam("code") String accessCode,
+                                                           @RequestParam(value = "env", required = false) String env,
+                                                           HttpServletRequest request,
+                                                           HttpServletResponse response) {
 
-        Boolean result = oAuthService.kakaoLogin(accessCode, request, response);
+        Boolean result = (env == null)
+                ? oAuthService.kakaoLogin(accessCode, request, response)
+                : oAuthService.kakaoLogin(accessCode, env, request, response);
 
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
