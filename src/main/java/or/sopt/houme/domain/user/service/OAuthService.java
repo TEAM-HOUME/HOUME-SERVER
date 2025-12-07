@@ -158,6 +158,15 @@ public class OAuthService {
         return isNewUser;
     }
 
+    // Backward-compatible overloads for existing tests and callers
+    public String requestRedirect(HttpServletRequest request) {
+        return requestRedirect(request, null);
+    }
+
+    public Boolean kakaoLogin(String accessCode, HttpServletRequest request, HttpServletResponse response) {
+        return kakaoLogin(accessCode, null, request, response);
+    }
+
 
     /**
      * @param userDetails userDetails 에서 회원의 id를 받아서 그걸로 리프레시 토큰을 삭제합니다

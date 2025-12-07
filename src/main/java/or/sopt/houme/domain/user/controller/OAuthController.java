@@ -36,7 +36,9 @@ public class OAuthController {
                                    HttpServletRequest request,
                                    HttpServletResponse response) throws IOException {
 
-        String redirectAddress = oAuthService.requestRedirect(request, env);
+        String redirectAddress = (env == null)
+                ? oAuthService.requestRedirect(request)
+                : oAuthService.requestRedirect(request, env);
         response.sendRedirect(redirectAddress);
     }
 
@@ -50,7 +52,9 @@ public class OAuthController {
                                                            HttpServletRequest request,
                                                            HttpServletResponse response) {
 
-        Boolean result = oAuthService.kakaoLogin(accessCode, env, request, response);
+        Boolean result = (env == null)
+                ? oAuthService.kakaoLogin(accessCode, request, response)
+                : oAuthService.kakaoLogin(accessCode, env, request, response);
 
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
