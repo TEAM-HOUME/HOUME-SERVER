@@ -66,12 +66,18 @@ class OAuthServiceTest {
     @DisplayName("카카오 인증 요청 URL을 생성한다")
     void requestRedirectTest() {
         when(kaKaoConfig.getClientId()).thenReturn("client-id");
-        when(kaKaoConfig.getRedirectUri()).thenReturn("http://localhost:3000/oauth/kakao/callback");
+        when(kaKaoConfig.getScope()).thenReturn("profile_nickname,account_email");
 
-        String result = oAuthService.requestRedirect();
+        HttpServletRequest request = mock(HttpServletRequest.class);
+        when(request.getHeader("Origin")).thenReturn("http://localhost:5173");
+
+        String result = oAuthService.requestRedirect(request);
+
+        String expectedRedirect = java.net.URLEncoder.encode("http://localhost:5173/oauth/kakao/callback", java.nio.charset.StandardCharsets.UTF_8);
+        String expectedScope = java.net.URLEncoder.encode("profile_nickname,account_email", java.nio.charset.StandardCharsets.UTF_8);
 
         assertEquals(
-                "https://kauth.kakao.com/oauth/authorize?client_id=client-id&redirect_uri=http://localhost:3000/oauth/kakao/callback&response_type=code",
+                "https://kauth.kakao.com/oauth/authorize?client_id=client-id&redirect_uri=" + expectedRedirect + "&response_type=code&scope=" + expectedScope,
                 result
         );
     }
@@ -112,7 +118,10 @@ class OAuthServiceTest {
         when(cookieConfig.getSameSite()).thenReturn("true");
 
         // When
-        Boolean result = oAuthService.kakaoLogin(code, response);
+        HttpServletRequest request = mock(HttpServletRequest.class);
+        when(request.getHeader("Origin")).thenReturn("http://localhost:5173");
+
+        Boolean result = oAuthService.kakaoLogin(code, request, response);
 
         // Then
         assertTrue(result); // 신규 회원이므로 true
@@ -125,13 +134,15 @@ class OAuthServiceTest {
     @Test
     @DisplayName("kakaoLogin() 중, 인가 코드가 null이면 정해진 예외가 발생한다")
     void whenNullCode_thenThrowException() {
-        assertThrows(UserException.class, () -> oAuthService.kakaoLogin(null, response));
+        HttpServletRequest request = mock(HttpServletRequest.class);
+        assertThrows(UserException.class, () -> oAuthService.kakaoLogin(null, request, response));
     }
 
     @Test
     @DisplayName("kakaoLogin() 중, 인가 코드가 빈 문자열이면 정해진 예외가 발생한다")
     void whenEmptyCode_thenThrowException() {
-        assertThrows(UserException.class, () -> oAuthService.kakaoLogin("", response));
+        HttpServletRequest request = mock(HttpServletRequest.class);
+        assertThrows(UserException.class, () -> oAuthService.kakaoLogin("", request, response));
     }
 
     @Test
@@ -141,7 +152,9 @@ class OAuthServiceTest {
         when(kaKaoOAuthClient.getToken(any(), any(), any(), any()))
                 .thenThrow(FeignException.class);
 
-        assertThrows(UserException.class, () -> oAuthService.kakaoLogin(accessCode, response));
+        HttpServletRequest request = mock(HttpServletRequest.class);
+        when(request.getHeader("Origin")).thenReturn("http://localhost:5173");
+        assertThrows(UserException.class, () -> oAuthService.kakaoLogin(accessCode, request, response));
     }
 
     @Test
@@ -155,7 +168,9 @@ class OAuthServiceTest {
         when(kaKaoUserInfoClient.getUserInfo("Bearer kakaoAccessToken"))
                 .thenThrow(FeignException.class);
 
-        assertThrows(UserException.class, () -> oAuthService.kakaoLogin(accessCode, response));
+        HttpServletRequest request = mock(HttpServletRequest.class);
+        when(request.getHeader("Origin")).thenReturn("http://localhost:5173");
+        assertThrows(UserException.class, () -> oAuthService.kakaoLogin(accessCode, request, response));
     }
 
 

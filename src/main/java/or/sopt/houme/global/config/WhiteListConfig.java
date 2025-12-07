@@ -21,7 +21,7 @@ public class WhiteListConfig {
     // oauth 관련 인가 설정
     public static final List<String> oauthWhitelist() {
         return List.of(
-                "/oauth/kakao/",
+                "/oauth/kakao",
                 "/oauth/kakao/callback",
                 "/access",
                 "/reissue"
