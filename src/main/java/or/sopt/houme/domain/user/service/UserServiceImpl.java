@@ -7,6 +7,7 @@ import or.sopt.houme.domain.credit.repository.CreditRepository;
 import or.sopt.houme.domain.generateImage.entity.GenerateImage;
 import or.sopt.houme.domain.generateImage.repository.GenerateImageRepository;
 import or.sopt.houme.domain.house.entity.House;
+import or.sopt.houme.domain.house.entity.mapping.HouseFloorPlan;
 import or.sopt.houme.domain.house.repository.HouseRepository;
 import or.sopt.houme.domain.preference.entity.Factor;
 import or.sopt.houme.domain.preference.entity.GenerateImagePreference;
@@ -79,6 +80,10 @@ public class UserServiceImpl implements UserService {
             Optional<Tag> representativeTag = tagRepository.findMostFrequentTagByHouseId(house.getId());
             if (representativeTag.isEmpty()) continue;
 
+            // 가구 도면 객체 조회 및 isMirror(= isReverse) 값 결정
+            List<HouseFloorPlan> houseFloorPlans = house.getHouseFloorPlans();
+            boolean isMirror = !houseFloorPlans.isEmpty() && houseFloorPlans.get(0).isReverse();
+
             // 4. DTO 생성
             UserImageHistoryDTO dto = new UserImageHistoryDTO(
                     house.getId(),
@@ -86,7 +91,8 @@ public class UserServiceImpl implements UserService {
                     generateImage.get().getUrl(),
                     representativeTag.get().getTagNameKr(),
                     house.getEquilibrium(),
-                    house.getForm()
+                    house.getForm(),
+                    isMirror
             );
             histories.add(dto);
         }
