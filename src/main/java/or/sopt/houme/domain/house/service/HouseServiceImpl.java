@@ -128,7 +128,7 @@ public class HouseServiceImpl implements HouseService {
     // 집 도면 매핑 테이블 저장
     @Transactional
     @Override
-    public void saveHouseFloorPlan(House house, Long floorPlanId) {
+    public void saveHouseFloorPlan(House house, Long floorPlanId, boolean isMirror) {
 
         FloorPlan floorPlan = floorPlanRepository.findById(floorPlanId)
                 .orElseThrow(() -> new HouseException(ErrorCode.NOT_FOUND_FLOOR_PLAN));
@@ -136,6 +136,7 @@ public class HouseServiceImpl implements HouseService {
         HouseFloorPlan houseFloorPlan = HouseFloorPlan.builder()
                 .house(house)
                 .floorPlan(floorPlan)
+                .isReverse(isMirror)
                 .build();
 
         houseFloorPlanRepository.save(houseFloorPlan);

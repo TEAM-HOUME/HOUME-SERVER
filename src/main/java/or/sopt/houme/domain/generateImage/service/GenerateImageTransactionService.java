@@ -78,7 +78,7 @@ public class GenerateImageTransactionService {
         House house = houseService.updateHouseActivity(request.houseId(), activity);
 
         // 2. 가구 및 무드보드, 프롬프트 저장
-        houseService.saveHouseFloorPlan(house, request.floorPlan().floorPlanId());
+        houseService.saveHouseFloorPlan(house, request.floorPlan().floorPlanId(),request.floorPlan().isMirror());
         houseService.saveHouseFurniture(house, request.selectiveIds());
         houseService.saveHouseTaste(house, request.moodBoardIds());
         houseService.saveHousePrompt(house, imageResponse.getPullPrompt());

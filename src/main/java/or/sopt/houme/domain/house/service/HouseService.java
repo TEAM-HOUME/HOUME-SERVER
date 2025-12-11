@@ -33,7 +33,7 @@ public interface HouseService {
     void saveHousePrompt(House house, String prompt);
 
     // houseId와 floorPlan 저장
-    void saveHouseFloorPlan(House house, Long floorPlanId);
+    void saveHouseFloorPlan(House house, Long floorPlanId, boolean isMirror);
 
     // house와 furniture 저장
     void saveHouseFurniture(House house, List<Long> furnitureIds);
