@@ -253,7 +253,8 @@ class UserServiceImplTest {
     void getImageHistoryResultPage_notFoundHouse() {
         // given
         given(userRepository.findById(1L)).willReturn(Optional.of(user));
-        given(houseRepository.findHouseByUserIdAndImageId(user.getId(), generateImage.getId()))
+        // Service는 houseId로 조회하므로 findById 스텁
+        given(houseRepository.findById(generateImage.getId()))
                 .willReturn(Optional.empty());
 
         // when & then

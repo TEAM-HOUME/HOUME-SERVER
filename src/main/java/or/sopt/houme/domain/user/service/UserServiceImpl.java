@@ -82,7 +82,7 @@ public class UserServiceImpl implements UserService {
 
             // 가구 도면 객체 조회 및 isMirror(= isReverse) 값 결정
             List<HouseFloorPlan> houseFloorPlans = house.getHouseFloorPlans();
-            boolean isMirror = !houseFloorPlans.isEmpty() && houseFloorPlans.get(0).isReverse();
+            boolean isMirror = houseFloorPlans != null && !houseFloorPlans.isEmpty() && houseFloorPlans.get(0).isReverse();
 
             // 4. DTO 생성
             UserImageHistoryDTO dto = new UserImageHistoryDTO(
