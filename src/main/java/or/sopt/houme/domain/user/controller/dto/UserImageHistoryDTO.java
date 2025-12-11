@@ -9,14 +9,15 @@ public record UserImageHistoryDTO(
         String generatedImageUrl,
         String tasteTag,
         String equilibrium,
-        String houseForm
+        String houseForm,
+        boolean isMirror
 ) {
-    public static UserImageHistoryDTO of(Long houseId, Long imageId, String generatedImageUrl, String tasteTag, String equilibrium, String houseForm) {
-        return new UserImageHistoryDTO(houseId, imageId, generatedImageUrl, tasteTag, equilibrium, houseForm);
+    public static UserImageHistoryDTO of(Long houseId, Long imageId, String generatedImageUrl, String tasteTag, String equilibrium, String houseForm, boolean isMirror) {
+        return new UserImageHistoryDTO(houseId, imageId, generatedImageUrl, tasteTag, equilibrium, houseForm, isMirror);
     }
 
     // ENUM타입으로 받아 String으로 저장
-    public UserImageHistoryDTO(Long houseId, Long imageId, String generatedImageUrl, String tasteTag, Equilibrium equilibrium, Form form) {
-        this(houseId, imageId, generatedImageUrl, tasteTag, equilibrium.getDescription(), form.getDescription());
+    public UserImageHistoryDTO(Long houseId, Long imageId, String generatedImageUrl, String tasteTag, Equilibrium equilibrium, Form form, boolean isMirror) {
+        this(houseId, imageId, generatedImageUrl, tasteTag, equilibrium.getDescription(), form.getDescription(),isMirror);
     }
 }

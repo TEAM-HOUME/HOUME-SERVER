@@ -7,6 +7,7 @@ import or.sopt.houme.domain.house.entity.enums.Activity;
 import or.sopt.houme.domain.house.entity.enums.Equilibrium;
 import or.sopt.houme.domain.house.entity.enums.Form;
 import or.sopt.houme.domain.house.entity.enums.Structure;
+import or.sopt.houme.domain.house.entity.mapping.HouseFloorPlan;
 import or.sopt.houme.domain.user.entity.User;
 
 import java.util.ArrayList;
@@ -46,6 +47,10 @@ public class House {
     @OneToMany(mappedBy = "house")
     @Builder.Default
     private List<GenerateImage> generateImages = new ArrayList<>();
+
+    @OneToMany(mappedBy = "house")
+    private List<HouseFloorPlan> houseFloorPlans = new ArrayList<>();
+
 
     // 입력값이 유효한지에 대한 여부 (true = 유효한 값)
     @Column(name = "is_valid", nullable = false)

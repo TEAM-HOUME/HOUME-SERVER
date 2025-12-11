@@ -8,6 +8,7 @@ public record ImageInfoResponse(
         String houseForm,   // 주거정보 (오피스텔)
         String tagName,    // 스타일
         String name         // 이름
+
 ) {
     public static ImageInfoResponse of(Long imageId, String imageUrl,
                                        boolean isMirror, String equilibrium,

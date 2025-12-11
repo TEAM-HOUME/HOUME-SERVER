@@ -91,7 +91,7 @@ public class GenerateImageFacade {
         House house = houseService.updateHouseActivity(generateImageRequest.houseId(), activity);
 
         // house_floor_plan 생성 및 저장
-        houseService.saveHouseFloorPlan(house, generateImageRequest.floorPlan().floorPlanId());
+        houseService.saveHouseFloorPlan(house, generateImageRequest.floorPlan().floorPlanId(), generateImageRequest.floorPlan().isMirror());
 
         // 침대 ID 찾기
         Optional<Long> bedId = furnitureService.findBedId(generateImageRequest.selectiveIds());
@@ -281,7 +281,7 @@ public class GenerateImageFacade {
             House house = houseService.updateHouseActivity(generateImageRequest.houseId(), activity);
 
             // house_floor_plan 생성 및 저장
-            houseService.saveHouseFloorPlan(house, generateImageRequest.floorPlan().floorPlanId());
+            houseService.saveHouseFloorPlan(house, generateImageRequest.floorPlan().floorPlanId(), generateImageRequest.floorPlan().isMirror());
 
             // 침대 ID 찾기
             Optional<Long> bedId = furnitureService.findBedId(generateImageRequest.selectiveIds());
