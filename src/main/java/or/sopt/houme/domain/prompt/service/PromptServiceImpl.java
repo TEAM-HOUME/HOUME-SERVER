@@ -49,7 +49,7 @@ public class PromptServiceImpl implements PromptService {
         PromptFurnitureListDTO promptFurnitureListDTO = requestDTO.promptFurnitureListDTO();
         List<Long> furnitureIds = promptFurnitureListDTO.furnitureTagIds();
 
-        List<String> furniturePrompts = furnitureTagRepository.findAllById(furnitureIds).stream()
+        List<String> furniturePrompts = furnitureTagRepository.findAllByFurnitureIdInAndTagId(furnitureIds, tagId.getId()).stream()
                 .map(FurnitureTag::getFurniturePrompt)
                 .toList();
 
