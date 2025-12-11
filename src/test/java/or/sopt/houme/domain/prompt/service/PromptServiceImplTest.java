@@ -45,6 +45,10 @@ class PromptServiceImplTest {
         // given
         Long floorPlanId = 1L;
         Long tasteId = 2L;
+        Tag tag = Tag.builder()
+                .id(3L)
+                .tagPrompt("취향 프롬프트")
+                .build();
         List<Long> furnitureIds = List.of(10L, 20L);
 
         PromptRequestDTO requestDTO = PromptRequestDTO.of(
@@ -58,12 +62,12 @@ class PromptServiceImplTest {
                 .thenReturn(Optional.of(FloorPlan.builder().floorPlanPrompt("도면 프롬프트").build()));
 
         when(tagRepository.findById(tasteId))
-                .thenReturn(Optional.of(Tag.builder().tagPrompt("취향 프롬프트").build()));
+                .thenReturn(Optional.of(tag));
 
         FurnitureTag furnitureTag1 = FurnitureTag.builder().furniturePrompt("침대").build();
         FurnitureTag furnitureTag2 = FurnitureTag.builder().furniturePrompt("책상").build();
 
-        when(furnitureTagRepository.findAllById(furnitureIds))
+        when(furnitureTagRepository.findAllByFurnitureIdInAndTagId(furnitureIds, tag.getId()))
                 .thenReturn(List.of(furnitureTag1, furnitureTag2));
 
         // when
