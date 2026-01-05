@@ -78,6 +78,12 @@ jobs:
 
             # 최신 이미지 pull + 컨테이너 교체
             sudo docker compose pull app
+            
+            # ★ 추가
+            if sudo docker ps -aq -f "name=^houme$" | grep -q .; then
+            sudo docker rm -f houme || true
+            fi
+            
             sudo docker compose up -d --remove-orphans
 
             # 헬스체크
