@@ -47,45 +47,46 @@ jobs:
         run: ./gradlew jib -PjibToImage=${{ secrets.ECR_REGISTRY }} -PjibTag=runid-${{ github.run_id }}
 
 
-      - name: Deploy (ECR pull -> restart)
+      - name: Deploy (ECR pull -> compose up)
         uses: appleboy/ssh-action@v1.0.3
         id: deploy
         env:
           AWS_REGION: ${{ secrets.AWS_REGION }}
           ECR_REGISTRY: ${{ secrets.ECR_REGISTRY }}
           IMAGE_TAG: runid-${{ github.run_id }}
-          CONTAINER_NAME: houme
         with:
           host: ${{ secrets.PROD_HOST }}
           username: ubuntu
-          key: ${{ secrets.KEY }}
+          key: ${{ secrets.EC2_SSH_KEY }}
           script_stop: true
-          envs: AWS_REGION,ECR_REGISTRY,IMAGE_TAG,CONTAINER_NAME
+          envs: AWS_REGION,ECR_REGISTRY,IMAGE_TAG
           script: |
             set -euo pipefail
 
-            ECR_IMAGE_REPO="${ECR_REGISTRY}"
-            IMAGE="${ECR_IMAGE_REPO}:${IMAGE_TAG}"
-            REGISTRY_HOST="${ECR_IMAGE_REPO%%/*}"
+            cd /home/ubuntu/infra
 
+            # IAM role 확인(선택)
+            aws sts get-caller-identity
+
+            # ECR 로그인
+            REGISTRY_HOST="${ECR_REGISTRY%%/*}"
             aws ecr get-login-password --region "${AWS_REGION}" \
               | sudo docker login --username AWS --password-stdin "${REGISTRY_HOST}"
 
-            sudo docker pull "${IMAGE}"
+            # compose가 읽을 .env 갱신
+            printf "ECR_REGISTRY=%s\nIMAGE_TAG=%s\n" "${ECR_REGISTRY}" "${IMAGE_TAG}" | sudo tee /home/ubuntu/infra/.env > /dev/null
 
-            for name in "${CONTAINER_NAME}" blue green; do
-              if sudo docker ps -aq -f "name=^${name}$" | grep -q .; then
-                sudo docker stop "${name}" || true
-                sudo docker rm "${name}" || true
-              fi
-            done
+            # 최신 이미지 pull + 컨테이너 교체
+            sudo docker compose pull app
+            
+            # ★ 추가
+            if sudo docker ps -aq -f "name=^houme$" | grep -q .; then
+            sudo docker rm -f houme || true
+            fi
+            
+            sudo docker compose up -d --remove-orphans
 
-            sudo docker run -d --name "${CONTAINER_NAME}" --restart unless-stopped \
-              -p 8080:8080 \
-              -e SPRING_PROFILES_ACTIVE=prod \
-              -e SERVER_ENV=prod \
-              "${IMAGE}"
-
+            # 헬스체크
             for i in {1..20}; do
               if curl -sf "http://localhost:8080/actuator/health" > /dev/null; then
                 echo "healthy"
@@ -95,5 +96,5 @@ jobs:
               sleep 3
             done
 
-            sudo docker logs --tail 200 "${CONTAINER_NAME}" || true
+            sudo docker compose logs --tail 200 app || true
             exit 1
