@@ -58,7 +58,7 @@ jobs:
         with:
           host: ${{ secrets.PROD_HOST }}
           username: ubuntu
-          key: ${{ secrets.KEY }}
+          key: ${{ secrets.EC2_SSH_KEY }}
           script_stop: true
           envs: AWS_REGION,ECR_REGISTRY,IMAGE_TAG,CONTAINER_NAME
           script: |
