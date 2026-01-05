@@ -1,4 +1,4 @@
-name: develop-ci
+name: prod-ci
 on:
   pull_request:
     types: [opened, synchronize, closed]
