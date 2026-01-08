@@ -8,14 +8,17 @@ import lombok.extern.slf4j.Slf4j;
 import or.sopt.houme.domain.user.client.KaKaoOAuthClient;
 import or.sopt.houme.domain.user.client.KaKaoUserInfoClient;
 import or.sopt.houme.domain.user.controller.dto.CustomUserDetails;
+import or.sopt.houme.domain.user.controller.dto.KakaoLoginResponse;
 import or.sopt.houme.domain.user.controller.dto.KaKaoOAuthTokenDTO;
 import or.sopt.houme.domain.user.controller.dto.KaKaoUserInfoResponse;
 import or.sopt.houme.domain.user.entity.Role;
 import or.sopt.houme.domain.user.entity.SocialType;
 import or.sopt.houme.domain.user.entity.User;
 import or.sopt.houme.domain.user.entity.UserStatus;
+import or.sopt.houme.domain.user.entity.record.SignupSession;
 import or.sopt.houme.domain.user.repository.BlacklistTokenRepository;
 import or.sopt.houme.domain.user.repository.RefreshTokenRepository;
+import or.sopt.houme.domain.user.repository.SignupSessionRepository;
 import or.sopt.houme.domain.user.repository.UserRepository;
 import or.sopt.houme.global.api.ErrorCode;
 import or.sopt.houme.global.api.handler.UserException;
@@ -26,10 +29,13 @@ import or.sopt.houme.global.jwt.JWTUtil;
 import or.sopt.houme.global.util.CookieUtil;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
+import org.springframework.beans.factory.annotation.Value;
 
 import jakarta.servlet.http.HttpServletRequest;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.Optional;
+import java.util.UUID;
 import java.util.List;
 
 @Service
@@ -45,10 +51,13 @@ public class OAuthService {
 
     private final RefreshTokenRepository refreshTokenRepository;
     private final BlacklistTokenRepository blacklistTokenRepository;
+    private final SignupSessionRepository signupSessionRepository;
 
     private final KaKaoConfig kaKaoConfig;
     private final CookieConfig cookieConfig;
 
+    @Value("${auth.signup-token.ttl-seconds:600}")
+    private long signupTokenTtlSeconds;
 
     /**
      * 카카오 인증 서버에 인가코드를 요청하는 메서드입니다
@@ -80,10 +89,7 @@ public class OAuthService {
     }
 
 
-    public Boolean kakaoLogin(String accessCode, String env, HttpServletRequest request, HttpServletResponse response) {
-
-        // 신규회원인지 검증하는 필드
-        Boolean isNewUser = false;
+    public KakaoLoginResponse kakaoLogin(String accessCode, String env, HttpServletRequest request, HttpServletResponse response) {
 
         // 인가코드가 비어있다면 예외발생
         if (accessCode == null || accessCode.isEmpty()) {
@@ -115,27 +121,36 @@ public class OAuthService {
             throw new UserException(ErrorCode.KAKAO_ACCESSTOKEN_INVALID);
         }
 
-        // 만약 해당 이메일을 통해 회원가입된 회원이 존재하지 않는다면, 새로운 회원을 생성합니다
-        Boolean userExist = userRepository.existsByEmail(userInfo.getKakao_account().getEmail());
-
-        if (userExist == Boolean.FALSE) {
-            User newUser = User.builder()
-//                  이름은 자체 회원가입시 입력 받습니다.
-                    .password(null)
-                    .email(userInfo.getKakao_account().getEmail())
-                    .role(Role.ROLE_USER)
-                    .socialType(SocialType.KAKAO)
-                    .status(UserStatus.ACTIVE)
-                    .hasGeneratedImage(Boolean.FALSE)
-                    .build();
-
-            userRepository.save(newUser);
-
-            isNewUser = true;
+        String email = Optional.ofNullable(userInfo.getKakao_account())
+                .map(KaKaoUserInfoResponse.KakaoAccount::getEmail)
+                .orElse(null);
+        if (!StringUtils.hasText(email)) {
+            throw new UserException(ErrorCode.NOT_VALID_EXCEPTION);
         }
 
-        // 그리고 회원 정보를 기반으로 액세스토큰을 발급하여 헤더에 넣습니다
-        User byEmail = userRepository.findByEmail(userInfo.getKakao_account().getEmail())
+        String nickname = Optional.ofNullable(userInfo.getKakao_account())
+                .map(KaKaoUserInfoResponse.KakaoAccount::getProfile)
+                .map(KaKaoUserInfoResponse.KakaoAccount.Profile::getNickname)
+                .orElse(null);
+
+        Boolean userExist = userRepository.existsByEmail(email);
+
+        // 회원 정보가 없는 경우 -> 임시토큰을 발급하여 반환합니다
+        if (userExist == Boolean.FALSE) {
+            String signupToken = UUID.randomUUID().toString().replace("-", "");
+
+            SignupSession signupSession = SignupSession.of(
+                    userInfo.getId(),
+                    email,
+                    nickname
+            );
+            signupSessionRepository.save(signupToken, signupSession, signupTokenTtlSeconds);
+
+            return KakaoLoginResponse.newUser(signupToken, email, nickname);
+        }
+
+        // 회원정보가 존재하는 경우 -> 회원 정보를 기반으로 액세스토큰을 발급하여 헤더에 넣습니다
+        User byEmail = userRepository.findByEmail(email)
                 .orElseThrow(()-> new UserException(ErrorCode.USER_NOT_FOUND));
 
         String access = jwtUtil.createJwt("access", byEmail.getId(), byEmail.getRole().toString(), jwtConfig.getAccessTokenValidityInSeconds());
@@ -155,7 +170,7 @@ public class OAuthService {
                 cookieConfig.getSameSite()
         );
 
-        return isNewUser;
+        return KakaoLoginResponse.existingUser();
     }
 
     // Backward-compatible overloads for existing tests and callers
@@ -163,7 +178,7 @@ public class OAuthService {
         return requestRedirect(request, null);
     }
 
-    public Boolean kakaoLogin(String accessCode, HttpServletRequest request, HttpServletResponse response) {
+    public KakaoLoginResponse kakaoLogin(String accessCode, HttpServletRequest request, HttpServletResponse response) {
         return kakaoLogin(accessCode, null, request, response);
     }
 
