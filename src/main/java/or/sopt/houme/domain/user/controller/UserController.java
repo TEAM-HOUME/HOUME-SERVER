@@ -2,12 +2,14 @@ package or.sopt.houme.domain.user.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import or.sopt.houme.domain.user.controller.dto.*;
 import or.sopt.houme.domain.user.entity.Gender;
 import or.sopt.houme.domain.user.service.UserDeletionService;
 import or.sopt.houme.domain.user.service.UserService;
+import or.sopt.houme.domain.user.service.OAuthService;
 import or.sopt.houme.global.api.ApiResponse;
 import or.sopt.houme.global.api.ErrorCode;
 import or.sopt.houme.global.api.GeneralException;
@@ -25,6 +27,7 @@ public class UserController {
 
     private final UserService userService;
     private final UserDeletionService userDeletionService;
+    private final OAuthService oAuthService;
 
     @GetMapping(value = "/mypage/user")  // 유저의 이름, 사용가능한 크레딧 개수 조회
     @Operation(summary = "마이페이지 기본 정보 제공 API")
@@ -68,6 +71,37 @@ public class UserController {
         }
 
         String username = userService.updateUser(userDetails.getUser(), createUserRequest.name(), gender, birthday);
+
+        return ResponseEntity.ok(ApiResponse.ok(username));
+    }
+
+    @PostMapping(value = "/sign-up")
+    @Operation(summary = "소셜 회원가입 API",
+            description = "카카오 소셜로그인 완료 후 발급된 signupToken(임시토큰)과 함께 호출하면 회원을 생성합니다. <br><br>" +
+                    "성공 시 access-token 헤더와 refresh-token 쿠키를 함께 반환합니다.")
+    public ResponseEntity<ApiResponse<String>> signUp(@RequestBody @Valid SocialSignUpRequest signUpRequest,
+                                                      HttpServletResponse response) {
+        Gender gender;
+        LocalDate birthday;
+
+        try {
+            gender = Gender.valueOf(signUpRequest.gender());
+        } catch (IllegalArgumentException e) {
+            throw new GeneralException(ErrorCode.NOT_VALID_EXCEPTION);
+        }
+        try {
+            birthday = LocalDate.parse(signUpRequest.birthday());
+        } catch (IllegalArgumentException e) {
+            throw new GeneralException(ErrorCode.NOT_VALID_EXCEPTION);
+        }
+
+        String username = oAuthService.signUpWithToken(
+                signUpRequest.signupToken(),
+                signUpRequest.name(),
+                gender,
+                birthday,
+                response
+        );
 
         return ResponseEntity.ok(ApiResponse.ok(username));
     }

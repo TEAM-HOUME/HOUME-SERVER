@@ -1,32 +1,33 @@
 package or.sopt.houme.domain.user.service;
 
 import feign.FeignException;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import or.sopt.houme.domain.credit.entity.Credit;
+import or.sopt.houme.domain.credit.entity.CreditStatus;
+import or.sopt.houme.domain.credit.repository.CreditRepository;
 import or.sopt.houme.domain.user.client.KaKaoOAuthClient;
 import or.sopt.houme.domain.user.client.KaKaoUserInfoClient;
 import or.sopt.houme.domain.user.controller.dto.CustomUserDetails;
 import or.sopt.houme.domain.user.controller.dto.KakaoLoginResponse;
 import or.sopt.houme.domain.user.controller.dto.KaKaoOAuthTokenDTO;
 import or.sopt.houme.domain.user.controller.dto.KaKaoUserInfoResponse;
-import or.sopt.houme.domain.user.entity.Role;
-import or.sopt.houme.domain.user.entity.SocialType;
-import or.sopt.houme.domain.user.entity.User;
-import or.sopt.houme.domain.user.entity.UserStatus;
+import or.sopt.houme.domain.user.entity.*;
 import or.sopt.houme.domain.user.entity.record.SignupSession;
 import or.sopt.houme.domain.user.repository.BlacklistTokenRepository;
 import or.sopt.houme.domain.user.repository.RefreshTokenRepository;
 import or.sopt.houme.domain.user.repository.SignupSessionRepository;
 import or.sopt.houme.domain.user.repository.UserRepository;
 import or.sopt.houme.global.api.ErrorCode;
+import or.sopt.houme.global.api.handler.CreditException;
 import or.sopt.houme.global.api.handler.UserException;
 import or.sopt.houme.global.config.CookieConfig;
 import or.sopt.houme.global.config.JWTConfig;
 import or.sopt.houme.global.config.KaKaoConfig;
 import or.sopt.houme.global.jwt.JWTUtil;
 import or.sopt.houme.global.util.CookieUtil;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
@@ -34,6 +35,7 @@ import org.springframework.beans.factory.annotation.Value;
 import jakarta.servlet.http.HttpServletRequest;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDate;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.List;
@@ -46,6 +48,7 @@ public class OAuthService {
     private final KaKaoOAuthClient kaKaoOAuthClient;
     private final KaKaoUserInfoClient kaKaoUserInfoClient;
     private final UserRepository userRepository;
+    private final CreditRepository creditRepository;
     private final JWTUtil jwtUtil;
     private final JWTConfig jwtConfig;
 
@@ -180,6 +183,63 @@ public class OAuthService {
 
     public KakaoLoginResponse kakaoLogin(String accessCode, HttpServletRequest request, HttpServletResponse response) {
         return kakaoLogin(accessCode, null, request, response);
+    }
+
+    @Transactional
+    public String signUpWithToken(String signupToken, String name, Gender gender, LocalDate birthday, HttpServletResponse response) {
+        SignupSession signupSession = signupSessionRepository.consume(signupToken)
+                .orElseThrow(() -> new UserException(ErrorCode.SIGNUP_TOKEN_INVALID));
+
+        if (!StringUtils.hasText(signupSession.email())) {
+            throw new UserException(ErrorCode.NOT_VALID_EXCEPTION);
+        }
+        if (userRepository.existsByEmail(signupSession.email())) {
+            throw new UserException(ErrorCode.EMAIL_ALREADY_EXISTS);
+        }
+
+        User savedUser = userRepository.save(
+                User.builder()
+                        .password(null)
+                        .email(signupSession.email())
+                        .name(name)
+                        .birthday(birthday)
+                        .gender(gender)
+                        .role(Role.ROLE_USER)
+                        .socialType(SocialType.KAKAO)
+                        .status(UserStatus.ACTIVE)
+                        .hasGeneratedImage(Boolean.FALSE)
+                        .build()
+        );
+
+        try {
+            creditRepository.save(
+                    Credit.builder()
+                            .status(CreditStatus.ACTIVE)
+                            .user(savedUser)
+                            .build()
+            );
+        } catch (Exception e) {
+            throw new CreditException(ErrorCode.CREDIT_CREATE_EXCEPTION);
+        }
+
+        String access = jwtUtil.createJwt("access", savedUser.getId(), savedUser.getRole().toString(), jwtConfig.getAccessTokenValidityInSeconds());
+        String refresh = jwtUtil.createJwt("refresh", savedUser.getId(), savedUser.getRole().toString(), jwtConfig.getRefreshTokenValidityInSeconds());
+
+        refreshTokenRepository.saveRefreshToken(savedUser.getId(), refresh, jwtConfig.getRefreshTokenValidityInSeconds());
+
+        response.setHeader("access-token", access);
+
+        CookieUtil.addSameSiteCookie(
+                response,
+                "refresh-token",
+                refresh,
+                jwtConfig.getRefreshTokenValidityInSeconds().intValue(),
+                cookieConfig.getDomain(),
+                cookieConfig.isSecure(),
+                cookieConfig.getSameSite()
+        );
+
+        return savedUser.getName();
     }
 
 
