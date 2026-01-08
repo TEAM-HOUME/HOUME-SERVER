@@ -39,11 +39,14 @@ import java.time.LocalDate;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.List;
+import java.util.stream.IntStream;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class OAuthService {
+
+    private static final int SIGN_UP_CREDIT_COUNT = 5;
 
     private final KaKaoOAuthClient kaKaoOAuthClient;
     private final KaKaoUserInfoClient kaKaoUserInfoClient;
@@ -70,11 +73,6 @@ public class OAuthService {
      *
      * 현재 fallback 로직이 구현되어있지 않습니다. 아직 Feign의 fallback factory에 대한 학습이 부족해서...
      * 앱잼기간내에 구현해보겠습니다 FIXME
-     * */
-
-    /**
-     *
-     *
      * */
     public String requestRedirect(HttpServletRequest request, String env) {
         String redirectBase = resolveRedirectBase(request, env);
@@ -214,12 +212,13 @@ public class OAuthService {
         );
 
         try {
-            creditRepository.save(
-                    Credit.builder()
+            List<Credit> newCredits = IntStream.range(0, SIGN_UP_CREDIT_COUNT)
+                    .mapToObj(i -> Credit.builder()
                             .status(CreditStatus.ACTIVE)
                             .user(savedUser)
-                            .build()
-            );
+                            .build())
+                    .toList();
+            creditRepository.saveAll(newCredits);
         } catch (Exception e) {
             throw new CreditException(ErrorCode.CREDIT_CREATE_EXCEPTION);
         }

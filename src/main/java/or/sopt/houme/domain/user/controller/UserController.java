@@ -76,7 +76,7 @@ public class UserController {
     }
 
     @PostMapping(value = "/sign-up")
-    @Operation(summary = "소셜 회원가입 API",
+    @Operation(summary = "소셜 자체 회원가입 API",
             description = "카카오 소셜로그인 완료 후 발급된 signupToken(임시토큰)과 함께 호출하면 회원을 생성합니다. <br><br>" +
                     "성공 시 access-token 헤더와 refresh-token 쿠키를 함께 반환합니다.")
     public ResponseEntity<ApiResponse<String>> signUp(@RequestBody @Valid SocialSignUpRequest signUpRequest,
