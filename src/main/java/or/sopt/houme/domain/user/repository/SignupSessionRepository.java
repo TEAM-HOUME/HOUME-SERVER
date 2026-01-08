@@ -1,5 +1,6 @@
 package or.sopt.houme.domain.user.repository;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import or.sopt.houme.domain.user.entity.record.SignupSession;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -7,6 +8,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
 import java.time.Duration;
+import java.util.Map;
 import java.util.Optional;
 
 @Component
@@ -14,6 +16,7 @@ import java.util.Optional;
 public class SignupSessionRepository {
 
     private final RedisTemplate<String, Object> redisTemplate;
+    private final ObjectMapper objectMapper;
 
     private static final String PREFIX = "signup-session:";
 
@@ -42,7 +45,9 @@ public class SignupSessionRepository {
         if (value instanceof SignupSession session) {
             return Optional.of(session);
         }
+        if (value instanceof Map<?, ?> map) {
+            return Optional.ofNullable(objectMapper.convertValue(map, SignupSession.class));
+        }
         return Optional.empty();
     }
 }
-
