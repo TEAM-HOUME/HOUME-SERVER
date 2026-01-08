@@ -124,6 +124,7 @@ public class OAuthService {
             throw new UserException(ErrorCode.KAKAO_ACCESSTOKEN_INVALID);
         }
 
+        // 응답값에서 이메일을 파싱
         String email = Optional.ofNullable(userInfo.getKakao_account())
                 .map(KaKaoUserInfoResponse.KakaoAccount::getEmail)
                 .orElse(null);
@@ -131,6 +132,7 @@ public class OAuthService {
             throw new UserException(ErrorCode.NOT_VALID_EXCEPTION);
         }
 
+        // nickname 파싱
         String nickname = Optional.ofNullable(userInfo.getKakao_account())
                 .map(KaKaoUserInfoResponse.KakaoAccount::getProfile)
                 .map(KaKaoUserInfoResponse.KakaoAccount.Profile::getNickname)
@@ -138,7 +140,7 @@ public class OAuthService {
 
         Boolean userExist = userRepository.existsByEmail(email);
 
-        // 회원 정보가 없는 경우 -> 임시토큰을 발급하여 반환합니다
+        // 회원 정보가 없는 경우 (이메일이 존재하지 않음) -> 임시토큰을 발급하여 반환합니다
         if (userExist == Boolean.FALSE) {
             String signupToken = UUID.randomUUID().toString().replace("-", "");
 
