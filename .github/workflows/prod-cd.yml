@@ -1,4 +1,4 @@
-name: develop-cd.yml
+name: prod-cd.yml
 on:
   pull_request:
     types: [synchronize, closed, opened]
@@ -44,10 +44,10 @@ jobs:
           mkdir -p ./src/main/resources
           echo "${{ secrets.APPLICATION_DEFAULT }}" > ./src/main/resources/application.yml
 
-      - name: Add application-dev.yml
+      - name: Add application-prod.yml
         run: |
           mkdir -p ./src/main/resources
-          echo "${{ secrets.APPLICATION_DEV }}" > ./src/main/resources/application-dev.yml
+          echo "${{ secrets.APPLICATION_PROD }}" > ./src/main/resources/application-prod.yml
       - name: Jib로 이미지 빌드 및 ECR 업로드
         run: ./gradlew jib -PjibToImage=${{ secrets.ECR_REGISTRY }} -PjibTag=runid-${{ github.run_id }}
 
