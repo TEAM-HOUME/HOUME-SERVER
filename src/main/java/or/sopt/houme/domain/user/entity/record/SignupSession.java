@@ -1,4 +1,4 @@
-package or.sopt.houme.domain.user.service;
+package or.sopt.houme.domain.user.entity.record;
 
 public record SignupSession(
         Long kakaoId,

@@ -1,7 +1,7 @@
 package or.sopt.houme.domain.user.repository;
 
 import lombok.RequiredArgsConstructor;
-import or.sopt.houme.domain.user.service.SignupSession;
+import or.sopt.houme.domain.user.entity.record.SignupSession;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
