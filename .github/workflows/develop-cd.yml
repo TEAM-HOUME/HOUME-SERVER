@@ -33,10 +33,10 @@ jobs:
         run: |
           rm -f src/main/resources/application-local.yml
 
-      - name: Add application-prod.yml
+      - name: Add application-dev.yml
         run: |
           mkdir -p ./src/main/resources
-          echo "${{ secrets.APPLICATION_PROD }}" > ./src/main/resources/application-prod.yml
+          echo "${{ secrets.APPLICATION_DEV }}" > ./src/main/resources/application-dev.yml
 
       - name: Build with Gradle
         run: |
