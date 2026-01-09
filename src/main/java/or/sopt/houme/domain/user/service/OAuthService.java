@@ -244,7 +244,7 @@ public class OAuthService {
                 return "http://localhost:5173";
             }
             if ("preview".equalsIgnoreCase(env)) {
-                return "http://preview.houme.kr";
+                return "https://preview.houme.kr";
             }
             if ("dev".equalsIgnoreCase(env)) {
                 return "https://www.houme.kr";
