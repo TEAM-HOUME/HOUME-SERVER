@@ -68,7 +68,8 @@ public class SecurityConfig {
                                 "http://localhost:5174",
                                 "https://dev.houme.kr",
                                 "https://www.houme.kr",
-                                "http://192.168.200.108:5173"
+                                "https://preview.houme.kr",
+                                "https://prod.houme.kr"
                         ));
                         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
                         configuration.setAllowCredentials(true);
