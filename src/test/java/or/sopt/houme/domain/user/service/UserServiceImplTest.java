@@ -34,6 +34,8 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.BDDMockito.*;
 
 class UserServiceImplTest {
@@ -372,7 +374,8 @@ class UserServiceImplTest {
         assertEquals(Gender.MALE, dbUser.getGender());
         assertEquals(LocalDate.of(2000, 5, 15), dbUser.getBirthday());
 
-        verify(creditRepository, times(1)).save(any(Credit.class));
+        verify(creditRepository, times(1))
+                .saveAll(argThat(credits -> credits instanceof java.util.Collection<?> c && c.size() == 1));
     }
 
 
@@ -401,7 +404,7 @@ class UserServiceImplTest {
 
         // 크레딧 저장 시 RuntimeException 발생하도록 설정
         willThrow(new RuntimeException("DB error"))
-                .given(creditRepository).save(any(Credit.class));
+                .given(creditRepository).saveAll(anyList());
 
         // when & then
         assertThatThrownBy(() -> userService.updateUser(inputUser, request.name(), Gender.MALE, LocalDate.of(2000, 5, 15)

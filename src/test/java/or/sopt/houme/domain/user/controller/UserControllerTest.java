@@ -5,6 +5,7 @@ import or.sopt.houme.domain.user.controller.dto.CustomUserDetailsService;
 import or.sopt.houme.domain.user.controller.dto.MyPageInfoResponse;
 import or.sopt.houme.domain.user.entity.*;
 import or.sopt.houme.domain.user.repository.BlacklistTokenRepository;
+import or.sopt.houme.domain.user.service.OAuthService;
 import or.sopt.houme.domain.user.service.UserDeletionService;
 import or.sopt.houme.domain.user.service.UserService;
 import or.sopt.houme.global.config.JWTConfig;
@@ -23,12 +24,14 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
+import jakarta.servlet.http.HttpServletResponse;
 import java.time.LocalDate;
 import java.util.ArrayList;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(
@@ -51,6 +54,9 @@ class UserControllerTest {
 
     @MockBean
     private UserDeletionService userDeletionService;
+
+    @MockBean
+    private OAuthService oAuthService;
 
     @MockBean
     private JWTConfig jwtConfig;
@@ -107,5 +113,32 @@ class UserControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.code").value(200))
                 .andExpect(jsonPath("$.msg").value("응답 성공"));
+    }
+
+    @Test
+    @DisplayName("POST /api/v1/sign-up 요청 시 소셜 회원가입이 처리된다")
+    void socialSignUp_Success() throws Exception {
+        given(oAuthService.signUpWithToken(
+                any(String.class),
+                any(String.class),
+                any(Gender.class),
+                any(LocalDate.class),
+                any(HttpServletResponse.class)
+        )).willReturn("테스트유저");
+
+        mockMvc.perform(post("/api/v1/sign-up")
+                        .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "signupToken": "signup-token",
+                                  "name": "테스트유저",
+                                  "gender": "MALE",
+                                  "birthday": "2000-01-01"
+                                }
+                                """))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value(200))
+                .andExpect(jsonPath("$.msg").value("응답 성공"))
+                .andExpect(jsonPath("$.data").value("테스트유저"));
     }
 }

@@ -100,6 +100,7 @@ public class SecurityConfig {
 
         // 인가 경로 설정
         http.authorizeHttpRequests((auth)->auth
+                .requestMatchers(HttpMethod.POST, "/api/v1/sign-up").permitAll()
                 .requestMatchers(WhiteListConfig.swaggerWhitelist().toArray(new String[0])).permitAll()
                 .requestMatchers(WhiteListConfig.oauthWhitelist().toArray(new String[0])).permitAll()
                 .requestMatchers(WhiteListConfig.serverWhitelist().toArray(new String[0])).permitAll()

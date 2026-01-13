@@ -7,12 +7,15 @@ import jakarta.servlet.http.HttpServletResponse;
 import or.sopt.houme.domain.user.client.KaKaoOAuthClient;
 import or.sopt.houme.domain.user.client.KaKaoUserInfoClient;
 import or.sopt.houme.domain.user.controller.dto.CustomUserDetails;
+import or.sopt.houme.domain.user.controller.dto.KakaoLoginResponse;
 import or.sopt.houme.domain.user.controller.dto.KaKaoOAuthTokenDTO;
 import or.sopt.houme.domain.user.controller.dto.KaKaoUserInfoResponse;
+import or.sopt.houme.domain.credit.repository.CreditRepository;
 import or.sopt.houme.domain.user.entity.Role;
 import or.sopt.houme.domain.user.entity.User;
 import or.sopt.houme.domain.user.repository.BlacklistTokenRepository;
 import or.sopt.houme.domain.user.repository.RefreshTokenRepository;
+import or.sopt.houme.domain.user.repository.SignupSessionRepository;
 import or.sopt.houme.domain.user.repository.UserRepository;
 import or.sopt.houme.global.api.handler.UserException;
 import or.sopt.houme.global.config.CookieConfig;
@@ -46,6 +49,8 @@ class OAuthServiceTest {
     @Mock
     private UserRepository userRepository;
     @Mock
+    private CreditRepository creditRepository;
+    @Mock
     private JWTUtil jwtUtil;
     @Mock
     private JWTConfig jwtConfig;
@@ -53,6 +58,8 @@ class OAuthServiceTest {
     private RefreshTokenRepository refreshTokenRepository;
     @Mock
     private BlacklistTokenRepository blacklistTokenRepository;
+    @Mock
+    private SignupSessionRepository signupSessionRepository;
     @Mock
     private KaKaoConfig kaKaoConfig;
     @Mock
@@ -84,8 +91,8 @@ class OAuthServiceTest {
 
 
     @Test
-    @DisplayName("kakaoLogin() 을 이용해서 소셜로그인을 통해 회원을 생성 할 수 있다")
-    void kakaoLogin_success() {
+    @DisplayName("kakaoLogin() 신규회원이면 회원을 생성하지 않고 signupToken을 발급한다")
+    void kakaoLogin_newUser_issueSignupToken() {
         // Given
         String code = "authCode";
         KaKaoOAuthTokenDTO tokenDTO = new KaKaoOAuthTokenDTO();
@@ -94,17 +101,55 @@ class OAuthServiceTest {
         KaKaoUserInfoResponse.KakaoAccount kakaoAccount = new KaKaoUserInfoResponse.KakaoAccount();
         kakaoAccount.setEmail("test@houme.kr");
 
-        KaKaoUserInfoResponse.Properties properties = new KaKaoUserInfoResponse.Properties();
-        properties.setNickname("테스트닉네임");
+        KaKaoUserInfoResponse.KakaoAccount.Profile profile = new KaKaoUserInfoResponse.KakaoAccount.Profile();
+        profile.setNickname("테스트닉네임");
+        kakaoAccount.setProfile(profile);
 
         KaKaoUserInfoResponse userInfo = new KaKaoUserInfoResponse();
+        userInfo.setId(1234L);
         userInfo.setKakao_account(kakaoAccount);
-        userInfo.setProperties(properties);
 
         when(kaKaoOAuthClient.getToken(any(), any(), any(), any())).thenReturn(tokenDTO);
         when(kaKaoUserInfoClient.getUserInfo("Bearer kakaoAccessToken")).thenReturn(userInfo);
         when(userRepository.existsByEmail("test@houme.kr")).thenReturn(false);
-        when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        ReflectionTestUtils.setField(oAuthService, "signupTokenTtlSeconds", 600L);
+
+        // When
+        HttpServletRequest request = mock(HttpServletRequest.class);
+        when(request.getHeader("Origin")).thenReturn("http://localhost:5173");
+
+        KakaoLoginResponse result = oAuthService.kakaoLogin(code, request, response);
+
+        // Then
+        assertTrue(result.isNewUser());
+        assertNotNull(result.signupToken());
+        assertEquals("test@houme.kr", result.prefill().email());
+        assertEquals("테스트닉네임", result.prefill().nickname());
+
+        verify(signupSessionRepository).save(anyString(), any(or.sopt.houme.domain.user.entity.record.SignupSession.class), eq(600L));
+        verify(userRepository, never()).save(any(User.class));
+        verify(refreshTokenRepository, never()).saveRefreshToken(anyLong(), anyString(), anyLong());
+        verify(response, never()).setHeader(eq("access-token"), anyString());
+    }
+
+    @Test
+    @DisplayName("kakaoLogin() 기존회원이면 access/refresh 토큰을 발급한다")
+    void kakaoLogin_existingUser_issueJwtTokens() {
+        // Given
+        String code = "authCode";
+        KaKaoOAuthTokenDTO tokenDTO = new KaKaoOAuthTokenDTO();
+        tokenDTO.setAccess_token("kakaoAccessToken");
+
+        KaKaoUserInfoResponse.KakaoAccount kakaoAccount = new KaKaoUserInfoResponse.KakaoAccount();
+        kakaoAccount.setEmail("test@houme.kr");
+
+        KaKaoUserInfoResponse userInfo = new KaKaoUserInfoResponse();
+        userInfo.setId(1234L);
+        userInfo.setKakao_account(kakaoAccount);
+
+        when(kaKaoOAuthClient.getToken(any(), any(), any(), any())).thenReturn(tokenDTO);
+        when(kaKaoUserInfoClient.getUserInfo("Bearer kakaoAccessToken")).thenReturn(userInfo);
+        when(userRepository.existsByEmail("test@houme.kr")).thenReturn(true);
         when(userRepository.findByEmail("test@houme.kr")).thenReturn(Optional.of(
                 User.builder().id(1L).email("test@houme.kr").role(Role.ROLE_USER).build()
         ));
@@ -121,11 +166,10 @@ class OAuthServiceTest {
         HttpServletRequest request = mock(HttpServletRequest.class);
         when(request.getHeader("Origin")).thenReturn("http://localhost:5173");
 
-        Boolean result = oAuthService.kakaoLogin(code, request, response);
+        KakaoLoginResponse result = oAuthService.kakaoLogin(code, request, response);
 
         // Then
-        assertTrue(result); // 신규 회원이므로 true
-        verify(userRepository).save(any(User.class));
+        assertFalse(result.isNewUser());
         verify(refreshTokenRepository).saveRefreshToken(eq(1L), eq("refreshToken"), eq(86400L));
         verify(response).setHeader("access-token", "accessToken");
     }

@@ -42,6 +42,8 @@ import java.util.stream.IntStream;
 @Transactional
 public class UserServiceImpl implements UserService {
 
+    private static final int SIGN_UP_CREDIT_COUNT = 1;
+
     private final UserRepository userRepository;
     private final HouseRepository houseRepository;
     private final TagRepository tagRepository;
@@ -190,12 +192,13 @@ public class UserServiceImpl implements UserService {
         findUser.updateUserFromSignUp(name, birthday, gender);
 
         try {
-            Credit newCredit = Credit.builder()
-                    .status(CreditStatus.ACTIVE)
-                    .user(findUser)
-                    .build();
-
-            creditRepository.save(newCredit);
+            List<Credit> newCredits = IntStream.range(0, SIGN_UP_CREDIT_COUNT)
+                    .mapToObj(i -> Credit.builder()
+                            .status(CreditStatus.ACTIVE)
+                            .user(findUser)
+                            .build())
+                    .toList();
+            creditRepository.saveAll(newCredits);
         }catch (Exception e) {
             throw new CreditException(ErrorCode.CREDIT_CREATE_EXCEPTION);
         }
