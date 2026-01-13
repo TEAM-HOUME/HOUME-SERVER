@@ -42,7 +42,7 @@ import java.util.stream.IntStream;
 @Transactional
 public class UserServiceImpl implements UserService {
 
-    private static final int SIGN_UP_CREDIT_COUNT = 5;
+    private static final int SIGN_UP_CREDIT_COUNT = 1;
 
     private final UserRepository userRepository;
     private final HouseRepository houseRepository;

@@ -46,7 +46,7 @@ import java.util.stream.IntStream;
 @Slf4j
 public class OAuthService {
 
-    private static final int SIGN_UP_CREDIT_COUNT = 5;
+    private static final int SIGN_UP_CREDIT_COUNT = 1;
 
     private final KaKaoOAuthClient kaKaoOAuthClient;
     private final KaKaoUserInfoClient kaKaoUserInfoClient;
