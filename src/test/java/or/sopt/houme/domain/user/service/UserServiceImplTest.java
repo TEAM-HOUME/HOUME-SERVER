@@ -375,7 +375,7 @@ class UserServiceImplTest {
         assertEquals(LocalDate.of(2000, 5, 15), dbUser.getBirthday());
 
         verify(creditRepository, times(1))
-                .saveAll(argThat(credits -> credits instanceof java.util.Collection<?> c && c.size() == 5));
+                .saveAll(argThat(credits -> credits instanceof java.util.Collection<?> c && c.size() == 1));
     }
 
 
