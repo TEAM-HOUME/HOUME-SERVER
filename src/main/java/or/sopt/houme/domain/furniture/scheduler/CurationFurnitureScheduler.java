@@ -30,7 +30,7 @@ public class CurationFurnitureScheduler {
     private final ImageHashService imageHashService;
     private final CurationFurnitureService curationFurnitureService;
 
-    @Scheduled(cron = "0 0 4 * * *", zone = "Asia/Seoul")
+    @Scheduled(cron = "0 0 2 * * *", zone = "Asia/Seoul")
     public void refreshCurationResults() {
         List<FurnitureTag> furnitureTags = furnitureTagRepository.findAll();
         if (furnitureTags.isEmpty()) {
