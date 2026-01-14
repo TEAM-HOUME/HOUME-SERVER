@@ -6,20 +6,18 @@ import or.sopt.houme.domain.furniture.dto.external.naverShop.FurnitureProductsIn
 import or.sopt.houme.domain.furniture.dto.external.naverShop.forPlan.FurnitureProductsInfoResponseForPlan;
 import or.sopt.houme.domain.furniture.dto.external.naverShop.NaverFurnitureProductDto;
 import or.sopt.houme.domain.furniture.entity.FurnitureTag;
+import or.sopt.houme.domain.furniture.service.CurationFurnitureService;
 import or.sopt.houme.domain.furniture.service.FurnitureService;
 import or.sopt.houme.domain.furniture.service.ImageHashService;
 import or.sopt.houme.domain.furniture.service.NaverShopService;
-import or.sopt.houme.domain.furniture.service.RecommendFurnitureService;
 import or.sopt.houme.domain.user.entity.User;
 import or.sopt.houme.global.api.ErrorCode;
 import or.sopt.houme.global.api.GeneralException;
 import org.springframework.stereotype.Component;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.Map;
 
 import or.sopt.houme.global.config.NaverProperties;
 
@@ -31,7 +29,7 @@ public class FurnitureFacadeImpl implements FurnitureFacade {
     private final NaverShopService naverShopService;
     private final ImageHashService imageHashService;
     private final FurnitureService furnitureService;
-    private final RecommendFurnitureService recommendFurnitureService;
+    private final CurationFurnitureService curationFurnitureService;
     private final NaverProperties naverProperties;
 
     @Override
@@ -45,6 +43,13 @@ public class FurnitureFacadeImpl implements FurnitureFacade {
         log.info("연관된 가구들을 조회합니다:{}",formatted);
         FurnitureTag furnitureTag = furnitureService.findFurnitureTag(user, imageId, categoryId);
 
+        List<FurnitureProductsInfoResponse.FurnitureProductInfo> cachedInfos =
+                curationFurnitureService.getCurationProducts(furnitureTag);
+        if (!cachedInfos.isEmpty()) {
+            log.info("큐레이션 결과를 DB에서 조회합니다");
+            return FurnitureProductsInfoResponse.of(user.getName(), cachedInfos);
+        }
+
         // 2. 네이버 API 호출
         log.info("네이버 API 호출을 시작합니다");
         String keyword = furnitureTag.getSearchKeyword();
@@ -56,23 +61,10 @@ public class FurnitureFacadeImpl implements FurnitureFacade {
         List<FurnitureProductsInfoResponse.FurnitureProductInfo> infos =
                 imageHashService.rankByImageSimilarity(furnitureTag.getFurnitureUrl(), products, 5);
 
-        // 3-1. 최종반환된 리스트를 기반으로 추천가구 엔티티 저장하고, 엔티티 id 매핑 반환
-        log.info("최종반환된 리스트를 기반으로 추천가구 엔티티 저장하고, 엔티티 id 매핑");
-        Map<Long, Long> idMapByProductId = recommendFurnitureService.saveRecommendFurniture(infos);
-
-        // 4. 최종 응답 조립 (Facade 책임) - id 포함
-        log.info("최종 응답 조립 (Facade 책임) - id 포함");
-        List<FurnitureProductsInfoResponse.FurnitureProductInfo> responseInfos = infos.stream()
-                .map(info -> FurnitureProductsInfoResponse.FurnitureProductInfo.of(
-                        idMapByProductId.get(info.furnitureProductId()),
-                        info.furnitureProductImageUrl(),
-                        info.furnitureProductSiteUrl(),
-                        info.furnitureProductName(),
-                        info.furnitureProductMallName(),
-                        info.furnitureProductId(),
-                        info.similarity()
-                ))
-                .toList();
+        // 3-1. 최종반환된 리스트를 기반으로 추천가구 엔티티 저장하고, 큐레이션 결과 저장
+        log.info("최종반환된 리스트를 기반으로 큐레이션 결과 저장");
+        List<FurnitureProductsInfoResponse.FurnitureProductInfo> responseInfos =
+                curationFurnitureService.saveCurationResults(furnitureTag, infos);
 
         log.info("큐레이션 종료:{}",formatted);
         return FurnitureProductsInfoResponse.of(user.getName(), responseInfos);
