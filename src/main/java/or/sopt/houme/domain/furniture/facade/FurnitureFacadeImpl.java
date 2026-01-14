@@ -50,7 +50,7 @@ public class FurnitureFacadeImpl implements FurnitureFacade {
             return FurnitureProductsInfoResponse.of(user.getName(), cachedInfos);
         }
 
-        // 2. 네이버 API 호출
+        // 2. DB에서 조회된 결과가 없는 경우 -> 네이버 API 호출
         log.info("네이버 API 호출을 시작합니다");
         String keyword = furnitureTag.getSearchKeyword();
         List<NaverFurnitureProductDto> products = naverShopService.search(keyword, 50);

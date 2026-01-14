@@ -2,6 +2,7 @@ package or.sopt.houme.domain.furniture.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.Comment;
 
 import java.time.LocalDateTime;
 
@@ -23,6 +24,7 @@ import java.time.LocalDateTime;
                 )
         }
 )
+@Comment("큐레이션용 가구 데이터를 저장하는 엔티티입니다")
 public class CurationFurniture {
 
     @Id
