@@ -39,6 +39,18 @@ public class GenerateImageController {
         return ResponseEntity.ok(ApiResponse.ok(imageInfoResponse));
     }
 
+    @Operation(summary = "Gemini 이미지 생성 API",
+            description = "사용자가 요청한 내용을 기반으로 새로운 이미지를 생성합니다. 생성된 이미지는 저장되며, 별도의 조회 API를 통해 확인할 수 있습니다.")
+    @PostMapping("/v1/generated-images/generate/gemini")
+    public ResponseEntity<ApiResponse<ImageInfoResponse>> generateImageByGemini(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @RequestBody @Valid GenerateImageRequest request){
+
+        ImageInfoResponse imageInfoResponse = generateImageFacade.generateImageByGemini(userDetails.getUser(), request);
+
+        return ResponseEntity.ok(ApiResponse.ok(imageInfoResponse));
+    }
+
     @Operation(summary = "LangChain를 이용한 이미지 생성 API",
             description = "사용자가 요청한 내용을 기반으로 새로운 이미지를 생성합니다. 생성된 이미지는 저장되며, 별도의 조회 API를 통해 확인할 수 있습니다. <br><br>" +
                     "FastAPI를 활용한 API 입니다")
@@ -52,6 +64,19 @@ public class GenerateImageController {
         return ResponseEntity.ok(ApiResponse.ok(imageInfoResponse));
     }
 
+    @Operation(summary = "Gemini 이미지 생성 API (FastAPI 대체)",
+            description = "사용자가 요청한 내용을 기반으로 새로운 이미지를 생성합니다. 생성된 이미지는 저장되며, 별도의 조회 API를 통해 확인할 수 있습니다. <br><br>" +
+                    "Gemini 모델을 활용한 API 입니다")
+    @PostMapping("/v2/generated-images/generate/gemini")
+    public ResponseEntity<ApiResponse<ImageInfoResponse>> generateImageByFastApiGemini(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @RequestBody @Valid GenerateImageRequest request){
+
+        ImageInfoResponse imageInfoResponse = generateImageFacade.generateImageByFastApiGemini(userDetails.getUser(), request);
+
+        return ResponseEntity.ok(ApiResponse.ok(imageInfoResponse));
+    }
+
     @Operation(summary = "비동기를 이용한 이미지 2장 생성 API",
             description = "사용자가 요청한 내용을 기반으로 높은 스타일 2개로 새로운 이미지 2장을 생성합니다. 생성된 이미지는 저장되며, 별도의 조회 API를 통해 확인할 수 있습니다. <br><br>" +
                     "FastAPI를 활용한 API 입니다")
@@ -61,6 +86,19 @@ public class GenerateImageController {
             @RequestBody @Valid GenerateImageRequest request){
 
         ImageInfoListResponse imageInfoListResponse = generateImageFacade.generateImageBy2ea(userDetails.getUser(), request);
+
+        return ResponseEntity.ok(ApiResponse.ok(imageInfoListResponse));
+    }
+
+    @Operation(summary = "Gemini 비동기 이미지 2장 생성 API",
+            description = "사용자가 요청한 내용을 기반으로 높은 스타일 2개로 새로운 이미지 2장을 생성합니다. 생성된 이미지는 저장되며, 별도의 조회 API를 통해 확인할 수 있습니다. <br><br>" +
+                    "Gemini 모델을 활용한 API 입니다")
+    @PostMapping("/v3/generated-images/generate/gemini")
+    public ResponseEntity<ApiResponse<ImageInfoListResponse>> generate2ImageByFastApiGemini(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @RequestBody @Valid GenerateImageRequest request){
+
+        ImageInfoListResponse imageInfoListResponse = generateImageFacade.generateImageBy2eaGemini(userDetails.getUser(), request);
 
         return ResponseEntity.ok(ApiResponse.ok(imageInfoListResponse));
     }
