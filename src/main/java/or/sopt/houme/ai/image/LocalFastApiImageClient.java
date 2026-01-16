@@ -39,7 +39,7 @@ public class LocalFastApiImageClient implements FastApiImageClient {
         // 1) 프롬프트 합성
         String prompt = promptService.makePrompt(request);
 
-        // 2) 이미지 생성 + S3 업로드 (내부 서비스 활용)
+        // 2) 이미지 생성 + S3 업로드 (Provider 선택은 resolver에서 처리)
         ImageUploadResponseDTO response = openAiService.createImage(prompt);
 
         // pullPrompt 정보 보강 (기존 FastAPI 응답 정합성 유지)

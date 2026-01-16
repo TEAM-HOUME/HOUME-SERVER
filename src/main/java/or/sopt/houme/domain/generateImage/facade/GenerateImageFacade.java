@@ -16,6 +16,7 @@ import or.sopt.houme.domain.generateImage.service.AsyncGenerateImageService;
 import or.sopt.houme.domain.generateImage.service.GenerateImageService;
 import or.sopt.houme.domain.generateImage.service.GenerateImageTransactionService;
 import or.sopt.houme.domain.generateImage.service.imageGenerationLog.ImageGenerationTransactionService;
+import or.sopt.houme.domain.gemini.service.GeminiImageService;
 import or.sopt.houme.domain.house.entity.House;
 import or.sopt.houme.domain.house.entity.enums.Activity;
 import or.sopt.houme.domain.house.entity.enums.Equilibrium;
@@ -24,6 +25,7 @@ import or.sopt.houme.domain.house.service.HouseService;
 import or.sopt.houme.domain.openai.facade.OpenAiFacade;
 import or.sopt.houme.domain.prompt.dto.PromptFurnitureListDTO;
 import or.sopt.houme.domain.prompt.dto.PromptRequestDTO;
+import or.sopt.houme.domain.prompt.service.PromptService;
 import or.sopt.houme.domain.taste.dto.response.TagDTO;
 import or.sopt.houme.domain.taste.entity.Tag;
 import or.sopt.houme.domain.taste.entity.Taste;
@@ -51,6 +53,8 @@ public class GenerateImageFacade {
 
     private final GenerateImageService generateImageService;
     private final OpenAiFacade openAiFacade;
+    private final PromptService promptService;
+    private final GeminiImageService geminiImageService;
     private final HouseService houseService;
     private final CreditService creditService;
     private final TasteTagService tasteTagService;
@@ -73,6 +77,15 @@ public class GenerateImageFacade {
     // 스프링을 이용한 이미지 생성
     @Transactional
     public ImageInfoResponse generateImage(User user, GenerateImageRequest generateImageRequest) {
+        return generateImageInternal(user, generateImageRequest, false);
+    }
+
+    @Transactional
+    public ImageInfoResponse generateImageByGemini(User user, GenerateImageRequest generateImageRequest) {
+        return generateImageInternal(user, generateImageRequest, true);
+    }
+
+    private ImageInfoResponse generateImageInternal(User user, GenerateImageRequest generateImageRequest, boolean useGemini) {
 
         /**
          * redis 저장 (user랑 상태값)
@@ -119,8 +132,15 @@ public class GenerateImageFacade {
 
         try {
 
-            // OpenAI로 image 생성
-            ImageUploadResponseDTO imageUploadResponseDTO = openAiFacade.makeImage(promptRequestDTO);
+            // OpenAI/Gemini로 image 생성
+            ImageUploadResponseDTO imageUploadResponseDTO;
+
+            if (useGemini) {
+                String prompt = promptService.makePrompt(promptRequestDTO);
+                imageUploadResponseDTO = geminiImageService.createImage(prompt);
+            } else {
+                imageUploadResponseDTO = openAiFacade.makeImage(promptRequestDTO);
+            }
 
             // house에 프롬프트 저장
             houseService.saveHousePrompt(house, imageUploadResponseDTO.getPullPrompt());
@@ -164,9 +184,18 @@ public class GenerateImageFacade {
             log.info("Image 생성 중 오류 발생 {}", e.getMessage());
             throw new GenerateImageException(ErrorCode.GENERATED_IMAGE_EXCEPTION);
         }
+    
     }
 
     public ImageInfoResponse generateImageByFastApi(User user, GenerateImageRequest generateImageRequest) {
+        return generateImageByFastApiInternal(user, generateImageRequest, false);
+    }
+
+    public ImageInfoResponse generateImageByFastApiGemini(User user, GenerateImageRequest generateImageRequest) {
+        return generateImageByFastApiInternal(user, generateImageRequest, true);
+    }
+
+    private ImageInfoResponse generateImageByFastApiInternal(User user, GenerateImageRequest generateImageRequest, boolean useGemini) {
 
         /**
          * [짧은 트랜잭션이 일어나는 부분] (하나의 로직으로 처리)
@@ -216,8 +245,15 @@ public class GenerateImageFacade {
             PromptRequestDTO promptRequestDTO = PromptRequestDTO.of(generateImageRequest.floorPlan().floorPlanId(),
                     priorityTag.getId(), equilibrium, promptFurnitureListDTO);
 
-            // OpenAI로 image 생성
-            ImageUploadResponseDTO imageUploadResponseDTO = openAiFacade.makeImageByFastApi(promptRequestDTO);
+            // OpenAI/Gemini로 image 생성
+            ImageUploadResponseDTO imageUploadResponseDTO;
+
+            if (useGemini) {
+                String prompt = promptService.makePrompt(promptRequestDTO);
+                imageUploadResponseDTO = geminiImageService.createImage(prompt);
+            } else {
+                imageUploadResponseDTO = openAiFacade.makeImageByFastApi(promptRequestDTO);
+            }
 
             ImageInfoResponse imageInfoResponse = generateImageTransactionService.saveAllDataAndConfirmCredit(
                     user, lockedCredit, generateImageRequest, imageUploadResponseDTO, priorityTag, activity
@@ -261,10 +297,19 @@ public class GenerateImageFacade {
                 creditService.releaseLock(user);
             }
         }
+    
     }
 
     // 비동기 이미지 생성 요청
     public ImageInfoListResponse generateImageBy2ea(User user, GenerateImageRequest generateImageRequest) {
+        return generateImageBy2eaInternal(user, generateImageRequest, false);
+    }
+
+    public ImageInfoListResponse generateImageBy2eaGemini(User user, GenerateImageRequest generateImageRequest) {
+        return generateImageBy2eaInternal(user, generateImageRequest, true);
+    }
+
+    private ImageInfoListResponse generateImageBy2eaInternal(User user, GenerateImageRequest generateImageRequest, boolean useGemini) {
 
         // finally 블록에서 사용하기 위해 선언
         Credit lockedCredit = null;
@@ -311,9 +356,13 @@ public class GenerateImageFacade {
             PromptRequestDTO promptRequestDTO1 = PromptRequestDTO.of(generateImageRequest.floorPlan().floorPlanId(),
                     priorityIdList.get(0).id(), equilibrium, promptFurnitureListDTO);
 
-            // OpenAI로 image 비동기 생성
+            // OpenAI/Gemini로 image 비동기 생성
             // 1번 이미지 (항상 실행됨)
-            futures.add(asyncGenerateImageService.generateImageAsync(promptRequestDTO1));
+            if (useGemini) {
+                futures.add(asyncGenerateImageService.generateGeminiImageAsync(promptRequestDTO1));
+            } else {
+                futures.add(asyncGenerateImageService.generateImageAsync(promptRequestDTO1));
+            }
 
             // 2번째 태그가 존재할 시에 2번 이미지 준비
             if (priorityIdList.size() > 1) {
@@ -321,9 +370,13 @@ public class GenerateImageFacade {
                 PromptRequestDTO promptRequestDTO2 = PromptRequestDTO.of(generateImageRequest.floorPlan().floorPlanId(),
                         priorityIdList.get(1).id(), equilibrium, promptFurnitureListDTO);
 
-                // OpenAI로 image 비동기 생성
+                // OpenAI/Gemini로 image 비동기 생성
                 // 2번 이미지
-                futures.add(asyncGenerateImageService.generateImageAsync(promptRequestDTO2));
+                if (useGemini) {
+                    futures.add(asyncGenerateImageService.generateGeminiImageAsync(promptRequestDTO2));
+                } else {
+                    futures.add(asyncGenerateImageService.generateImageAsync(promptRequestDTO2));
+                }
             }
 
             // allOf로 모든 1번, 2번 이미지 생성 기다리기
@@ -422,6 +475,7 @@ public class GenerateImageFacade {
                 creditService.releaseLock(user);
             }
         }
+    
     }
 
     // houseId로 결과 이미지 찾아오기
