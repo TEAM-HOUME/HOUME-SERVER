@@ -9,4 +9,6 @@ public interface AsyncGenerateImageService {
 
     // 비동기로 이미지 생성
     CompletableFuture<ImageUploadResponseDTO> generateImageAsync(PromptRequestDTO promptRequestDTO);
+
+    CompletableFuture<ImageUploadResponseDTO> generateGeminiImageAsync(PromptRequestDTO promptRequestDTO);
 }

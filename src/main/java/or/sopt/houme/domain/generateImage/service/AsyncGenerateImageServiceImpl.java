@@ -2,7 +2,9 @@ package or.sopt.houme.domain.generateImage.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import or.sopt.houme.domain.gemini.service.GeminiImageService;
 import or.sopt.houme.domain.openai.facade.OpenAiFacade;
+import or.sopt.houme.domain.prompt.service.PromptService;
 import or.sopt.houme.domain.prompt.dto.PromptRequestDTO;
 import or.sopt.houme.global.dto.ImageUploadResponseDTO;
 import org.springframework.scheduling.annotation.Async;
@@ -17,6 +19,8 @@ public class AsyncGenerateImageServiceImpl implements AsyncGenerateImageService{
 
     // OpenAi 이미지 생성 파사드
     private final OpenAiFacade openAiFacade;
+    private final PromptService promptService;
+    private final GeminiImageService geminiImageService;
 
     // 비동기 이미지 생성 처리
     @Async("imageGenerationExecutor")
@@ -33,6 +37,21 @@ public class AsyncGenerateImageServiceImpl implements AsyncGenerateImageService{
             // 예외 발생
             log.error("이미지 생성 중 예외발생: {}", e.getMessage());
             // 비동기 작업 내에서 발생한 예외를 CompletableFuture에 담아 반환
+            return CompletableFuture.failedFuture(e);
+        }
+
+    }
+
+    @Async("imageGenerationExecutor")
+    @Override
+    public CompletableFuture<ImageUploadResponseDTO> generateGeminiImageAsync(PromptRequestDTO promptRequestDTO) {
+
+        try {
+            String prompt = promptService.makePrompt(promptRequestDTO);
+            ImageUploadResponseDTO response = geminiImageService.createImage(prompt);
+            return CompletableFuture.completedFuture(response);
+        } catch (Exception e){
+            log.error("이미지 생성 중 예외발생: {}", e.getMessage());
             return CompletableFuture.failedFuture(e);
         }
 
