@@ -1,12 +1,12 @@
-package or.sopt.houme.domain.carousel.controller;
+package or.sopt.houme.domain.house.presentation.carousel.controller;
 
-import or.sopt.houme.domain.carousel.controller.dto.GetCarouselListResponseDTO;
-import or.sopt.houme.domain.carousel.controller.dto.GetCarouselResponseDTO;
-import or.sopt.houme.domain.carousel.facade.CarouselOptimisticLockFacade;
-import or.sopt.houme.domain.carousel.service.CarouselService;
-import or.sopt.houme.domain.carousel.service.CarouselServiceImpl;
-import or.sopt.houme.domain.user.controller.dto.CustomUserDetails;
-import or.sopt.houme.domain.user.entity.*;
+import or.sopt.houme.domain.house.presentation.carousel.controller.dto.GetCarouselListResponseDTO;
+import or.sopt.houme.domain.house.presentation.carousel.controller.dto.GetCarouselResponseDTO;
+import or.sopt.houme.domain.house.service.carousel.facade.CarouselOptimisticLockFacade;
+import or.sopt.houme.domain.house.service.carousel.CarouselService;
+import or.sopt.houme.domain.house.service.carousel.CarouselServiceImpl;
+import or.sopt.houme.domain.user.presentation.controller.dto.CustomUserDetails;
+import or.sopt.houme.domain.user.model.entity.*;
 import or.sopt.houme.global.api.ErrorCode;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;

@@ -1,11 +1,11 @@
-package or.sopt.houme.domain.floorPlan.service;
+package or.sopt.houme.domain.house.service.floorPlan;
 
-import or.sopt.houme.domain.floorPlan.dto.response.FloorPlanListResponse;
-import or.sopt.houme.domain.floorPlan.entity.FloorPlan;
-import or.sopt.houme.domain.floorPlan.repository.FloorPlanRepository;
-import or.sopt.houme.domain.house.entity.enums.Equilibrium;
-import or.sopt.houme.domain.house.entity.enums.Form;
-import or.sopt.houme.domain.house.entity.enums.Structure;
+import or.sopt.houme.domain.house.presentation.floorPlan.dto.response.FloorPlanListResponse;
+import or.sopt.houme.domain.house.model.floorPlan.entity.FloorPlan;
+import or.sopt.houme.domain.house.repository.floorPlan.FloorPlanRepository;
+import or.sopt.houme.domain.house.model.entity.enums.Equilibrium;
+import or.sopt.houme.domain.house.model.entity.enums.Form;
+import or.sopt.houme.domain.house.model.entity.enums.Structure;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

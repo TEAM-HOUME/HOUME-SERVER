@@ -1,7 +1,7 @@
-package or.sopt.houme.domain.house.controller;
+package or.sopt.houme.domain.house.presentation.controller;
 
-import or.sopt.houme.domain.house.dto.HouseOptionDTO;
-import or.sopt.houme.domain.house.dto.response.HouseOptionsResponse;
+import or.sopt.houme.domain.house.presentation.dto.HouseOptionDTO;
+import or.sopt.houme.domain.house.presentation.dto.response.HouseOptionsResponse;
 import or.sopt.houme.domain.house.service.HouseService;
 import or.sopt.houme.global.jwt.JWTFilter;
 import org.junit.jupiter.api.DisplayName;

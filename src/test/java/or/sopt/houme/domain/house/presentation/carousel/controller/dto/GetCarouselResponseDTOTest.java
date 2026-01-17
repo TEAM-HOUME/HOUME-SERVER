@@ -1,6 +1,6 @@
-package or.sopt.houme.domain.carousel.controller.dto;
+package or.sopt.houme.domain.house.presentation.carousel.controller.dto;
 
-import or.sopt.houme.domain.carousel.entity.Carousel;
+import or.sopt.houme.domain.house.model.carousel.entity.Carousel;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 

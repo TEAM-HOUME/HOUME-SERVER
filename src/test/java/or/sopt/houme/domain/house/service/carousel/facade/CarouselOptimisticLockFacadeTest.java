@@ -1,12 +1,12 @@
-package or.sopt.houme.domain.carousel.facade;
+package or.sopt.houme.domain.house.service.carousel.facade;
 
 import jakarta.persistence.Column;
-import or.sopt.houme.domain.carousel.entity.Carousel;
-import or.sopt.houme.domain.carousel.repository.CarouselRepository;
-import or.sopt.houme.domain.carousel.service.CarouselServiceImpl;
-import or.sopt.houme.domain.preference.entity.CarouselPreference;
+import or.sopt.houme.domain.house.model.carousel.entity.Carousel;
+import or.sopt.houme.domain.house.repository.carousel.CarouselRepository;
+import or.sopt.houme.domain.house.service.carousel.CarouselServiceImpl;
+import or.sopt.houme.domain.preference.model.entity.CarouselPreference;
 import or.sopt.houme.domain.preference.repository.CarouselPreferenceRepository;
-import or.sopt.houme.domain.user.entity.*;
+import or.sopt.houme.domain.user.model.entity.*;
 import or.sopt.houme.domain.user.repository.UserRepository;
 import or.sopt.houme.global.api.ErrorCode;
 import or.sopt.houme.global.api.handler.CarouselException;
