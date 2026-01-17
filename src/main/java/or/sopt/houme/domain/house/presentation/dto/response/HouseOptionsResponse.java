@@ -1,6 +1,6 @@
-package or.sopt.houme.domain.house.dto.response;
+package or.sopt.houme.domain.house.presentation.dto.response;
 
-import or.sopt.houme.domain.house.dto.HouseOptionDTO;
+import or.sopt.houme.domain.house.presentation.dto.HouseOptionDTO;
 
 import java.util.List;
 

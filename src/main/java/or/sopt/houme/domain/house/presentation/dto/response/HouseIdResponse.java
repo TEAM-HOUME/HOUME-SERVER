@@ -1,4 +1,4 @@
-package or.sopt.houme.domain.house.dto.response;
+package or.sopt.houme.domain.house.presentation.dto.response;
 
 public record HouseIdResponse(
         Long houseId

@@ -1,4 +1,4 @@
-package or.sopt.houme.domain.house.dto;
+package or.sopt.houme.domain.house.presentation.dto;
 
 public record HouseOptionDTO(
         String code,

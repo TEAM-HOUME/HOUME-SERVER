@@ -1,4 +1,4 @@
-package or.sopt.houme.domain.house.dto.request;
+package or.sopt.houme.domain.house.presentation.dto.request;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;

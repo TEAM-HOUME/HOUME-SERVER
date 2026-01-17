@@ -1,14 +1,14 @@
-package or.sopt.houme.domain.house.controller;
+package or.sopt.houme.domain.house.presentation.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import or.sopt.houme.domain.house.dto.request.HouseSelectRequest;
-import or.sopt.houme.domain.house.dto.response.HouseIdResponse;
-import or.sopt.houme.domain.house.dto.response.HouseOptionsResponse;
+import or.sopt.houme.domain.house.presentation.dto.request.HouseSelectRequest;
+import or.sopt.houme.domain.house.presentation.dto.response.HouseIdResponse;
+import or.sopt.houme.domain.house.presentation.dto.response.HouseOptionsResponse;
 import or.sopt.houme.domain.house.service.HouseService;
-import or.sopt.houme.domain.user.controller.dto.CustomUserDetails;
+import or.sopt.houme.domain.user.presentation.controller.dto.CustomUserDetails;
 import or.sopt.houme.global.api.ApiResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;

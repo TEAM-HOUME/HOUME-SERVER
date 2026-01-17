@@ -1,9 +1,9 @@
-package or.sopt.houme.domain.house.entity.mapping;
+package or.sopt.houme.domain.house.model.entity.mapping;
 
 import jakarta.persistence.*;
 import lombok.*;
-import or.sopt.houme.domain.floorPlan.entity.FloorPlan;
-import or.sopt.houme.domain.house.entity.House;
+import or.sopt.houme.domain.house.model.floorPlan.entity.FloorPlan;
+import or.sopt.houme.domain.house.model.entity.House;
 
 @Entity
 @Getter

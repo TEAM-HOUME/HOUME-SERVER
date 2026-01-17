@@ -1,24 +1,24 @@
-package or.sopt.houme.domain.house.entity.mapping;
+package or.sopt.houme.domain.house.model.entity.mapping;
 
 import jakarta.persistence.*;
 import lombok.*;
-import or.sopt.houme.domain.furniture.entity.Furniture;
-import or.sopt.houme.domain.house.entity.House;
+import or.sopt.houme.domain.house.model.entity.House;
+import or.sopt.houme.domain.house.model.taste.entity.Taste;
 
 @Entity
-@Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Getter
 @AllArgsConstructor
 @Builder
-@Table(name = "house_furnitures")
-public class HouseFurniture {
+@Table(name = "house_tastes")
+public class HouseTaste {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "furniture_id")
-    private Furniture furniture;
+    @JoinColumn(name = "taste_id")
+    private Taste taste;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "house_id")

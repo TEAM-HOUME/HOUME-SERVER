@@ -1,14 +1,14 @@
-package or.sopt.houme.domain.house.entity;
+package or.sopt.houme.domain.house.model.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-import or.sopt.houme.domain.generateImage.entity.GenerateImage;
-import or.sopt.houme.domain.house.entity.enums.Activity;
-import or.sopt.houme.domain.house.entity.enums.Equilibrium;
-import or.sopt.houme.domain.house.entity.enums.Form;
-import or.sopt.houme.domain.house.entity.enums.Structure;
-import or.sopt.houme.domain.house.entity.mapping.HouseFloorPlan;
-import or.sopt.houme.domain.user.entity.User;
+import or.sopt.houme.domain.generateImage.model.entity.GenerateImage;
+import or.sopt.houme.domain.house.model.entity.enums.Activity;
+import or.sopt.houme.domain.house.model.entity.enums.Equilibrium;
+import or.sopt.houme.domain.house.model.entity.enums.Form;
+import or.sopt.houme.domain.house.model.entity.enums.Structure;
+import or.sopt.houme.domain.house.model.entity.mapping.HouseFloorPlan;
+import or.sopt.houme.domain.user.model.entity.User;
 
 import java.util.ArrayList;
 import java.util.List;
