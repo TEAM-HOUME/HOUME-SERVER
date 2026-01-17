@@ -1,12 +1,12 @@
-package or.sopt.houme.domain.carousel.controller;
+package or.sopt.houme.domain.house.presentation.carousel.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import or.sopt.houme.domain.carousel.controller.dto.GetCarouselListResponseDTO;
-import or.sopt.houme.domain.carousel.facade.CarouselOptimisticLockFacade;
-import or.sopt.houme.domain.carousel.service.CarouselService;
-import or.sopt.houme.domain.user.controller.dto.CustomUserDetails;
+import or.sopt.houme.domain.house.presentation.carousel.controller.dto.GetCarouselListResponseDTO;
+import or.sopt.houme.domain.house.service.carousel.facade.CarouselOptimisticLockFacade;
+import or.sopt.houme.domain.house.service.carousel.CarouselService;
+import or.sopt.houme.domain.user.presentation.controller.dto.CustomUserDetails;
 import or.sopt.houme.global.api.ApiResponse;
 import or.sopt.houme.global.api.ErrorCode;
 import or.sopt.houme.global.api.handler.CarouselException;

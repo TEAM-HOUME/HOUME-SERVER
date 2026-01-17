@@ -1,8 +1,8 @@
-package or.sopt.houme.domain.carousel.entity;
+package or.sopt.houme.domain.house.model.carousel.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-import or.sopt.houme.domain.taste.entity.Tag;
+import or.sopt.houme.domain.house.model.taste.entity.Tag;
 
 @Getter
 @Entity

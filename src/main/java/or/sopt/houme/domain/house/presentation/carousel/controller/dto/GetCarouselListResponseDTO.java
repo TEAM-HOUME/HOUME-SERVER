@@ -1,4 +1,4 @@
-package or.sopt.houme.domain.carousel.controller.dto;
+package or.sopt.houme.domain.house.presentation.carousel.controller.dto;
 
 import java.util.List;
 

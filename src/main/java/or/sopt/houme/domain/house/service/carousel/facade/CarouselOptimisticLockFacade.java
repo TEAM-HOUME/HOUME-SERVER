@@ -1,9 +1,9 @@
-package or.sopt.houme.domain.carousel.facade;
+package or.sopt.houme.domain.house.service.carousel.facade;
 
 import jakarta.persistence.OptimisticLockException;
 import lombok.RequiredArgsConstructor;
-import or.sopt.houme.domain.carousel.service.CarouselServiceImpl;
-import or.sopt.houme.domain.user.entity.User;
+import or.sopt.houme.domain.house.service.carousel.CarouselServiceImpl;
+import or.sopt.houme.domain.user.model.entity.User;
 import or.sopt.houme.global.api.ErrorCode;
 import or.sopt.houme.global.api.handler.CarouselException;
 import org.springframework.dao.DataIntegrityViolationException;

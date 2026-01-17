@@ -1,8 +1,8 @@
-package or.sopt.houme.domain.carousel.service;
+package or.sopt.houme.domain.house.service.carousel;
 
-import or.sopt.houme.domain.carousel.controller.dto.GetCarouselListResponseDTO;
-import or.sopt.houme.domain.carousel.entity.Carousel;
-import or.sopt.houme.domain.user.entity.User;
+import or.sopt.houme.domain.house.presentation.carousel.controller.dto.GetCarouselListResponseDTO;
+import or.sopt.houme.domain.house.model.carousel.entity.Carousel;
+import or.sopt.houme.domain.user.model.entity.User;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;

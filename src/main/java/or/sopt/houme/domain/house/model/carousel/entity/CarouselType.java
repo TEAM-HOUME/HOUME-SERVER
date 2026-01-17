@@ -1,4 +1,4 @@
-package or.sopt.houme.domain.carousel.entity;
+package or.sopt.houme.domain.house.model.carousel.entity;
 
 import jakarta.persistence.*;
 import lombok.*;

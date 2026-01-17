@@ -1,15 +1,15 @@
-package or.sopt.houme.domain.carousel.service;
+package or.sopt.houme.domain.house.service.carousel;
 
 import lombok.RequiredArgsConstructor;
-import or.sopt.houme.domain.carousel.controller.dto.GetCarouselListResponseDTO;
-import or.sopt.houme.domain.carousel.controller.dto.GetCarouselResponseDTO;
-import or.sopt.houme.domain.carousel.entity.Carousel;
-import or.sopt.houme.domain.carousel.repository.CarouselRepository;
-import or.sopt.houme.domain.preference.entity.CarouselPreference;
-import or.sopt.houme.domain.preference.entity.Preference;
+import or.sopt.houme.domain.house.presentation.carousel.controller.dto.GetCarouselListResponseDTO;
+import or.sopt.houme.domain.house.presentation.carousel.controller.dto.GetCarouselResponseDTO;
+import or.sopt.houme.domain.house.model.carousel.entity.Carousel;
+import or.sopt.houme.domain.house.repository.carousel.CarouselRepository;
+import or.sopt.houme.domain.preference.model.entity.CarouselPreference;
+import or.sopt.houme.domain.preference.model.entity.Preference;
 import or.sopt.houme.domain.preference.repository.CarouselPreferenceRepository;
 import or.sopt.houme.domain.preference.repository.PreferenceRepository;
-import or.sopt.houme.domain.user.entity.User;
+import or.sopt.houme.domain.user.model.entity.User;
 import or.sopt.houme.global.api.ErrorCode;
 import or.sopt.houme.global.api.handler.CarouselException;
 import org.springframework.stereotype.Service;

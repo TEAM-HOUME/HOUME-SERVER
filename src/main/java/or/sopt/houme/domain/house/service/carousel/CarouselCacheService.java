@@ -1,10 +1,10 @@
-package or.sopt.houme.domain.carousel.service;
+package or.sopt.houme.domain.house.service.carousel;
 
 import lombok.RequiredArgsConstructor;
-import or.sopt.houme.domain.carousel.controller.dto.GetCarouselResponseDTO;
-import or.sopt.houme.domain.carousel.entity.Carousel;
-import or.sopt.houme.domain.carousel.entity.CarouselType;
-import or.sopt.houme.domain.carousel.repository.CarouselRepository;
+import or.sopt.houme.domain.house.presentation.carousel.controller.dto.GetCarouselResponseDTO;
+import or.sopt.houme.domain.house.model.carousel.entity.Carousel;
+import or.sopt.houme.domain.house.model.carousel.entity.CarouselType;
+import or.sopt.houme.domain.house.repository.carousel.CarouselRepository;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
