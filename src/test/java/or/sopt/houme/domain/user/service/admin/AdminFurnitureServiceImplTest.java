@@ -1,17 +1,17 @@
-package or.sopt.houme.domain.admin.service;
+package or.sopt.houme.domain.user.service.admin;
 
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
-import or.sopt.houme.domain.admin.controller.dto.furniture.*;
-import or.sopt.houme.domain.furniture.entity.Furniture;
-import or.sopt.houme.domain.furniture.entity.FurnitureTag;
-import or.sopt.houme.domain.furniture.entity.FurnitureType;
-import or.sopt.houme.domain.furniture.entity.FurnitureTypes;
+import or.sopt.houme.domain.user.presentation.admin.controller.dto.furniture.*;
+import or.sopt.houme.domain.furniture.model.entity.Furniture;
+import or.sopt.houme.domain.furniture.model.entity.FurnitureTag;
+import or.sopt.houme.domain.furniture.model.entity.FurnitureType;
+import or.sopt.houme.domain.furniture.model.entity.FurnitureTypes;
 import or.sopt.houme.domain.furniture.repository.FurnitureRepository;
 import or.sopt.houme.domain.furniture.repository.FurnitureTagRepository;
 import or.sopt.houme.domain.furniture.repository.FurnitureTypeRepository;
-import or.sopt.houme.domain.taste.entity.Tag;
-import or.sopt.houme.domain.taste.repository.tag.TagRepository;
+import or.sopt.houme.domain.house.model.taste.entity.Tag;
+import or.sopt.houme.domain.house.repository.taste.tag.TagRepository;
 import or.sopt.houme.global.api.ErrorCode;
 import or.sopt.houme.global.api.GeneralException;
 import org.junit.jupiter.api.BeforeEach;

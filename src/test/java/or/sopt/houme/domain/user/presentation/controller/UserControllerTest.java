@@ -1,9 +1,9 @@
-package or.sopt.houme.domain.user.controller;
+package or.sopt.houme.domain.user.presentation.controller;
 
-import or.sopt.houme.domain.user.controller.dto.CustomUserDetails;
-import or.sopt.houme.domain.user.controller.dto.CustomUserDetailsService;
-import or.sopt.houme.domain.user.controller.dto.MyPageInfoResponse;
-import or.sopt.houme.domain.user.entity.*;
+import or.sopt.houme.domain.user.presentation.controller.dto.CustomUserDetails;
+import or.sopt.houme.domain.user.presentation.controller.dto.CustomUserDetailsService;
+import or.sopt.houme.domain.user.presentation.controller.dto.MyPageInfoResponse;
+import or.sopt.houme.domain.user.model.entity.*;
 import or.sopt.houme.domain.user.repository.BlacklistTokenRepository;
 import or.sopt.houme.domain.user.service.OAuthService;
 import or.sopt.houme.domain.user.service.UserDeletionService;

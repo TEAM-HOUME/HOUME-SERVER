@@ -1,4 +1,4 @@
-package or.sopt.houme.domain.user.valid;
+package or.sopt.houme.domain.user.presentation.valid;
 
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.http.Cookie;

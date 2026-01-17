@@ -1,10 +1,10 @@
-package or.sopt.houme.domain.user.controller.dto;
+package or.sopt.houme.domain.user.presentation.controller.dto;
 
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
 import jakarta.validation.ValidatorFactory;
-import or.sopt.houme.domain.user.entity.Gender;
+import or.sopt.houme.domain.user.model.entity.Gender;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

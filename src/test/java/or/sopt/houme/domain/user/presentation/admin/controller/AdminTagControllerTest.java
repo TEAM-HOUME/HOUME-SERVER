@@ -1,4 +1,4 @@
-package or.sopt.houme.domain.admin.controller;
+package or.sopt.houme.domain.user.presentation.admin.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.DisplayName;
@@ -10,12 +10,12 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
-import or.sopt.houme.domain.admin.controller.dto.AdminTagUpdateRequestDTO;
-import or.sopt.houme.domain.admin.controller.dto.tag.AdminTagDeleteRequestDTO;
-import or.sopt.houme.domain.admin.controller.dto.tag.AdminTagGetAllResponseDTO;
-import or.sopt.houme.domain.admin.controller.dto.tag.AdminTagGetResponseDTO;
-import or.sopt.houme.domain.admin.controller.dto.tag.AdminTagRequestDTO;
-import or.sopt.houme.domain.admin.service.AdminTagService;
+import or.sopt.houme.domain.user.presentation.admin.controller.dto.AdminTagUpdateRequestDTO;
+import or.sopt.houme.domain.user.presentation.admin.controller.dto.tag.AdminTagDeleteRequestDTO;
+import or.sopt.houme.domain.user.presentation.admin.controller.dto.tag.AdminTagGetAllResponseDTO;
+import or.sopt.houme.domain.user.presentation.admin.controller.dto.tag.AdminTagGetResponseDTO;
+import or.sopt.houme.domain.user.presentation.admin.controller.dto.tag.AdminTagRequestDTO;
+import or.sopt.houme.domain.user.service.admin.AdminTagService;
 
 import java.util.List;
 

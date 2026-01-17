@@ -1,4 +1,4 @@
-package or.sopt.houme.domain.user.controller;
+package or.sopt.houme.domain.user.presentation.controller;
 
 import or.sopt.houme.domain.user.service.UserLandingService;
 import or.sopt.houme.global.api.ApiResponse;

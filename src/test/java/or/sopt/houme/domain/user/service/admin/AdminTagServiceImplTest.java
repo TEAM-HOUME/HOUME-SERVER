@@ -1,14 +1,14 @@
-package or.sopt.houme.domain.admin.service;
+package or.sopt.houme.domain.user.service.admin;
 
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
-import or.sopt.houme.domain.admin.controller.dto.AdminTagUpdateRequestDTO;
-import or.sopt.houme.domain.admin.controller.dto.tag.AdminTagDeleteRequestDTO;
-import or.sopt.houme.domain.admin.controller.dto.tag.AdminTagGetAllResponseDTO;
-import or.sopt.houme.domain.admin.controller.dto.tag.AdminTagGetResponseDTO;
-import or.sopt.houme.domain.admin.controller.dto.tag.AdminTagRequestDTO;
-import or.sopt.houme.domain.taste.entity.Tag;
-import or.sopt.houme.domain.taste.repository.tag.TagRepository;
+import or.sopt.houme.domain.user.presentation.admin.controller.dto.AdminTagUpdateRequestDTO;
+import or.sopt.houme.domain.user.presentation.admin.controller.dto.tag.AdminTagDeleteRequestDTO;
+import or.sopt.houme.domain.user.presentation.admin.controller.dto.tag.AdminTagGetAllResponseDTO;
+import or.sopt.houme.domain.user.presentation.admin.controller.dto.tag.AdminTagGetResponseDTO;
+import or.sopt.houme.domain.user.presentation.admin.controller.dto.tag.AdminTagRequestDTO;
+import or.sopt.houme.domain.house.model.taste.entity.Tag;
+import or.sopt.houme.domain.house.repository.taste.tag.TagRepository;
 import or.sopt.houme.global.api.ErrorCode;
 import or.sopt.houme.global.api.GeneralException;
 import org.junit.jupiter.api.DisplayName;

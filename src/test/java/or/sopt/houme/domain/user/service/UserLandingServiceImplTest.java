@@ -2,11 +2,11 @@ package or.sopt.houme.domain.user.service;
 
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
-import or.sopt.houme.domain.user.entity.User;
+import or.sopt.houme.domain.user.model.entity.User;
 import or.sopt.houme.domain.user.repository.RefreshTokenRepository;
 import or.sopt.houme.domain.user.repository.UserRepository;
 import or.sopt.houme.domain.user.service.UserLandingServiceImpl;
-import or.sopt.houme.domain.user.valid.RefreshTokenValidator;
+import or.sopt.houme.domain.user.presentation.valid.RefreshTokenValidator;
 import or.sopt.houme.global.api.ErrorCode;
 import or.sopt.houme.global.api.handler.TokenException;
 import or.sopt.houme.global.api.handler.UserException;

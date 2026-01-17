@@ -1,4 +1,4 @@
-package or.sopt.houme.domain.user.controller.dto;
+package or.sopt.houme.domain.user.presentation.controller.dto;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

@@ -1,7 +1,7 @@
-package or.sopt.houme.domain.user.controller.dto;
+package or.sopt.houme.domain.user.presentation.controller.dto;
 
-import or.sopt.houme.domain.user.entity.Role;
-import or.sopt.houme.domain.user.entity.User;
+import or.sopt.houme.domain.user.model.entity.Role;
+import or.sopt.houme.domain.user.model.entity.User;
 import or.sopt.houme.global.api.ErrorCode;
 import or.sopt.houme.global.api.handler.UserException;
 import org.junit.jupiter.api.DisplayName;
