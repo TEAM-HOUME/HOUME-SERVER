@@ -1,9 +1,9 @@
-package or.sopt.houme.domain.address.entity;
+package or.sopt.houme.domain.house.model.address.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-import or.sopt.houme.domain.address.dto.request.AddressRequest;
-import or.sopt.houme.domain.user.entity.User;
+import or.sopt.houme.domain.house.presentation.address.dto.request.AddressRequest;
+import or.sopt.houme.domain.user.model.entity.User;
 
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)

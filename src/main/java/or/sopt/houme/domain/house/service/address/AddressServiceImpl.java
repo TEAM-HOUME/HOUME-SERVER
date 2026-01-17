@@ -1,10 +1,10 @@
-package or.sopt.houme.domain.address.service;
+package or.sopt.houme.domain.house.service.address;
 
 import lombok.RequiredArgsConstructor;
-import or.sopt.houme.domain.address.dto.request.AddressRequest;
-import or.sopt.houme.domain.address.entity.Address;
-import or.sopt.houme.domain.address.repository.AddressRepository;
-import or.sopt.houme.domain.user.entity.User;
+import or.sopt.houme.domain.house.presentation.address.dto.request.AddressRequest;
+import or.sopt.houme.domain.house.model.address.entity.Address;
+import or.sopt.houme.domain.house.repository.address.AddressRepository;
+import or.sopt.houme.domain.user.model.entity.User;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
