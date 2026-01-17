@@ -3,7 +3,7 @@ package or.sopt.houme.global.config;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
-import or.sopt.houme.domain.user.controller.dto.CustomUserDetails;
+import or.sopt.houme.domain.user.presentation.controller.dto.CustomUserDetails;
 import or.sopt.houme.domain.user.service.OAuthService;
 import or.sopt.houme.global.jwt.JWTFilter;
 import org.springframework.context.annotation.Bean;

@@ -1,8 +1,8 @@
 package or.sopt.houme.domain.furniture.service;
 
 import lombok.RequiredArgsConstructor;
-import or.sopt.houme.domain.furniture.dto.external.naverShop.FurnitureProductsInfoResponse;
-import or.sopt.houme.domain.furniture.entity.RecommendFurniture;
+import or.sopt.houme.domain.furniture.infrastructure.dto.external.naverShop.FurnitureProductsInfoResponse;
+import or.sopt.houme.domain.furniture.model.entity.RecommendFurniture;
 import or.sopt.houme.domain.furniture.repository.RecommendFurnitureRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

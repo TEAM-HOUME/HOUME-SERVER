@@ -1,6 +1,6 @@
 package or.sopt.houme.domain.house.repository;
 
-import or.sopt.houme.domain.house.entity.mapping.HouseFurniture;
+import or.sopt.houme.domain.house.model.entity.mapping.HouseFurniture;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

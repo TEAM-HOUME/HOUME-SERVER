@@ -1,6 +1,6 @@
 package or.sopt.houme.domain.preference.repository;
 
-import or.sopt.houme.domain.preference.entity.CarouselPreference;
+import or.sopt.houme.domain.preference.model.entity.CarouselPreference;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 

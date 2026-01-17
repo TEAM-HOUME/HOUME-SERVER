@@ -1,6 +1,6 @@
 package or.sopt.houme.domain.house.repository;
 
-import or.sopt.houme.domain.house.entity.mapping.HouseFloorPlan;
+import or.sopt.houme.domain.house.model.entity.mapping.HouseFloorPlan;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;

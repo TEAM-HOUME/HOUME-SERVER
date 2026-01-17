@@ -1,0 +1,31 @@
+package or.sopt.houme.domain.generateImage.presentation.openai.controller;
+
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.RequiredArgsConstructor;
+import or.sopt.houme.domain.generateImage.service.openai.facade.OpenAiFacadeImpl;
+import or.sopt.houme.domain.generateImage.service.prompt.dto.PromptRequestDTO;
+import or.sopt.houme.global.api.ApiResponse;
+import or.sopt.houme.global.dto.ImageUploadResponseDTO;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+@RestController
+@RequiredArgsConstructor
+@RequestMapping("api/v1/image")
+@Tag(name = "LLM 호출로직 테스트 API")
+public class OpenAiController {
+
+    private final OpenAiFacadeImpl openAiFacade;
+
+    @Operation(summary = "chatgpt-image-1 을 활용한 이미지 저장 API",
+        description = "실제 성능 테스트를 위한 메서드입니다. **호출 시, 서버 전재연에게 반드시 문의해주세요**")
+    @PostMapping(value = "/generate")
+    public ResponseEntity<ApiResponse<String>> generate() {
+
+        ImageUploadResponseDTO responseDTO = openAiFacade.testMakeImage();
+
+        return ResponseEntity.ok().body(ApiResponse.ok(responseDTO.getImageLink()));
+    }
+
+}

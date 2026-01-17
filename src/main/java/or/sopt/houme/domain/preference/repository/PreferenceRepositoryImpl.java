@@ -2,12 +2,12 @@ package or.sopt.houme.domain.preference.repository;
 
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
-import or.sopt.houme.domain.generateImage.entity.QGenerateImage;
-import or.sopt.houme.domain.house.entity.QHouse;
-import or.sopt.houme.domain.preference.entity.Preference;
-import or.sopt.houme.domain.preference.entity.QGenerateImagePreference;
-import or.sopt.houme.domain.preference.entity.QPreference;
-import or.sopt.houme.domain.user.entity.QUser;
+import or.sopt.houme.domain.generateImage.model.entity.QGenerateImage;
+import or.sopt.houme.domain.house.model.entity.QHouse;
+import or.sopt.houme.domain.preference.model.entity.Preference;
+import or.sopt.houme.domain.preference.model.entity.QGenerateImagePreference;
+import or.sopt.houme.domain.preference.model.entity.QPreference;
+import or.sopt.houme.domain.user.model.entity.QUser;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;

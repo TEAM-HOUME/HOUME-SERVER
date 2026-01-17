@@ -1,13 +1,13 @@
 package or.sopt.houme.domain.furniture.service;
 
 import lombok.RequiredArgsConstructor;
-import or.sopt.houme.domain.furniture.entity.Jjym;
-import or.sopt.houme.domain.furniture.entity.RecommendFurniture;
-import or.sopt.houme.domain.furniture.dto.response.JjymItemResponse;
-import or.sopt.houme.domain.furniture.dto.response.JjymListResponse;
+import or.sopt.houme.domain.furniture.model.entity.Jjym;
+import or.sopt.houme.domain.furniture.model.entity.RecommendFurniture;
+import or.sopt.houme.domain.furniture.presentation.dto.response.JjymItemResponse;
+import or.sopt.houme.domain.furniture.presentation.dto.response.JjymListResponse;
 import or.sopt.houme.domain.furniture.repository.JjymRepository;
 import or.sopt.houme.domain.furniture.repository.RecommendFurnitureRepository;
-import or.sopt.houme.domain.user.entity.User;
+import or.sopt.houme.domain.user.model.entity.User;
 import or.sopt.houme.domain.user.repository.UserRepository;
 import or.sopt.houme.global.api.ErrorCode;
 import or.sopt.houme.global.api.GeneralException;

@@ -1,7 +1,7 @@
 package or.sopt.houme.domain.house.repository;
 
-import or.sopt.houme.domain.house.entity.House;
-import or.sopt.houme.domain.user.entity.User;
+import or.sopt.houme.domain.house.model.entity.House;
+import or.sopt.houme.domain.user.model.entity.User;
 
 import java.util.List;
 import java.util.Optional;

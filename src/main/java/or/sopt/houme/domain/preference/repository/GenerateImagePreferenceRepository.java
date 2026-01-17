@@ -1,6 +1,6 @@
 package or.sopt.houme.domain.preference.repository;
 
-import or.sopt.houme.domain.preference.entity.GenerateImagePreference;
+import or.sopt.houme.domain.preference.model.entity.GenerateImagePreference;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

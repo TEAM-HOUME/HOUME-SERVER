@@ -1,17 +1,17 @@
 package or.sopt.houme.domain.generateImage.service;
 
 import lombok.RequiredArgsConstructor;
-import or.sopt.houme.domain.credit.entity.Credit;
+import or.sopt.houme.domain.credit.model.entity.Credit;
 import or.sopt.houme.domain.credit.service.CreditService;
-import or.sopt.houme.domain.generateImage.dto.request.GenerateImageRequest;
-import or.sopt.houme.domain.generateImage.dto.response.ImageInfoResponse;
-import or.sopt.houme.domain.generateImage.entity.GenerateImage;
-import or.sopt.houme.domain.house.entity.House;
-import or.sopt.houme.domain.house.entity.enums.Activity;
+import or.sopt.houme.domain.generateImage.presentation.dto.request.GenerateImageRequest;
+import or.sopt.houme.domain.generateImage.presentation.dto.response.ImageInfoResponse;
+import or.sopt.houme.domain.generateImage.model.entity.GenerateImage;
+import or.sopt.houme.domain.house.model.entity.House;
+import or.sopt.houme.domain.house.model.entity.enums.Activity;
 import or.sopt.houme.domain.house.service.HouseService;
-import or.sopt.houme.domain.taste.dto.response.TagDTO;
-import or.sopt.houme.domain.taste.entity.Tag;
-import or.sopt.houme.domain.user.entity.User;
+import or.sopt.houme.domain.house.presentation.taste.dto.response.TagDTO;
+import or.sopt.houme.domain.house.model.taste.entity.Tag;
+import or.sopt.houme.domain.user.model.entity.User;
 import or.sopt.houme.domain.user.service.UserService;
 import or.sopt.houme.global.dto.ImageUploadResponseDTO;
 import org.springframework.stereotype.Service;

@@ -1,8 +1,8 @@
 package or.sopt.houme.domain.furniture.repository;
 
-import or.sopt.houme.domain.furniture.entity.Furniture;
-import or.sopt.houme.domain.furniture.entity.FurnitureTag;
-import or.sopt.houme.domain.taste.entity.Tag;
+import or.sopt.houme.domain.furniture.model.entity.Furniture;
+import or.sopt.houme.domain.furniture.model.entity.FurnitureTag;
+import or.sopt.houme.domain.house.model.taste.entity.Tag;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

@@ -2,10 +2,10 @@ package or.sopt.houme.domain.credit.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import or.sopt.houme.domain.credit.entity.Credit;
-import or.sopt.houme.domain.credit.entity.CreditStatus;
+import or.sopt.houme.domain.credit.model.entity.Credit;
+import or.sopt.houme.domain.credit.model.entity.CreditStatus;
 import or.sopt.houme.domain.credit.repository.CreditRepository;
-import or.sopt.houme.domain.user.entity.User;
+import or.sopt.houme.domain.user.model.entity.User;
 import or.sopt.houme.global.api.ErrorCode;
 import or.sopt.houme.global.api.handler.CreditException;
 import org.redisson.api.RLock;

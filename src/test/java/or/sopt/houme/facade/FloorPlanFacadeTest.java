@@ -1,15 +1,15 @@
 package or.sopt.houme.facade;
 
-import or.sopt.houme.domain.floorPlan.dto.response.FloorPlanListResponse;
-import or.sopt.houme.domain.floorPlan.dto.response.FloorPlanResponse;
-import or.sopt.houme.domain.floorPlan.facade.FloorPlanFacade;
-import or.sopt.houme.domain.floorPlan.service.FloorPlanService;
-import or.sopt.houme.domain.house.dto.LatestHouseConditionDTO;
-import or.sopt.houme.domain.house.entity.enums.Equilibrium;
-import or.sopt.houme.domain.house.entity.enums.Form;
-import or.sopt.houme.domain.house.entity.enums.Structure;
+import or.sopt.houme.domain.house.presentation.floorPlan.dto.response.FloorPlanListResponse;
+import or.sopt.houme.domain.house.presentation.floorPlan.dto.response.FloorPlanResponse;
+import or.sopt.houme.domain.house.service.floorPlan.facade.FloorPlanFacade;
+import or.sopt.houme.domain.house.service.floorPlan.FloorPlanService;
+import or.sopt.houme.domain.house.presentation.dto.LatestHouseConditionDTO;
+import or.sopt.houme.domain.house.model.entity.enums.Equilibrium;
+import or.sopt.houme.domain.house.model.entity.enums.Form;
+import or.sopt.houme.domain.house.model.entity.enums.Structure;
 import or.sopt.houme.domain.house.service.HouseService;
-import or.sopt.houme.domain.user.entity.*;
+import or.sopt.houme.domain.user.model.entity.*;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

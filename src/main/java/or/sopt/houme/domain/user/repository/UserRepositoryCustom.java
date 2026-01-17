@@ -1,6 +1,6 @@
 package or.sopt.houme.domain.user.repository;
 
-import or.sopt.houme.domain.generateImage.entity.GenerateImage;
+import or.sopt.houme.domain.generateImage.model.entity.GenerateImage;
 
 import java.util.Optional;
 

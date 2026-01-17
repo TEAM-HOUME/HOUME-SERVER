@@ -2,10 +2,10 @@ package or.sopt.houme.domain.house.repository;
 
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
-import or.sopt.houme.domain.generateImage.entity.QGenerateImage;
-import or.sopt.houme.domain.house.entity.House;
-import or.sopt.houme.domain.house.entity.QHouse;
-import or.sopt.houme.domain.user.entity.User;
+import or.sopt.houme.domain.generateImage.model.entity.QGenerateImage;
+import or.sopt.houme.domain.house.model.entity.House;
+import or.sopt.houme.domain.house.model.entity.QHouse;
+import or.sopt.houme.domain.user.model.entity.User;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
