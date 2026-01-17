@@ -2,7 +2,7 @@ package or.sopt.houme.domain.user.repository;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
-import or.sopt.houme.domain.user.entity.record.SignupSession;
+import or.sopt.houme.domain.user.model.entity.record.SignupSession;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;

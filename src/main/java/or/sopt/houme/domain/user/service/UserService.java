@@ -1,10 +1,10 @@
 package or.sopt.houme.domain.user.service;
 
-import or.sopt.houme.domain.user.controller.dto.ImageHistoriesResultPageResponse;
-import or.sopt.houme.domain.user.controller.dto.MyPageInfoResponse;
-import or.sopt.houme.domain.user.controller.dto.UserImageHistoryListResponse;
-import or.sopt.houme.domain.user.entity.Gender;
-import or.sopt.houme.domain.user.entity.User;
+import or.sopt.houme.domain.user.presentation.controller.dto.ImageHistoriesResultPageResponse;
+import or.sopt.houme.domain.user.presentation.controller.dto.MyPageInfoResponse;
+import or.sopt.houme.domain.user.presentation.controller.dto.UserImageHistoryListResponse;
+import or.sopt.houme.domain.user.model.entity.Gender;
+import or.sopt.houme.domain.user.model.entity.User;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
