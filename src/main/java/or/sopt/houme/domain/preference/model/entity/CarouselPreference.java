@@ -1,8 +1,8 @@
-package or.sopt.houme.domain.preference.entity;
+package or.sopt.houme.domain.preference.model.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-import or.sopt.houme.domain.carousel.entity.Carousel;
+import or.sopt.houme.domain.house.model.carousel.entity.Carousel;
 
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)

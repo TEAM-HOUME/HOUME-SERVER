@@ -1,11 +1,11 @@
-package or.sopt.houme.domain.preference.controller;
+package or.sopt.houme.domain.preference.presentation.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import or.sopt.houme.domain.preference.dto.response.FactorsResponse;
+import or.sopt.houme.domain.preference.presentation.dto.response.FactorsResponse;
 import or.sopt.houme.domain.preference.service.FactorService;
-import or.sopt.houme.domain.user.controller.dto.CustomUserDetails;
+import or.sopt.houme.domain.user.presentation.controller.dto.CustomUserDetails;
 import or.sopt.houme.global.api.ApiResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;

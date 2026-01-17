@@ -1,6 +1,6 @@
 package or.sopt.houme.domain.preference.repository;
 
-import or.sopt.houme.domain.preference.entity.Factor;
+import or.sopt.houme.domain.preference.model.entity.Factor;
 
 import java.util.List;
 

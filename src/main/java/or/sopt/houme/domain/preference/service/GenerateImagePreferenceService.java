@@ -1,6 +1,6 @@
 package or.sopt.houme.domain.preference.service;
 
-import or.sopt.houme.domain.generateImage.entity.GenerateImage;
+import or.sopt.houme.domain.generateImage.model.entity.GenerateImage;
 
 public interface GenerateImagePreferenceService {
 

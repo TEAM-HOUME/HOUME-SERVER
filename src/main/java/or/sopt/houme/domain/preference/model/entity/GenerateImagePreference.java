@@ -1,11 +1,11 @@
-package or.sopt.houme.domain.preference.entity;
+package or.sopt.houme.domain.preference.model.entity;
 
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import or.sopt.houme.domain.generateImage.entity.GenerateImage;
+import or.sopt.houme.domain.generateImage.model.entity.GenerateImage;
 
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)

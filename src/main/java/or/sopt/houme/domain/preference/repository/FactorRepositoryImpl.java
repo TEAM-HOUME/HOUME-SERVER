@@ -2,9 +2,9 @@ package or.sopt.houme.domain.preference.repository;
 
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
-import or.sopt.houme.domain.preference.entity.Factor;
-import or.sopt.houme.domain.preference.entity.QFactor;
-import or.sopt.houme.domain.preference.entity.QPreferenceFactor;
+import or.sopt.houme.domain.preference.model.entity.Factor;
+import or.sopt.houme.domain.preference.model.entity.QFactor;
+import or.sopt.houme.domain.preference.model.entity.QPreferenceFactor;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
