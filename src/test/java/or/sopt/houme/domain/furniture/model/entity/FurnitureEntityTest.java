@@ -1,8 +1,8 @@
-package or.sopt.houme.domain.furniture.entity;
+package or.sopt.houme.domain.furniture.model.entity;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import or.sopt.houme.domain.admin.controller.dto.furniture.AdminFurnitureRequestDTO;
+import or.sopt.houme.domain.user.presentation.admin.controller.dto.furniture.AdminFurnitureRequestDTO;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
