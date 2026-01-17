@@ -1,9 +1,9 @@
 package or.sopt.houme.domain.generateImage.service.imageGenerationLog;
 
-import or.sopt.houme.domain.generateImage.dto.response.ImageInfoResponse;
-import or.sopt.houme.domain.generateImage.entity.ImageGenerationLog;
-import or.sopt.houme.domain.taste.entity.Tag;
-import or.sopt.houme.domain.taste.entity.Taste;
+import or.sopt.houme.domain.generateImage.presentation.dto.response.ImageInfoResponse;
+import or.sopt.houme.domain.generateImage.model.entity.ImageGenerationLog;
+import or.sopt.houme.domain.house.model.taste.entity.Tag;
+import or.sopt.houme.domain.house.model.taste.entity.Taste;
 
 import java.util.List;
 

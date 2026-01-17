@@ -2,10 +2,10 @@ package or.sopt.houme.domain.generateImage.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import or.sopt.houme.domain.gemini.service.GeminiImageService;
-import or.sopt.houme.domain.openai.facade.OpenAiFacade;
-import or.sopt.houme.domain.prompt.service.PromptService;
-import or.sopt.houme.domain.prompt.dto.PromptRequestDTO;
+import or.sopt.houme.domain.generateImage.infrastructure.gemini.service.GeminiImageService;
+import or.sopt.houme.domain.generateImage.service.openai.facade.OpenAiFacade;
+import or.sopt.houme.domain.generateImage.service.prompt.PromptService;
+import or.sopt.houme.domain.generateImage.service.prompt.dto.PromptRequestDTO;
 import or.sopt.houme.global.dto.ImageUploadResponseDTO;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;

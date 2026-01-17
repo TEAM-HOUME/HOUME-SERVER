@@ -1,9 +1,9 @@
-package or.sopt.houme.domain.generateImage.entity;
+package or.sopt.houme.domain.generateImage.model.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-import or.sopt.houme.domain.generateImage.dto.request.GenerateImageRequest;
-import or.sopt.houme.domain.house.entity.House;
+import or.sopt.houme.domain.generateImage.presentation.dto.request.GenerateImageRequest;
+import or.sopt.houme.domain.house.model.entity.House;
 import or.sopt.houme.global.dto.ImageUploadResponseDTO;
 import or.sopt.houme.global.entity.BaseEntity;
 

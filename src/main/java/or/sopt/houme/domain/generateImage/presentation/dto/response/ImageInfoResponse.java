@@ -1,4 +1,4 @@
-package or.sopt.houme.domain.generateImage.dto.response;
+package or.sopt.houme.domain.generateImage.presentation.dto.response;
 
 public record ImageInfoResponse(
         Long imageId,   // 이미지 식별자

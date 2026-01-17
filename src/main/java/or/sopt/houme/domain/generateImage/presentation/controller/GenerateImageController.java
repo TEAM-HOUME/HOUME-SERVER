@@ -1,16 +1,16 @@
-package or.sopt.houme.domain.generateImage.controller;
+package or.sopt.houme.domain.generateImage.presentation.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import or.sopt.houme.domain.generateImage.dto.request.GenerateImageRequest;
-import or.sopt.houme.domain.generateImage.dto.response.ImageInfoListResponse;
-import or.sopt.houme.domain.generateImage.dto.response.ImageInfoResponse;
-import or.sopt.houme.domain.generateImage.facade.GenerateImageFacade;
-import or.sopt.houme.domain.generateImage.facade.GenerateImageLikeFacade;
-import or.sopt.houme.domain.house.dto.request.IsLikeRequest;
-import or.sopt.houme.domain.user.controller.dto.CustomUserDetails;
+import or.sopt.houme.domain.generateImage.presentation.dto.request.GenerateImageRequest;
+import or.sopt.houme.domain.generateImage.presentation.dto.response.ImageInfoListResponse;
+import or.sopt.houme.domain.generateImage.presentation.dto.response.ImageInfoResponse;
+import or.sopt.houme.domain.generateImage.service.facade.GenerateImageFacade;
+import or.sopt.houme.domain.generateImage.service.facade.GenerateImageLikeFacade;
+import or.sopt.houme.domain.house.presentation.dto.request.IsLikeRequest;
+import or.sopt.houme.domain.user.presentation.controller.dto.CustomUserDetails;
 import or.sopt.houme.global.api.ApiResponse;
 import or.sopt.houme.global.api.ErrorCode;
 import or.sopt.houme.global.api.handler.GenerateImageException;

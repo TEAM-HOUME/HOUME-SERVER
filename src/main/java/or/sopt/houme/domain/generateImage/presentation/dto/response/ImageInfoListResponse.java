@@ -1,4 +1,4 @@
-package or.sopt.houme.domain.generateImage.dto.response;
+package or.sopt.houme.domain.generateImage.presentation.dto.response;
 
 import java.util.List;
 

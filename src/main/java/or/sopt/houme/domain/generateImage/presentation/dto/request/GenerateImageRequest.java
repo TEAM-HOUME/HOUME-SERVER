@@ -1,4 +1,4 @@
-package or.sopt.houme.domain.generateImage.dto.request;
+package or.sopt.houme.domain.generateImage.presentation.dto.request;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;

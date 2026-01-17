@@ -1,4 +1,4 @@
-package or.sopt.houme.domain.generateImage.entity;
+package or.sopt.houme.domain.generateImage.model.entity;
 
 import jakarta.persistence.*;
 import lombok.*;

@@ -1,7 +1,7 @@
 package or.sopt.houme.domain.generateImage.service;
 
-import or.sopt.houme.domain.generateImage.entity.GenerateImage;
-import or.sopt.houme.domain.house.entity.House;
+import or.sopt.houme.domain.generateImage.model.entity.GenerateImage;
+import or.sopt.houme.domain.house.model.entity.House;
 import or.sopt.houme.global.dto.ImageUploadResponseDTO;
 import org.springframework.transaction.annotation.Transactional;
 

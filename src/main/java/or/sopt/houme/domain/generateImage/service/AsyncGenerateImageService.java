@@ -1,6 +1,6 @@
 package or.sopt.houme.domain.generateImage.service;
 
-import or.sopt.houme.domain.prompt.dto.PromptRequestDTO;
+import or.sopt.houme.domain.generateImage.service.prompt.dto.PromptRequestDTO;
 import or.sopt.houme.global.dto.ImageUploadResponseDTO;
 
 import java.util.concurrent.CompletableFuture;
