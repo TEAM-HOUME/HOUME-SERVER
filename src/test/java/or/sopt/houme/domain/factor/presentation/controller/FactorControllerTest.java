@@ -1,7 +1,7 @@
-package or.sopt.houme.domain.factor.controller;
+package or.sopt.houme.domain.factor.presentation.controller;
 
-import or.sopt.houme.domain.preference.controller.FactorController;
-import or.sopt.houme.domain.preference.dto.response.FactorsResponse;
+import or.sopt.houme.domain.preference.presentation.controller.FactorController;
+import or.sopt.houme.domain.preference.presentation.dto.response.FactorsResponse;
 import or.sopt.houme.domain.preference.service.FactorService;
 import or.sopt.houme.global.jwt.JWTFilter;
 import org.junit.jupiter.api.DisplayName;

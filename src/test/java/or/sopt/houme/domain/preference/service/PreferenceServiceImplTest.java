@@ -1,6 +1,6 @@
 package or.sopt.houme.domain.preference.service;
 
-import or.sopt.houme.domain.preference.entity.Preference;
+import or.sopt.houme.domain.preference.model.entity.Preference;
 import or.sopt.houme.domain.preference.repository.PreferenceRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;

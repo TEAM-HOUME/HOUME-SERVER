@@ -2,7 +2,7 @@ package or.sopt.houme.domain.factor.repository;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
-import or.sopt.houme.domain.preference.entity.Factor;
+import or.sopt.houme.domain.preference.model.entity.Factor;
 import or.sopt.houme.domain.preference.repository.FactorRepositoryImpl;
 import or.sopt.houme.global.config.QuerydslConfig;
 import org.junit.jupiter.api.DisplayName;
