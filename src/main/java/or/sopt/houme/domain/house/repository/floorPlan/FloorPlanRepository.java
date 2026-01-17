@@ -1,6 +1,6 @@
-package or.sopt.houme.domain.floorPlan.repository;
+package or.sopt.houme.domain.house.repository.floorPlan;
 
-import or.sopt.houme.domain.floorPlan.entity.FloorPlan;
+import or.sopt.houme.domain.house.model.floorPlan.entity.FloorPlan;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

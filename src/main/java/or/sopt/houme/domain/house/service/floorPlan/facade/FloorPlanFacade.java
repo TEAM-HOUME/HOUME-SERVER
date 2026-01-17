@@ -1,11 +1,11 @@
-package or.sopt.houme.domain.floorPlan.facade;
+package or.sopt.houme.domain.house.service.floorPlan.facade;
 
 import lombok.RequiredArgsConstructor;
-import or.sopt.houme.domain.floorPlan.dto.response.FloorPlanListResponse;
-import or.sopt.houme.domain.floorPlan.service.FloorPlanService;
-import or.sopt.houme.domain.house.dto.LatestHouseConditionDTO;
+import or.sopt.houme.domain.house.presentation.floorPlan.dto.response.FloorPlanListResponse;
+import or.sopt.houme.domain.house.service.floorPlan.FloorPlanService;
+import or.sopt.houme.domain.house.presentation.dto.LatestHouseConditionDTO;
 import or.sopt.houme.domain.house.service.HouseService;
-import or.sopt.houme.domain.user.entity.User;
+import or.sopt.houme.domain.user.model.entity.User;
 import org.springframework.stereotype.Component;
 
 @Component

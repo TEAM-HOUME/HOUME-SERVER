@@ -1,10 +1,10 @@
-package or.sopt.houme.domain.floorPlan.entity;
+package or.sopt.houme.domain.house.model.floorPlan.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-import or.sopt.houme.domain.house.entity.enums.Equilibrium;
-import or.sopt.houme.domain.house.entity.enums.Form;
-import or.sopt.houme.domain.house.entity.enums.Structure;
+import or.sopt.houme.domain.house.model.entity.enums.Equilibrium;
+import or.sopt.houme.domain.house.model.entity.enums.Form;
+import or.sopt.houme.domain.house.model.entity.enums.Structure;
 
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)

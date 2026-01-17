@@ -1,4 +1,4 @@
-package or.sopt.houme.domain.floorPlan.dto.response;
+package or.sopt.houme.domain.house.presentation.floorPlan.dto.response;
 
 import java.util.List;
 

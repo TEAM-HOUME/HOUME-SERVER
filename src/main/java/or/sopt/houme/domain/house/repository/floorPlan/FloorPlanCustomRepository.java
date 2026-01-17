@@ -1,8 +1,8 @@
-package or.sopt.houme.domain.floorPlan.repository;
+package or.sopt.houme.domain.house.repository.floorPlan;
 
-import or.sopt.houme.domain.floorPlan.entity.FloorPlan;
-import or.sopt.houme.domain.house.entity.enums.Form;
-import or.sopt.houme.domain.house.entity.enums.Structure;
+import or.sopt.houme.domain.house.model.floorPlan.entity.FloorPlan;
+import or.sopt.houme.domain.house.model.entity.enums.Form;
+import or.sopt.houme.domain.house.model.entity.enums.Structure;
 
 import java.util.List;
 

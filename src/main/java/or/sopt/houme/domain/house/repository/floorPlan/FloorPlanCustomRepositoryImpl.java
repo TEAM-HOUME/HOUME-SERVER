@@ -1,15 +1,15 @@
-package or.sopt.houme.domain.floorPlan.repository;
+package or.sopt.houme.domain.house.repository.floorPlan;
 
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
-import or.sopt.houme.domain.floorPlan.entity.FloorPlan;
-import or.sopt.houme.domain.house.entity.enums.Form;
-import or.sopt.houme.domain.house.entity.enums.Structure;
+import or.sopt.houme.domain.house.model.floorPlan.entity.FloorPlan;
+import or.sopt.houme.domain.house.model.entity.enums.Form;
+import or.sopt.houme.domain.house.model.entity.enums.Structure;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
-import static or.sopt.houme.domain.floorPlan.entity.QFloorPlan.floorPlan;
+import static or.sopt.houme.domain.house.model.floorPlan.entity.QFloorPlan.floorPlan;
 
 @Repository
 @RequiredArgsConstructor

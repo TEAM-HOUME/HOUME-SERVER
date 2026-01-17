@@ -1,11 +1,11 @@
-package or.sopt.houme.domain.floorPlan.controller;
+package or.sopt.houme.domain.house.presentation.floorPlan.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import or.sopt.houme.domain.floorPlan.dto.response.FloorPlanListResponse;
-import or.sopt.houme.domain.user.controller.dto.CustomUserDetails;
-import or.sopt.houme.domain.floorPlan.facade.FloorPlanFacade;
+import or.sopt.houme.domain.house.presentation.floorPlan.dto.response.FloorPlanListResponse;
+import or.sopt.houme.domain.user.presentation.controller.dto.CustomUserDetails;
+import or.sopt.houme.domain.house.service.floorPlan.facade.FloorPlanFacade;
 import or.sopt.houme.global.api.ApiResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;

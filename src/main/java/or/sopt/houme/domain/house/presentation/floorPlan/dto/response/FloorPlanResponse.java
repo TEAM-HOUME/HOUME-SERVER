@@ -1,9 +1,9 @@
-package or.sopt.houme.domain.floorPlan.dto.response;
+package or.sopt.houme.domain.house.presentation.floorPlan.dto.response;
 
 import lombok.Builder;
-import or.sopt.houme.domain.floorPlan.entity.FloorPlan;
-import or.sopt.houme.domain.house.entity.enums.Form;
-import or.sopt.houme.domain.house.entity.enums.Structure;
+import or.sopt.houme.domain.house.model.floorPlan.entity.FloorPlan;
+import or.sopt.houme.domain.house.model.entity.enums.Form;
+import or.sopt.houme.domain.house.model.entity.enums.Structure;
 
 public record FloorPlanResponse(
         Long id,
