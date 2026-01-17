@@ -1,16 +1,16 @@
-package or.sopt.houme.domain.furniture.facade;
+package or.sopt.houme.domain.furniture.service.facade;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import or.sopt.houme.domain.furniture.dto.external.naverShop.FurnitureProductsInfoResponse;
-import or.sopt.houme.domain.furniture.dto.external.naverShop.forPlan.FurnitureProductsInfoResponseForPlan;
-import or.sopt.houme.domain.furniture.dto.external.naverShop.NaverFurnitureProductDto;
-import or.sopt.houme.domain.furniture.entity.FurnitureTag;
+import or.sopt.houme.domain.furniture.infrastructure.dto.external.naverShop.FurnitureProductsInfoResponse;
+import or.sopt.houme.domain.furniture.infrastructure.dto.external.naverShop.forPlan.FurnitureProductsInfoResponseForPlan;
+import or.sopt.houme.domain.furniture.infrastructure.dto.external.naverShop.NaverFurnitureProductDto;
+import or.sopt.houme.domain.furniture.model.entity.FurnitureTag;
 import or.sopt.houme.domain.furniture.service.CurationFurnitureService;
 import or.sopt.houme.domain.furniture.service.FurnitureService;
 import or.sopt.houme.domain.furniture.service.ImageHashService;
 import or.sopt.houme.domain.furniture.service.NaverShopService;
-import or.sopt.houme.domain.user.entity.User;
+import or.sopt.houme.domain.user.model.entity.User;
 import or.sopt.houme.global.api.ErrorCode;
 import or.sopt.houme.global.api.GeneralException;
 import org.springframework.stereotype.Component;

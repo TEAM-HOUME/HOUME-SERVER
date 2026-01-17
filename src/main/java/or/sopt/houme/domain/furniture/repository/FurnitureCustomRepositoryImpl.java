@@ -2,13 +2,13 @@ package or.sopt.houme.domain.furniture.repository;
 
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
-import or.sopt.houme.domain.furniture.entity.Furniture;
-import or.sopt.houme.domain.furniture.entity.QFurniture;
-import or.sopt.houme.domain.furniture.entity.QFurnitureTag;
-import or.sopt.houme.domain.furniture.entity.QFurnitureType;
-import or.sopt.houme.domain.house.entity.QHouse;
-import or.sopt.houme.domain.house.entity.mapping.QHouseFurniture;
-import or.sopt.houme.domain.taste.entity.QTag;
+import or.sopt.houme.domain.furniture.model.entity.Furniture;
+import or.sopt.houme.domain.furniture.model.entity.QFurniture;
+import or.sopt.houme.domain.furniture.model.entity.QFurnitureTag;
+import or.sopt.houme.domain.furniture.model.entity.QFurnitureType;
+import or.sopt.houme.domain.house.model.entity.QHouse;
+import or.sopt.houme.domain.house.model.entity.mapping.QHouseFurniture;
+import or.sopt.houme.domain.house.model.taste.entity.QTag;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;

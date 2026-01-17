@@ -1,6 +1,6 @@
-package or.sopt.houme.domain.furniture.dto;
+package or.sopt.houme.domain.furniture.presentation.dto;
 
-import or.sopt.houme.domain.house.entity.enums.Activity;
+import or.sopt.houme.domain.house.model.entity.enums.Activity;
 
 public record ActivityItem(
         String code,

@@ -2,9 +2,9 @@ package or.sopt.houme.domain.furniture.repository;
 
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
-import or.sopt.houme.domain.furniture.entity.Jjym;
-import or.sopt.houme.domain.furniture.entity.QJjym;
-import or.sopt.houme.domain.furniture.entity.QRecommendFurniture;
+import or.sopt.houme.domain.furniture.model.entity.Jjym;
+import or.sopt.houme.domain.furniture.model.entity.QJjym;
+import or.sopt.houme.domain.furniture.model.entity.QRecommendFurniture;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;

@@ -1,7 +1,7 @@
-package or.sopt.houme.domain.furniture.dto.response;
+package or.sopt.houme.domain.furniture.presentation.dto.response;
 
-import or.sopt.houme.domain.furniture.dto.FurnitureItem;
-import or.sopt.houme.domain.furniture.entity.FurnitureType;
+import or.sopt.houme.domain.furniture.presentation.dto.FurnitureItem;
+import or.sopt.houme.domain.furniture.model.entity.FurnitureType;
 
 import java.util.List;
 

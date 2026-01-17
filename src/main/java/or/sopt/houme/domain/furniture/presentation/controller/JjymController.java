@@ -1,13 +1,13 @@
-package or.sopt.houme.domain.furniture.controller;
+package or.sopt.houme.domain.furniture.presentation.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import or.sopt.houme.domain.furniture.dto.response.JjymListResponse;
-import or.sopt.houme.domain.furniture.dto.response.JjymToggleResponse;
-import or.sopt.houme.domain.furniture.facade.JjymOptimisticLockFacade;
+import or.sopt.houme.domain.furniture.presentation.dto.response.JjymListResponse;
+import or.sopt.houme.domain.furniture.presentation.dto.response.JjymToggleResponse;
+import or.sopt.houme.domain.furniture.service.facade.JjymOptimisticLockFacade;
 import or.sopt.houme.domain.furniture.service.JjymService;
-import or.sopt.houme.domain.user.controller.dto.CustomUserDetails;
+import or.sopt.houme.domain.user.presentation.controller.dto.CustomUserDetails;
 import or.sopt.houme.global.api.ApiResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;

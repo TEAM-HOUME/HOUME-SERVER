@@ -1,9 +1,9 @@
-package or.sopt.houme.domain.furniture.entity;
+package or.sopt.houme.domain.furniture.model.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-import or.sopt.houme.domain.admin.controller.dto.furniture.AdminFurniturePromptRequestDTO;
-import or.sopt.houme.domain.taste.entity.Tag;
+import or.sopt.houme.domain.user.presentation.admin.controller.dto.furniture.AdminFurniturePromptRequestDTO;
+import or.sopt.houme.domain.house.model.taste.entity.Tag;
 
 @Entity
 @Getter

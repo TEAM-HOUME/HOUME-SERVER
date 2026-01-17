@@ -1,4 +1,4 @@
-package or.sopt.houme.domain.furniture.dto.response;
+package or.sopt.houme.domain.furniture.presentation.dto.response;
 
 import java.util.List;
 

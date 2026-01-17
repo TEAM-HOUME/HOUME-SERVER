@@ -1,6 +1,6 @@
-package or.sopt.houme.domain.furniture.dto.response;
+package or.sopt.houme.domain.furniture.presentation.dto.response;
 
-import or.sopt.houme.domain.furniture.entity.RecommendFurniture;
+import or.sopt.houme.domain.furniture.model.entity.RecommendFurniture;
 
 public record JjymItemResponse(
         Long id,

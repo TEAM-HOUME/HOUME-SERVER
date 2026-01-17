@@ -1,14 +1,14 @@
-package or.sopt.houme.domain.furniture.controller;
+package or.sopt.houme.domain.furniture.presentation.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
-import or.sopt.houme.domain.furniture.dto.external.naverShop.FurnitureProductsInfoResponse;
-import or.sopt.houme.domain.furniture.dto.response.FurnitureAndActivityResponse;
-import or.sopt.houme.domain.furniture.dto.response.FurnitureCategoriesResponse;
-import or.sopt.houme.domain.furniture.dto.external.naverShop.forPlan.FurnitureProductsInfoResponseForPlan;
-import or.sopt.houme.domain.furniture.facade.FurnitureFacade;
+import or.sopt.houme.domain.furniture.infrastructure.dto.external.naverShop.FurnitureProductsInfoResponse;
+import or.sopt.houme.domain.furniture.presentation.dto.response.FurnitureAndActivityResponse;
+import or.sopt.houme.domain.furniture.presentation.dto.response.FurnitureCategoriesResponse;
+import or.sopt.houme.domain.furniture.infrastructure.dto.external.naverShop.forPlan.FurnitureProductsInfoResponseForPlan;
+import or.sopt.houme.domain.furniture.service.facade.FurnitureFacade;
 import or.sopt.houme.domain.furniture.service.FurnitureService;
-import or.sopt.houme.domain.user.controller.dto.CustomUserDetails;
+import or.sopt.houme.domain.user.presentation.controller.dto.CustomUserDetails;
 import or.sopt.houme.global.api.ApiResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;

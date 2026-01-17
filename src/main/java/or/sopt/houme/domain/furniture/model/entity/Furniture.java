@@ -1,11 +1,11 @@
-package or.sopt.houme.domain.furniture.entity;
+package or.sopt.houme.domain.furniture.model.entity;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import or.sopt.houme.domain.admin.controller.dto.furniture.AdminFurnitureRequestDTO;
+import or.sopt.houme.domain.user.presentation.admin.controller.dto.furniture.AdminFurnitureRequestDTO;
 
 import java.util.ArrayList;
 import java.util.List;

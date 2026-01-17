@@ -1,6 +1,6 @@
-package or.sopt.houme.domain.furniture.dto;
+package or.sopt.houme.domain.furniture.presentation.dto;
 
-import or.sopt.houme.domain.furniture.entity.Furniture;
+import or.sopt.houme.domain.furniture.model.entity.Furniture;
 
 import java.util.Set;
 

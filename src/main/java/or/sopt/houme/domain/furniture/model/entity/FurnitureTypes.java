@@ -1,4 +1,4 @@
-package or.sopt.houme.domain.furniture.entity;
+package or.sopt.houme.domain.furniture.model.entity;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;

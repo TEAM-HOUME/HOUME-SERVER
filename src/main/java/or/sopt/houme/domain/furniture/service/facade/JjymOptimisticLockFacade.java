@@ -1,9 +1,9 @@
-package or.sopt.houme.domain.furniture.facade;
+package or.sopt.houme.domain.furniture.service.facade;
 
 import jakarta.persistence.OptimisticLockException;
 import lombok.RequiredArgsConstructor;
 import or.sopt.houme.domain.furniture.service.JjymServiceImpl;
-import or.sopt.houme.domain.user.entity.User;
+import or.sopt.houme.domain.user.model.entity.User;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Component;
 

@@ -1,7 +1,7 @@
 package or.sopt.houme.domain.furniture.repository;
 
-import or.sopt.houme.domain.furniture.entity.CurationFurniture;
-import or.sopt.houme.domain.furniture.entity.FurnitureTag;
+import or.sopt.houme.domain.furniture.model.entity.CurationFurniture;
+import or.sopt.houme.domain.furniture.model.entity.FurnitureTag;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
