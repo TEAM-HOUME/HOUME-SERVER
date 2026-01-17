@@ -1,14 +1,14 @@
-package or.sopt.houme.domain.prompt.service;
+package or.sopt.houme.domain.generateImage.service.prompt;
 
-import or.sopt.houme.domain.floorPlan.entity.FloorPlan;
-import or.sopt.houme.domain.floorPlan.repository.FloorPlanRepository;
-import or.sopt.houme.domain.furniture.entity.FurnitureTag;
+import or.sopt.houme.domain.house.model.floorPlan.entity.FloorPlan;
+import or.sopt.houme.domain.house.repository.floorPlan.FloorPlanRepository;
+import or.sopt.houme.domain.furniture.model.entity.FurnitureTag;
 import or.sopt.houme.domain.furniture.repository.FurnitureTagRepository;
-import or.sopt.houme.domain.house.entity.enums.Equilibrium;
-import or.sopt.houme.domain.prompt.dto.PromptFurnitureListDTO;
-import or.sopt.houme.domain.prompt.dto.PromptRequestDTO;
-import or.sopt.houme.domain.taste.entity.Tag;
-import or.sopt.houme.domain.taste.repository.tag.TagRepository;
+import or.sopt.houme.domain.house.model.entity.enums.Equilibrium;
+import or.sopt.houme.domain.generateImage.service.prompt.dto.PromptFurnitureListDTO;
+import or.sopt.houme.domain.generateImage.service.prompt.dto.PromptRequestDTO;
+import or.sopt.houme.domain.house.model.taste.entity.Tag;
+import or.sopt.houme.domain.house.repository.taste.tag.TagRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

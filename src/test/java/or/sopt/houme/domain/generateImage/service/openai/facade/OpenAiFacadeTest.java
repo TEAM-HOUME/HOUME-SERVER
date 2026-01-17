@@ -1,10 +1,10 @@
-package or.sopt.houme.domain.openai.facade;
+package or.sopt.houme.domain.generateImage.service.openai.facade;
 
-import or.sopt.houme.domain.openai.service.OpenAiService;
-import or.sopt.houme.domain.prompt.dto.PromptFurnitureListDTO;
-import or.sopt.houme.domain.prompt.dto.PromptRequestDTO;
-import or.sopt.houme.domain.prompt.service.PromptService;
-import or.sopt.houme.domain.house.entity.enums.Equilibrium;
+import or.sopt.houme.domain.generateImage.infrastructure.openai.service.OpenAiService;
+import or.sopt.houme.domain.generateImage.service.prompt.dto.PromptFurnitureListDTO;
+import or.sopt.houme.domain.generateImage.service.prompt.dto.PromptRequestDTO;
+import or.sopt.houme.domain.generateImage.service.prompt.PromptService;
+import or.sopt.houme.domain.house.model.entity.enums.Equilibrium;
 import or.sopt.houme.global.dto.ImageUploadResponseDTO;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

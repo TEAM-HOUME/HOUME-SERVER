@@ -1,14 +1,14 @@
-package or.sopt.houme.domain.openai.service;
+package or.sopt.houme.domain.generateImage.infrastructure.openai.service;
 
 import org.junit.jupiter.api.DisplayName;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 
 import feign.FeignException;
-import or.sopt.houme.domain.openai.client.OpenAIImageClient;
-import or.sopt.houme.domain.openai.controller.dto.OpenAiRequest;
-import or.sopt.houme.domain.openai.controller.dto.OpenAiResponse;
-import or.sopt.houme.domain.openai.controller.dto.OpenAiResponse.ImageData;
+import or.sopt.houme.domain.generateImage.infrastructure.openai.client.OpenAIImageClient;
+import or.sopt.houme.domain.generateImage.presentation.openai.controller.dto.OpenAiRequest;
+import or.sopt.houme.domain.generateImage.presentation.openai.controller.dto.OpenAiResponse;
+import or.sopt.houme.domain.generateImage.presentation.openai.controller.dto.OpenAiResponse.ImageData;
 import or.sopt.houme.global.api.ErrorCode;
 import or.sopt.houme.global.api.handler.ChatGptException;
 import or.sopt.houme.global.api.handler.S3Exception;

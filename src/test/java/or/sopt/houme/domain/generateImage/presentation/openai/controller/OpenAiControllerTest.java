@@ -1,6 +1,6 @@
-package or.sopt.houme.domain.openai.controller;
+package or.sopt.houme.domain.generateImage.presentation.openai.controller;
 
-import or.sopt.houme.domain.openai.facade.OpenAiFacadeImpl;
+import or.sopt.houme.domain.generateImage.service.openai.facade.OpenAiFacadeImpl;
 import or.sopt.houme.global.dto.ImageUploadResponseDTO;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

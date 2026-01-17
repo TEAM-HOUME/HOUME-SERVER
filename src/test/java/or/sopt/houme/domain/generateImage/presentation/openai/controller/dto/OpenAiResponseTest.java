@@ -1,4 +1,4 @@
-package or.sopt.houme.domain.openai.controller.dto;
+package or.sopt.houme.domain.generateImage.presentation.openai.controller.dto;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.DisplayName;
