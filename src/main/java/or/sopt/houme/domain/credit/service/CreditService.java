@@ -1,7 +1,7 @@
 package or.sopt.houme.domain.credit.service;
 
-import or.sopt.houme.domain.credit.entity.Credit;
-import or.sopt.houme.domain.user.entity.User;
+import or.sopt.houme.domain.credit.model.entity.Credit;
+import or.sopt.houme.domain.user.model.entity.User;
 import org.springframework.transaction.annotation.Transactional;
 
 public interface CreditService {

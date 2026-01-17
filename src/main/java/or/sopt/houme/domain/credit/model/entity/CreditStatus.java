@@ -1,4 +1,4 @@
-package or.sopt.houme.domain.credit.entity;
+package or.sopt.houme.domain.credit.model.entity;
 
 public enum CreditStatus {
     ACTIVE,  // 사용가능

@@ -2,10 +2,10 @@ package or.sopt.houme.domain.credit.repository;
 
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
-import or.sopt.houme.domain.credit.entity.Credit;
-import or.sopt.houme.domain.credit.entity.CreditStatus;
-import or.sopt.houme.domain.credit.entity.QCredit;
-import or.sopt.houme.domain.user.entity.User;
+import or.sopt.houme.domain.credit.model.entity.Credit;
+import or.sopt.houme.domain.credit.model.entity.CreditStatus;
+import or.sopt.houme.domain.credit.model.entity.QCredit;
+import or.sopt.houme.domain.user.model.entity.User;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;

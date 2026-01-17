@@ -1,8 +1,8 @@
-package or.sopt.houme.domain.credit.entity;
+package or.sopt.houme.domain.credit.model.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-import or.sopt.houme.domain.user.entity.User;
+import or.sopt.houme.domain.user.model.entity.User;
 import or.sopt.houme.global.entity.BaseEntity;
 
 @Entity
