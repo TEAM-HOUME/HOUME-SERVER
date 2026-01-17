@@ -1,9 +1,9 @@
-package or.sopt.houme.domain.furniture.client;
+package or.sopt.houme.domain.furniture.infrastructure.client;
 
-import or.sopt.houme.domain.furniture.dto.external.fastApiImagehash.ImageHashRequest;
-import or.sopt.houme.domain.furniture.dto.external.fastApiImagehash.SimilarityResponse;
-import or.sopt.houme.domain.furniture.dto.external.fastApiImagehash.forPlan.ImageHashRequestForPlan;
-import or.sopt.houme.domain.furniture.dto.external.fastApiImagehash.forPlan.SimilarityResponseForPlan;
+import or.sopt.houme.domain.furniture.infrastructure.dto.external.fastApiImagehash.ImageHashRequest;
+import or.sopt.houme.domain.furniture.infrastructure.dto.external.fastApiImagehash.SimilarityResponse;
+import or.sopt.houme.domain.furniture.infrastructure.dto.external.fastApiImagehash.forPlan.ImageHashRequestForPlan;
+import or.sopt.houme.domain.furniture.infrastructure.dto.external.fastApiImagehash.forPlan.SimilarityResponseForPlan;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.PostMapping;

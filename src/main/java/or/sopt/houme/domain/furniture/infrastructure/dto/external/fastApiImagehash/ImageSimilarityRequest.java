@@ -1,4 +1,4 @@
-package or.sopt.houme.domain.furniture.dto.external.fastApiImagehash;
+package or.sopt.houme.domain.furniture.infrastructure.dto.external.fastApiImagehash;
 
 import java.util.List;
 

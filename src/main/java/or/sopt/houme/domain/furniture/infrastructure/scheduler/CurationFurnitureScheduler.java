@@ -1,10 +1,10 @@
-package or.sopt.houme.domain.furniture.scheduler;
+package or.sopt.houme.domain.furniture.infrastructure.scheduler;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import or.sopt.houme.domain.furniture.dto.external.naverShop.FurnitureProductsInfoResponse;
-import or.sopt.houme.domain.furniture.dto.external.naverShop.NaverFurnitureProductDto;
-import or.sopt.houme.domain.furniture.entity.FurnitureTag;
+import or.sopt.houme.domain.furniture.infrastructure.dto.external.naverShop.FurnitureProductsInfoResponse;
+import or.sopt.houme.domain.furniture.infrastructure.dto.external.naverShop.NaverFurnitureProductDto;
+import or.sopt.houme.domain.furniture.model.entity.FurnitureTag;
 import or.sopt.houme.domain.furniture.repository.FurnitureTagRepository;
 import or.sopt.houme.domain.furniture.service.CurationFurnitureService;
 import or.sopt.houme.domain.furniture.service.ImageHashService;

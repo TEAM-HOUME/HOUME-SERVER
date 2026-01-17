@@ -1,13 +1,13 @@
-package or.sopt.houme.ai.imagehash;
+package or.sopt.houme.domain.furniture.infrastructure.imagehash;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Component;
-import or.sopt.houme.domain.furniture.client.FastApiImageHashClient;
-import or.sopt.houme.domain.furniture.dto.external.fastApiImagehash.ImageHashRequest;
-import or.sopt.houme.domain.furniture.dto.external.fastApiImagehash.SimilarityResponse;
-import or.sopt.houme.domain.furniture.dto.external.fastApiImagehash.forPlan.ImageHashRequestForPlan;
-import or.sopt.houme.domain.furniture.dto.external.fastApiImagehash.forPlan.SimilarityResponseForPlan;
+import or.sopt.houme.domain.furniture.infrastructure.client.FastApiImageHashClient;
+import or.sopt.houme.domain.furniture.infrastructure.dto.external.fastApiImagehash.ImageHashRequest;
+import or.sopt.houme.domain.furniture.infrastructure.dto.external.fastApiImagehash.SimilarityResponse;
+import or.sopt.houme.domain.furniture.infrastructure.dto.external.fastApiImagehash.forPlan.ImageHashRequestForPlan;
+import or.sopt.houme.domain.furniture.infrastructure.dto.external.fastApiImagehash.forPlan.SimilarityResponseForPlan;
 
 import javax.imageio.ImageIO;
 import java.awt.*;

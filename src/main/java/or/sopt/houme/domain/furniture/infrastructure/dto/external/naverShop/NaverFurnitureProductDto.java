@@ -1,4 +1,4 @@
-package or.sopt.houme.domain.furniture.dto.external.naverShop;
+package or.sopt.houme.domain.furniture.infrastructure.dto.external.naverShop;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import or.sopt.houme.global.api.ErrorCode;

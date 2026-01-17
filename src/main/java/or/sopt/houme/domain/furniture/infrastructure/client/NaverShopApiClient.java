@@ -1,6 +1,6 @@
-package or.sopt.houme.domain.furniture.client;
+package or.sopt.houme.domain.furniture.infrastructure.client;
 
-import or.sopt.houme.domain.furniture.dto.external.naverShop.NaverShopResponse;
+import or.sopt.houme.domain.furniture.infrastructure.dto.external.naverShop.NaverShopResponse;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestHeader;

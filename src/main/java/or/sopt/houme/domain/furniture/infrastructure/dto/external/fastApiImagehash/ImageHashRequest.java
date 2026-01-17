@@ -1,6 +1,6 @@
-package or.sopt.houme.domain.furniture.dto.external.fastApiImagehash;
+package or.sopt.houme.domain.furniture.infrastructure.dto.external.fastApiImagehash;
 
-import or.sopt.houme.domain.furniture.dto.external.naverShop.NaverFurnitureProductDto;
+import or.sopt.houme.domain.furniture.infrastructure.dto.external.naverShop.NaverFurnitureProductDto;
 
 import java.util.List;
 

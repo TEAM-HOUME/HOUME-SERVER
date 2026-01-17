@@ -1,4 +1,4 @@
-package or.sopt.houme.domain.furniture.dto.external.naverShop.forPlan;
+package or.sopt.houme.domain.furniture.infrastructure.dto.external.naverShop.forPlan;
 
 import java.util.List;
 
