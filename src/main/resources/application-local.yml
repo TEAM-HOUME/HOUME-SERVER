@@ -76,6 +76,9 @@ naver:
   client-secret: ${NAVER_CLIENT_SECRET}
   allowed-malls: ${NAVER_ALLOWED_MALLS}  # 쉼표 구분 (예: 롯데ON,쿠팡,11번가)
 
+discord:
+  webhook-url: ${DISCORD_WEBHOOK}
+
 cloud:
   aws:
     s3:
