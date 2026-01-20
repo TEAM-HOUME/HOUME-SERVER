@@ -42,14 +42,28 @@ public class SoozipCrawlingService {
             .followRedirects(HttpClient.Redirect.NORMAL)
             .build();
 
+    /**
+     * Soozip 기본 카테고리(cate_no=75) 상품을 모두 가져옵니다.
+     * maxPages 제한이 없으면 마지막 페이지까지 순회합니다.
+     */
     public List<NaverFurnitureProductDto> fetchFurnitureProducts() {
         return fetchCategoryProducts(DEFAULT_CATE_NO, null);
     }
 
+    /**
+     * 기본 카테고리 상품을 페이지 제한과 함께 가져옵니다.
+     * maxPages가 비어있거나 유효하지 않으면 전체 페이지를 순회합니다.
+     */
     public List<NaverFurnitureProductDto> fetchFurnitureProducts(Integer maxPages) {
         return fetchCategoryProducts(DEFAULT_CATE_NO, maxPages);
     }
 
+    /**
+     * 카테고리별 리스트 페이지를 순회하여 중복 없는 상품 목록을 반환합니다.
+     * - 1페이지를 먼저 가져온 뒤 마지막 페이지를 파악합니다.
+     * - productId 기준으로 페이지 간 중복을 제거합니다.
+     * - 특정 페이지 결과가 비어있으면 조기 종료합니다.
+     */
     public List<NaverFurnitureProductDto> fetchCategoryProducts(int cateNo, Integer maxPages) {
         Document first = fetchDocument(cateNo, 1);
         int lastPage = parseLastPage(first);
@@ -74,7 +88,13 @@ public class SoozipCrawlingService {
         return products;
     }
 
+    /**
+     * 리스트 페이지 HTML을 내려받아 Jsoup으로 파싱합니다.
+     * 네트워크 오류나 2xx가 아닌 응답은 예외로 처리합니다.
+     */
     private Document fetchDocument(int cateNo, int page) {
+
+        // 해당 주소로부터 cateNo을 기준으로 카테고리를 파싱합니다.
         String url = BASE_URL + "/product/list.html?cate_no=" + cateNo + "&page=" + page;
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(url))
@@ -97,6 +117,10 @@ public class SoozipCrawlingService {
         }
     }
 
+    /**
+     * 페이지네이션에서 마지막 페이지 번호를 추출합니다.
+     * ".last"가 없으면 모든 링크를 훑어 최댓값을 찾습니다.
+     */
     private int parseLastPage(Document doc) {
         Element last = doc.selectFirst(".ec-base-paginate a.last");
         Integer page = parsePageFromHref(last == null ? null : last.attr("href"));
@@ -114,6 +138,9 @@ public class SoozipCrawlingService {
         return maxPage;
     }
 
+    /**
+     * "?cate_no=75&page=3" 형태의 링크에서 page 파라미터를 추출합니다.
+     */
     private Integer parsePageFromHref(String href) {
         if (href == null || href.isBlank()) {
             return null;
@@ -125,6 +152,13 @@ public class SoozipCrawlingService {
         return null;
     }
 
+    /**
+     * Cafe24 리스트 DOM 구조를 기준으로 상품 DTO를 생성합니다.
+     * - 목록: ul.prdList > li
+     * - 이미지: .prdImg img (첫 번째 이미지)
+     * - 링크: .prdImg a 또는 .description .name a
+     * - 이름: .description .name a 내부 span 중 마지막 텍스트
+     */
     private List<NaverFurnitureProductDto> parseProducts(Document doc) {
         List<NaverFurnitureProductDto> products = new ArrayList<>();
         Elements items = doc.select("ul.prdList > li");
@@ -159,6 +193,10 @@ public class SoozipCrawlingService {
         return products;
     }
 
+    /**
+     * 제목 앵커에서 상품명을 추출합니다.
+     * 마지막 span 텍스트를 우선 사용하고, 없으면 앵커 텍스트를 사용합니다.
+     */
     private String extractProductName(Element item) {
         Element nameAnchor = item.selectFirst(".description .name a");
         if (nameAnchor == null) {
@@ -181,6 +219,9 @@ public class SoozipCrawlingService {
         return text.isBlank() ? null : text;
     }
 
+    /**
+     * 상품 상세 URL을 추출하고 상대경로를 정규화합니다.
+     */
     private String extractProductUrl(Element item) {
         Element link = item.selectFirst(".prdImg a");
         if (link == null) {
@@ -198,6 +239,9 @@ public class SoozipCrawlingService {
         return normalizeUrl(url);
     }
 
+    /**
+     * 상품 이미지 URL을 추출하고 프로토콜 없는 URL을 정규화합니다.
+     */
     private String extractImageUrl(Element item) {
         Element img = item.selectFirst(".prdImg img");
         if (img == null) {
@@ -212,6 +256,12 @@ public class SoozipCrawlingService {
         return normalizeUrl(url);
     }
 
+    /**
+     * URL을 정규화합니다.
+     * - "//..." -> "https://..."
+     * - "/..."  -> BASE_URL + "/..."
+     * - "path"  -> BASE_URL + "/path"
+     */
     private String normalizeUrl(String url) {
         if (url == null || url.isBlank()) {
             return null;
@@ -228,6 +278,12 @@ public class SoozipCrawlingService {
         return url;
     }
 
+    /**
+     * productId를 우선순위대로 추출합니다.
+     * 1) product_no 쿼리 파라미터
+     * 2) "/product/.../{id}/" 경로 세그먼트
+     * 3) "li#anchorBoxId_{id}" 폴백
+     */
     private Long extractProductId(Element item, String productUrl) {
         Long productId = parseProductIdFromHref(productUrl);
         if (productId != null) {
@@ -250,6 +306,9 @@ public class SoozipCrawlingService {
         return null;
     }
 
+    /**
+     * Cafe24 URL 패턴에서 productId를 파싱합니다.
+     */
     private Long parseProductIdFromHref(String href) {
         if (href == null || href.isBlank()) {
             return null;
@@ -268,6 +327,9 @@ public class SoozipCrawlingService {
         return null;
     }
 
+    /**
+     * 페이지 번호 파싱 유틸입니다.
+     */
     private Integer parseIntSafely(String value) {
         try {
             return Integer.parseInt(value);
@@ -276,6 +338,9 @@ public class SoozipCrawlingService {
         }
     }
 
+    /**
+     * productId 파싱 유틸입니다.
+     */
     private Long parseLongSafely(String value) {
         try {
             return Long.parseLong(value);
@@ -284,6 +349,9 @@ public class SoozipCrawlingService {
         }
     }
 
+    /**
+     * productId 기준 중복 제거 후 목록에 추가합니다.
+     */
     private void addProducts(List<NaverFurnitureProductDto> source,
                              List<NaverFurnitureProductDto> target,
                              Set<Long> seen) {
@@ -297,6 +365,9 @@ public class SoozipCrawlingService {
         }
     }
 
+    /**
+     * 페이지 요청 간 간단한 지연을 둡니다.
+     */
     private void sleep(long millis) {
         try {
             Thread.sleep(millis);
