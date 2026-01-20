@@ -4,6 +4,7 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import or.sopt.houme.domain.furniture.infrastructure.dto.external.naverShop.NaverFurnitureProductDto;
 import or.sopt.houme.global.util.HtmlTextCleaner;
@@ -25,7 +26,6 @@ import java.util.regex.Pattern;
 @Service
 public class SoozipCrawlingService {
 
-    private static final String BASE_URL = "https://soozip.co.kr";
     private static final int DEFAULT_CATE_NO = 75;
     private static final long PAGE_DELAY_MILLIS = 250L;
     private static final Duration CONNECT_TIMEOUT = Duration.ofSeconds(5);
@@ -36,6 +36,9 @@ public class SoozipCrawlingService {
     private static final Pattern PAGE_PARAM = Pattern.compile("[?&]page=(\\d+)");
     private static final Pattern PRODUCT_NO_PARAM = Pattern.compile("[?&]product_no=(\\d+)");
     private static final Pattern PRODUCT_PATH = Pattern.compile("/product/[^/]+/(\\d+)/");
+
+    @Value("${soozip.base-url}")
+    private String baseUrl;
 
     private final HttpClient httpClient = HttpClient.newBuilder()
             .connectTimeout(CONNECT_TIMEOUT)
@@ -95,7 +98,7 @@ public class SoozipCrawlingService {
     private Document fetchDocument(int cateNo, int page) {
 
         // 해당 주소로부터 cateNo을 기준으로 카테고리를 파싱합니다.
-        String url = BASE_URL + "/product/list.html?cate_no=" + cateNo + "&page=" + page;
+        String url = baseUrl() + "/product/list.html?cate_no=" + cateNo + "&page=" + page;
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(url))
                 .timeout(REQUEST_TIMEOUT)
@@ -108,7 +111,7 @@ public class SoozipCrawlingService {
             if (response.statusCode() < 200 || response.statusCode() >= 300) {
                 throw new IOException("Unexpected status: " + response.statusCode());
             }
-            return Jsoup.parse(response.body(), BASE_URL);
+            return Jsoup.parse(response.body(), baseUrl());
         } catch (IOException e) {
             throw new IllegalStateException("Failed to fetch Soozip list page: " + url, e);
         } catch (InterruptedException e) {
@@ -259,8 +262,8 @@ public class SoozipCrawlingService {
     /**
      * URL을 정규화합니다.
      * - "//..." -> "https://..."
-     * - "/..."  -> BASE_URL + "/..."
-     * - "path"  -> BASE_URL + "/path"
+     * - "/..."  -> baseUrl + "/..."
+     * - "path"  -> baseUrl + "/path"
      */
     private String normalizeUrl(String url) {
         if (url == null || url.isBlank()) {
@@ -270,10 +273,10 @@ public class SoozipCrawlingService {
             return "https:" + url;
         }
         if (url.startsWith("/")) {
-            return BASE_URL + url;
+            return baseUrl() + url;
         }
         if (!url.startsWith("http")) {
-            return BASE_URL + "/" + url;
+            return baseUrl() + "/" + url;
         }
         return url;
     }
@@ -363,6 +366,13 @@ public class SoozipCrawlingService {
             seen.add(id);
             target.add(product);
         }
+    }
+
+    private String baseUrl() {
+        if (baseUrl == null || baseUrl.isBlank()) {
+            throw new IllegalStateException("SOOZIP_BASE_URL 환경변수가 필요합니다.");
+        }
+        return baseUrl.endsWith("/") ? baseUrl.substring(0, baseUrl.length() - 1) : baseUrl;
     }
 
     /**
