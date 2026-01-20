@@ -82,7 +82,6 @@ soozip:
 discord:
   webhook-url: ${DISCORD_WEBHOOK}
 
-
 cloud:
   aws:
     s3:
