@@ -67,6 +67,15 @@ public class CurationRawProduct {
     @Column(name = "product_mall_name")
     private String productMallName;
 
+    @Column(name = "list_price")
+    private Long listPrice;
+
+    @Column(name = "discount_rate")
+    private Integer discountRate;
+
+    @Column(name = "discount_price")
+    private Long discountPrice;
+
     @Column(name = "fetched_at", nullable = false)
     private LocalDateTime fetchedAt;
 
