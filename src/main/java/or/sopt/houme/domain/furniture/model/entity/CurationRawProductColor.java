@@ -36,20 +36,24 @@ import org.hibernate.annotations.Comment;
                 )
         }
 )
-@Comment("Curation raw product colors")
+@Comment("큐레이션 원본 상품의 색상 정보를 저장하는 엔티티입니다")
 public class CurationRawProductColor {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Comment("식별자")
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "curation_raw_product_id", nullable = false)
+    @Comment("연결된 원본 상품")
     private CurationRawProduct curationRawProduct;
 
     @Column(name = "raw_color_name", nullable = false)
+    @Comment("원본 색상명")
     private String rawColorName;
 
     @Column(name = "client_color_name", nullable = false)
+    @Comment("클라이언트 반환용 색상명")
     private String clientColorName;
 }

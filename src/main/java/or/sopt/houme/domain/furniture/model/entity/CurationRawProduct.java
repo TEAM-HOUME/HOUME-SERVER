@@ -43,40 +43,52 @@ public class CurationRawProduct {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Comment("식별자")
     private Long id;
 
     @Column(name = "source", nullable = false)
+    @Comment("수집 출처")
     private String source;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "category", nullable = false)
+    @Comment("카테고리")
     private SoozipCategory category;
 
     @Column(name = "product_id", nullable = false)
+    @Comment("외부 상품 식별자")
     private Long productId;
 
     @Column(name = "product_image_url", columnDefinition = "varchar(2048)", nullable = false)
+    @Comment("상품 이미지 URL")
     private String productImageUrl;
 
     @Column(name = "product_site_url", columnDefinition = "varchar(2048)", nullable = false)
+    @Comment("상품 상세 URL")
     private String productSiteUrl;
 
     @Column(name = "product_name", nullable = false)
+    @Comment("상품명")
     private String productName;
 
     @Column(name = "product_mall_name")
+    @Comment("판매 몰 이름")
     private String productMallName;
 
     @Column(name = "list_price")
+    @Comment("정가")
     private Long listPrice;
 
     @Column(name = "discount_rate")
+    @Comment("할인률(%)")
     private Integer discountRate;
 
     @Column(name = "discount_price")
+    @Comment("할인가")
     private Long discountPrice;
 
     @Column(name = "fetched_at", nullable = false)
+    @Comment("수집 시각")
     private LocalDateTime fetchedAt;
 
     public static CurationRawProduct of(
