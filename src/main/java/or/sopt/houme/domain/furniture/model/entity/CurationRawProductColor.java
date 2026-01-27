@@ -49,11 +49,11 @@ public class CurationRawProductColor {
     @Comment("연결된 원본 상품")
     private CurationRawProduct curationRawProduct;
 
-    @Column(name = "raw_color_name", nullable = false)
+    @Column(name = "raw_color_name")
     @Comment("원본 색상명")
     private String rawColorName;
 
-    @Column(name = "client_color_name", nullable = false)
+    @Column(name = "client_color_name")
     @Comment("클라이언트 반환용 색상명")
     private String clientColorName;
 }
