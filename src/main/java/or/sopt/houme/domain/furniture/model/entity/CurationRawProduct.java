@@ -75,6 +75,10 @@ public class CurationRawProduct {
     @Comment("판매 몰 이름")
     private String productMallName;
 
+    @Column(name = "brand")
+    @Comment("브랜드")
+    private String brand;
+
     @Column(name = "list_price")
     @Comment("정가")
     private Long listPrice;
@@ -86,6 +90,14 @@ public class CurationRawProduct {
     @Column(name = "discount_price")
     @Comment("할인가")
     private Long discountPrice;
+
+    @Column(name = "base_shipping_fee")
+    @Comment("기본 배송비")
+    private Long baseShippingFee;
+
+    @Column(name = "free_shipping_condition")
+    @Comment("무료 배송 조건")
+    private Long freeShippingCondition;
 
     @Column(name = "fetched_at", nullable = false)
     @Comment("수집 시각")
