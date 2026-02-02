@@ -80,7 +80,7 @@ public class CurationRawProduct {
     private String brand;
 
     @Column(name = "list_price")
-    @Comment("정가")
+    @Comment("임의 정가")
     private Long listPrice;
 
     @Column(name = "discount_rate")
@@ -88,7 +88,7 @@ public class CurationRawProduct {
     private Integer discountRate;
 
     @Column(name = "discount_price")
-    @Comment("할인가")
+    @Comment("판매가")
     private Long discountPrice;
 
     @Column(name = "base_shipping_fee")
