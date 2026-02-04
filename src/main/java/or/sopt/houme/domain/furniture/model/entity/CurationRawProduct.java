@@ -4,10 +4,13 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Index;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import lombok.AccessLevel;
@@ -29,7 +32,8 @@ import java.time.LocalDateTime;
         indexes = {
                 @Index(name = "idx_raw_source", columnList = "source"),
                 @Index(name = "idx_raw_category", columnList = "category"),
-                @Index(name = "idx_raw_fetched_at", columnList = "fetched_at")
+                @Index(name = "idx_raw_fetched_at", columnList = "fetched_at"),
+                @Index(name = "idx_raw_furniture_tag_id", columnList = "furniture_tag_id")
         },
         uniqueConstraints = {
                 @UniqueConstraint(
@@ -103,6 +107,11 @@ public class CurationRawProduct {
     @Comment("수집 시각")
     private LocalDateTime fetchedAt;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "furniture_tag_id")
+    @Comment("수동 매핑된 가구 태그")
+    private FurnitureTag furnitureTag;
+
     public static CurationRawProduct of(
             String source,
             SoozipCategory category,
@@ -147,5 +156,9 @@ public class CurationRawProduct {
         if (fetchedAt != null) {
             this.fetchedAt = fetchedAt;
         }
+    }
+
+    public void updateFurnitureTag(FurnitureTag furnitureTag) {
+        this.furnitureTag = furnitureTag;
     }
 }
