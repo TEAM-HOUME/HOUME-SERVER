@@ -2,6 +2,7 @@ package or.sopt.houme.domain.furniture.service;
 
 import lombok.RequiredArgsConstructor;
 import or.sopt.houme.domain.furniture.infrastructure.dto.external.naverShop.FurnitureProductsInfoResponse;
+import or.sopt.houme.domain.furniture.model.entity.CurationSource;
 import or.sopt.houme.domain.furniture.model.entity.RecommendFurniture;
 import or.sopt.houme.domain.furniture.repository.RecommendFurnitureRepository;
 import org.springframework.stereotype.Service;
@@ -20,8 +21,11 @@ public class RecommendFurnitureServiceImpl implements RecommendFurnitureService 
 
 
     @Override
-    public Map<Long, Long> saveRecommendFurniture(List<FurnitureProductsInfoResponse.FurnitureProductInfo> requestDto) {
-        return saveSingleRecommendFurniture(requestDto);
+    public Map<Long, Long> saveRecommendFurniture(
+            List<FurnitureProductsInfoResponse.FurnitureProductInfo> requestDto,
+            CurationSource source
+    ) {
+        return saveSingleRecommendFurniture(requestDto, source);
     }
 
 
@@ -30,7 +34,10 @@ public class RecommendFurnitureServiceImpl implements RecommendFurnitureService 
      *
      * 리스트 형식으로 input을 받아 가구들을 저장합니다
      * */
-    private Map<Long, Long> saveSingleRecommendFurniture(List<FurnitureProductsInfoResponse.FurnitureProductInfo> requestDto) {
+    private Map<Long, Long> saveSingleRecommendFurniture(
+            List<FurnitureProductsInfoResponse.FurnitureProductInfo> requestDto,
+            CurationSource source
+    ) {
         Map<Long, Long> idMapByProductId = new HashMap<>();
 
         for (FurnitureProductsInfoResponse.FurnitureProductInfo furnitureProductInfo : requestDto) {
@@ -38,9 +45,9 @@ public class RecommendFurnitureServiceImpl implements RecommendFurnitureService 
 
             RecommendFurniture entity;
 
-            boolean exists = recommendFurnitureRepository.existsByFurnitureProductId(productId);
+            boolean exists = recommendFurnitureRepository.existsBySourceAndFurnitureProductId(source, productId);
             if (exists) {
-                entity = recommendFurnitureRepository.findByFurnitureProductId(productId)
+                entity = recommendFurnitureRepository.findBySourceAndFurnitureProductId(source, productId)
                         .orElseThrow();
             } else {
                 entity = RecommendFurniture.from(
@@ -48,7 +55,8 @@ public class RecommendFurnitureServiceImpl implements RecommendFurnitureService 
                         furnitureProductInfo.furnitureProductSiteUrl(),
                         furnitureProductInfo.furnitureProductName(),
                         furnitureProductInfo.furnitureProductMallName(),
-                        productId
+                        productId,
+                        source
                 );
                 entity = recommendFurnitureRepository.save(entity);
             }

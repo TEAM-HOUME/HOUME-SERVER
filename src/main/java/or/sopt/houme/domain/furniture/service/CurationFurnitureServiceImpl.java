@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import or.sopt.houme.domain.furniture.infrastructure.dto.external.naverShop.FurnitureProductsInfoResponse;
 import or.sopt.houme.domain.furniture.model.entity.CurationFurniture;
+import or.sopt.houme.domain.furniture.model.entity.CurationSource;
 import or.sopt.houme.domain.furniture.model.entity.FurnitureTag;
 import or.sopt.houme.domain.furniture.model.entity.RecommendFurniture;
 import or.sopt.houme.domain.furniture.repository.CurationFurnitureRepository;
@@ -27,8 +28,12 @@ public class CurationFurnitureServiceImpl implements CurationFurnitureService {
 
     @Transactional(readOnly = true)
     @Override
-    public List<FurnitureProductsInfoResponse.FurnitureProductInfo> getCurationProducts(FurnitureTag furnitureTag) {
-        List<CurationFurniture> curations = curationFurnitureRepository.findAllByFurnitureTagOrderByRankAsc(furnitureTag);
+    public List<FurnitureProductsInfoResponse.FurnitureProductInfo> getCurationProducts(
+            FurnitureTag furnitureTag,
+            CurationSource source
+    ) {
+        List<CurationFurniture> curations =
+                curationFurnitureRepository.findAllByFurnitureTagAndSourceOrderByRankAsc(furnitureTag, source);
         if (curations.isEmpty()) {
             return List.of();
         }
@@ -54,13 +59,14 @@ public class CurationFurnitureServiceImpl implements CurationFurnitureService {
     @Override
     public List<FurnitureProductsInfoResponse.FurnitureProductInfo> saveCurationResults(
             FurnitureTag furnitureTag,
-            List<FurnitureProductsInfoResponse.FurnitureProductInfo> infos
+            List<FurnitureProductsInfoResponse.FurnitureProductInfo> infos,
+            CurationSource source
     ) {
         if (infos == null || infos.isEmpty()) {
             return List.of();
         }
 
-        Map<Long, Long> idMapByProductId = recommendFurnitureService.saveRecommendFurniture(infos);
+        Map<Long, Long> idMapByProductId = recommendFurnitureService.saveRecommendFurniture(infos, source);
         LocalDateTime fetchedAt = LocalDateTime.now();
         List<CurationFurniture> curations = new ArrayList<>();
 
@@ -77,6 +83,7 @@ public class CurationFurnitureServiceImpl implements CurationFurnitureService {
                     furnitureTag,
                     recommendFurniture,
                     rank,
+                    source,
                     info.similarity(),
                     fetchedAt
             ));
@@ -87,7 +94,7 @@ public class CurationFurnitureServiceImpl implements CurationFurnitureService {
             return List.of();
         }
 
-        curationFurnitureRepository.deleteByFurnitureTag(furnitureTag);
+        curationFurnitureRepository.deleteByFurnitureTagAndSource(furnitureTag, source);
         curationFurnitureRepository.saveAll(curations);
 
         return mapResponseWithIds(infos, idMapByProductId);
