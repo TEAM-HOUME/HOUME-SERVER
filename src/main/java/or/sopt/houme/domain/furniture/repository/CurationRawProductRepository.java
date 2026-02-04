@@ -17,4 +17,6 @@ public interface CurationRawProductRepository extends JpaRepository<CurationRawP
     );
 
     List<CurationRawProduct> findAllByFurnitureTag(FurnitureTag furnitureTag);
+
+    List<CurationRawProduct> findAllByFurnitureTagAndProductIdIn(FurnitureTag furnitureTag, List<Long> productIds);
 }
