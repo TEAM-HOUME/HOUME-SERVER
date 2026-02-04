@@ -58,6 +58,7 @@ public class CurationFurnitureServiceImpl implements CurationFurnitureService {
                     RecommendFurniture recommendFurniture = curation.getRecommendFurniture();
                     RawProductMeta rawMeta = rawMetaByProductId.get(recommendFurniture.getFurnitureProductId());
                     List<String> colors = rawMeta != null ? rawMeta.colors() : List.of();
+                    List<String> clientColors = rawMeta != null ? rawMeta.clientColors() : List.of();
 
                     return FurnitureProductsInfoResponse.FurnitureProductInfo.of(
                             recommendFurniture.getId(),
@@ -68,6 +69,7 @@ public class CurationFurnitureServiceImpl implements CurationFurnitureService {
                             recommendFurniture.getFurnitureProductId(),
                             curation.getSimilarity(),
                             colors,
+                            clientColors,
                             rawMeta != null ? rawMeta.listPrice() : null,
                             rawMeta != null ? rawMeta.discountRate() : null,
                             rawMeta != null ? rawMeta.discountPrice() : null,
@@ -172,7 +174,8 @@ public class CurationFurnitureServiceImpl implements CurationFurnitureService {
                         (first, second) -> first
                 ));
 
-        Map<Long, Set<String>> colorsByProductId = new HashMap<>();
+        Map<Long, Set<String>> rawColorsByProductId = new HashMap<>();
+        Map<Long, Set<String>> clientColorsByProductId = new HashMap<>();
         List<CurationRawProductColor> colorEntities =
                 curationRawProductColorRepository.findAllByCurationRawProductIdIn(rawProductIds);
         for (CurationRawProductColor colorEntity : colorEntities) {
@@ -182,24 +185,27 @@ public class CurationFurnitureServiceImpl implements CurationFurnitureService {
                 continue;
             }
 
-            String colorName = isBlank(colorEntity.getClientColorName())
-                    ? colorEntity.getRawColorName()
-                    : colorEntity.getClientColorName();
-            if (isBlank(colorName)) {
-                continue;
-            }
+            String rawColorName = colorEntity.getRawColorName();
+            String clientColorName = colorEntity.getClientColorName();
 
-            colorsByProductId.computeIfAbsent(productId, key -> new LinkedHashSet<>()).add(colorName);
+            if (!isBlank(rawColorName)) {
+                rawColorsByProductId.computeIfAbsent(productId, key -> new LinkedHashSet<>()).add(rawColorName);
+            }
+            if (!isBlank(clientColorName)) {
+                clientColorsByProductId.computeIfAbsent(productId, key -> new LinkedHashSet<>()).add(clientColorName);
+            }
         }
 
         Map<Long, RawProductMeta> rawMetaByProductId = new HashMap<>();
         for (Map.Entry<Long, CurationRawProduct> entry : rawByProductId.entrySet()) {
             Long productId = entry.getKey();
             CurationRawProduct rawProduct = entry.getValue();
-            List<String> colors = new ArrayList<>(colorsByProductId.getOrDefault(productId, Set.of()));
+            List<String> colors = new ArrayList<>(rawColorsByProductId.getOrDefault(productId, Set.of()));
+            List<String> clientColors = new ArrayList<>(clientColorsByProductId.getOrDefault(productId, Set.of()));
 
             rawMetaByProductId.put(productId, new RawProductMeta(
                     colors,
+                    clientColors,
                     rawProduct.getListPrice(),
                     rawProduct.getDiscountRate(),
                     rawProduct.getDiscountPrice(),
@@ -228,6 +234,7 @@ public class CurationFurnitureServiceImpl implements CurationFurnitureService {
 
     private record RawProductMeta(
             List<String> colors,
+            List<String> clientColors,
             Long listPrice,
             Integer discountRate,
             Long discountPrice,
