@@ -1,6 +1,7 @@
 package or.sopt.houme.domain.furniture.repository;
 
 import or.sopt.houme.domain.furniture.model.entity.CurationRawProduct;
+import or.sopt.houme.domain.furniture.model.entity.FurnitureTag;
 import or.sopt.houme.domain.furniture.model.entity.SoozipCategory;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
@@ -14,4 +15,6 @@ public interface CurationRawProductRepository extends JpaRepository<CurationRawP
             SoozipCategory category,
             List<Long> productIds
     );
+
+    List<CurationRawProduct> findAllByFurnitureTag(FurnitureTag furnitureTag);
 }
