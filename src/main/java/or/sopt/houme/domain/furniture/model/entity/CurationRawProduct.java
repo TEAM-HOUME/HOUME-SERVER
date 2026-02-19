@@ -1,16 +1,15 @@
 package or.sopt.houme.domain.furniture.model.entity;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
-import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Index;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import lombok.AccessLevel;
@@ -21,6 +20,8 @@ import lombok.NoArgsConstructor;
 import org.hibernate.annotations.Comment;
 
 import java.time.LocalDateTime;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
@@ -32,8 +33,7 @@ import java.time.LocalDateTime;
         indexes = {
                 @Index(name = "idx_raw_source", columnList = "source"),
                 @Index(name = "idx_raw_category", columnList = "category"),
-                @Index(name = "idx_raw_fetched_at", columnList = "fetched_at"),
-                @Index(name = "idx_raw_furniture_tag_id", columnList = "furniture_tag_id")
+                @Index(name = "idx_raw_fetched_at", columnList = "fetched_at")
         },
         uniqueConstraints = {
                 @UniqueConstraint(
@@ -107,10 +107,10 @@ public class CurationRawProduct {
     @Comment("수집 시각")
     private LocalDateTime fetchedAt;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "furniture_tag_id")
-    @Comment("수동 매핑된 가구 태그")
-    private FurnitureTag furnitureTag;
+    @OneToMany(mappedBy = "curationRawProduct", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    @Comment("수동 매핑된 가구 태그(다중 매핑)")
+    private Set<CurationRawProductFurnitureTag> furnitureTagMappings = new LinkedHashSet<>();
 
     public static CurationRawProduct of(
             String source,
@@ -158,7 +158,52 @@ public class CurationRawProduct {
         }
     }
 
-    public void updateFurnitureTag(FurnitureTag furnitureTag) {
-        this.furnitureTag = furnitureTag;
+    public void updateMeta(
+            String brand,
+            Long listPrice,
+            Integer discountRate,
+            Long discountPrice,
+            Long baseShippingFee,
+            Long freeShippingCondition
+    ) {
+        if (brand != null && !brand.isBlank()) {
+            this.brand = brand;
+        }
+        if (listPrice != null) {
+            this.listPrice = listPrice;
+        }
+        if (discountRate != null) {
+            this.discountRate = discountRate;
+        }
+        if (discountPrice != null) {
+            this.discountPrice = discountPrice;
+        }
+        if (baseShippingFee != null) {
+            this.baseShippingFee = baseShippingFee;
+        }
+        if (freeShippingCondition != null) {
+            this.freeShippingCondition = freeShippingCondition;
+        }
+    }
+
+    public boolean addFurnitureTag(FurnitureTag furnitureTag) {
+        if (furnitureTag == null) {
+            return false;
+        }
+
+        Long furnitureTagId = furnitureTag.getId();
+        boolean exists = furnitureTagMappings.stream()
+                .map(CurationRawProductFurnitureTag::getFurnitureTag)
+                .anyMatch(existing -> existing != null && existing.getId() != null && existing.getId().equals(furnitureTagId));
+        if (exists) {
+            return false;
+        }
+
+        furnitureTagMappings.add(CurationRawProductFurnitureTag.of(this, furnitureTag));
+        return true;
+    }
+
+    public void clearFurnitureTags() {
+        furnitureTagMappings.clear();
     }
 }

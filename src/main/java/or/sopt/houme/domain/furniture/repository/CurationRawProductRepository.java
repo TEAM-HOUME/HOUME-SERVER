@@ -4,19 +4,44 @@ import or.sopt.houme.domain.furniture.model.entity.CurationRawProduct;
 import or.sopt.houme.domain.furniture.model.entity.FurnitureTag;
 import or.sopt.houme.domain.furniture.model.entity.SoozipCategory;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface CurationRawProductRepository extends JpaRepository<CurationRawProduct, Long> {
+    Optional<CurationRawProduct> findBySourceAndCategoryAndProductId(
+            String source,
+            SoozipCategory category,
+            Long productId
+    );
+
     List<CurationRawProduct> findAllBySourceAndCategoryAndProductIdIn(
             String source,
             SoozipCategory category,
             List<Long> productIds
     );
 
-    List<CurationRawProduct> findAllByFurnitureTag(FurnitureTag furnitureTag);
+    @Query("""
+            select distinct rawProduct
+            from CurationRawProduct rawProduct
+            join rawProduct.furnitureTagMappings mapping
+            where mapping.furnitureTag = :furnitureTag
+            """)
+    List<CurationRawProduct> findAllByFurnitureTag(@Param("furnitureTag") FurnitureTag furnitureTag);
 
-    List<CurationRawProduct> findAllByFurnitureTagAndProductIdIn(FurnitureTag furnitureTag, List<Long> productIds);
+    @Query("""
+            select distinct rawProduct
+            from CurationRawProduct rawProduct
+            join rawProduct.furnitureTagMappings mapping
+            where mapping.furnitureTag = :furnitureTag
+              and rawProduct.productId in :productIds
+            """)
+    List<CurationRawProduct> findAllByFurnitureTagAndProductIdIn(
+            @Param("furnitureTag") FurnitureTag furnitureTag,
+            @Param("productIds") List<Long> productIds
+    );
 }
