@@ -106,10 +106,8 @@ public class FurnitureFacadeImpl implements FurnitureFacade {
         }
 
         log.info("큐레이션 종료:{}",formatted);
-        return FurnitureProductsInfoResponse.of(
-                user.getName(),
-                java.util.stream.Stream.concat(naverInfos.stream(), rawInfos.stream()).toList()
-        );
+        // 네이버 큐레이션 비활성화로 RAW 결과만 반환합니다.
+        return FurnitureProductsInfoResponse.of(user.getName(), rawInfos);
     }
 
     // 기획의사결정용
