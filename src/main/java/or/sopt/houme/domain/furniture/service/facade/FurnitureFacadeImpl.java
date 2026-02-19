@@ -29,6 +29,7 @@ import or.sopt.houme.global.config.NaverProperties;
 public class FurnitureFacadeImpl implements FurnitureFacade {
 
     private static final int CURATION_LIMIT = 5;
+    private static final int RAW_CURATION_LIMIT = 4;
 
     private final NaverShopService naverShopService;
     private final ImageHashService imageHashService;
@@ -89,7 +90,7 @@ public class FurnitureFacadeImpl implements FurnitureFacade {
             // 2-2. 그 후에 동일한 hash 기반 이미지 유사도를 판별하여 반환합니다
             if (!rawCandidates.isEmpty()) {
                 List<FurnitureProductsInfoResponse.FurnitureProductInfo> rankedRawInfos =
-                        imageHashService.rankByImageSimilarity(furnitureTag.getFurnitureUrl(), rawCandidates, CURATION_LIMIT);
+                        imageHashService.rankByImageSimilarity(furnitureTag.getFurnitureUrl(), rawCandidates, RAW_CURATION_LIMIT);
                 rawInfos = curationFurnitureService.saveCurationResults(
                         furnitureTag,
                         rankedRawInfos,
