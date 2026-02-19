@@ -49,29 +49,31 @@ public class FurnitureFacadeImpl implements FurnitureFacade {
         log.info("연관된 가구들을 조회합니다:{}",formatted);
         FurnitureTag furnitureTag = furnitureService.findFurnitureTag(user, imageId, categoryId);
 
-        List<FurnitureProductsInfoResponse.FurnitureProductInfo> naverInfos =
-                curationFurnitureService.getCurationProducts(furnitureTag, CurationSource.NAVER);
-        if (naverInfos.isEmpty()) {
-            log.info("네이버 API 호출을 시작합니다");
-            String keyword = furnitureTag.getSearchKeyword();
-            List<NaverFurnitureProductDto> products = naverShopService.search(keyword, 50);
-
-            // 2. FastAPI 호출 → 유사도 기반 상위 상품 리스트만 반환
-            // 12/05 FAST API 삭제
-            log.info("유사도 기반 네이버 상품 조회를 시작합니다");
-            List<FurnitureProductsInfoResponse.FurnitureProductInfo> rankedInfos =
-                    imageHashService.rankByImageSimilarity(furnitureTag.getFurnitureUrl(), products, CURATION_LIMIT);
-
-            // 2-1. 최종반환된 리스트를 기반으로 추천가구 엔티티 저장하고, 큐레이션 결과 저장
-            log.info("네이버 큐레이션 결과 저장");
-            naverInfos = curationFurnitureService.saveCurationResults(
-                    furnitureTag,
-                    rankedInfos,
-                    CurationSource.NAVER
-            );
-        } else {
-            log.info("네이버 큐레이션 결과를 DB에서 조회합니다");
-        }
+        // 네이버 큐레이션은 현재 비활성화합니다.
+        // 기존 로직은 추후 복구를 위해 주석으로 유지합니다.
+//        List<FurnitureProductsInfoResponse.FurnitureProductInfo> naverInfos =
+//                curationFurnitureService.getCurationProducts(furnitureTag, CurationSource.NAVER);
+//        if (naverInfos.isEmpty()) {
+//            log.info("네이버 API 호출을 시작합니다");
+//            String keyword = furnitureTag.getSearchKeyword();
+//            List<NaverFurnitureProductDto> products = naverShopService.search(keyword, 50);
+//
+//            // 2. FastAPI 호출 → 유사도 기반 상위 상품 리스트만 반환
+//            // 12/05 FAST API 삭제
+//            log.info("유사도 기반 네이버 상품 조회를 시작합니다");
+//            List<FurnitureProductsInfoResponse.FurnitureProductInfo> rankedInfos =
+//                    imageHashService.rankByImageSimilarity(furnitureTag.getFurnitureUrl(), products, CURATION_LIMIT);
+//
+//            // 2-1. 최종반환된 리스트를 기반으로 추천가구 엔티티 저장하고, 큐레이션 결과 저장
+//            log.info("네이버 큐레이션 결과 저장");
+//            naverInfos = curationFurnitureService.saveCurationResults(
+//                    furnitureTag,
+//                    rankedInfos,
+//                    CurationSource.NAVER
+//            );
+//        } else {
+//            log.info("네이버 큐레이션 결과를 DB에서 조회합니다");
+//        }
 
 
         // 기본적인 로직은 naver 로직과 동일합니다
