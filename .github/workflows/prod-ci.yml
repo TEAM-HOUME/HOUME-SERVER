@@ -47,7 +47,6 @@ jobs:
       - name: Run Gradle build and tests
         run: |
           ./gradlew clean build -Dspring.profiles.active=test
-          ./gradlew jacocoTestReport
       - name: Jacoco Report to PR
         id: jacoco
         uses: madrapps/jacoco-report@v1.6.1
