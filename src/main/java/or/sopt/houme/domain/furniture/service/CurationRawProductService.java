@@ -3,6 +3,7 @@ package or.sopt.houme.domain.furniture.service;
 import lombok.RequiredArgsConstructor;
 import or.sopt.houme.domain.furniture.infrastructure.dto.external.naverShop.NaverFurnitureProductDto;
 import or.sopt.houme.domain.furniture.model.entity.CurationRawProduct;
+import or.sopt.houme.domain.furniture.model.entity.FurnitureTag;
 import or.sopt.houme.domain.furniture.model.entity.SoozipCategory;
 import or.sopt.houme.domain.furniture.repository.CurationRawProductRepository;
 import or.sopt.houme.domain.furniture.service.dto.CurationRawProductSaveResult;
@@ -23,6 +24,38 @@ import java.util.stream.Collectors;
 public class CurationRawProductService {
 
     private final CurationRawProductRepository curationRawProductRepository;
+
+    @Transactional(readOnly = true)
+    public List<NaverFurnitureProductDto> getCandidatesByFurnitureTag(FurnitureTag furnitureTag) {
+        if (furnitureTag == null) {
+            return List.of();
+        }
+
+        List<CurationRawProduct> rawProducts = curationRawProductRepository.findAllByFurnitureTag(furnitureTag);
+        if (rawProducts.isEmpty()) {
+            return List.of();
+        }
+
+        return rawProducts.stream()
+                .filter(product -> product.getProductId() != null)
+                .filter(product -> !isBlank(product.getProductImageUrl()))
+                .filter(product -> !isBlank(product.getProductSiteUrl()))
+                .filter(product -> !isBlank(product.getProductName()))
+                .collect(Collectors.toMap(
+                        CurationRawProduct::getProductId,
+                        product -> new NaverFurnitureProductDto(
+                                product.getProductImageUrl(),
+                                product.getProductSiteUrl(),
+                                product.getProductName(),
+                                product.getProductMallName(),
+                                product.getProductId()
+                        ),
+                        (first, second) -> first
+                ))
+                .values()
+                .stream()
+                .toList();
+    }
 
     @Transactional
     public CurationRawProductSaveResult saveAll(

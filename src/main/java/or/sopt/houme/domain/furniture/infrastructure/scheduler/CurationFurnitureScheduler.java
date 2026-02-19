@@ -4,9 +4,11 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import or.sopt.houme.domain.furniture.infrastructure.dto.external.naverShop.FurnitureProductsInfoResponse;
 import or.sopt.houme.domain.furniture.infrastructure.dto.external.naverShop.NaverFurnitureProductDto;
+import or.sopt.houme.domain.furniture.model.entity.CurationSource;
 import or.sopt.houme.domain.furniture.model.entity.FurnitureTag;
 import or.sopt.houme.domain.furniture.repository.FurnitureTagRepository;
 import or.sopt.houme.domain.furniture.service.CurationFurnitureService;
+import or.sopt.houme.domain.furniture.service.CurationRawProductService;
 import or.sopt.houme.domain.furniture.service.ImageHashService;
 import or.sopt.houme.domain.furniture.service.NaverShopService;
 import or.sopt.houme.global.discord.DiscordWebhookService;
@@ -32,6 +34,7 @@ public class CurationFurnitureScheduler {
     private final NaverShopService naverShopService;
     private final ImageHashService imageHashService;
     private final CurationFurnitureService curationFurnitureService;
+    private final CurationRawProductService curationRawProductService;
     private final DiscordWebhookService discordWebhookService;
 
     @Scheduled(cron = "0 0 2 * * *", zone = "Asia/Seoul")
@@ -58,15 +61,27 @@ public class CurationFurnitureScheduler {
                 }
 
                 FurnitureTag furnitureTag = furnitureTags.get(i);
-                List<FurnitureProductsInfoResponse.FurnitureProductInfo> infos = fetchCurationWithRetry(furnitureTag);
-                if (infos.isEmpty()) {
-                    emptyTags++;
-                    log.warn("큐레이션 배치: 결과 없음 tagId={}", furnitureTag.getId());
+                boolean hasResult = false;
+
+                List<FurnitureProductsInfoResponse.FurnitureProductInfo> naverInfos = fetchNaverCurationWithRetry(furnitureTag);
+                if (!naverInfos.isEmpty()) {
+                    curationFurnitureService.saveCurationResults(furnitureTag, naverInfos, CurationSource.NAVER);
+                    hasResult = true;
+                }
+
+                List<FurnitureProductsInfoResponse.FurnitureProductInfo> rawInfos = fetchRawCurationWithRetry(furnitureTag);
+                if (!rawInfos.isEmpty()) {
+                    curationFurnitureService.saveCurationResults(furnitureTag, rawInfos, CurationSource.RAW);
+                    hasResult = true;
+                }
+
+                if (hasResult) {
+                    successTags++;
                     continue;
                 }
 
-                curationFurnitureService.saveCurationResults(furnitureTag, infos);
-                successTags++;
+                emptyTags++;
+                log.warn("큐레이션 배치: NAVER/RAW 모두 결과 없음 tagId={}", furnitureTag.getId());
             }
         } catch (Exception e) {
             status = "실패";
@@ -91,12 +106,12 @@ public class CurationFurnitureScheduler {
         }
     }
 
-    private List<FurnitureProductsInfoResponse.FurnitureProductInfo> fetchCurationWithRetry(FurnitureTag furnitureTag) {
+    private List<FurnitureProductsInfoResponse.FurnitureProductInfo> fetchNaverCurationWithRetry(FurnitureTag furnitureTag) {
         for (int attempt = 1; attempt <= MAX_RETRY; attempt++) {
             try {
-                return fetchCurationInfos(furnitureTag);
+                return fetchNaverCurationInfos(furnitureTag);
             } catch (Exception e) {
-                log.warn("큐레이션 배치 실패: tagId={}, attempt={}", furnitureTag.getId(), attempt, e);
+                log.warn("네이버 큐레이션 배치 실패: tagId={}, attempt={}", furnitureTag.getId(), attempt, e);
                 sleep(RETRY_BACKOFF_MILLIS * attempt);
             }
         }
@@ -104,9 +119,31 @@ public class CurationFurnitureScheduler {
         return List.of();
     }
 
-    private List<FurnitureProductsInfoResponse.FurnitureProductInfo> fetchCurationInfos(FurnitureTag furnitureTag) {
+    private List<FurnitureProductsInfoResponse.FurnitureProductInfo> fetchRawCurationWithRetry(FurnitureTag furnitureTag) {
+        for (int attempt = 1; attempt <= MAX_RETRY; attempt++) {
+            try {
+                return fetchRawCurationInfos(furnitureTag);
+            } catch (Exception e) {
+                log.warn("RAW 큐레이션 배치 실패: tagId={}, attempt={}", furnitureTag.getId(), attempt, e);
+                sleep(RETRY_BACKOFF_MILLIS * attempt);
+            }
+        }
+
+        return List.of();
+    }
+
+    private List<FurnitureProductsInfoResponse.FurnitureProductInfo> fetchNaverCurationInfos(FurnitureTag furnitureTag) {
         List<NaverFurnitureProductDto> products = naverShopService.search(furnitureTag.getSearchKeyword(), NAVER_DISPLAY);
         return imageHashService.rankByImageSimilarity(furnitureTag.getFurnitureUrl(), products, TOP_N);
+    }
+
+    private List<FurnitureProductsInfoResponse.FurnitureProductInfo> fetchRawCurationInfos(FurnitureTag furnitureTag) {
+        List<NaverFurnitureProductDto> candidates = curationRawProductService.getCandidatesByFurnitureTag(furnitureTag);
+        if (candidates.isEmpty()) {
+            return List.of();
+        }
+
+        return imageHashService.rankByImageSimilarity(furnitureTag.getFurnitureUrl(), candidates, TOP_N);
     }
 
     private void sleep(long millis) {

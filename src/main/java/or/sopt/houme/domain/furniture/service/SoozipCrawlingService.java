@@ -37,7 +37,7 @@ public class SoozipCrawlingService {
     private static final Pattern PRODUCT_NO_PARAM = Pattern.compile("[?&]product_no=(\\d+)");
     private static final Pattern PRODUCT_PATH = Pattern.compile("/product/[^/]+/(\\d+)/");
 
-    @Value("${soozip.base-url}")
+    @Value("${soozip.base-url:https://soozip.co.kr}")
     private String baseUrl;
 
     private final HttpClient httpClient = HttpClient.newBuilder()

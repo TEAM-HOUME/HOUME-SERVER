@@ -19,8 +19,8 @@ import java.time.LocalDateTime;
         },
         uniqueConstraints = {
                 @UniqueConstraint(
-                        name = "uk_curation_furniture_tag_rank",
-                        columnNames = {"furniture_tag_id", "rank"}
+                        name = "uk_curation_furniture_tag_source_rank",
+                        columnNames = {"furniture_tag_id", "source", "rank"}
                 )
         }
 )
@@ -42,6 +42,10 @@ public class CurationFurniture {
     @Column(name = "rank", nullable = false)
     private Integer rank;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "source", nullable = false)
+    private CurationSource source;
+
     @Column(name = "similarity", nullable = false)
     private Double similarity;
 
@@ -52,6 +56,7 @@ public class CurationFurniture {
             FurnitureTag furnitureTag,
             RecommendFurniture recommendFurniture,
             int rank,
+            CurationSource source,
             double similarity,
             LocalDateTime fetchedAt
     ) {
@@ -59,6 +64,7 @@ public class CurationFurniture {
                 .furnitureTag(furnitureTag)
                 .recommendFurniture(recommendFurniture)
                 .rank(rank)
+                .source(source)
                 .similarity(similarity)
                 .fetchedAt(fetchedAt)
                 .build();

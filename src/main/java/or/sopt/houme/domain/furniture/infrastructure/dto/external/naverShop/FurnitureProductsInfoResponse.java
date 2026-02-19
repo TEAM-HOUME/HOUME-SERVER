@@ -17,7 +17,14 @@ public record FurnitureProductsInfoResponse(
             String furnitureProductName,
             String furnitureProductMallName,
             Long furnitureProductId,
-            double similarity
+            double similarity,
+            List<String> colors,
+            List<String> clientColors,
+            Long listPrice,
+            Integer discountRate,
+            Long discountPrice,
+            String brandName,
+            Long jjymCount
     ) {
         public static FurnitureProductInfo of(
                 Long id,
@@ -35,7 +42,48 @@ public record FurnitureProductsInfoResponse(
                     furnitureProductName,
                     furnitureProductMallName,
                     furnitureProductId,
-                    similarity
+                    similarity,
+                    List.of(),
+                    List.of(),
+                    null,
+                    null,
+                    null,
+                    null,
+                    0L
+            );
+        }
+
+        public static FurnitureProductInfo of(
+                Long id,
+                String furnitureProductImageUrl,
+                String furnitureProductSiteUrl,
+                String furnitureProductName,
+                String furnitureProductMallName,
+                Long furnitureProductId,
+                double similarity,
+                List<String> colors,
+                List<String> clientColors,
+                Long listPrice,
+                Integer discountRate,
+                Long discountPrice,
+                String brandName,
+                Long jjymCount
+        ) {
+            return new FurnitureProductInfo(
+                    id,
+                    furnitureProductImageUrl,
+                    furnitureProductSiteUrl,
+                    furnitureProductName,
+                    furnitureProductMallName,
+                    furnitureProductId,
+                    similarity,
+                    colors,
+                    clientColors,
+                    listPrice,
+                    discountRate,
+                    discountPrice,
+                    brandName,
+                    jjymCount
             );
         }
     }

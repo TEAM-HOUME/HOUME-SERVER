@@ -12,12 +12,13 @@ import org.hibernate.annotations.Comment;
 @Table(
         name = "recommend_furnitures",
         indexes = {
-                @Index(name = "idx_furniture_product_id", columnList = "furniture_product_id")
+                @Index(name = "idx_furniture_product_id", columnList = "furniture_product_id"),
+                @Index(name = "idx_recommend_source", columnList = "source")
         },
         uniqueConstraints = {
                 @UniqueConstraint(
-                        name = "uk_furniture_product_id",
-                        columnNames = {"furniture_product_id"}
+                        name = "uk_source_furniture_product_id",
+                        columnNames = {"source", "furniture_product_id"}
                 )
         }
 )
@@ -47,6 +48,10 @@ public class RecommendFurniture {
     @Comment("추천 가구 식별자")
     private Long furnitureProductId;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "source", nullable = false)
+    @Comment("큐레이션 소스")
+    private CurationSource source;
 
 
     public static RecommendFurniture from(
@@ -54,7 +59,8 @@ public class RecommendFurniture {
             String furnitureProductSiteUrl,
             String furnitureProductName,
             String furnitureProductMallName,
-            Long furnitureProductId
+            Long furnitureProductId,
+            CurationSource source
     ){
         return RecommendFurniture.builder()
                 .furnitureProductImageUrl(furnitureProductImageUrl)
@@ -62,6 +68,7 @@ public class RecommendFurniture {
                 .furnitureProductName(furnitureProductName)
                 .furnitureProductMallName(furnitureProductMallName)
                 .furnitureProductId(furnitureProductId)
+                .source(source)
                 .build();
     }
 }
