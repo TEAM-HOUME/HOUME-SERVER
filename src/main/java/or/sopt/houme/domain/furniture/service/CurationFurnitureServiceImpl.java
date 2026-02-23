@@ -202,10 +202,12 @@ public class CurationFurnitureServiceImpl implements CurationFurnitureService {
             CurationRawProduct rawProduct = entry.getValue();
             List<String> colors = new ArrayList<>(rawColorsByProductId.getOrDefault(productId, Set.of()));
             List<String> clientColors = new ArrayList<>(clientColorsByProductId.getOrDefault(productId, Set.of()));
+            List<String> colorHexCodes = ColorHexMapper.toHexCodes(colors);
+            List<String> clientColorHexCodes = ColorHexMapper.toHexCodes(clientColors);
 
             rawMetaByProductId.put(productId, new RawProductMeta(
-                    colors,
-                    clientColors,
+                    colorHexCodes,
+                    clientColorHexCodes,
                     rawProduct.getListPrice(),
                     rawProduct.getDiscountRate(),
                     rawProduct.getDiscountPrice(),
