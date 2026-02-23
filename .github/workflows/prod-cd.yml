@@ -97,6 +97,7 @@ jobs:
           username: ubuntu
           host: ${{ secrets.HOUME_SERVER_IP }}
           key: ${{ secrets.EC2_SSH_KEY }}
+          port: 2222
           script_stop: true
           script: |
             aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | sudo docker login --username AWS --password-stdin ${{ secrets.ECR_REGISTRY }}
@@ -109,6 +110,7 @@ jobs:
           username: ubuntu
           host: ${{ secrets.HOUME_SERVER_IP }}
           key: ${{ secrets.EC2_SSH_KEY }}
+          port: 2222
           script: |
             STOPPED_PORT="${{ env.STOPPED_PORT }}"
             echo "📌 STOPPED_PORT is $STOPPED_PORT"
@@ -131,6 +133,7 @@ jobs:
           username: ubuntu
           host: ${{ secrets.HOUME_SERVER_IP }}
           key: ${{ secrets.EC2_SSH_KEY }}
+          port: 2222
           script_stop: true
           script: |
             echo "set \$service_url ${{ env.TARGET_UPSTREAM }};" | sudo tee /etc/nginx/sites-enabled/service-env.inc
@@ -142,6 +145,7 @@ jobs:
           username: ubuntu
           host: ${{ secrets.HOUME_SERVER_IP }}
           key: ${{ secrets.EC2_SSH_KEY }}
+          port: 2222
           script_stop: true
           script: |
             if [ "$(sudo docker ps -aq -f name=${{ env.CURRENT_UPSTREAM }})" ]; then
@@ -157,6 +161,7 @@ jobs:
           username: ubuntu
           host: ${{ secrets.PROD_HOST }}
           key: ${{ secrets.EC2_SSH_KEY }}
+          port: 2222
           script_stop: true
           script: |
             sudo docker image prune -f
