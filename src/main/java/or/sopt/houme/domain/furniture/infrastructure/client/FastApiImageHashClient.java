@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 )
 public interface FastApiImageHashClient {
 
+
     @PostMapping(
             value = "/imagehash/similarity",
             consumes = MediaType.APPLICATION_JSON_VALUE,
