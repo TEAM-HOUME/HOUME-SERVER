@@ -22,9 +22,9 @@ spring:
       ddl-auto: update
     properties:
       hibernate:
-        format_sql: true
+        format_sql: false
         dialect: org.hibernate.dialect.PostgreSQLDialect
-        show_sql: true
+        show_sql: false
 
   security:
     oauth2:
@@ -64,10 +64,23 @@ openai:
     background: auto
     output-format: webp
 
+gemini:
+  api-key: ${GEMINI_API_KEY}
+  api-base-url: ${GEMINI_API_BASE_URL:https://generativelanguage.googleapis.com/v1beta}
+  image:
+    model: gemini-3-pro-image-preview
+    size: 1024x1024
+
 naver:
   client-id: ${NAVER_CLIENT_ID}
   client-secret: ${NAVER_CLIENT_SECRET}
   allowed-malls: ${NAVER_ALLOWED_MALLS}  # 쉼표 구분 (예: 롯데ON,쿠팡,11번가)
+
+soozip:
+  base-url: ${SOOZIP_BASE_URL}
+
+discord:
+  webhook-url: ${DISCORD_WEBHOOK}
 
 cloud:
   aws:

@@ -1,12 +1,12 @@
 package or.sopt.houme.domain.house.service;
 
-import or.sopt.houme.domain.house.dto.LatestHouseConditionDTO;
-import or.sopt.houme.domain.house.dto.request.HouseSelectRequest;
-import or.sopt.houme.domain.house.dto.response.HouseIdResponse;
-import or.sopt.houme.domain.house.dto.response.HouseOptionsResponse;
-import or.sopt.houme.domain.house.entity.House;
-import or.sopt.houme.domain.house.entity.enums.Activity;
-import or.sopt.houme.domain.user.entity.User;
+import or.sopt.houme.domain.house.presentation.dto.LatestHouseConditionDTO;
+import or.sopt.houme.domain.house.presentation.dto.request.HouseSelectRequest;
+import or.sopt.houme.domain.house.presentation.dto.response.HouseIdResponse;
+import or.sopt.houme.domain.house.presentation.dto.response.HouseOptionsResponse;
+import or.sopt.houme.domain.house.model.entity.House;
+import or.sopt.houme.domain.house.model.entity.enums.Activity;
+import or.sopt.houme.domain.user.model.entity.User;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;

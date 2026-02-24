@@ -1,15 +1,15 @@
 package or.sopt.houme.domain.house.service;
 
-import or.sopt.houme.domain.house.dto.HouseOptionDTO;
-import or.sopt.houme.domain.house.dto.LatestHouseConditionDTO;
-import or.sopt.houme.domain.house.dto.response.HouseOptionsResponse;
-import or.sopt.houme.domain.house.entity.House;
-import or.sopt.houme.domain.house.entity.enums.Activity;
-import or.sopt.houme.domain.house.entity.enums.Equilibrium;
-import or.sopt.houme.domain.house.entity.enums.Form;
-import or.sopt.houme.domain.house.entity.enums.Structure;
+import or.sopt.houme.domain.house.presentation.dto.HouseOptionDTO;
+import or.sopt.houme.domain.house.presentation.dto.LatestHouseConditionDTO;
+import or.sopt.houme.domain.house.presentation.dto.response.HouseOptionsResponse;
+import or.sopt.houme.domain.house.model.entity.House;
+import or.sopt.houme.domain.house.model.entity.enums.Activity;
+import or.sopt.houme.domain.house.model.entity.enums.Equilibrium;
+import or.sopt.houme.domain.house.model.entity.enums.Form;
+import or.sopt.houme.domain.house.model.entity.enums.Structure;
 import or.sopt.houme.domain.house.repository.HouseRepository;
-import or.sopt.houme.domain.user.entity.*;
+import or.sopt.houme.domain.user.model.entity.*;
 import or.sopt.houme.domain.user.repository.UserRepository;
 import or.sopt.houme.global.api.ErrorCode;
 import or.sopt.houme.global.api.GeneralException;

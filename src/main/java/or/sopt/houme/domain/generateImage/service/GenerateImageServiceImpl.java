@@ -1,11 +1,11 @@
 package or.sopt.houme.domain.generateImage.service;
 
 import lombok.RequiredArgsConstructor;
-import or.sopt.houme.domain.house.dto.request.IsLikeRequest;
-import or.sopt.houme.domain.generateImage.entity.GenerateImage;
+import or.sopt.houme.domain.house.presentation.dto.request.IsLikeRequest;
+import or.sopt.houme.domain.generateImage.model.entity.GenerateImage;
 import or.sopt.houme.domain.generateImage.repository.GenerateImageRepository;
-import or.sopt.houme.domain.house.entity.House;
-import or.sopt.houme.domain.user.entity.User;
+import or.sopt.houme.domain.house.model.entity.House;
+import or.sopt.houme.domain.user.model.entity.User;
 import or.sopt.houme.global.api.ErrorCode;
 import or.sopt.houme.global.api.handler.GenerateImageException;
 import or.sopt.houme.global.dto.ImageUploadResponseDTO;

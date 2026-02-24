@@ -49,6 +49,9 @@ dependencies {
     // web
     implementation 'org.springframework.boot:spring-boot-starter-web'
 
+    // html parsing
+    implementation 'org.jsoup:jsoup:1.17.2'
+
     // JWT
     implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
     runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.11.5'
@@ -144,6 +147,11 @@ clean {
 
 tasks.named('test') {
     useJUnitPlatform()
+    // CI 환경에서 다수의 Spring 컨텍스트 + Jacoco로 인한 OOM을 완화하기 위해 HEAPsize를 줄임
+    maxHeapSize = '2g'
+    jvmArgs '-XX:MaxMetaspaceSize=512m'
+    maxParallelForks = 1
+    forkEvery = 50
     finalizedBy 'jacocoTestReport'
 }
 

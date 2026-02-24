@@ -1,14 +1,14 @@
 package or.sopt.houme.domain.factor.service;
 
-import or.sopt.houme.domain.preference.dto.response.FactorsResponse;
-import or.sopt.houme.domain.preference.entity.Factor;
-import or.sopt.houme.domain.preference.entity.Preference;
-import or.sopt.houme.domain.preference.entity.PreferenceFactor;
+import or.sopt.houme.domain.preference.presentation.dto.response.FactorsResponse;
+import or.sopt.houme.domain.preference.model.entity.Factor;
+import or.sopt.houme.domain.preference.model.entity.Preference;
+import or.sopt.houme.domain.preference.model.entity.PreferenceFactor;
 import or.sopt.houme.domain.preference.repository.FactorRepository;
 import or.sopt.houme.domain.preference.repository.PreferenceFactorRepository;
 import or.sopt.houme.domain.preference.repository.PreferenceRepository;
 import or.sopt.houme.domain.preference.service.FactorServiceImpl;
-import or.sopt.houme.domain.user.entity.User;
+import or.sopt.houme.domain.user.model.entity.User;
 import or.sopt.houme.global.api.ErrorCode;
 import or.sopt.houme.global.api.handler.PreferenceException;
 import org.junit.jupiter.api.DisplayName;

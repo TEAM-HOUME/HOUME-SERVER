@@ -2,11 +2,11 @@ package or.sopt.houme.domain.generateImage.service.imageGenerationLog;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import or.sopt.houme.domain.generateImage.dto.SelectedTagInfo;
-import or.sopt.houme.domain.generateImage.dto.response.ImageInfoResponse;
-import or.sopt.houme.domain.generateImage.entity.ImageGenerationLog;
-import or.sopt.houme.domain.taste.entity.Tag;
-import or.sopt.houme.domain.taste.entity.Taste;
+import or.sopt.houme.domain.generateImage.presentation.dto.SelectedTagInfo;
+import or.sopt.houme.domain.generateImage.presentation.dto.response.ImageInfoResponse;
+import or.sopt.houme.domain.generateImage.model.entity.ImageGenerationLog;
+import or.sopt.houme.domain.house.model.taste.entity.Tag;
+import or.sopt.houme.domain.house.model.taste.entity.Taste;
 import or.sopt.houme.global.api.ErrorCode;
 import or.sopt.houme.global.api.handler.TagException;
 import org.springframework.stereotype.Service;

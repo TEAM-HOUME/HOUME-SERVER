@@ -58,6 +58,7 @@ jobs:
           host: ${{ secrets.DEVELOP_HOST }}
           username: ubuntu
           key: ${{ secrets.EC2_SSH_KEY }}
+          port: 2222
           script_stop: true
           envs: AWS_REGION,ECR_REGISTRY,IMAGE_TAG
           script: |

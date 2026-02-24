@@ -32,6 +32,10 @@ public enum ErrorCode {
 
     // 회원관련
     USERNAME_DUPLICATE(HttpStatus.BAD_REQUEST,40009,"username이 중복되었습니다."),
+    EMAIL_ALREADY_EXISTS(HttpStatus.BAD_REQUEST, 40021, "이미 가입된 이메일입니다."),
+
+    // 소셜 회원가입 관련
+    SIGNUP_TOKEN_INVALID(HttpStatus.BAD_REQUEST, 40020, "회원가입 토큰이 유효하지 않습니다."),
 
     // 좋아요 관련
     MISMATCHED_IS_LIKE(HttpStatus.BAD_REQUEST,40011 ,"좋아요와 요인의 선호 여부가 일치하지 않습니다."),

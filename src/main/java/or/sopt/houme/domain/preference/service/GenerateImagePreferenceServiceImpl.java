@@ -1,9 +1,9 @@
 package or.sopt.houme.domain.preference.service;
 
 import lombok.RequiredArgsConstructor;
-import or.sopt.houme.domain.generateImage.entity.GenerateImage;
-import or.sopt.houme.domain.preference.entity.GenerateImagePreference;
-import or.sopt.houme.domain.preference.entity.Preference;
+import or.sopt.houme.domain.generateImage.model.entity.GenerateImage;
+import or.sopt.houme.domain.preference.model.entity.GenerateImagePreference;
+import or.sopt.houme.domain.preference.model.entity.Preference;
 import or.sopt.houme.domain.preference.repository.GenerateImagePreferenceRepository;
 import or.sopt.houme.domain.preference.repository.PreferenceFactorRepository;
 import or.sopt.houme.domain.preference.repository.PreferenceRepository;

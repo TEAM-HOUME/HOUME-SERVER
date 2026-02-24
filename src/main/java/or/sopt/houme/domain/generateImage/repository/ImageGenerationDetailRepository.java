@@ -1,6 +1,6 @@
 package or.sopt.houme.domain.generateImage.repository;
 
-import or.sopt.houme.domain.generateImage.entity.ImageGenerationDetail;
+import or.sopt.houme.domain.generateImage.model.entity.ImageGenerationDetail;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

@@ -1,24 +1,24 @@
 package or.sopt.houme.domain.user.service;
 
-import or.sopt.houme.domain.credit.entity.Credit;
+import or.sopt.houme.domain.credit.model.entity.Credit;
 import or.sopt.houme.domain.credit.repository.CreditRepository;
-import or.sopt.houme.domain.generateImage.entity.GenerateImage;
+import or.sopt.houme.domain.generateImage.model.entity.GenerateImage;
 import or.sopt.houme.domain.generateImage.repository.GenerateImageRepository;
-import or.sopt.houme.domain.house.entity.House;
-import or.sopt.houme.domain.house.entity.enums.Equilibrium;
-import or.sopt.houme.domain.house.entity.enums.Form;
+import or.sopt.houme.domain.house.model.entity.House;
+import or.sopt.houme.domain.house.model.entity.enums.Equilibrium;
+import or.sopt.houme.domain.house.model.entity.enums.Form;
 import or.sopt.houme.domain.house.repository.HouseRepository;
-import or.sopt.houme.domain.preference.entity.GenerateImagePreference;
-import or.sopt.houme.domain.preference.entity.Preference;
+import or.sopt.houme.domain.preference.model.entity.GenerateImagePreference;
+import or.sopt.houme.domain.preference.model.entity.Preference;
 import or.sopt.houme.domain.preference.repository.FactorRepository;
 import or.sopt.houme.domain.preference.repository.GenerateImagePreferenceRepository;
 import or.sopt.houme.domain.preference.repository.PreferenceFactorRepository;
 import or.sopt.houme.domain.preference.repository.PreferenceRepository;
-import or.sopt.houme.domain.taste.entity.Tag;
-import or.sopt.houme.domain.taste.repository.tag.TagRepository;
-import or.sopt.houme.domain.user.controller.dto.*;
-import or.sopt.houme.domain.user.entity.Gender;
-import or.sopt.houme.domain.user.entity.User;
+import or.sopt.houme.domain.house.model.taste.entity.Tag;
+import or.sopt.houme.domain.house.repository.taste.tag.TagRepository;
+import or.sopt.houme.domain.user.presentation.controller.dto.*;
+import or.sopt.houme.domain.user.model.entity.Gender;
+import or.sopt.houme.domain.user.model.entity.User;
 import or.sopt.houme.domain.user.repository.UserRepository;
 import or.sopt.houme.global.api.ErrorCode;
 import or.sopt.houme.global.api.handler.*;
@@ -34,6 +34,8 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.BDDMockito.*;
 
 class UserServiceImplTest {
@@ -372,7 +374,8 @@ class UserServiceImplTest {
         assertEquals(Gender.MALE, dbUser.getGender());
         assertEquals(LocalDate.of(2000, 5, 15), dbUser.getBirthday());
 
-        verify(creditRepository, times(1)).save(any(Credit.class));
+        verify(creditRepository, times(1))
+                .saveAll(argThat(credits -> credits instanceof java.util.Collection<?> c && c.size() == 1));
     }
 
 
@@ -401,7 +404,7 @@ class UserServiceImplTest {
 
         // 크레딧 저장 시 RuntimeException 발생하도록 설정
         willThrow(new RuntimeException("DB error"))
-                .given(creditRepository).save(any(Credit.class));
+                .given(creditRepository).saveAll(anyList());
 
         // when & then
         assertThatThrownBy(() -> userService.updateUser(inputUser, request.name(), Gender.MALE, LocalDate.of(2000, 5, 15)

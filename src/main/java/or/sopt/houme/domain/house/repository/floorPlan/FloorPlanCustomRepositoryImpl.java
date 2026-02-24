@@ -1,0 +1,43 @@
+package or.sopt.houme.domain.house.repository.floorPlan;
+
+import com.querydsl.jpa.impl.JPAQueryFactory;
+import lombok.RequiredArgsConstructor;
+import or.sopt.houme.domain.house.model.floorPlan.entity.FloorPlan;
+import or.sopt.houme.domain.house.model.entity.enums.Form;
+import or.sopt.houme.domain.house.model.entity.enums.Structure;
+import org.springframework.stereotype.Repository;
+
+import java.util.List;
+
+import static or.sopt.houme.domain.house.model.floorPlan.entity.QFloorPlan.floorPlan;
+
+@Repository
+@RequiredArgsConstructor
+public class FloorPlanCustomRepositoryImpl implements FloorPlanCustomRepository {
+
+    private final JPAQueryFactory queryFactory;
+
+    @Override
+    public List<FloorPlan> findAllByFormAndStructure(Form form, Structure structure) {
+
+        return queryFactory
+                .selectFrom(floorPlan)
+                .where(
+                        floorPlan.form.eq(form),
+                        floorPlan.structure.eq(structure)
+                )
+                .fetch();
+    }
+
+    // 구조에 따른 도면 조회
+    @Override
+    public List<FloorPlan> findAllByStructure(Structure structure) {
+
+        return queryFactory
+                .selectFrom(floorPlan)
+                .where(
+                        floorPlan.structure.eq(structure)
+                )
+                .fetch();
+    }
+}

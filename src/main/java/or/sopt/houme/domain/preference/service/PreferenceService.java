@@ -1,6 +1,6 @@
 package or.sopt.houme.domain.preference.service;
 
-import or.sopt.houme.domain.preference.entity.Preference;
+import or.sopt.houme.domain.preference.model.entity.Preference;
 
 public interface PreferenceService {
 
