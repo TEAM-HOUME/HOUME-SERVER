@@ -186,6 +186,35 @@ public class CurationRawProduct {
         }
     }
 
+    public void updateAdminFields(
+            String source,
+            SoozipCategory category,
+            Long productId,
+            String productImageUrl,
+            String productSiteUrl,
+            String productName,
+            String productMallName,
+            String brand,
+            Long listPrice,
+            Integer discountRate,
+            Long discountPrice,
+            Long baseShippingFee,
+            Long freeShippingCondition,
+            LocalDateTime fetchedAt
+    ) {
+        if (source != null && !source.isBlank()) {
+            this.source = source;
+        }
+        if (category != null) {
+            this.category = category;
+        }
+        if (productId != null) {
+            this.productId = productId;
+        }
+        updateFrom(productImageUrl, productSiteUrl, productName, productMallName, fetchedAt);
+        updateMeta(brand, listPrice, discountRate, discountPrice, baseShippingFee, freeShippingCondition);
+    }
+
     public boolean addFurnitureTag(FurnitureTag furnitureTag) {
         if (furnitureTag == null) {
             return false;

@@ -13,6 +13,8 @@ import java.util.Optional;
 
 @Repository
 public interface CurationRawProductRepository extends JpaRepository<CurationRawProduct, Long> {
+    List<CurationRawProduct> findAllByOrderByIdDesc();
+
     Optional<CurationRawProduct> findBySourceAndCategoryAndProductId(
             String source,
             SoozipCategory category,
