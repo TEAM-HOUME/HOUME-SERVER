@@ -1,22 +1,33 @@
 package or.sopt.houme.domain.furniture.presentation.dto.request;
 
 import or.sopt.houme.domain.furniture.model.entity.SoozipCategory;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.PositiveOrZero;
 
 import java.time.LocalDateTime;
 
 public record AdminCurationRawProductUpdateRequest(
         String source,
         SoozipCategory category,
+        @Positive(message = "productId는 1 이상이어야 합니다.")
         Long productId,
         String productImageUrl,
         String productSiteUrl,
         String productName,
         String productMallName,
         String brand,
+        @PositiveOrZero(message = "listPrice는 0 이상이어야 합니다.")
         Long listPrice,
+        @Min(value = 0, message = "discountRate는 0 이상이어야 합니다.")
+        @Max(value = 100, message = "discountRate는 100 이하여야 합니다.")
         Integer discountRate,
+        @PositiveOrZero(message = "discountPrice는 0 이상이어야 합니다.")
         Long discountPrice,
+        @PositiveOrZero(message = "baseShippingFee는 0 이상이어야 합니다.")
         Long baseShippingFee,
+        @PositiveOrZero(message = "freeShippingCondition는 0 이상이어야 합니다.")
         Long freeShippingCondition,
         LocalDateTime fetchedAt
 ) {

@@ -21,7 +21,9 @@ import org.hibernate.annotations.Comment;
 
 import java.time.LocalDateTime;
 import java.util.LinkedHashSet;
+import java.util.Locale;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
@@ -44,6 +46,7 @@ import java.util.Set;
 )
 @Comment("큐레이션 원본 수집 데이터를 저장하는 엔티티입니다")
 public class CurationRawProduct {
+    private static final Pattern SOURCE_PATTERN = Pattern.compile("^[a-z0-9][a-z0-9_-]{0,49}$");
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -123,7 +126,7 @@ public class CurationRawProduct {
             LocalDateTime fetchedAt
     ) {
         return CurationRawProduct.builder()
-                .source(source)
+                .source(normalizeSource(source))
                 .category(category)
                 .productId(productId)
                 .productImageUrl(productImageUrl)
@@ -203,7 +206,7 @@ public class CurationRawProduct {
             LocalDateTime fetchedAt
     ) {
         if (source != null && !source.isBlank()) {
-            this.source = source;
+            this.source = normalizeSource(source);
         }
         if (category != null) {
             this.category = category;
@@ -234,5 +237,17 @@ public class CurationRawProduct {
 
     public void clearFurnitureTags() {
         furnitureTagMappings.clear();
+    }
+
+    private static String normalizeSource(String source) {
+        if (source == null || source.isBlank()) {
+            throw new IllegalArgumentException("source must not be blank");
+        }
+
+        String canonical = source.trim().toLowerCase(Locale.ROOT);
+        if (!SOURCE_PATTERN.matcher(canonical).matches()) {
+            throw new IllegalArgumentException("source format is invalid");
+        }
+        return canonical;
     }
 }

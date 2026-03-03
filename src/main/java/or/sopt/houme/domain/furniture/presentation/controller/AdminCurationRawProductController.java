@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -30,8 +31,11 @@ public class AdminCurationRawProductController {
 
     @GetMapping
     @Operation(summary = "curation_raw_product 전체 조회 API")
-    public ResponseEntity<ApiResponse<AdminCurationRawProductListResponse>> getRawProducts() {
-        return ResponseEntity.ok(ApiResponse.ok(adminCurationRawProductService.getAll()));
+    public ResponseEntity<ApiResponse<AdminCurationRawProductListResponse>> getRawProducts(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size
+    ) {
+        return ResponseEntity.ok(ApiResponse.ok(adminCurationRawProductService.getAll(page, size)));
     }
 
     @GetMapping("/{curationRawProductId}")
@@ -54,7 +58,7 @@ public class AdminCurationRawProductController {
     @Operation(summary = "curation_raw_product 가구 수정 API")
     public ResponseEntity<ApiResponse<AdminCurationRawProductResponse>> updateRawProduct(
             @PathVariable Long curationRawProductId,
-            @RequestBody AdminCurationRawProductUpdateRequest request
+            @Valid @RequestBody AdminCurationRawProductUpdateRequest request
     ) {
         return ResponseEntity.ok(ApiResponse.ok(adminCurationRawProductService.update(curationRawProductId, request)));
     }

@@ -1,7 +1,11 @@
 package or.sopt.houme.domain.furniture.presentation.dto.request;
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.PositiveOrZero;
 import or.sopt.houme.domain.furniture.model.entity.SoozipCategory;
 
 import java.time.LocalDateTime;
@@ -13,6 +17,7 @@ public record AdminCurationRawProductCreateRequest(
         @NotNull(message = "category는 필수 입력값입니다.")
         SoozipCategory category,
 
+        @Positive(message = "productId는 1 이상이어야 합니다.")
         @NotNull(message = "productId는 필수 입력값입니다.")
         Long productId,
 
@@ -27,10 +32,20 @@ public record AdminCurationRawProductCreateRequest(
 
         String productMallName,
         String brand,
+        @PositiveOrZero(message = "listPrice는 0 이상이어야 합니다.")
         Long listPrice,
+
+        @Min(value = 0, message = "discountRate는 0 이상이어야 합니다.")
+        @Max(value = 100, message = "discountRate는 100 이하여야 합니다.")
         Integer discountRate,
+
+        @PositiveOrZero(message = "discountPrice는 0 이상이어야 합니다.")
         Long discountPrice,
+
+        @PositiveOrZero(message = "baseShippingFee는 0 이상이어야 합니다.")
         Long baseShippingFee,
+
+        @PositiveOrZero(message = "freeShippingCondition는 0 이상이어야 합니다.")
         Long freeShippingCondition,
         LocalDateTime fetchedAt
 ) {

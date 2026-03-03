@@ -864,13 +864,14 @@
         });
 
         document.getElementById('get-raw-products-button').addEventListener('click', function() {
-            const accessToken = localStorage.getItem('accessToken');
             const resultDiv = document.getElementById('get-raw-products-result');
-            if (resultDiv.innerHTML) {
+            if (resultDiv.getAttribute('data-open') === 'true') {
                 resultDiv.innerHTML = '';
+                resultDiv.setAttribute('data-open', 'false');
                 return;
             }
-            testApiCall(accessToken, resultDiv, '/api/v1/admin/curation-raw-products', 'GET', null, displayRawProductsAsTable);
+            fetchRawProducts();
+            resultDiv.setAttribute('data-open', 'true');
         });
 
         document.getElementById('raw-product-detail-form').addEventListener('submit', function(event) {
@@ -924,7 +925,7 @@
             if (!confirm(`RAW 상품 ID ${rawProductId}를 정말로 삭제하시겠습니까?`)) return;
             testApiCall(accessToken, resultDiv, `/api/v1/admin/curation-raw-products/${rawProductId}`, 'DELETE', null, () => {
                 resultDiv.innerHTML = '<div class="alert alert-success">RAW 상품이 삭제되었습니다.</div>';
-                document.getElementById('get-raw-products-button').click();
+                fetchRawProducts();
             });
         });
     };
@@ -1048,33 +1049,73 @@
 
     function displayRawProductsAsTable(data, resultDiv) {
         const products = data && data.data && Array.isArray(data.data.products) ? data.data.products : [];
+        resultDiv.setAttribute('data-open', 'true');
         if (products.length === 0) {
             resultDiv.innerHTML = '<div class="alert alert-info">등록된 RAW 상품이 없습니다.</div>';
             return;
         }
 
-        let tableHTML = '<div class="table-responsive"><table class="table table-hover align-middle"><thead><tr>' +
-            '<th>ID</th><th>source</th><th>category</th><th>productId</th><th>상품명</th><th>몰명</th><th>fetchedAt</th><th>작업</th>' +
-            '</tr></thead><tbody>';
+        resultDiv.innerHTML = '';
+
+        const tableWrapper = document.createElement('div');
+        tableWrapper.className = 'table-responsive';
+
+        const table = document.createElement('table');
+        table.className = 'table table-hover align-middle';
+
+        const thead = document.createElement('thead');
+        const headRow = document.createElement('tr');
+        ['ID', 'source', 'category', 'productId', '상품명', '몰명', 'fetchedAt', '작업'].forEach(header => {
+            const th = document.createElement('th');
+            th.textContent = header;
+            headRow.appendChild(th);
+        });
+        thead.appendChild(headRow);
+
+        const tbody = document.createElement('tbody');
 
         products.forEach(product => {
-            tableHTML += `<tr>
-                <td>${product.id ?? ''}</td>
-                <td>${product.source ?? ''}</td>
-                <td>${product.category ?? ''}</td>
-                <td>${product.productId ?? ''}</td>
-                <td>${product.productName ?? ''}</td>
-                <td>${product.productMallName ?? ''}</td>
-                <td>${product.fetchedAt ?? ''}</td>
-                <td>
-                    <button class="btn btn-sm btn-info me-1" onclick="loadRawProductDetail(${product.id})">상세</button>
-                    <button class="btn btn-sm btn-danger" onclick="deleteRawProductById(${product.id})">삭제</button>
-                </td>
-            </tr>`;
+            const row = document.createElement('tr');
+            const rawProductId = Number(product.id);
+
+            appendCell(row, product.id);
+            appendCell(row, product.source);
+            appendCell(row, product.category);
+            appendCell(row, product.productId);
+            appendCell(row, product.productName);
+            appendCell(row, product.productMallName);
+            appendCell(row, product.fetchedAt);
+
+            const actionCell = document.createElement('td');
+            const detailButton = document.createElement('button');
+            detailButton.className = 'btn btn-sm btn-info me-1';
+            detailButton.textContent = '상세';
+            detailButton.disabled = Number.isNaN(rawProductId);
+            detailButton.addEventListener('click', () => loadRawProductDetail(rawProductId));
+
+            const deleteButton = document.createElement('button');
+            deleteButton.className = 'btn btn-sm btn-danger';
+            deleteButton.textContent = '삭제';
+            deleteButton.disabled = Number.isNaN(rawProductId);
+            deleteButton.addEventListener('click', () => deleteRawProductById(rawProductId));
+
+            actionCell.appendChild(detailButton);
+            actionCell.appendChild(deleteButton);
+            row.appendChild(actionCell);
+            tbody.appendChild(row);
         });
 
-        tableHTML += '</tbody></table></div>';
-        resultDiv.innerHTML = tableHTML;
+        table.appendChild(thead);
+        table.appendChild(tbody);
+        tableWrapper.appendChild(table);
+        resultDiv.appendChild(tableWrapper);
+
+        if (data && data.data && typeof data.data.totalElements === 'number') {
+            const meta = document.createElement('div');
+            meta.className = 'mt-2 text-muted';
+            meta.textContent = `page=${data.data.page}, size=${data.data.size}, total=${data.data.totalElements}`;
+            resultDiv.appendChild(meta);
+        }
     }
 
     function displayTagsAsTable(data, resultDiv) {
@@ -1279,8 +1320,21 @@
         const resultDiv = document.getElementById('get-raw-products-result');
         testApiCall(accessToken, resultDiv, `/api/v1/admin/curation-raw-products/${rawProductId}`, 'DELETE', null, () => {
             alert('RAW 상품이 삭제되었습니다.');
-            testApiCall(accessToken, resultDiv, '/api/v1/admin/curation-raw-products', 'GET', null, displayRawProductsAsTable);
+            fetchRawProducts();
         });
+    }
+
+    function fetchRawProducts(page = 0, size = 50) {
+        const accessToken = localStorage.getItem('accessToken');
+        const resultDiv = document.getElementById('get-raw-products-result');
+        const endpoint = `/api/v1/admin/curation-raw-products?page=${page}&size=${size}`;
+        testApiCall(accessToken, resultDiv, endpoint, 'GET', null, displayRawProductsAsTable);
+    }
+
+    function appendCell(row, value) {
+        const td = document.createElement('td');
+        td.textContent = value == null ? '' : String(value);
+        row.appendChild(td);
     }
 
     function parseNumberValue(value) {

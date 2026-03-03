@@ -7,7 +7,7 @@ import or.sopt.houme.domain.furniture.presentation.dto.response.AdminCurationRaw
 
 public interface AdminCurationRawProductService {
 
-    AdminCurationRawProductListResponse getAll();
+    AdminCurationRawProductListResponse getAll(int page, int size);
 
     AdminCurationRawProductResponse getById(Long curationRawProductId);
 

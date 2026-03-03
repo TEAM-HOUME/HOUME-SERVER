@@ -3,6 +3,8 @@ package or.sopt.houme.domain.furniture.repository;
 import or.sopt.houme.domain.furniture.model.entity.CurationRawProduct;
 import or.sopt.houme.domain.furniture.model.entity.FurnitureTag;
 import or.sopt.houme.domain.furniture.model.entity.SoozipCategory;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -13,7 +15,7 @@ import java.util.Optional;
 
 @Repository
 public interface CurationRawProductRepository extends JpaRepository<CurationRawProduct, Long> {
-    List<CurationRawProduct> findAllByOrderByIdDesc();
+    Page<CurationRawProduct> findAllByOrderByIdDesc(Pageable pageable);
 
     Optional<CurationRawProduct> findBySourceAndCategoryAndProductId(
             String source,
