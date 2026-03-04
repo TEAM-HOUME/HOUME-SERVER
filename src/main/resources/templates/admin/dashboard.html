@@ -499,6 +499,14 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
 <script>
+    let rawProductsPageState = {
+        page: 0,
+        size: 50,
+        totalPages: 0,
+        hasNext: false,
+        hasPrevious: false
+    };
+
     window.onload = function() {
         const urlParams = new URLSearchParams(window.location.search);
         const token = urlParams.get('token');
@@ -1048,7 +1056,23 @@
     }
 
     function displayRawProductsAsTable(data, resultDiv) {
-        const products = data && data.data && Array.isArray(data.data.products) ? data.data.products : [];
+        const payload = data && data.data ? data.data : {};
+        const products = Array.isArray(payload.products) ? payload.products : [];
+        const page = Number.isInteger(payload.page) ? payload.page : rawProductsPageState.page;
+        const size = Number.isInteger(payload.size) ? payload.size : rawProductsPageState.size;
+        const totalPages = Number.isInteger(payload.totalPages) ? payload.totalPages : 0;
+        const totalElements = typeof payload.totalElements === 'number' ? payload.totalElements : products.length;
+        const hasNext = Boolean(payload.hasNext);
+        const hasPrevious = Boolean(payload.hasPrevious);
+
+        rawProductsPageState = {
+            page,
+            size,
+            totalPages,
+            hasNext,
+            hasPrevious
+        };
+
         resultDiv.setAttribute('data-open', 'true');
         if (products.length === 0) {
             resultDiv.innerHTML = '<div class="alert alert-info">등록된 RAW 상품이 없습니다.</div>';
@@ -1110,12 +1134,29 @@
         tableWrapper.appendChild(table);
         resultDiv.appendChild(tableWrapper);
 
-        if (data && data.data && typeof data.data.totalElements === 'number') {
-            const meta = document.createElement('div');
-            meta.className = 'mt-2 text-muted';
-            meta.textContent = `page=${data.data.page}, size=${data.data.size}, total=${data.data.totalElements}`;
-            resultDiv.appendChild(meta);
-        }
+        const meta = document.createElement('div');
+        meta.className = 'mt-2 text-muted';
+        meta.textContent = `page=${page + 1}/${Math.max(totalPages, 1)}, size=${size}, total=${totalElements}`;
+        resultDiv.appendChild(meta);
+
+        const pagination = document.createElement('div');
+        pagination.className = 'd-flex align-items-center gap-2 mt-2';
+
+        const prevButton = document.createElement('button');
+        prevButton.className = 'btn btn-outline-secondary btn-sm';
+        prevButton.textContent = '이전';
+        prevButton.disabled = !hasPrevious;
+        prevButton.addEventListener('click', () => fetchRawProducts(page - 1, size));
+
+        const nextButton = document.createElement('button');
+        nextButton.className = 'btn btn-outline-secondary btn-sm';
+        nextButton.textContent = '다음';
+        nextButton.disabled = !hasNext;
+        nextButton.addEventListener('click', () => fetchRawProducts(page + 1, size));
+
+        pagination.appendChild(prevButton);
+        pagination.appendChild(nextButton);
+        resultDiv.appendChild(pagination);
     }
 
     function displayTagsAsTable(data, resultDiv) {
@@ -1324,10 +1365,12 @@
         });
     }
 
-    function fetchRawProducts(page = 0, size = 50) {
+    function fetchRawProducts(page = rawProductsPageState.page, size = rawProductsPageState.size) {
         const accessToken = localStorage.getItem('accessToken');
         const resultDiv = document.getElementById('get-raw-products-result');
-        const endpoint = `/api/v1/admin/curation-raw-products?page=${page}&size=${size}`;
+        const targetPage = Math.max(0, page);
+        const targetSize = Math.max(1, size);
+        const endpoint = `/api/v1/admin/curation-raw-products?page=${targetPage}&size=${targetSize}`;
         testApiCall(accessToken, resultDiv, endpoint, 'GET', null, displayRawProductsAsTable);
     }
 

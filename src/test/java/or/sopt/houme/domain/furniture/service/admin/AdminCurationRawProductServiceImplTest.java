@@ -91,7 +91,7 @@ class AdminCurationRawProductServiceImplTest {
 
         when(curationRawProductRepository.findBySourceAndCategoryAndProductId("soozip", SoozipCategory.FURNITURE, 1001L))
                 .thenReturn(Optional.empty());
-        when(curationRawProductRepository.save(any(CurationRawProduct.class)))
+        when(curationRawProductRepository.saveAndFlush(any(CurationRawProduct.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
 
         AdminCurationRawProductResponse response = adminCurationRawProductService.create(request);
@@ -100,7 +100,7 @@ class AdminCurationRawProductServiceImplTest {
         assertEquals(SoozipCategory.FURNITURE, response.category());
         assertEquals(1001L, response.productId());
         assertEquals("테스트 침대", response.productName());
-        verify(curationRawProductRepository).save(any(CurationRawProduct.class));
+        verify(curationRawProductRepository).saveAndFlush(any(CurationRawProduct.class));
     }
 
     @Test
@@ -162,6 +162,7 @@ class AdminCurationRawProductServiceImplTest {
         InOrder inOrder = inOrder(curationRawProductColorRepository, curationRawProductRepository);
         inOrder.verify(curationRawProductColorRepository).deleteAllByCurationRawProduct(rawProduct);
         inOrder.verify(curationRawProductRepository).delete(rawProduct);
+        inOrder.verify(curationRawProductRepository).flush();
     }
 
     @Test

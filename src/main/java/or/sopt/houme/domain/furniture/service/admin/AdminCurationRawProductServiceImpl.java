@@ -95,7 +95,7 @@ public class AdminCurationRawProductServiceImpl implements AdminCurationRawProdu
         );
 
         try {
-            CurationRawProduct saved = curationRawProductRepository.save(rawProduct);
+            CurationRawProduct saved = curationRawProductRepository.saveAndFlush(rawProduct);
             return AdminCurationRawProductResponse.of(saved);
         } catch (DataIntegrityViolationException e) {
             throw new GeneralException(ErrorCode.DUPLICATE_CURATION_RAW_PRODUCT);
@@ -146,6 +146,7 @@ public class AdminCurationRawProductServiceImpl implements AdminCurationRawProdu
             curationRawProductColorRepository.deleteAllByCurationRawProduct(rawProduct);
             rawProduct.clearFurnitureTags();
             curationRawProductRepository.delete(rawProduct);
+            curationRawProductRepository.flush();
         } catch (DataIntegrityViolationException e) {
             throw new GeneralException(ErrorCode.FOREIGN_KEY_CONSTRAINT_FAIL);
         }

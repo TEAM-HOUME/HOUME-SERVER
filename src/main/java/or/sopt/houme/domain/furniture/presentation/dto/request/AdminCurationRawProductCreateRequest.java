@@ -4,6 +4,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.PositiveOrZero;
 import or.sopt.houme.domain.furniture.model.entity.SoozipCategory;
@@ -12,6 +13,7 @@ import java.time.LocalDateTime;
 
 public record AdminCurationRawProductCreateRequest(
         @NotBlank(message = "source는 필수 입력값입니다.")
+        @Pattern(regexp = "^[a-zA-Z0-9][a-zA-Z0-9_-]{0,49}$", message = "source 형식이 올바르지 않습니다.")
         String source,
 
         @NotNull(message = "category는 필수 입력값입니다.")

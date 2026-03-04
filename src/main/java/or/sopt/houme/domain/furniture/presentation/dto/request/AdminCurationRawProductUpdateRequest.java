@@ -3,12 +3,14 @@ package or.sopt.houme.domain.furniture.presentation.dto.request;
 import or.sopt.houme.domain.furniture.model.entity.SoozipCategory;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.PositiveOrZero;
 
 import java.time.LocalDateTime;
 
 public record AdminCurationRawProductUpdateRequest(
+        @Pattern(regexp = "^[a-zA-Z0-9][a-zA-Z0-9_-]{0,49}$", message = "source 형식이 올바르지 않습니다.")
         String source,
         SoozipCategory category,
         @Positive(message = "productId는 1 이상이어야 합니다.")
