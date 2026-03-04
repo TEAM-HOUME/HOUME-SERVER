@@ -15,7 +15,20 @@ import java.util.Optional;
 
 @Repository
 public interface CurationRawProductRepository extends JpaRepository<CurationRawProduct, Long> {
-    Page<CurationRawProduct> findAllByOrderByIdDesc(Pageable pageable);
+    @Query("""
+            select rawProduct
+            from CurationRawProduct rawProduct
+            where (:category is null or rawProduct.category = :category)
+              and (:minListPrice is null or rawProduct.listPrice >= :minListPrice)
+              and (:maxListPrice is null or rawProduct.listPrice <= :maxListPrice)
+            order by rawProduct.id desc
+            """)
+    Page<CurationRawProduct> findAllByFilters(
+            @Param("category") SoozipCategory category,
+            @Param("minListPrice") Long minListPrice,
+            @Param("maxListPrice") Long maxListPrice,
+            Pageable pageable
+    );
 
     Optional<CurationRawProduct> findBySourceAndCategoryAndProductId(
             String source,

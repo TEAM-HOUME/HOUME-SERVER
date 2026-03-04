@@ -1,5 +1,6 @@
 package or.sopt.houme.domain.furniture.presentation.controller;
 
+import or.sopt.houme.domain.furniture.model.entity.SoozipCategory;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -33,9 +34,14 @@ public class AdminCurationRawProductController {
     @Operation(summary = "curation_raw_product 전체 조회 API")
     public ResponseEntity<ApiResponse<AdminCurationRawProductListResponse>> getRawProducts(
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(required = false) SoozipCategory category,
+            @RequestParam(required = false) Long minListPrice,
+            @RequestParam(required = false) Long maxListPrice
     ) {
-        return ResponseEntity.ok(ApiResponse.ok(adminCurationRawProductService.getAll(page, size)));
+        return ResponseEntity.ok(ApiResponse.ok(
+                adminCurationRawProductService.getAll(page, size, category, minListPrice, maxListPrice)
+        ));
     }
 
     @GetMapping("/{curationRawProductId}")

@@ -59,14 +59,31 @@ class AdminCurationRawProductServiceImplTest {
                 LocalDateTime.now()
         );
 
-        when(curationRawProductRepository.findAllByOrderByIdDesc(any(Pageable.class)))
+        when(curationRawProductRepository.findAllByFilters(any(), any(), any(), any(Pageable.class)))
                 .thenReturn(new PageImpl<>(List.of(rawProduct)));
 
-        AdminCurationRawProductListResponse response = adminCurationRawProductService.getAll(0, 20);
+        AdminCurationRawProductListResponse response = adminCurationRawProductService.getAll(
+                0,
+                20,
+                SoozipCategory.FURNITURE,
+                100000L,
+                500000L
+        );
 
         assertEquals(1, response.products().size());
         assertEquals(0, response.page());
         assertEquals(1L, response.totalElements());
+    }
+
+    @Test
+    @DisplayName("getAll()은 최소 가격이 최대 가격보다 크면 예외를 던진다")
+    void getAll_invalidPriceRange_throwsException() {
+        GeneralException exception = assertThrows(
+                GeneralException.class,
+                () -> adminCurationRawProductService.getAll(0, 20, null, 500000L, 100000L)
+        );
+
+        assertEquals(ErrorCode.NOT_VALID_EXCEPTION, exception.getErrorCode());
     }
 
     @Test

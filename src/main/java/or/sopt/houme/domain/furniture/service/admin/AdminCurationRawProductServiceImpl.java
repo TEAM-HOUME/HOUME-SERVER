@@ -35,11 +35,21 @@ public class AdminCurationRawProductServiceImpl implements AdminCurationRawProdu
 
     @Override
     @Transactional(readOnly = true)
-    public AdminCurationRawProductListResponse getAll(int page, int size) {
+    public AdminCurationRawProductListResponse getAll(
+            int page,
+            int size,
+            SoozipCategory category,
+            Long minListPrice,
+            Long maxListPrice
+    ) {
         int normalizedPage = Math.max(page, 0);
         int normalizedSize = Math.min(Math.max(size, 1), MAX_PAGE_SIZE);
+        validatePriceRange(minListPrice, maxListPrice);
 
-        Page<CurationRawProduct> pageResult = curationRawProductRepository.findAllByOrderByIdDesc(
+        Page<CurationRawProduct> pageResult = curationRawProductRepository.findAllByFilters(
+                category,
+                minListPrice,
+                maxListPrice,
                 PageRequest.of(normalizedPage, normalizedSize)
         );
 
@@ -192,5 +202,17 @@ public class AdminCurationRawProductServiceImpl implements AdminCurationRawProdu
 
     private boolean hasText(String value) {
         return value != null && !value.isBlank();
+    }
+
+    private void validatePriceRange(Long minListPrice, Long maxListPrice) {
+        if (minListPrice != null && minListPrice < 0) {
+            throw new GeneralException(ErrorCode.NOT_VALID_EXCEPTION);
+        }
+        if (maxListPrice != null && maxListPrice < 0) {
+            throw new GeneralException(ErrorCode.NOT_VALID_EXCEPTION);
+        }
+        if (minListPrice != null && maxListPrice != null && minListPrice > maxListPrice) {
+            throw new GeneralException(ErrorCode.NOT_VALID_EXCEPTION);
+        }
     }
 }

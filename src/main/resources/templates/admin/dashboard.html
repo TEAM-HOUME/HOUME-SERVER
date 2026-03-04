@@ -395,6 +395,32 @@
         <div class="card">
             <div class="card-header">RAW 상품 전체 조회</div>
             <div class="card-body">
+                <div class="row g-2 mb-3">
+                    <div class="col-md-4">
+                        <label for="rawFilterCategory" class="form-label">카테고리</label>
+                        <select class="form-select" id="rawFilterCategory">
+                            <option value="">전체</option>
+                            <option value="MINI_ELECTRONICS">MINI_ELECTRONICS</option>
+                            <option value="FURNITURE">FURNITURE</option>
+                            <option value="LIGHTING">LIGHTING</option>
+                            <option value="LIVING_GOODS">LIVING_GOODS</option>
+                            <option value="HOME_FABRIC">HOME_FABRIC</option>
+                            <option value="ACCESSORY">ACCESSORY</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="rawFilterMinListPrice" class="form-label">최소 가격(listPrice)</label>
+                        <input type="number" class="form-control" id="rawFilterMinListPrice" min="0" placeholder="예: 100000">
+                    </div>
+                    <div class="col-md-3">
+                        <label for="rawFilterMaxListPrice" class="form-label">최대 가격(listPrice)</label>
+                        <input type="number" class="form-control" id="rawFilterMaxListPrice" min="0" placeholder="예: 500000">
+                    </div>
+                    <div class="col-md-2 d-grid gap-2">
+                        <button id="apply-raw-filters-button" class="btn btn-outline-primary">필터 적용</button>
+                        <button id="reset-raw-filters-button" class="btn btn-outline-secondary">필터 초기화</button>
+                    </div>
+                </div>
                 <button id="get-raw-products-button" class="btn btn-secondary">RAW 상품 목록 보기</button>
                 <div id="get-raw-products-result" class="api-result"></div>
             </div>
@@ -505,6 +531,11 @@
         totalPages: 0,
         hasNext: false,
         hasPrevious: false
+    };
+    let rawProductsFilterState = {
+        category: null,
+        minListPrice: null,
+        maxListPrice: null
     };
 
     window.onload = function() {
@@ -878,7 +909,33 @@
                 resultDiv.setAttribute('data-open', 'false');
                 return;
             }
-            fetchRawProducts();
+            if (!applyRawProductFiltersFromInputs(resultDiv)) {
+                return;
+            }
+            fetchRawProducts(0, rawProductsPageState.size);
+            resultDiv.setAttribute('data-open', 'true');
+        });
+
+        document.getElementById('apply-raw-filters-button').addEventListener('click', function() {
+            const resultDiv = document.getElementById('get-raw-products-result');
+            if (!applyRawProductFiltersFromInputs(resultDiv)) {
+                return;
+            }
+            fetchRawProducts(0, rawProductsPageState.size);
+            resultDiv.setAttribute('data-open', 'true');
+        });
+
+        document.getElementById('reset-raw-filters-button').addEventListener('click', function() {
+            const resultDiv = document.getElementById('get-raw-products-result');
+            document.getElementById('rawFilterCategory').value = '';
+            document.getElementById('rawFilterMinListPrice').value = '';
+            document.getElementById('rawFilterMaxListPrice').value = '';
+            rawProductsFilterState = {
+                category: null,
+                minListPrice: null,
+                maxListPrice: null
+            };
+            fetchRawProducts(0, rawProductsPageState.size);
             resultDiv.setAttribute('data-open', 'true');
         });
 
@@ -1366,12 +1423,53 @@
         });
     }
 
+    function applyRawProductFiltersFromInputs(resultDiv) {
+        const category = parseStringValue(document.getElementById('rawFilterCategory').value);
+        const minListPrice = parseNumberValue(document.getElementById('rawFilterMinListPrice').value);
+        const maxListPrice = parseNumberValue(document.getElementById('rawFilterMaxListPrice').value);
+
+        if (minListPrice != null && minListPrice < 0) {
+            resultDiv.innerHTML = '<div class="alert alert-danger">최소 가격은 0 이상이어야 합니다.</div>';
+            return false;
+        }
+        if (maxListPrice != null && maxListPrice < 0) {
+            resultDiv.innerHTML = '<div class="alert alert-danger">최대 가격은 0 이상이어야 합니다.</div>';
+            return false;
+        }
+        if (minListPrice != null && maxListPrice != null && minListPrice > maxListPrice) {
+            resultDiv.innerHTML = '<div class="alert alert-danger">최소 가격은 최대 가격보다 클 수 없습니다.</div>';
+            return false;
+        }
+
+        rawProductsFilterState = {
+            category,
+            minListPrice,
+            maxListPrice
+        };
+        return true;
+    }
+
     function fetchRawProducts(page = rawProductsPageState.page, size = rawProductsPageState.size) {
         const accessToken = localStorage.getItem('accessToken');
         const resultDiv = document.getElementById('get-raw-products-result');
         const targetPage = Math.max(0, page);
         const targetSize = Math.max(1, size);
-        const endpoint = `/api/v1/admin/curation-raw-products?page=${targetPage}&size=${targetSize}`;
+        const queryParams = new URLSearchParams({
+            page: String(targetPage),
+            size: String(targetSize)
+        });
+
+        if (rawProductsFilterState.category) {
+            queryParams.set('category', rawProductsFilterState.category);
+        }
+        if (rawProductsFilterState.minListPrice != null) {
+            queryParams.set('minListPrice', String(rawProductsFilterState.minListPrice));
+        }
+        if (rawProductsFilterState.maxListPrice != null) {
+            queryParams.set('maxListPrice', String(rawProductsFilterState.maxListPrice));
+        }
+
+        const endpoint = `/api/v1/admin/curation-raw-products?${queryParams.toString()}`;
         testApiCall(accessToken, resultDiv, endpoint, 'GET', null, displayRawProductsAsTable);
     }
 
