@@ -1089,7 +1089,7 @@
 
         const thead = document.createElement('thead');
         const headRow = document.createElement('tr');
-        ['ID', 'source', 'category', 'productId', '상품명', '몰명', 'fetchedAt', '작업'].forEach(header => {
+        ['ID', '이미지', 'source', 'category', 'productId', '상품명', '몰명', 'fetchedAt', '작업'].forEach(header => {
             const th = document.createElement('th');
             th.textContent = header;
             headRow.appendChild(th);
@@ -1103,6 +1103,7 @@
             const rawProductId = Number(product.id);
 
             appendCell(row, product.id);
+            appendImageCell(row, product.productImageUrl, product.productName, product.productSiteUrl);
             appendCell(row, product.source);
             appendCell(row, product.category);
             appendCell(row, product.productId);
@@ -1377,6 +1378,40 @@
     function appendCell(row, value) {
         const td = document.createElement('td');
         td.textContent = value == null ? '' : String(value);
+        row.appendChild(td);
+    }
+
+    function appendImageCell(row, imageUrl, altText, siteUrl) {
+        const td = document.createElement('td');
+        const normalizedImageUrl = parseStringValue(imageUrl);
+        const normalizedSiteUrl = parseStringValue(siteUrl);
+
+        if (!normalizedImageUrl) {
+            td.textContent = '-';
+            row.appendChild(td);
+            return;
+        }
+
+        const img = document.createElement('img');
+        img.src = normalizedImageUrl;
+        img.alt = altText ? `${altText} 이미지` : '상품 이미지';
+        img.loading = 'lazy';
+        img.style.width = '72px';
+        img.style.height = '72px';
+        img.style.objectFit = 'cover';
+        img.style.borderRadius = '6px';
+
+        if (normalizedSiteUrl) {
+            const anchor = document.createElement('a');
+            anchor.href = normalizedSiteUrl;
+            anchor.target = '_blank';
+            anchor.rel = 'noopener noreferrer';
+            anchor.appendChild(img);
+            td.appendChild(anchor);
+        } else {
+            td.appendChild(img);
+        }
+
         row.appendChild(td);
     }
 
