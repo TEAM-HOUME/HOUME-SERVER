@@ -17,6 +17,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import or.sopt.houme.global.api.ErrorCode;
+import or.sopt.houme.global.api.handler.FurnitureException;
 import org.hibernate.annotations.Comment;
 
 import java.time.LocalDateTime;
@@ -241,12 +243,12 @@ public class CurationRawProduct {
 
     private static String normalizeSource(String source) {
         if (source == null || source.isBlank()) {
-            throw new IllegalArgumentException("source must not be blank");
+            throw new FurnitureException(ErrorCode.NOT_VALID_EXCEPTION);
         }
 
         String canonical = source.trim().toLowerCase(Locale.ROOT);
         if (!SOURCE_PATTERN.matcher(canonical).matches()) {
-            throw new IllegalArgumentException("source format is invalid");
+            throw new FurnitureException(ErrorCode.NOT_VALID_EXCEPTION);
         }
         return canonical;
     }
