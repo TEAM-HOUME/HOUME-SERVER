@@ -3,6 +3,8 @@ package or.sopt.houme.domain.furniture.repository;
 import or.sopt.houme.domain.furniture.model.entity.CurationRawProduct;
 import or.sopt.houme.domain.furniture.model.entity.FurnitureTag;
 import or.sopt.houme.domain.furniture.model.entity.SoozipCategory;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -13,6 +15,21 @@ import java.util.Optional;
 
 @Repository
 public interface CurationRawProductRepository extends JpaRepository<CurationRawProduct, Long> {
+    @Query("""
+            select rawProduct
+            from CurationRawProduct rawProduct
+            where (:category is null or rawProduct.category = :category)
+              and (:minListPrice is null or rawProduct.listPrice >= :minListPrice)
+              and (:maxListPrice is null or rawProduct.listPrice <= :maxListPrice)
+            order by rawProduct.id desc
+            """)
+    Page<CurationRawProduct> findAllByFilters(
+            @Param("category") SoozipCategory category,
+            @Param("minListPrice") Long minListPrice,
+            @Param("maxListPrice") Long maxListPrice,
+            Pageable pageable
+    );
+
     Optional<CurationRawProduct> findBySourceAndCategoryAndProductId(
             String source,
             SoozipCategory category,

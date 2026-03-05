@@ -40,6 +40,7 @@
 - 정상 응답은 `ApiResponse.ok(...)`를 사용하고, 기본 메시지 `응답 성공`을 유지합니다.
 - 에러는 `ErrorCode` 기반으로 관리합니다.
 - 예외는 `GeneralException` 또는 도메인별 예외(`UserException`, `GenerateImageException` 등)로 감싸서 던집니다.
+- `IllegalArgumentException`을 서비스/엔티티에서 직접 던지지 않습니다. 입력/도메인 검증 실패는 반드시 도메인 예외(`UserException`, `FurnitureException`, `ValidException` 등) + `ErrorCode`로 변환합니다.
 - 전역 예외 처리는 `GlobalExceptionHandler`를 통해 일관되게 반환합니다.
 - 필터(JWT) 레벨 예외는 컨트롤러 예외 처리기가 잡지 못하므로 필터 내부 응답 형식을 준수합니다.
 

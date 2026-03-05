@@ -17,11 +17,15 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import or.sopt.houme.global.api.ErrorCode;
+import or.sopt.houme.global.api.handler.FurnitureException;
 import org.hibernate.annotations.Comment;
 
 import java.time.LocalDateTime;
 import java.util.LinkedHashSet;
+import java.util.Locale;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
@@ -44,6 +48,7 @@ import java.util.Set;
 )
 @Comment("큐레이션 원본 수집 데이터를 저장하는 엔티티입니다")
 public class CurationRawProduct {
+    private static final Pattern SOURCE_PATTERN = Pattern.compile("^[a-z0-9][a-z0-9_-]{0,49}$");
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -123,7 +128,7 @@ public class CurationRawProduct {
             LocalDateTime fetchedAt
     ) {
         return CurationRawProduct.builder()
-                .source(source)
+                .source(normalizeSource(source))
                 .category(category)
                 .productId(productId)
                 .productImageUrl(productImageUrl)
@@ -186,6 +191,35 @@ public class CurationRawProduct {
         }
     }
 
+    public void updateAdminFields(
+            String source,
+            SoozipCategory category,
+            Long productId,
+            String productImageUrl,
+            String productSiteUrl,
+            String productName,
+            String productMallName,
+            String brand,
+            Long listPrice,
+            Integer discountRate,
+            Long discountPrice,
+            Long baseShippingFee,
+            Long freeShippingCondition,
+            LocalDateTime fetchedAt
+    ) {
+        if (source != null && !source.isBlank()) {
+            this.source = normalizeSource(source);
+        }
+        if (category != null) {
+            this.category = category;
+        }
+        if (productId != null) {
+            this.productId = productId;
+        }
+        updateFrom(productImageUrl, productSiteUrl, productName, productMallName, fetchedAt);
+        updateMeta(brand, listPrice, discountRate, discountPrice, baseShippingFee, freeShippingCondition);
+    }
+
     public boolean addFurnitureTag(FurnitureTag furnitureTag) {
         if (furnitureTag == null) {
             return false;
@@ -205,5 +239,17 @@ public class CurationRawProduct {
 
     public void clearFurnitureTags() {
         furnitureTagMappings.clear();
+    }
+
+    private static String normalizeSource(String source) {
+        if (source == null || source.isBlank()) {
+            throw new FurnitureException(ErrorCode.NOT_VALID_EXCEPTION);
+        }
+
+        String canonical = source.trim().toLowerCase(Locale.ROOT);
+        if (!SOURCE_PATTERN.matcher(canonical).matches()) {
+            throw new FurnitureException(ErrorCode.NOT_VALID_EXCEPTION);
+        }
+        return canonical;
     }
 }
