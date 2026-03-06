@@ -17,6 +17,7 @@ const DEFAULT_PAYLOAD = {
 // BASE_URL/TARGET_PATH를 분리해 시나리오 파일 변경 없이 대상 서버만 바꿔 실행할 수 있게 한다.
 export const BASE_URL = (__ENV.BASE_URL || 'http://localhost:8080').replace(/\/$/, '');
 export const TARGET_PATH = __ENV.TARGET_PATH || '/api/v3/generated-images/generate/gemini';
+export const REQUEST_TIMEOUT = __ENV.REQUEST_TIMEOUT || '220s';
 
 // ACCESS_TOKENS는 쉼표로 여러 토큰을 입력할 수 있고, ACCESS_TOKEN은 단일 토큰 실행용이다.
 const TOKENS = (__ENV.ACCESS_TOKENS || __ENV.ACCESS_TOKEN || '')
@@ -56,10 +57,9 @@ export function authParams(extraTags = {}) {
       'Content-Type': 'application/json',
     },
     // 시나리오/엔드포인트 태그를 붙여 k6 결과에서 필터링하기 쉽게 만든다.
-    tags: {
-      endpoint: TARGET_PATH,
-      ...extraTags,
-    },
+    tags: Object.assign({ endpoint: TARGET_PATH }, extraTags),
+    // Gemini stub 지연(90~120초)을 고려해 기본 HTTP timeout을 늘린다.
+    timeout: REQUEST_TIMEOUT,
   };
 }
 

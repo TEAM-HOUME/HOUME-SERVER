@@ -14,8 +14,29 @@
 - `BASE_URL` (기본: `http://localhost:8080`)
 - `TARGET_PATH` (기본: `/api/v3/generated-images/generate/gemini`)
 - `ACCESS_TOKEN` 또는 `ACCESS_TOKENS`(쉼표 구분)
+- `REQUEST_TIMEOUT` (기본: `220s`, Gemini Stub 지연 대비)
 - `GENERATE_IMAGE_PAYLOAD` (JSON 문자열, 미지정 시 기본 payload 사용)
 - `CONFIRM_REAL_GEMINI=true` (`gemini_canary_real.js` 실행 시 필수)
+
+## 데이터 시드
+`/api/v3/generated-images/generate/gemini` 부하테스트는 house/moodboard/tag/floorplan/credit이 비어 있으면 실패합니다.
+아래 스크립트로 최소 데이터를 채운 뒤 실행합니다.
+
+```bash
+DB_HOST=YOUR_DB_HOST \
+DB_PORT=5432 \
+DB_NAME=houme \
+DB_USER=root \
+DB_PASSWORD=YOUR_PASSWORD \
+SEED_USER_START=1 \
+SEED_USER_END=200 \
+CREDITS_PER_USER=300 \
+HOUSE_ID=1813 \
+HOUSE_OWNER_ID=1 \
+bash k6/scripts/seed_load_test_data.sh
+```
+
+기본값으로 `houseId=1813`, `floorPlanId=1`, `moodBoardIds=[1]` 요청이 바로 동작하도록 맞춰집니다.
 
 ## 실행 순서
 1. `k6 run k6/scenarios/smoke.js`
@@ -28,6 +49,7 @@
 ```bash
 BASE_URL=https://loadtest.houme.kr \
 ACCESS_TOKENS="token1,token2,token3" \
+REQUEST_TIMEOUT=220s \
 k6 run k6/scenarios/smoke.js
 ```
 
