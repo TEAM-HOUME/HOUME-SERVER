@@ -56,10 +56,17 @@ public class User extends BaseEntity {
     @Column(name = "role", nullable = false)
     private Role role;
 
-    // 자체 회원가입시 사용되는 유저 업데이트 메서드
-    public void updateUserFromSignUp(String nickname, LocalDate birthday, Gender gender) {
-        this.name = nickname;
+    // v1 자체 회원가입시 사용되는 유저 업데이트 메서드
+    public void updateUserFromSignUp(String name, LocalDate birthday, Gender gender) {
+        this.name = name;
+        this.birthday = birthday;
+        this.gender = gender;
+    }
+
+    // v2 자체 회원가입시 사용되는 유저 업데이트 메서드
+    public void updateUserFromSignUpV2(String nickname, LocalDate birthday, Gender gender) {
         this.nickname = nickname;
+        this.name = nickname;
         this.birthday = birthday;
         this.gender = gender;
     }

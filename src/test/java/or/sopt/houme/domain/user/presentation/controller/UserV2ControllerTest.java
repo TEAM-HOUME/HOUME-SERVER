@@ -67,7 +67,7 @@ class UserV2ControllerTest {
     @Test
     @DisplayName("POST /api/v2/sign-up 요청 시 소셜 회원가입이 처리된다")
     void socialSignUpV2_success() throws Exception {
-        given(oAuthService.signUpWithToken(
+        given(oAuthService.signUpWithTokenV2(
                 any(String.class),
                 any(String.class),
                 any(Gender.class),

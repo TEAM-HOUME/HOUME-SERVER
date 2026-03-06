@@ -45,7 +45,7 @@ public class UserV2Controller {
         Gender gender = parseGender(createUserV2Request.gender());
         LocalDate birthday = parseBirthday(createUserV2Request.birthday());
 
-        String nickname = userService.updateUser(userDetails.getUser(), createUserV2Request.nickname(), gender, birthday);
+        String nickname = userService.updateUserV2(userDetails.getUser(), createUserV2Request.nickname(), gender, birthday);
 
         return ResponseEntity.ok(ApiResponse.ok(nickname));
     }
@@ -61,7 +61,7 @@ public class UserV2Controller {
         Gender gender = parseGender(signUpRequest.gender());
         LocalDate birthday = parseBirthday(signUpRequest.birthday());
 
-        String nickname = oAuthService.signUpWithToken(
+        String nickname = oAuthService.signUpWithTokenV2(
                 signUpRequest.signupToken(),
                 signUpRequest.nickname(),
                 gender,

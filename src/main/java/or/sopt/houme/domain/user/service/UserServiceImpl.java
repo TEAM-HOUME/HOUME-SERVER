@@ -186,10 +186,23 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public String updateUser(User user, String nickname, Gender gender, LocalDate birthday) {
+    public String updateUser(User user, String name, Gender gender, LocalDate birthday) {
 
         User findUser = findUser(user);
-        findUser.updateUserFromSignUp(nickname, birthday, gender);
+        findUser.updateUserFromSignUp(name, birthday, gender);
+
+        return createSignUpCreditAndGetDisplayName(findUser);
+    }
+
+    @Override
+    public String updateUserV2(User user, String nickname, Gender gender, LocalDate birthday) {
+        User findUser = findUser(user);
+        findUser.updateUserFromSignUpV2(nickname, birthday, gender);
+
+        return createSignUpCreditAndGetDisplayName(findUser);
+    }
+
+    private String createSignUpCreditAndGetDisplayName(User findUser) {
 
         try {
             List<Credit> newCredits = IntStream.range(0, SIGN_UP_CREDIT_COUNT)
