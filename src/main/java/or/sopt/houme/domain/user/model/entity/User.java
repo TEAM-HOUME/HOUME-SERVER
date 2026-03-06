@@ -25,6 +25,9 @@ public class User extends BaseEntity {
     @Column(name = "name", nullable = true)
     private String name;
 
+    @Column(name = "nickname", nullable = true)
+    private String nickname;
+
     @Column(name = "birthday", nullable = true)
     private LocalDate birthday;
 
@@ -54,10 +57,18 @@ public class User extends BaseEntity {
     private Role role;
 
     // 자체 회원가입시 사용되는 유저 업데이트 메서드
-    public void updateUserFromSignUp(String name, LocalDate birthday, Gender gender) {
-        this.name = name;
+    public void updateUserFromSignUp(String nickname, LocalDate birthday, Gender gender) {
+        this.name = nickname;
+        this.nickname = nickname;
         this.birthday = birthday;
         this.gender = gender;
+    }
+
+    public String getDisplayName() {
+        if (nickname != null && !nickname.isBlank()) {
+            return nickname;
+        }
+        return name;
     }
 
     // 이미지 생성 여부 update

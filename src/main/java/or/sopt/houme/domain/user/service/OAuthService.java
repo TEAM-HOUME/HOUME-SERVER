@@ -186,7 +186,7 @@ public class OAuthService {
     }
 
     @Transactional
-    public String signUpWithToken(String signupToken, String name, Gender gender, LocalDate birthday, HttpServletResponse response) {
+    public String signUpWithToken(String signupToken, String nickname, Gender gender, LocalDate birthday, HttpServletResponse response) {
         SignupSession signupSession = signupSessionRepository.consume(signupToken)
                 .orElseThrow(() -> new UserException(ErrorCode.SIGNUP_TOKEN_INVALID));
 
@@ -201,7 +201,8 @@ public class OAuthService {
                 User.builder()
                         .password(null)
                         .email(signupSession.email())
-                        .name(name)
+                        .name(nickname)
+                        .nickname(nickname)
                         .birthday(birthday)
                         .gender(gender)
                         .role(Role.ROLE_USER)
@@ -240,7 +241,7 @@ public class OAuthService {
                 cookieConfig.getSameSite()
         );
 
-        return savedUser.getName();
+        return savedUser.getDisplayName();
     }
 
 

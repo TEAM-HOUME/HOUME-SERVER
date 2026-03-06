@@ -1,0 +1,105 @@
+package or.sopt.houme.domain.user.presentation.controller;
+
+import jakarta.servlet.http.HttpServletResponse;
+import or.sopt.houme.domain.user.model.entity.Gender;
+import or.sopt.houme.domain.user.presentation.controller.dto.CustomUserDetailsService;
+import or.sopt.houme.domain.user.repository.BlacklistTokenRepository;
+import or.sopt.houme.domain.user.service.NicknameService;
+import or.sopt.houme.domain.user.service.OAuthService;
+import or.sopt.houme.domain.user.service.UserService;
+import or.sopt.houme.global.config.JWTConfig;
+import or.sopt.houme.global.jwt.JWTUtil;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.web.servlet.MockMvc;
+
+import java.time.LocalDate;
+
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.BDDMockito.given;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+@WebMvcTest(
+        controllers = UserV2Controller.class,
+        excludeAutoConfiguration = {
+                SecurityAutoConfiguration.class,
+                org.springframework.boot.autoconfigure.security.servlet.SecurityFilterAutoConfiguration.class,
+                org.springframework.boot.autoconfigure.security.oauth2.client.servlet.OAuth2ClientAutoConfiguration.class
+        }
+)
+@AutoConfigureMockMvc(addFilters = false)
+@ActiveProfiles("test")
+class UserV2ControllerTest {
+
+    @Autowired
+    private MockMvc mockMvc;
+
+    @MockBean
+    private UserService userService;
+
+    @MockBean
+    private OAuthService oAuthService;
+
+    @MockBean
+    private NicknameService nicknameService;
+
+    @MockBean
+    private JWTConfig jwtConfig;
+
+    @MockBean
+    private JWTUtil jwtUtil;
+
+    @MockBean
+    private BlacklistTokenRepository blacklistTokenRepository;
+
+    @MockBean
+    private CustomUserDetailsService customUserDetailsService;
+
+    @Test
+    @DisplayName("POST /api/v2/sign-up 요청 시 소셜 회원가입이 처리된다")
+    void socialSignUpV2_success() throws Exception {
+        given(oAuthService.signUpWithToken(
+                any(String.class),
+                any(String.class),
+                any(Gender.class),
+                any(LocalDate.class),
+                any(HttpServletResponse.class)
+        )).willReturn("잠자는고양이1470");
+
+        mockMvc.perform(post("/api/v2/sign-up")
+                        .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "signupToken": "signup-token",
+                                  "nickname": "잠자는고양이1470",
+                                  "gender": "MALE",
+                                  "birthday": "2000-01-01"
+                                }
+                                """))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value(200))
+                .andExpect(jsonPath("$.msg").value("응답 성공"))
+                .andExpect(jsonPath("$.data").value("잠자는고양이1470"));
+    }
+
+    @Test
+    @DisplayName("GET /api/v2/nickname/rotate 요청 시 랜덤 닉네임을 반환한다")
+    void rotateNickname_success() throws Exception {
+        given(nicknameService.rotateNickname()).willReturn("느긋한펭귄0042");
+
+        mockMvc.perform(get("/api/v2/nickname/rotate"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value(200))
+                .andExpect(jsonPath("$.msg").value("응답 성공"))
+                .andExpect(jsonPath("$.data").value("느긋한펭귄0042"));
+    }
+}

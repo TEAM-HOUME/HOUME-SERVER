@@ -58,7 +58,7 @@ public class UserServiceImpl implements UserService {
     @Transactional(readOnly = true)
     public MyPageInfoResponse getMyPageInfo(User user) {
         User findUser = findUser(user);
-        String name = findUser.getName();
+        String name = findUser.getDisplayName();
         Long creditCount = userRepository.countByMemberIdAndStatus(findUser.getId());
         return MyPageInfoResponse.of(findUser.getId(), name, creditCount);
     }
@@ -172,7 +172,7 @@ public class UserServiceImpl implements UserService {
                                     house.getEquilibrium().getDescription(),
                                     house.getForm().toString(),
                                     tag.getTagNameKr(),
-                                    findUser.getName(),
+                                    findUser.getDisplayName(),
                                     generateImage.getUrl(),
                                     isLike,
                                     factor == null ? null : factor.getId(),
@@ -186,10 +186,10 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public String updateUser(User user, String name, Gender gender, LocalDate birthday) {
+    public String updateUser(User user, String nickname, Gender gender, LocalDate birthday) {
 
         User findUser = findUser(user);
-        findUser.updateUserFromSignUp(name, birthday, gender);
+        findUser.updateUserFromSignUp(nickname, birthday, gender);
 
         try {
             List<Credit> newCredits = IntStream.range(0, SIGN_UP_CREDIT_COUNT)
@@ -203,7 +203,7 @@ public class UserServiceImpl implements UserService {
             throw new CreditException(ErrorCode.CREDIT_CREATE_EXCEPTION);
         }
 
-        return findUser.getName();
+        return findUser.getDisplayName();
     }
 
     // 이미지 생성 이력 저장
