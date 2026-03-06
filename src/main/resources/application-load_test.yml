@@ -1,0 +1,45 @@
+spring:
+  config:
+    activate:
+      on-profile: load_test
+
+  profiles:
+    include: local
+
+  datasource:
+    url: ${LOAD_TEST_DB_URL}
+    username: ${LOAD_TEST_DB_USERNAME}
+    password: ${LOAD_TEST_DB_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+
+  data:
+    redis:
+      host: ${LOAD_TEST_REDIS_HOST}
+      port: ${LOAD_TEST_REDIS_PORT:6379}
+
+  jwt:
+    header: Authorization
+    secret: ${LOAD_TEST_JWT_SECRET}
+    access-token-validity-in-seconds: ${LOAD_TEST_ACCESS_TOKEN_VALIDITY:10800}
+    refresh-token-validity-in-seconds: ${LOAD_TEST_REFRESH_TOKEN_VALIDITY:2592000}
+
+server:
+  env: load_test
+
+load-test:
+  gemini:
+    min-delay-ms: ${LOAD_TEST_GEMINI_MIN_DELAY_MS:90000}
+    max-delay-ms: ${LOAD_TEST_GEMINI_MAX_DELAY_MS:120000}
+    failure-rate: ${LOAD_TEST_GEMINI_FAILURE_RATE:0.02}
+    mock-image-url: ${LOAD_TEST_GEMINI_MOCK_IMAGE_URL:https://example.com/load-test-gemini.png}
+
+feign:
+  client:
+    config:
+      default:
+        connectTimeout: ${LOAD_TEST_FEIGN_CONNECT_TIMEOUT:5000}
+        readTimeout: ${LOAD_TEST_FEIGN_READ_TIMEOUT:130000}
+
+logging:
+  level:
+    or.sopt.houme.domain.generateImage.infrastructure.gemini.service.GeminiImageStubService: INFO
