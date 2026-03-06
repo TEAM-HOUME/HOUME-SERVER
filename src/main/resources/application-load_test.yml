@@ -28,8 +28,8 @@ server:
 
 load-test:
   gemini:
-    min-delay-ms: ${LOAD_TEST_GEMINI_MIN_DELAY_MS:90000}
-    max-delay-ms: ${LOAD_TEST_GEMINI_MAX_DELAY_MS:120000}
+    min-delay-ms: ${LOAD_TEST_GEMINI_MIN_DELAY_MS:60000}
+    max-delay-ms: ${LOAD_TEST_GEMINI_MAX_DELAY_MS:60000}
     failure-rate: ${LOAD_TEST_GEMINI_FAILURE_RATE:0.02}
     mock-image-url: ${LOAD_TEST_GEMINI_MOCK_IMAGE_URL:https://example.com/load-test-gemini.png}
 

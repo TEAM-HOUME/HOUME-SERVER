@@ -45,6 +45,19 @@ bash k6/scripts/seed_load_test_data.sh
 4. `k6 run k6/scenarios/soak.js`
 5. `k6 run k6/scenarios/gemini_canary_real.js` (실제 Gemini 소량 검증)
 
+## 2차 테스트(저부하 스텝)
+- 시나리오: `k6/scenarios/step_low_load_v2.js`
+- 구간: `1 -> 2 -> 4 -> 6 -> 8 -> 10 VU`
+- 구성: 각 구간 `1분 램프업 + 5분 유지`
+- 목적: 락 경합/풀 고갈이 시작되는 임계점을 저부하에서 재측정
+
+```bash
+BASE_URL=http://YOUR_LOADTEST_HOST \
+ACCESS_TOKENS="token1,token2,token3,token4,token5,token6,token7,token8,token9,token10" \
+REQUEST_TIMEOUT=220s \
+k6 run k6/scenarios/step_low_load_v2.js
+```
+
 ## 예시
 ```bash
 BASE_URL=https://loadtest.houme.kr \
