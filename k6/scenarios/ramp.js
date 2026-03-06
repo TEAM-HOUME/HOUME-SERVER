@@ -1,6 +1,7 @@
 import { sleep } from 'k6';
 import { checkGenerateImageResponse, requestGenerateImage } from '../lib/common.js';
 
+// 동접을 단계적으로 올려 병목이 시작되는 구간(10->50->100->150 VU)을 찾는 시나리오.
 export const options = {
   scenarios: {
     ramp: {
@@ -24,5 +25,6 @@ export const options = {
 export default function () {
   const response = requestGenerateImage({ scenario: 'ramp' });
   checkGenerateImageResponse(response);
+  // 각 VU가 요청 간 최소 간격을 두고 반복하도록 고정한다.
   sleep(1);
 }
