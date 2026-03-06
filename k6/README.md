@@ -58,6 +58,19 @@ REQUEST_TIMEOUT=220s \
 k6 run k6/scenarios/step_low_load_v2.js
 ```
 
+## 3차 테스트(압축 저부하 스텝)
+- 시나리오: `k6/scenarios/step_low_load_v3.js`
+- 구간: `1 -> 2 -> 4 -> 6 -> 8 -> 10 VU`
+- 구성: 각 구간 `1분 램프업 + 2분 유지`
+- 목적: Stub 지연을 `10초`로 낮춘 상태에서 애플리케이션 순수 처리 병목을 더 짧은 시간 안에 재측정
+
+```bash
+BASE_URL=http://YOUR_LOADTEST_HOST \
+ACCESS_TOKENS="token1,token2,token3,token4,token5,token6,token7,token8,token9,token10" \
+REQUEST_TIMEOUT=120s \
+k6 run k6/scenarios/step_low_load_v3.js
+```
+
 ## 예시
 ```bash
 BASE_URL=https://loadtest.houme.kr \
