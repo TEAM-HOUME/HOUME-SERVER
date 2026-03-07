@@ -1,46 +1,36 @@
 package or.sopt.houme.domain.user.service;
 
+import lombok.RequiredArgsConstructor;
+import or.sopt.houme.domain.user.model.entity.NicknameWord;
+import or.sopt.houme.domain.user.model.entity.NicknameWordType;
+import or.sopt.houme.domain.user.repository.NicknameWordRepository;
+import or.sopt.houme.global.api.ErrorCode;
+import or.sopt.houme.global.api.handler.UserException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
 @Service
+@RequiredArgsConstructor
 public class NicknameService {
 
-    private static final List<String> IDIOMS = List.of(
-            "잠자는",
-            "반짝이는",
-            "느긋한",
-            "성실한",
-            "유쾌한",
-            "차분한",
-            "당당한",
-            "기민한",
-            "용감한",
-            "행복한"
-    );
-
-    private static final List<String> NOUNS = List.of(
-            "고양이",
-            "호랑이",
-            "고래",
-            "독수리",
-            "사자",
-            "여우",
-            "토끼",
-            "다람쥐",
-            "펭귄",
-            "돌고래"
-    );
+    private final NicknameWordRepository nicknameWordRepository;
 
     public String rotateNickname() {
-        return randomWord(IDIOMS) + randomWord(NOUNS) + randomNumberSuffix();
+        List<NicknameWord> adjectives = nicknameWordRepository.findAllByTypeAndIsActiveTrue(NicknameWordType.ADJECTIVE);
+        List<NicknameWord> nouns = nicknameWordRepository.findAllByTypeAndIsActiveTrue(NicknameWordType.NOUN);
+
+        return randomWord(adjectives) + randomWord(nouns) + randomNumberSuffix();
     }
 
-    private String randomWord(List<String> words) {
+    private String randomWord(List<NicknameWord> words) {
+        if (words.isEmpty()) {
+            throw new UserException(ErrorCode.NICKNAME_RESOURCE_EMPTY);
+        }
+
         int index = ThreadLocalRandom.current().nextInt(words.size());
-        return words.get(index);
+        return words.get(index).getWord();
     }
 
     private String randomNumberSuffix() {
