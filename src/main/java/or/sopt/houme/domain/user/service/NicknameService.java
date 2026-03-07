@@ -7,6 +7,7 @@ import or.sopt.houme.domain.user.repository.NicknameWordRepository;
 import or.sopt.houme.global.api.ErrorCode;
 import or.sopt.houme.global.api.handler.UserException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
@@ -17,6 +18,7 @@ public class NicknameService {
 
     private final NicknameWordRepository nicknameWordRepository;
 
+    @Transactional(readOnly = true)
     public String rotateNickname() {
         List<NicknameWord> adjectives = nicknameWordRepository.findAllByTypeAndIsActiveTrue(NicknameWordType.ADJECTIVE);
         List<NicknameWord> nouns = nicknameWordRepository.findAllByTypeAndIsActiveTrue(NicknameWordType.NOUN);

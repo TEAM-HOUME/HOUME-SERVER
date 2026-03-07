@@ -75,7 +75,10 @@ public class User extends BaseEntity {
         if (nickname != null && !nickname.isBlank()) {
             return nickname;
         }
-        return name;
+        if (name != null && !name.isBlank()) {
+            return name;
+        }
+        return "";
     }
 
     // 이미지 생성 여부 update

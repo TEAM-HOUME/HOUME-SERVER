@@ -2,6 +2,9 @@ package or.sopt.houme.domain.user.presentation.controller;
 
 import jakarta.servlet.http.HttpServletResponse;
 import or.sopt.houme.domain.user.model.entity.Gender;
+import or.sopt.houme.domain.user.model.entity.Role;
+import or.sopt.houme.domain.user.model.entity.User;
+import or.sopt.houme.domain.user.presentation.controller.dto.CustomUserDetails;
 import or.sopt.houme.domain.user.presentation.controller.dto.CustomUserDetailsService;
 import or.sopt.houme.domain.user.repository.BlacklistTokenRepository;
 import or.sopt.houme.domain.user.service.NicknameService;
@@ -16,14 +19,18 @@ import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfi
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalDate;
+import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -63,6 +70,45 @@ class UserV2ControllerTest {
 
     @MockBean
     private CustomUserDetailsService customUserDetailsService;
+
+    @Test
+    @DisplayName("PATCH /api/v2/sign-up 요청 시 자체 회원가입 v2가 처리된다")
+    void selfSignUpV2_success() throws Exception {
+        User user = User.builder()
+                .id(1L)
+                .email("test@example.com")
+                .role(Role.ROLE_USER)
+                .build();
+
+        UsernamePasswordAuthenticationToken requestAuthentication =
+                new UsernamePasswordAuthenticationToken(
+                        new CustomUserDetails(user),
+                        null,
+                        List.of(() -> "ROLE_USER")
+                );
+
+        given(userService.updateUserV2(
+                any(),
+                any(String.class),
+                any(Gender.class),
+                any(LocalDate.class)
+        )).willReturn("느긋한펭귄0042");
+
+        mockMvc.perform(patch("/api/v2/sign-up")
+                        .with(authentication(requestAuthentication))
+                        .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "nickname": "느긋한펭귄0042",
+                                  "gender": "MALE",
+                                  "birthday": "2000-01-01"
+                                }
+                                """))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value(200))
+                .andExpect(jsonPath("$.msg").value("응답 성공"))
+                .andExpect(jsonPath("$.data").value("느긋한펭귄0042"));
+    }
 
     @Test
     @DisplayName("POST /api/v2/sign-up 요청 시 소셜 회원가입이 처리된다")
