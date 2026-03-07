@@ -85,3 +85,9 @@ ACCESS_TOKEN="your_token" \
 CONFIRM_REAL_GEMINI=true \
 k6 run k6/scenarios/gemini_canary_real.js
 ```
+
+## 테스트 결과 아카이브
+- 1차 테스트 묶음: `k6/1차테스트`
+- 1-1 테스트(기존 1차): `k6/1차테스트/1-1차테스트`
+- 1-2 테스트(기존 2차): `k6/1차테스트/1-2차테스트`
+- 1-3 테스트(기존 3차): `k6/1차테스트/1-3차테스트`
