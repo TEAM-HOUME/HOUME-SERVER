@@ -33,13 +33,28 @@ public class JWTService {
     private final RefreshTokenRepository refreshTokenRedisTemplateUtil;
     private final RefreshTokenValidator refreshTokenValidator;
     private final CookieConfig cookieConfig;
+    @Value("${server.env:}")
+    private String serverEnv;
 
 
     // 토큰 발급기를 위한 메서드입니다
-    public void createToken(HttpServletResponse response) {
+    public void createToken(HttpServletResponse response, Long userId) {
+        Long tokenUserId = resolveTokenUserId(userId);
+        User user = userRepository.findById(tokenUserId)
+                .orElseThrow(() -> new UserException(ErrorCode.USER_NOT_FOUND));
 
-        String access = jwtUtil.createJwt("access", 1L, "ROLE_USER", jwtConfig.getAccessTokenValidityInSeconds());
+        String access = jwtUtil.createJwt("access", user.getId(), user.getRole().toString(), jwtConfig.getAccessTokenValidityInSeconds());
         response.setHeader("access-token", access);
+    }
+
+    private Long resolveTokenUserId(Long userId) {
+        if (userId == null) {
+            return 1L;
+        }
+        if (!"load_test".equals(serverEnv)) {
+            throw new UserException(ErrorCode.NOT_VALID_EXCEPTION);
+        }
+        return userId;
     }
 
 
