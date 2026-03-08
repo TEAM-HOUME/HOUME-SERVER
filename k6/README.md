@@ -71,6 +71,19 @@ REQUEST_TIMEOUT=120s \
 k6 run k6/scenarios/step_low_load_v3.js
 ```
 
+## 4차 테스트(중부하 스텝)
+- 시나리오: `k6/scenarios/step_mid_load_v4.js`
+- 구간: `10 -> 15 -> 20 -> 25 -> 30 VU`
+- 구성: 각 구간 `1분 램프업 + 2분 유지`
+- 목적: 가상 스레드 전환 후 `25~30 VU` 구간에서 임계점이 어디서 발생하는지 확인
+
+```bash
+BASE_URL=http://YOUR_LOADTEST_HOST:8080 \
+ACCESS_TOKENS="token1,token2,..." \
+REQUEST_TIMEOUT=220s \
+k6 run k6/scenarios/step_mid_load_v4.js
+```
+
 ## 예시
 ```bash
 BASE_URL=https://loadtest.houme.kr \
@@ -94,3 +107,4 @@ k6 run k6/scenarios/gemini_canary_real.js
 - 2차 테스트 묶음: `k6/2차테스트`
 - 2-1 테스트(비동기 스레드풀 확장 후): `k6/2차테스트/2-1차테스트`
 - 2-2 테스트(가상 스레드 전환 후): `k6/2차테스트/2-2차테스트`
+- 2-3 테스트(가상 스레드 + 30 VU 확장): `k6/2차테스트/2-3차테스트`
