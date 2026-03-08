@@ -1,10 +1,4 @@
 spring:
-  config:
-    activate:
-      on-profile: load_test
-
-  profiles:
-    include: local
 
   datasource:
     url: ${LOAD_TEST_DB_URL}
@@ -33,6 +27,17 @@ load-test:
     failure-rate: ${LOAD_TEST_GEMINI_FAILURE_RATE:0.02}
     mock-image-url: ${LOAD_TEST_GEMINI_MOCK_IMAGE_URL:https://example.com/load-test-gemini.png}
 
+houme:
+  async:
+    image-generation:
+      mode: ${LOAD_TEST_IMAGE_GENERATION_EXECUTOR_MODE:virtual}
+      platform:
+        core-size: ${LOAD_TEST_IMAGE_GENERATION_CORE_SIZE:8}
+        max-size: ${LOAD_TEST_IMAGE_GENERATION_MAX_SIZE:16}
+        queue-capacity: ${LOAD_TEST_IMAGE_GENERATION_QUEUE_CAPACITY:8}
+      virtual:
+        concurrency-limit: ${LOAD_TEST_IMAGE_GENERATION_VIRTUAL_CONCURRENCY_LIMIT:16}
+
 feign:
   client:
     config:
@@ -43,3 +48,17 @@ feign:
 logging:
   level:
     or.sopt.houme.domain.generateImage.infrastructure.gemini.service.GeminiImageStubService: INFO
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus,metrics,env
+
+  metrics:
+    tags:
+      application: houme-loadtest
+    distribution:
+      percentiles-histogram:
+        http.server.requests: true
+        houme.generate-image.async.duration: true
