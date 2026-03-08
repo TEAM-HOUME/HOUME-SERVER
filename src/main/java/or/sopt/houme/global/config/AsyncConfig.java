@@ -15,9 +15,10 @@ public class AsyncConfig {
     @Bean(name = "imageGenerationExecutor")
     public Executor imageGenerationExecutor(){
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
-        executor.setCorePoolSize(4);        // 동시에 실행할 기본 스레드 수, JVM 기본 스레드와 별도
-        executor.setMaxPoolSize(8);         // 최대 스레드 수
-        executor.setQueueCapacity(20);     // 대기 큐 크기
+        executor.setCorePoolSize(8);        // 동시에 실행할 기본 스레드 수, JVM 기본 스레드와 별도
+        executor.setMaxPoolSize(16);        // 최대 스레드 수
+        // maxPoolSize 확장이 실제로 일어나도록 대기 큐는 더 작게 유지한다.
+        executor.setQueueCapacity(8);       // 대기 큐 크기
         executor.setThreadNamePrefix("ImageGenerator-");
         // 스레드 풀이 꽉차면 남은 요청을 요청 스레드가 직접 실행해서 안정성이 높음
 //        executor.setRejectedExecutionHandler(new ThreadPoolExecutor.CallerRunsPolicy());
