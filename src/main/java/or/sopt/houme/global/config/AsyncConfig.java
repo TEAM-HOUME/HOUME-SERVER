@@ -119,12 +119,6 @@ public class AsyncConfig {
                 tags
         );
         ExecutorService executorService = createVirtualThreadExecutor();
-        ExecutorServiceMetrics.monitor(
-                meterRegistry,
-                executorService,
-                "houme.async.executor",
-                tags
-        );
         VirtualThreadBoundedExecutor executor = new VirtualThreadBoundedExecutor(
                 executorService,
                 virtualConcurrencyLimit,
@@ -136,19 +130,10 @@ public class AsyncConfig {
         Gauge.builder("houme.async.executor.queue.size", executor, VirtualThreadBoundedExecutor::getQueueSize)
                 .tags(tags)
                 .register(meterRegistry);
-        Gauge.builder("houme.async.executor.queue.remaining", executor, VirtualThreadBoundedExecutor::getQueueRemaining)
-                .tags(tags)
-                .register(meterRegistry);
         Gauge.builder("houme.async.executor.available.permits", executor, VirtualThreadBoundedExecutor::getAvailablePermits)
                 .tags(tags)
                 .register(meterRegistry);
         Gauge.builder("houme.async.executor.concurrency.limit", executor, VirtualThreadBoundedExecutor::getConcurrencyLimit)
-                .tags(tags)
-                .register(meterRegistry);
-        Gauge.builder("houme.async.executor.pool.core", executor, VirtualThreadBoundedExecutor::getConcurrencyLimit)
-                .tags(tags)
-                .register(meterRegistry);
-        Gauge.builder("houme.async.executor.pool.max", executor, VirtualThreadBoundedExecutor::getConcurrencyLimit)
                 .tags(tags)
                 .register(meterRegistry);
         return executor;
@@ -217,10 +202,6 @@ public class AsyncConfig {
         }
 
         public int getQueueSize() {
-            return 0;
-        }
-
-        public int getQueueRemaining() {
             return 0;
         }
     }

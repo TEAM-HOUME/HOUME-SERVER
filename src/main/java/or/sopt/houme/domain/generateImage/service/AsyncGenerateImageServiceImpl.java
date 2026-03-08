@@ -13,6 +13,7 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Supplier;
 
 @Slf4j
 @Service
@@ -29,43 +30,34 @@ public class AsyncGenerateImageServiceImpl implements AsyncGenerateImageService{
     @Async("imageGenerationExecutor")
     @Override
     public CompletableFuture<ImageUploadResponseDTO> generateImageAsync(PromptRequestDTO promptRequestDTO) {
-        long startTime = System.nanoTime();
-        boolean success = false;
-        try {
-            // 이미지 생성
-            ImageUploadResponseDTO response = openAiFacade.makeImageByFastApi(promptRequestDTO);
-            // 비동기 타입으로 반환
-            success = true;
-            return CompletableFuture.completedFuture(response);
-        } catch (Exception e){
-
-            // 예외 발생
-            log.error("이미지 생성 중 예외발생: {}", e.getMessage());
-            // 비동기 작업 내에서 발생한 예외를 CompletableFuture에 담아 반환
-            return CompletableFuture.failedFuture(e);
-        } finally {
-            recordAsyncMetric("openai", success, startTime);
-        }
-
+        return executeAsync("openai", () -> openAiFacade.makeImageByFastApi(promptRequestDTO));
     }
 
     @Async("imageGenerationExecutor")
     @Override
     public CompletableFuture<ImageUploadResponseDTO> generateGeminiImageAsync(PromptRequestDTO promptRequestDTO) {
+        return executeAsync("gemini", () -> {
+            String prompt = promptService.makePrompt(promptRequestDTO);
+            return geminiImageService.createImage(prompt);
+        });
+    }
+
+    private CompletableFuture<ImageUploadResponseDTO> executeAsync(
+            String provider,
+            Supplier<ImageUploadResponseDTO> supplier
+    ) {
         long startTime = System.nanoTime();
         boolean success = false;
         try {
-            String prompt = promptService.makePrompt(promptRequestDTO);
-            ImageUploadResponseDTO response = geminiImageService.createImage(prompt);
+            ImageUploadResponseDTO response = supplier.get();
             success = true;
             return CompletableFuture.completedFuture(response);
-        } catch (Exception e){
+        } catch (Exception e) {
             log.error("이미지 생성 중 예외발생: {}", e.getMessage());
             return CompletableFuture.failedFuture(e);
         } finally {
-            recordAsyncMetric("gemini", success, startTime);
+            recordAsyncMetric(provider, success, startTime);
         }
-
     }
 
     private void recordAsyncMetric(String provider, boolean success, long startTime) {
