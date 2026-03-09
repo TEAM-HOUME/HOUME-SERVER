@@ -62,7 +62,10 @@ class JWTControllerTest {
     @DisplayName("GET /access 요청 시 access-token이 발급되며 메시지를 응답한다")
     void testCreateAccess() throws Exception {
         // given
-        doNothing().when(jwtService).createToken(Mockito.any(HttpServletResponse.class));
+        doNothing().when(jwtService).createToken(
+                Mockito.any(HttpServletResponse.class),
+                Mockito.isNull()
+        );
 
         // when & then
         mockMvc.perform(get("/access"))
