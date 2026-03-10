@@ -6,6 +6,10 @@ on:
     paths:
       - 'src/**'
       - 'build.gradle'
+      - 'settings.gradle'
+      - 'gradle/**'
+      - 'gradlew'
+      - '.github/workflows/**'
 
 jobs:
   test:
@@ -34,9 +38,7 @@ jobs:
           java-version: 17
           distribution: 'temurin'
       - name: Gradle 설정
-        uses: gradle/actions/setup-gradle@v3
-        with:
-          gradle-version: '8.8'  # 사용하려는 Gradle 버전 명시
+        uses: gradle/actions/setup-gradle@v5
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
       - name: Add application-test.yml

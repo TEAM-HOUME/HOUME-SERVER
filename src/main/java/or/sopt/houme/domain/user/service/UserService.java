@@ -18,6 +18,8 @@ public interface UserService {
 
     String updateUser(User user, String name, Gender gender, LocalDate birthday);
 
+    String updateUserV2(User user, String nickname, Gender gender, LocalDate birthday);
+
     // 사용자 이미지 생성 여부 저장
     @Transactional
     void updateHasGeneratedImage(User user);
