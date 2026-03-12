@@ -1243,7 +1243,29 @@
 
         const thead = document.createElement('thead');
         const headRow = document.createElement('tr');
-        ['', 'ID', '이미지', 'source', 'category', 'productId', '상품명', '몰명', '노출', '색상', '가구 태그', 'fetchedAt', '작업'].forEach(header => {
+        [
+            '',
+            'ID',
+            '이미지',
+            'source',
+            'category',
+            'productId',
+            '상품명',
+            '몰명',
+            'brand',
+            'listPrice',
+            'discountRate',
+            'discountPrice',
+            'baseShippingFee',
+            'freeShippingCondition',
+            '노출',
+            'productImageUrl',
+            'productSiteUrl',
+            '색상',
+            '가구 태그',
+            'fetchedAt',
+            '작업'
+        ].forEach(header => {
             const th = document.createElement('th');
             th.textContent = header;
             headRow.appendChild(th);
@@ -1279,7 +1301,15 @@
             appendCell(row, product.productId);
             appendCell(row, product.productName);
             appendCell(row, product.productMallName);
+            appendCell(row, product.brand);
+            appendCell(row, product.listPrice);
+            appendCell(row, product.discountRate);
+            appendCell(row, product.discountPrice);
+            appendCell(row, product.baseShippingFee);
+            appendCell(row, product.freeShippingCondition);
             appendCell(row, product.isExposed ? '노출' : '숨김');
+            appendLinkCell(row, product.productImageUrl, '이미지 링크');
+            appendLinkCell(row, product.productSiteUrl, '상품 링크');
             appendCell(row, renderRawProductColorSummary(product.colors));
             appendCell(row, renderRawProductFurnitureTagSummary(product.furnitureTags));
             appendCell(row, product.fetchedAt);
@@ -1787,6 +1817,25 @@
     function appendCell(row, value) {
         const td = document.createElement('td');
         td.textContent = value == null ? '' : String(value);
+        row.appendChild(td);
+    }
+
+    function appendLinkCell(row, url, label) {
+        const td = document.createElement('td');
+        const normalizedUrl = parseStringValue(url);
+
+        if (!normalizedUrl) {
+            td.textContent = '-';
+            row.appendChild(td);
+            return;
+        }
+
+        const anchor = document.createElement('a');
+        anchor.href = normalizedUrl;
+        anchor.target = '_blank';
+        anchor.rel = 'noopener noreferrer';
+        anchor.textContent = label || normalizedUrl;
+        td.appendChild(anchor);
         row.appendChild(td);
     }
 

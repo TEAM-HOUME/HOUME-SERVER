@@ -113,7 +113,7 @@ public class CurationRawProduct {
     private LocalDateTime fetchedAt;
 
     @Builder.Default
-    @Column(name = "is_exposed", nullable = false)
+    @Column(name = "is_exposed")
     @Comment("노출 여부")
     private Boolean isExposed = true;
 
