@@ -422,6 +422,19 @@
                     </div>
                 </div>
                 <button id="get-raw-products-button" class="btn btn-secondary">RAW 상품 목록 보기</button>
+                <div class="row g-2 mt-3">
+                    <div class="col-md-4">
+                        <label for="rawBulkExposureValue" class="form-label">선택 상품 노출 여부</label>
+                        <select class="form-select" id="rawBulkExposureValue">
+                            <option value="true" selected>노출</option>
+                            <option value="false">숨김</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3 d-grid">
+                        <label class="form-label invisible">적용</label>
+                        <button id="raw-bulk-exposure-button" class="btn btn-outline-dark">선택 상품 일괄 적용</button>
+                    </div>
+                </div>
                 <div id="get-raw-products-result" class="api-result"></div>
             </div>
         </div>
@@ -435,6 +448,7 @@
                     </div>
                     <button type="submit" class="btn btn-info">상세 조회</button>
                 </form>
+                <div class="form-text mt-2">상세 조회 시 현재 값이 수정 폼에도 자동으로 채워집니다.</div>
                 <div id="raw-product-detail-result" class="api-result"></div>
             </div>
         </div>
@@ -466,6 +480,13 @@
                     <div class="mb-3"><label for="rawCreateDiscountPrice" class="form-label">discountPrice</label><input type="number" class="form-control" id="rawCreateDiscountPrice"></div>
                     <div class="mb-3"><label for="rawCreateBaseShippingFee" class="form-label">baseShippingFee</label><input type="number" class="form-control" id="rawCreateBaseShippingFee"></div>
                     <div class="mb-3"><label for="rawCreateFreeShippingCondition" class="form-label">freeShippingCondition</label><input type="number" class="form-control" id="rawCreateFreeShippingCondition"></div>
+                    <div class="mb-3">
+                        <label for="rawCreateIsExposed" class="form-label">isExposed</label>
+                        <select class="form-select" id="rawCreateIsExposed">
+                            <option value="true" selected>노출</option>
+                            <option value="false">숨김</option>
+                        </select>
+                    </div>
                     <div class="mb-3"><label for="rawCreateFetchedAt" class="form-label">fetchedAt</label><input type="datetime-local" class="form-control" id="rawCreateFetchedAt"></div>
                     <button type="submit" class="btn btn-primary">RAW 상품 등록</button>
                 </form>
@@ -501,10 +522,34 @@
                     <div class="mb-3"><label for="rawUpdateDiscountPrice" class="form-label">discountPrice</label><input type="number" class="form-control" id="rawUpdateDiscountPrice"></div>
                     <div class="mb-3"><label for="rawUpdateBaseShippingFee" class="form-label">baseShippingFee</label><input type="number" class="form-control" id="rawUpdateBaseShippingFee"></div>
                     <div class="mb-3"><label for="rawUpdateFreeShippingCondition" class="form-label">freeShippingCondition</label><input type="number" class="form-control" id="rawUpdateFreeShippingCondition"></div>
+                    <div class="mb-3">
+                        <label for="rawUpdateIsExposed" class="form-label">isExposed</label>
+                        <select class="form-select" id="rawUpdateIsExposed">
+                            <option value="" selected>미변경</option>
+                            <option value="true">노출</option>
+                            <option value="false">숨김</option>
+                        </select>
+                    </div>
                     <div class="mb-3"><label for="rawUpdateFetchedAt" class="form-label">fetchedAt</label><input type="datetime-local" class="form-control" id="rawUpdateFetchedAt"></div>
                     <button type="submit" class="btn btn-warning">RAW 상품 수정</button>
                 </form>
                 <div id="raw-product-update-result" class="api-result"></div>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-header">RAW 상품 가구 태그 매핑 관리</div>
+            <div class="card-body">
+                <form id="raw-product-furniture-tag-form">
+                    <div class="mb-3"><label for="rawFurnitureTagRawProductId" class="form-label">RAW 상품 ID</label><input type="number" class="form-control" id="rawFurnitureTagRawProductId" required></div>
+                    <div class="mb-3"><label for="rawFurnitureTagMappingId" class="form-label">매핑 ID (수정/삭제 시)</label><input type="number" class="form-control" id="rawFurnitureTagMappingId"></div>
+                    <div class="mb-3"><label for="rawFurnitureTagId" class="form-label">furnitureTagId</label><input type="number" class="form-control" id="rawFurnitureTagId" required></div>
+                    <div class="d-flex gap-2">
+                        <button type="button" id="raw-furniture-tag-create-button" class="btn btn-primary">매핑 추가</button>
+                        <button type="button" id="raw-furniture-tag-update-button" class="btn btn-warning">매핑 수정</button>
+                        <button type="button" id="raw-furniture-tag-delete-button" class="btn btn-danger">매핑 삭제</button>
+                    </div>
+                </form>
+                <div id="raw-product-furniture-tag-result" class="api-result"></div>
             </div>
         </div>
         <div class="card">
@@ -537,6 +582,7 @@
         minListPrice: null,
         maxListPrice: null
     };
+    let selectedRawProductIds = new Set();
 
     window.onload = function() {
         const urlParams = new URLSearchParams(window.location.search);
@@ -939,6 +985,29 @@
             resultDiv.setAttribute('data-open', 'true');
         });
 
+        document.getElementById('raw-bulk-exposure-button').addEventListener('click', function() {
+            const accessToken = localStorage.getItem('accessToken');
+            const resultDiv = document.getElementById('get-raw-products-result');
+            const rawProductIds = Array.from(selectedRawProductIds);
+            if (rawProductIds.length === 0) {
+                resultDiv.innerHTML = '<div class="alert alert-danger">노출 여부를 변경할 RAW 상품을 하나 이상 선택해주세요.</div>';
+                return;
+            }
+
+            const isExposed = document.getElementById('rawBulkExposureValue').value === 'true';
+            testApiCall(
+                accessToken,
+                resultDiv,
+                '/api/v1/admin/curation-raw-products/exposure',
+                'PATCH',
+                { rawProductIds, isExposed },
+                () => {
+                    selectedRawProductIds.clear();
+                    fetchRawProducts(rawProductsPageState.page, rawProductsPageState.size);
+                }
+            );
+        });
+
         document.getElementById('raw-product-detail-form').addEventListener('submit', function(event) {
             event.preventDefault();
             const accessToken = localStorage.getItem('accessToken');
@@ -948,7 +1017,7 @@
                 resultDiv.innerHTML = '<div class="alert alert-danger">RAW 상품 ID를 입력해주세요.</div>';
                 return;
             }
-            testApiCall(accessToken, resultDiv, `/api/v1/admin/curation-raw-products/${rawProductId}`, 'GET', null);
+            testApiCall(accessToken, resultDiv, `/api/v1/admin/curation-raw-products/${rawProductId}`, 'GET', null, displayRawProductDetail);
         });
 
         document.getElementById('raw-product-create-form').addEventListener('submit', function(event) {
@@ -992,6 +1061,18 @@
                 resultDiv.innerHTML = '<div class="alert alert-success">RAW 상품이 삭제되었습니다.</div>';
                 fetchRawProducts();
             });
+        });
+
+        document.getElementById('raw-furniture-tag-create-button').addEventListener('click', function() {
+            submitRawFurnitureTagRequest('POST');
+        });
+
+        document.getElementById('raw-furniture-tag-update-button').addEventListener('click', function() {
+            submitRawFurnitureTagRequest('PATCH');
+        });
+
+        document.getElementById('raw-furniture-tag-delete-button').addEventListener('click', function() {
+            submitRawFurnitureTagRequest('DELETE');
         });
     };
 
@@ -1112,6 +1193,22 @@
         resultDiv.innerHTML = tableHTML;
     }
 
+    function renderRawProductColorSummary(colors) {
+        if (!Array.isArray(colors) || colors.length === 0) {
+            return '-';
+        }
+        return colors.map(color => color.clientColorName || color.rawColorName || `ID:${color.id}`).join(', ');
+    }
+
+    function renderRawProductFurnitureTagSummary(furnitureTags) {
+        if (!Array.isArray(furnitureTags) || furnitureTags.length === 0) {
+            return '-';
+        }
+        return furnitureTags
+            .map(tag => `${tag.furnitureNameKr || '-'} / ${tag.tagNameKr || '-'} (#${tag.furnitureTagId})`)
+            .join('\n');
+    }
+
     function displayRawProductsAsTable(data, resultDiv) {
         const payload = data && data.data ? data.data : {};
         const products = Array.isArray(payload.products) ? payload.products : [];
@@ -1146,7 +1243,7 @@
 
         const thead = document.createElement('thead');
         const headRow = document.createElement('tr');
-        ['ID', '이미지', 'source', 'category', 'productId', '상품명', '몰명', 'fetchedAt', '작업'].forEach(header => {
+        ['', 'ID', '이미지', 'source', 'category', 'productId', '상품명', '몰명', '노출', '색상', '가구 태그', 'fetchedAt', '작업'].forEach(header => {
             const th = document.createElement('th');
             th.textContent = header;
             headRow.appendChild(th);
@@ -1159,6 +1256,22 @@
             const row = document.createElement('tr');
             const rawProductId = Number(product.id);
 
+            const checkboxCell = document.createElement('td');
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.className = 'form-check-input';
+            checkbox.checked = selectedRawProductIds.has(rawProductId);
+            checkbox.disabled = Number.isNaN(rawProductId);
+            checkbox.addEventListener('change', event => {
+                if (event.target.checked) {
+                    selectedRawProductIds.add(rawProductId);
+                } else {
+                    selectedRawProductIds.delete(rawProductId);
+                }
+            });
+            checkboxCell.appendChild(checkbox);
+            row.appendChild(checkboxCell);
+
             appendCell(row, product.id);
             appendImageCell(row, product.productImageUrl, product.productName, product.productSiteUrl);
             appendCell(row, product.source);
@@ -1166,6 +1279,9 @@
             appendCell(row, product.productId);
             appendCell(row, product.productName);
             appendCell(row, product.productMallName);
+            appendCell(row, product.isExposed ? '노출' : '숨김');
+            appendCell(row, renderRawProductColorSummary(product.colors));
+            appendCell(row, renderRawProductFurnitureTagSummary(product.furnitureTags));
             appendCell(row, product.fetchedAt);
 
             const actionCell = document.createElement('td');
@@ -1407,10 +1523,205 @@
         });
     }
 
+    function formatRawProductDateTime(value) {
+        if (!value) {
+            return '-';
+        }
+        try {
+            const normalized = value.includes(' ') ? value.replace(' ', 'T') : value;
+            return new Date(normalized).toLocaleString();
+        } catch (error) {
+            return value;
+        }
+    }
+
+    function formatDateTimeLocalValue(value) {
+        if (!value) {
+            return '';
+        }
+        return String(value).replace(' ', 'T').slice(0, 16);
+    }
+
+    function populateRawProductUpdateForm(product) {
+        document.getElementById('rawUpdateId').value = product.id ?? '';
+        document.getElementById('rawUpdateSource').value = product.source ?? '';
+        document.getElementById('rawUpdateCategory').value = product.category ?? '';
+        document.getElementById('rawUpdateProductId').value = product.productId ?? '';
+        document.getElementById('rawUpdateProductImageUrl').value = product.productImageUrl ?? '';
+        document.getElementById('rawUpdateProductSiteUrl').value = product.productSiteUrl ?? '';
+        document.getElementById('rawUpdateProductName').value = product.productName ?? '';
+        document.getElementById('rawUpdateProductMallName').value = product.productMallName ?? '';
+        document.getElementById('rawUpdateBrand').value = product.brand ?? '';
+        document.getElementById('rawUpdateListPrice').value = product.listPrice ?? '';
+        document.getElementById('rawUpdateDiscountRate').value = product.discountRate ?? '';
+        document.getElementById('rawUpdateDiscountPrice').value = product.discountPrice ?? '';
+        document.getElementById('rawUpdateBaseShippingFee').value = product.baseShippingFee ?? '';
+        document.getElementById('rawUpdateFreeShippingCondition').value = product.freeShippingCondition ?? '';
+        document.getElementById('rawUpdateIsExposed').value = product.isExposed == null ? '' : String(product.isExposed);
+        document.getElementById('rawUpdateFetchedAt').value = formatDateTimeLocalValue(product.fetchedAt);
+    }
+
+    function populateRawProductFurnitureTagForm(product) {
+        document.getElementById('rawFurnitureTagRawProductId').value = product.id ?? '';
+    }
+
+    function buildRawProductDetailHtml(product) {
+        const colors = Array.isArray(product.colors) ? product.colors : [];
+        const furnitureTags = Array.isArray(product.furnitureTags) ? product.furnitureTags : [];
+
+        const colorItems = colors.length === 0
+            ? '<li class="list-group-item">등록된 색상 매핑이 없습니다.</li>'
+            : colors.map(color => `<li class="list-group-item">#${color.id} | raw=${color.rawColorName || '-'} | client=${color.clientColorName || '-'}</li>`).join('');
+
+        const furnitureTagItems = furnitureTags.length === 0
+            ? '<li class="list-group-item">등록된 가구 태그 매핑이 없습니다.</li>'
+            : furnitureTags.map(tag => `
+                <li class="list-group-item d-flex justify-content-between align-items-start gap-2">
+                    <div>
+                        <div><strong>mapping #${tag.mappingId}</strong> / furnitureTag #${tag.furnitureTagId}</div>
+                        <div class="text-muted">가구: ${tag.furnitureNameKr || '-'} / 태그: ${tag.tagNameKr || '-'} / priority: ${tag.priority ?? '-'}</div>
+                        <div class="text-muted">searchKeyword: ${tag.searchKeyword || '-'}</div>
+                    </div>
+                    <div class="d-flex gap-1">
+                        <button class="btn btn-sm btn-outline-warning" onclick="fillRawProductFurnitureTagUpdate(${product.id}, ${tag.mappingId}, ${tag.furnitureTagId})">수정폼 채우기</button>
+                        <button class="btn btn-sm btn-outline-danger" onclick="deleteRawProductFurnitureTagById(${product.id}, ${tag.mappingId})">삭제</button>
+                    </div>
+                </li>
+            `).join('');
+
+        return `
+            <div class="alert alert-success">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <strong>RAW 상품 상세</strong>
+                    <button class="btn btn-sm btn-outline-primary" onclick="populateRawProductUpdateFormFromDetail(${product.id})">수정 폼 다시 채우기</button>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-bordered align-middle mb-3">
+                        <tbody>
+                            <tr><th>ID</th><td>${product.id ?? '-'}</td><th>노출 여부</th><td>${product.isExposed ? '노출' : '숨김'}</td></tr>
+                            <tr><th>source</th><td>${product.source ?? '-'}</td><th>category</th><td>${product.category ?? '-'}</td></tr>
+                            <tr><th>productId</th><td>${product.productId ?? '-'}</td><th>mall</th><td>${product.productMallName ?? '-'}</td></tr>
+                            <tr><th>상품명</th><td colspan="3">${product.productName ?? '-'}</td></tr>
+                            <tr><th>brand</th><td>${product.brand ?? '-'}</td><th>fetchedAt</th><td>${formatRawProductDateTime(product.fetchedAt)}</td></tr>
+                            <tr><th>listPrice</th><td>${product.listPrice ?? '-'}</td><th>discountRate / discountPrice</th><td>${product.discountRate ?? '-'} / ${product.discountPrice ?? '-'}</td></tr>
+                            <tr><th>배송비</th><td>${product.baseShippingFee ?? '-'}</td><th>무료배송 조건</th><td>${product.freeShippingCondition ?? '-'}</td></tr>
+                            <tr><th>image</th><td colspan="3"><a href="${product.productImageUrl ?? '#'}" target="_blank" rel="noopener noreferrer">${product.productImageUrl ?? '-'}</a></td></tr>
+                            <tr><th>site</th><td colspan="3"><a href="${product.productSiteUrl ?? '#'}" target="_blank" rel="noopener noreferrer">${product.productSiteUrl ?? '-'}</a></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <h6>색상 매핑</h6>
+                        <ul class="list-group">${colorItems}</ul>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>가구 태그 매핑</h6>
+                        <ul class="list-group">${furnitureTagItems}</ul>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    function displayRawProductDetail(data, resultDiv) {
+        const product = data && data.data ? data.data : null;
+        if (!product) {
+            resultDiv.innerHTML = '<div class="alert alert-warning">RAW 상품 상세 데이터가 없습니다.</div>';
+            return;
+        }
+
+        populateRawProductUpdateForm(product);
+        populateRawProductFurnitureTagForm(product);
+        document.getElementById('rawProductDetailId').value = product.id ?? '';
+        resultDiv.innerHTML = buildRawProductDetailHtml(product);
+    }
+
     function loadRawProductDetail(rawProductId) {
         const accessToken = localStorage.getItem('accessToken');
         const resultDiv = document.getElementById('raw-product-detail-result');
-        testApiCall(accessToken, resultDiv, `/api/v1/admin/curation-raw-products/${rawProductId}`, 'GET', null);
+        testApiCall(accessToken, resultDiv, `/api/v1/admin/curation-raw-products/${rawProductId}`, 'GET', null, displayRawProductDetail);
+    }
+
+    function populateRawProductUpdateFormFromDetail(rawProductId) {
+        loadRawProductDetail(rawProductId);
+        document.getElementById('rawUpdateId').scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+
+    function fillRawProductFurnitureTagUpdate(rawProductId, mappingId, furnitureTagId) {
+        document.getElementById('rawFurnitureTagRawProductId').value = rawProductId ?? '';
+        document.getElementById('rawFurnitureTagMappingId').value = mappingId ?? '';
+        document.getElementById('rawFurnitureTagId').value = furnitureTagId ?? '';
+        document.getElementById('raw-product-furniture-tag-result').innerHTML = '<div class="alert alert-info">매핑 수정 폼이 채워졌습니다.</div>';
+    }
+
+    function submitRawFurnitureTagRequest(method) {
+        const accessToken = localStorage.getItem('accessToken');
+        const resultDiv = document.getElementById('raw-product-furniture-tag-result');
+        const rawProductId = parseNumberValue(document.getElementById('rawFurnitureTagRawProductId').value);
+        const furnitureTagId = parseNumberValue(document.getElementById('rawFurnitureTagId').value);
+        const mappingId = parseNumberValue(document.getElementById('rawFurnitureTagMappingId').value);
+
+        if (!rawProductId) {
+            resultDiv.innerHTML = '<div class="alert alert-danger">RAW 상품 ID를 입력해주세요.</div>';
+            return;
+        }
+
+        if (method === 'DELETE') {
+            if (!mappingId) {
+                resultDiv.innerHTML = '<div class="alert alert-danger">삭제할 매핑 ID를 입력해주세요.</div>';
+                return;
+            }
+            deleteRawProductFurnitureTagById(rawProductId, mappingId);
+            return;
+        }
+
+        if (!furnitureTagId) {
+            resultDiv.innerHTML = '<div class="alert alert-danger">furnitureTagId를 입력해주세요.</div>';
+            return;
+        }
+
+        const endpoint = method === 'POST'
+            ? `/api/v1/admin/curation-raw-products/${rawProductId}/furniture-tags`
+            : `/api/v1/admin/curation-raw-products/${rawProductId}/furniture-tags/${mappingId}`;
+
+        if (method === 'PATCH' && !mappingId) {
+            resultDiv.innerHTML = '<div class="alert alert-danger">수정할 매핑 ID를 입력해주세요.</div>';
+            return;
+        }
+
+        testApiCall(
+            accessToken,
+            resultDiv,
+            endpoint,
+            method,
+            { furnitureTagId },
+            () => {
+                resultDiv.innerHTML = `<div class="alert alert-success">가구 태그 매핑이 ${method === 'POST' ? '추가' : '수정'}되었습니다.</div>`;
+                loadRawProductDetail(rawProductId);
+                fetchRawProducts(rawProductsPageState.page, rawProductsPageState.size);
+            }
+        );
+    }
+
+    function deleteRawProductFurnitureTagById(rawProductId, mappingId) {
+        if (!confirm(`매핑 ID ${mappingId}를 정말로 삭제하시겠습니까?`)) return;
+        const accessToken = localStorage.getItem('accessToken');
+        const resultDiv = document.getElementById('raw-product-furniture-tag-result');
+        testApiCall(
+            accessToken,
+            resultDiv,
+            `/api/v1/admin/curation-raw-products/${rawProductId}/furniture-tags/${mappingId}`,
+            'DELETE',
+            null,
+            () => {
+                resultDiv.innerHTML = '<div class="alert alert-success">가구 태그 매핑이 삭제되었습니다.</div>';
+                document.getElementById('rawFurnitureTagMappingId').value = '';
+                document.getElementById('rawFurnitureTagId').value = '';
+                loadRawProductDetail(rawProductId);
+                fetchRawProducts(rawProductsPageState.page, rawProductsPageState.size);
+            }
+        );
     }
 
     function deleteRawProductById(rawProductId) {
@@ -1527,6 +1838,15 @@
         return trimmed.length === 0 ? null : trimmed;
     }
 
+    function parseBooleanValue(value) {
+        if (value == null) return null;
+        const trimmed = String(value).trim();
+        if (trimmed.length === 0) return null;
+        if (trimmed === 'true') return true;
+        if (trimmed === 'false') return false;
+        return null;
+    }
+
     function buildRawProductCreatePayload() {
         return {
             source: parseStringValue(document.getElementById('rawCreateSource').value),
@@ -1542,6 +1862,7 @@
             discountPrice: parseNumberValue(document.getElementById('rawCreateDiscountPrice').value),
             baseShippingFee: parseNumberValue(document.getElementById('rawCreateBaseShippingFee').value),
             freeShippingCondition: parseNumberValue(document.getElementById('rawCreateFreeShippingCondition').value),
+            isExposed: parseBooleanValue(document.getElementById('rawCreateIsExposed').value),
             fetchedAt: parseStringValue(document.getElementById('rawCreateFetchedAt').value)
         };
     }
@@ -1561,6 +1882,7 @@
         const discountPrice = parseNumberValue(document.getElementById('rawUpdateDiscountPrice').value);
         const baseShippingFee = parseNumberValue(document.getElementById('rawUpdateBaseShippingFee').value);
         const freeShippingCondition = parseNumberValue(document.getElementById('rawUpdateFreeShippingCondition').value);
+        const isExposed = parseBooleanValue(document.getElementById('rawUpdateIsExposed').value);
         const fetchedAt = parseStringValue(document.getElementById('rawUpdateFetchedAt').value);
 
         if (source !== null) payload.source = source;
@@ -1576,6 +1898,7 @@
         if (discountPrice !== null) payload.discountPrice = discountPrice;
         if (baseShippingFee !== null) payload.baseShippingFee = baseShippingFee;
         if (freeShippingCondition !== null) payload.freeShippingCondition = freeShippingCondition;
+        if (isExposed !== null) payload.isExposed = isExposed;
         if (fetchedAt !== null) payload.fetchedAt = fetchedAt;
 
         return payload;
