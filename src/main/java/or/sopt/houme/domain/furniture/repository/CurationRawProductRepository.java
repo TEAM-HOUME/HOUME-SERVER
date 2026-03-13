@@ -61,4 +61,19 @@ public interface CurationRawProductRepository extends JpaRepository<CurationRawP
             @Param("furnitureTag") FurnitureTag furnitureTag,
             @Param("productIds") List<Long> productIds
     );
+
+    @Query("""
+            select rawProduct
+            from CurationRawProduct rawProduct
+            where (:keyword is null
+                    or lower(rawProduct.productName) like lower(concat('%', :keyword, '%'))
+                    or lower(coalesce(rawProduct.brand, '')) like lower(concat('%', :keyword, '%'))
+                    or lower(rawProduct.source) like lower(concat('%', :keyword, '%'))
+                    or str(rawProduct.productId) like concat('%', :keyword, '%'))
+            order by rawProduct.id desc
+            """)
+    Page<CurationRawProduct> searchByKeyword(
+            @Param("keyword") String keyword,
+            Pageable pageable
+    );
 }
