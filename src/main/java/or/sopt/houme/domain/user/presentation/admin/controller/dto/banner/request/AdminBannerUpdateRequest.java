@@ -11,7 +11,6 @@ public record AdminBannerUpdateRequest(
         String styleQuestion,
         String stylePrompt,
         @Size(max = 4) List<@Valid AdminBannerStyleAnswerChipRequest> styleAnswerChips,
-        List<Long> mappedRawProductIds,
-        Boolean isExposed
+        List<Long> mappedRawProductIds
 ) {
 }

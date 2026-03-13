@@ -11,8 +11,10 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import or.sopt.houme.domain.user.presentation.admin.controller.dto.banner.request.AdminBannerCreateRequest;
+import or.sopt.houme.domain.user.presentation.admin.controller.dto.banner.request.AdminBannerImageUploadRequest;
 import or.sopt.houme.domain.user.presentation.admin.controller.dto.banner.request.AdminBannerStyleAnswerChipRequest;
 import or.sopt.houme.domain.user.presentation.admin.controller.dto.banner.request.AdminBannerUpdateRequest;
+import or.sopt.houme.domain.user.presentation.admin.controller.dto.banner.response.AdminBannerImageUploadResponse;
 import or.sopt.houme.domain.user.presentation.admin.controller.dto.banner.response.AdminBannerListResponse;
 import or.sopt.houme.domain.user.presentation.admin.controller.dto.banner.response.AdminBannerMappedRawProductResponse;
 import or.sopt.houme.domain.user.presentation.admin.controller.dto.banner.response.AdminBannerRawProductSearchResponse;
@@ -56,8 +58,7 @@ class AdminBannerControllerTest {
                 "질문",
                 "prompt",
                 List.of(new AdminBannerStyleAnswerChipRequest(1, "칩", 1L)),
-                List.of(1L),
-                true
+                List.of(1L)
         );
         when(adminBannerService.create(any(AdminBannerCreateRequest.class))).thenReturn(sampleResponse());
 
@@ -90,8 +91,7 @@ class AdminBannerControllerTest {
                 null,
                 null,
                 List.of(new AdminBannerStyleAnswerChipRequest(1, "새 칩", 2L)),
-                List.of(2L),
-                false
+                List.of(2L)
         );
         AdminBannerResponse response = new AdminBannerResponse(
                 1L,
@@ -99,7 +99,6 @@ class AdminBannerControllerTest {
                 "수정 제목",
                 "질문",
                 "prompt",
-                false,
                 List.of(new AdminBannerStyleAnswerChipResponse(1, "새 칩", 2L, "책상 B", "https://image/2")),
                 List.of(new AdminBannerMappedRawProductResponse(2L, "soozip", null, 22L, "책상 B", "https://image/2", "브랜드")),
                 LocalDateTime.of(2026, 3, 13, 12, 0),
@@ -111,8 +110,23 @@ class AdminBannerControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.bannerTitle").value("수정 제목"))
-                .andExpect(jsonPath("$.data.isExposed").value(false));
+                .andExpect(jsonPath("$.data.bannerTitle").value("수정 제목"));
+    }
+
+    @Test
+    @DisplayName("POST /api/v1/admin/banners/image-upload-url 요청으로 presigned URL을 생성할 수 있다")
+    void createBannerImageUploadUrl_success() throws Exception {
+        AdminBannerImageUploadRequest request = new AdminBannerImageUploadRequest("png");
+        when(adminBannerService.createImageUploadUrl(any(AdminBannerImageUploadRequest.class), any(String.class)))
+                .thenReturn(new AdminBannerImageUploadResponse("https://upload-url", "https://public-url"));
+
+        mockMvc.perform(post("/api/v1/admin/banners/image-upload-url")
+                        .param("contentType", "image/png")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.uploadUrl").value("https://upload-url"))
+                .andExpect(jsonPath("$.data.publicUrl").value("https://public-url"));
     }
 
     @Test
@@ -147,7 +161,6 @@ class AdminBannerControllerTest {
                 "배너 제목",
                 "질문",
                 "prompt",
-                true,
                 List.of(new AdminBannerStyleAnswerChipResponse(1, "칩", 1L, "책상 A", "https://image/1")),
                 List.of(new AdminBannerMappedRawProductResponse(1L, "soozip", null, 10L, "책상 A", "https://image/1", "브랜드")),
                 LocalDateTime.of(2026, 3, 13, 12, 0),

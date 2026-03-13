@@ -11,8 +11,10 @@ import or.sopt.houme.domain.banner.repository.BannerRepository;
 import or.sopt.houme.domain.furniture.model.entity.CurationRawProduct;
 import or.sopt.houme.domain.furniture.repository.CurationRawProductRepository;
 import or.sopt.houme.domain.user.presentation.admin.controller.dto.banner.request.AdminBannerCreateRequest;
+import or.sopt.houme.domain.user.presentation.admin.controller.dto.banner.request.AdminBannerImageUploadRequest;
 import or.sopt.houme.domain.user.presentation.admin.controller.dto.banner.request.AdminBannerStyleAnswerChipRequest;
 import or.sopt.houme.domain.user.presentation.admin.controller.dto.banner.request.AdminBannerUpdateRequest;
+import or.sopt.houme.domain.user.presentation.admin.controller.dto.banner.response.AdminBannerImageUploadResponse;
 import or.sopt.houme.domain.user.presentation.admin.controller.dto.banner.response.AdminBannerListResponse;
 import or.sopt.houme.domain.user.presentation.admin.controller.dto.banner.response.AdminBannerMappedRawProductResponse;
 import or.sopt.houme.domain.user.presentation.admin.controller.dto.banner.response.AdminBannerRawProductSearchResponse;
@@ -20,6 +22,8 @@ import or.sopt.houme.domain.user.presentation.admin.controller.dto.banner.respon
 import or.sopt.houme.domain.user.presentation.admin.controller.dto.banner.response.AdminBannerStyleAnswerChipResponse;
 import or.sopt.houme.global.api.ErrorCode;
 import or.sopt.houme.global.api.GeneralException;
+import or.sopt.houme.global.dto.S3PresignedUrlResponseDTO;
+import or.sopt.houme.global.util.S3PresignedUtil;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -46,6 +50,17 @@ public class AdminBannerServiceImpl implements AdminBannerService {
     private final BannerRepository bannerRepository;
     private final CurationRawProductRepository curationRawProductRepository;
     private final ObjectMapper objectMapper;
+    private final S3PresignedUtil s3PresignedUtil;
+
+    @Override
+    public AdminBannerImageUploadResponse createImageUploadUrl(AdminBannerImageUploadRequest request, String contentType) {
+        S3PresignedUrlResponseDTO presignedUrl = s3PresignedUtil.createPresignedUrl(
+                normalizeRequired(request.imageExtension()),
+                "banner",
+                contentType
+        );
+        return new AdminBannerImageUploadResponse(presignedUrl.uploadUrl(), presignedUrl.publicUrl());
+    }
 
     @Override
     @Transactional
@@ -60,8 +75,7 @@ public class AdminBannerServiceImpl implements AdminBannerService {
                 normalizeRequired(request.bannerTitle()),
                 normalizeRequired(request.styleQuestion()),
                 normalizeRequired(request.stylePrompt()),
-                toStyleAnswerChipsJson(styleAnswerChips),
-                request.isExposed()
+                toStyleAnswerChipsJson(styleAnswerChips)
         );
         banner.replaceRawProducts(buildMappings(banner, request.mappedRawProductIds(), requiredRawProducts));
         Banner savedBanner = bannerRepository.saveAndFlush(banner);
@@ -112,8 +126,7 @@ public class AdminBannerServiceImpl implements AdminBannerService {
                 request.bannerTitle() != null ? normalizeRequired(request.bannerTitle()) : banner.getBannerTitle(),
                 request.styleQuestion() != null ? normalizeRequired(request.styleQuestion()) : banner.getStyleQuestion(),
                 request.stylePrompt() != null ? normalizeRequired(request.stylePrompt()) : banner.getStylePrompt(),
-                toStyleAnswerChipsJson(targetChips),
-                request.isExposed() != null ? request.isExposed() : banner.getIsExposed()
+                toStyleAnswerChipsJson(targetChips)
         );
         banner.replaceRawProducts(buildMappings(banner, targetMappedRawProductIds, requiredRawProducts));
 
@@ -191,7 +204,6 @@ public class AdminBannerServiceImpl implements AdminBannerService {
                 banner.getBannerTitle(),
                 banner.getStyleQuestion(),
                 banner.getStylePrompt(),
-                banner.getIsExposed(),
                 chipResponses,
                 mappedRawProducts,
                 banner.getCreatedAt(),

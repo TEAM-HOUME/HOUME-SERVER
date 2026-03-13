@@ -13,7 +13,6 @@ public record AdminBannerCreateRequest(
         @NotBlank String styleQuestion,
         @NotBlank String stylePrompt,
         @NotNull @Size(max = 4) List<@Valid AdminBannerStyleAnswerChipRequest> styleAnswerChips,
-        @NotNull List<Long> mappedRawProductIds,
-        @NotNull Boolean isExposed
+        @NotNull List<Long> mappedRawProductIds
 ) {
 }

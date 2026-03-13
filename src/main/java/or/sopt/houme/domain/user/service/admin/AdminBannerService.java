@@ -1,12 +1,16 @@
 package or.sopt.houme.domain.user.service.admin;
 
 import or.sopt.houme.domain.user.presentation.admin.controller.dto.banner.request.AdminBannerCreateRequest;
+import or.sopt.houme.domain.user.presentation.admin.controller.dto.banner.request.AdminBannerImageUploadRequest;
 import or.sopt.houme.domain.user.presentation.admin.controller.dto.banner.request.AdminBannerUpdateRequest;
+import or.sopt.houme.domain.user.presentation.admin.controller.dto.banner.response.AdminBannerImageUploadResponse;
 import or.sopt.houme.domain.user.presentation.admin.controller.dto.banner.response.AdminBannerListResponse;
 import or.sopt.houme.domain.user.presentation.admin.controller.dto.banner.response.AdminBannerRawProductSearchResponse;
 import or.sopt.houme.domain.user.presentation.admin.controller.dto.banner.response.AdminBannerResponse;
 
 public interface AdminBannerService {
+    AdminBannerImageUploadResponse createImageUploadUrl(AdminBannerImageUploadRequest request, String contentType);
+
     AdminBannerResponse create(AdminBannerCreateRequest request);
 
     AdminBannerListResponse getAll();

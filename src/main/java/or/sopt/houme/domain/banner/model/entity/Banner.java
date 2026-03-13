@@ -55,11 +55,6 @@ public class Banner extends BaseEntity {
     @Comment("스타일 답변 칩 목록 JSON")
     private String styleAnswerChipsJson;
 
-    @Builder.Default
-    @Column(name = "is_exposed", nullable = false)
-    @Comment("노출 여부")
-    private Boolean isExposed = true;
-
     @OneToMany(mappedBy = "banner", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     private List<BannerCurationRawProduct> bannerRawProducts = new ArrayList<>();
@@ -69,8 +64,7 @@ public class Banner extends BaseEntity {
             String bannerTitle,
             String styleQuestion,
             String stylePrompt,
-            String styleAnswerChipsJson,
-            Boolean isExposed
+            String styleAnswerChipsJson
     ) {
         return Banner.builder()
                 .bannerImageUrl(bannerImageUrl)
@@ -78,7 +72,6 @@ public class Banner extends BaseEntity {
                 .styleQuestion(styleQuestion)
                 .stylePrompt(stylePrompt)
                 .styleAnswerChipsJson(styleAnswerChipsJson)
-                .isExposed(isExposed == null ? Boolean.TRUE : isExposed)
                 .build();
     }
 
@@ -87,15 +80,13 @@ public class Banner extends BaseEntity {
             String bannerTitle,
             String styleQuestion,
             String stylePrompt,
-            String styleAnswerChipsJson,
-            Boolean isExposed
+            String styleAnswerChipsJson
     ) {
         this.bannerImageUrl = bannerImageUrl;
         this.bannerTitle = bannerTitle;
         this.styleQuestion = styleQuestion;
         this.stylePrompt = stylePrompt;
         this.styleAnswerChipsJson = styleAnswerChipsJson;
-        this.isExposed = isExposed;
     }
 
     public void replaceRawProducts(List<BannerCurationRawProduct> mappings) {

@@ -16,12 +16,16 @@ import or.sopt.houme.domain.furniture.model.entity.CurationRawProduct;
 import or.sopt.houme.domain.furniture.model.entity.SoozipCategory;
 import or.sopt.houme.domain.furniture.repository.CurationRawProductRepository;
 import or.sopt.houme.domain.user.presentation.admin.controller.dto.banner.request.AdminBannerCreateRequest;
+import or.sopt.houme.domain.user.presentation.admin.controller.dto.banner.request.AdminBannerImageUploadRequest;
 import or.sopt.houme.domain.user.presentation.admin.controller.dto.banner.request.AdminBannerStyleAnswerChipRequest;
 import or.sopt.houme.domain.user.presentation.admin.controller.dto.banner.request.AdminBannerUpdateRequest;
+import or.sopt.houme.domain.user.presentation.admin.controller.dto.banner.response.AdminBannerImageUploadResponse;
 import or.sopt.houme.domain.user.presentation.admin.controller.dto.banner.response.AdminBannerRawProductSearchResponse;
 import or.sopt.houme.domain.user.presentation.admin.controller.dto.banner.response.AdminBannerResponse;
 import or.sopt.houme.global.api.ErrorCode;
 import or.sopt.houme.global.api.GeneralException;
+import or.sopt.houme.global.dto.S3PresignedUrlResponseDTO;
+import or.sopt.houme.global.util.S3PresignedUtil;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -49,12 +53,15 @@ class AdminBannerServiceImplTest {
     @Mock
     private CurationRawProductRepository curationRawProductRepository;
 
+    @Mock
+    private S3PresignedUtil s3PresignedUtil;
+
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Test
     @DisplayName("create()는 스타일 배너를 생성하고 RAW 상품 매핑을 저장한다")
     void create_success() {
-        adminBannerService = new AdminBannerServiceImpl(bannerRepository, curationRawProductRepository, objectMapper);
+        adminBannerService = new AdminBannerServiceImpl(bannerRepository, curationRawProductRepository, objectMapper, s3PresignedUtil);
         CurationRawProduct chipRawProduct = rawProduct(1L, 101L, "책상 A");
         CurationRawProduct mappedRawProduct = rawProduct(2L, 202L, "의자 B");
         AtomicReference<Banner> savedBannerRef = new AtomicReference<>();
@@ -65,8 +72,7 @@ class AdminBannerServiceImplTest {
                 "어떤 책상을 선호하시나요?",
                 "mid century modern",
                 List.of(new AdminBannerStyleAnswerChipRequest(1, "모니터 받침대가 결합된 책상", 1L)),
-                List.of(1L, 2L),
-                true
+                List.of(1L, 2L)
         );
 
         when(curationRawProductRepository.findAllById(List.of(1L, 2L)))
@@ -94,7 +100,7 @@ class AdminBannerServiceImplTest {
     @Test
     @DisplayName("create()는 스타일 답변 칩이 4개를 초과하면 예외를 던진다")
     void create_invalidChipSize() {
-        adminBannerService = new AdminBannerServiceImpl(bannerRepository, curationRawProductRepository, objectMapper);
+        adminBannerService = new AdminBannerServiceImpl(bannerRepository, curationRawProductRepository, objectMapper, s3PresignedUtil);
         AdminBannerCreateRequest request = new AdminBannerCreateRequest(
                 "https://image",
                 "배너 제목",
@@ -107,8 +113,7 @@ class AdminBannerServiceImplTest {
                         new AdminBannerStyleAnswerChipRequest(4, "d", 4L),
                         new AdminBannerStyleAnswerChipRequest(5, "e", 5L)
                 ),
-                List.of(),
-                true
+                List.of()
         );
 
         GeneralException exception = assertThrows(GeneralException.class, () -> adminBannerService.create(request));
@@ -118,14 +123,13 @@ class AdminBannerServiceImplTest {
     @Test
     @DisplayName("update()는 배너 정보를 수정하고 매핑 가구를 교체한다")
     void update_success() throws Exception {
-        adminBannerService = new AdminBannerServiceImpl(bannerRepository, curationRawProductRepository, objectMapper);
+        adminBannerService = new AdminBannerServiceImpl(bannerRepository, curationRawProductRepository, objectMapper, s3PresignedUtil);
         Banner banner = Banner.create(
                 "https://old-image",
                 "기존 제목",
                 "기존 질문",
                 "기존 프롬프트",
-                objectMapper.writeValueAsString(List.of()),
-                true
+                objectMapper.writeValueAsString(List.of())
         );
         ReflectionTestUtils.setField(banner, "id", 11L);
         ReflectionTestUtils.setField(banner, "createdAt", LocalDateTime.of(2026, 3, 13, 12, 0));
@@ -142,23 +146,37 @@ class AdminBannerServiceImplTest {
                 null,
                 null,
                 List.of(new AdminBannerStyleAnswerChipRequest(1, "포인트 조명", 3L)),
-                List.of(3L),
-                false
+                List.of(3L)
         );
 
         AdminBannerResponse response = adminBannerService.update(11L, request);
 
         assertThat(response.bannerImageUrl()).isEqualTo("https://new-image");
         assertThat(response.bannerTitle()).isEqualTo("새 제목");
-        assertThat(response.isExposed()).isFalse();
         assertThat(response.styleAnswerChips()).hasSize(1);
         assertThat(response.mappedRawProducts()).hasSize(1);
     }
 
     @Test
+    @DisplayName("createImageUploadUrl()은 배너 이미지 업로드용 presigned url을 반환한다")
+    void createImageUploadUrl_success() {
+        adminBannerService = new AdminBannerServiceImpl(bannerRepository, curationRawProductRepository, objectMapper, s3PresignedUtil);
+        when(s3PresignedUtil.createPresignedUrl("png", "banner", "image/png"))
+                .thenReturn(new S3PresignedUrlResponseDTO("https://upload", "https://public", "banner/1.png", "banner"));
+
+        AdminBannerImageUploadResponse response = adminBannerService.createImageUploadUrl(
+                new AdminBannerImageUploadRequest("png"),
+                "image/png"
+        );
+
+        assertThat(response.uploadUrl()).isEqualTo("https://upload");
+        assertThat(response.publicUrl()).isEqualTo("https://public");
+    }
+
+    @Test
     @DisplayName("searchRawProducts()는 키워드로 RAW 상품을 검색한다")
     void searchRawProducts_success() {
-        adminBannerService = new AdminBannerServiceImpl(bannerRepository, curationRawProductRepository, objectMapper);
+        adminBannerService = new AdminBannerServiceImpl(bannerRepository, curationRawProductRepository, objectMapper, s3PresignedUtil);
         when(curationRawProductRepository.searchByKeyword(eq("책상"), eq(PageRequest.of(0, 10))))
                 .thenReturn(new PageImpl<>(List.of(rawProduct(1L, 10L, "책상 A"))));
 

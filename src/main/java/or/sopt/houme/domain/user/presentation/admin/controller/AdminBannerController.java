@@ -5,7 +5,9 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import or.sopt.houme.domain.user.presentation.admin.controller.dto.banner.request.AdminBannerCreateRequest;
+import or.sopt.houme.domain.user.presentation.admin.controller.dto.banner.request.AdminBannerImageUploadRequest;
 import or.sopt.houme.domain.user.presentation.admin.controller.dto.banner.request.AdminBannerUpdateRequest;
+import or.sopt.houme.domain.user.presentation.admin.controller.dto.banner.response.AdminBannerImageUploadResponse;
 import or.sopt.houme.domain.user.presentation.admin.controller.dto.banner.response.AdminBannerListResponse;
 import or.sopt.houme.domain.user.presentation.admin.controller.dto.banner.response.AdminBannerRawProductSearchResponse;
 import or.sopt.houme.domain.user.presentation.admin.controller.dto.banner.response.AdminBannerResponse;
@@ -29,6 +31,15 @@ import org.springframework.web.bind.annotation.RestController;
 public class AdminBannerController {
 
     private final AdminBannerService adminBannerService;
+
+    @PostMapping("/image-upload-url")
+    @Operation(summary = "스타일 배너 이미지 업로드용 presigned url 생성 API")
+    public ResponseEntity<ApiResponse<AdminBannerImageUploadResponse>> createBannerImageUploadUrl(
+            @Valid @RequestBody AdminBannerImageUploadRequest request,
+            @RequestParam("contentType") String contentType
+    ) {
+        return ResponseEntity.ok(ApiResponse.ok(adminBannerService.createImageUploadUrl(request, contentType)));
+    }
 
     @PostMapping
     @Operation(summary = "스타일 배너 생성 API")

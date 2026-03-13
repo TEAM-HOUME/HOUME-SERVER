@@ -9,7 +9,6 @@ public record AdminBannerResponse(
         String bannerTitle,
         String styleQuestion,
         String stylePrompt,
-        Boolean isExposed,
         List<AdminBannerStyleAnswerChipResponse> styleAnswerChips,
         List<AdminBannerMappedRawProductResponse> mappedRawProducts,
         LocalDateTime createdAt,
