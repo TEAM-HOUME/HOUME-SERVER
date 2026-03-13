@@ -117,11 +117,16 @@ public class AdminBannerSupport {
         }
 
         List<BannerStyleAnswerChip> chips = requests.stream()
-                .map(request -> new BannerStyleAnswerChip(
-                        request.order(),
-                        normalizeRequired(request.label()),
-                        request.curationRawProductId()
-                ))
+                .map(request -> {
+                    if (request == null || request.order() == null || request.curationRawProductId() == null) {
+                        throw new GeneralException(ErrorCode.NOT_VALID_EXCEPTION);
+                    }
+                    return new BannerStyleAnswerChip(
+                            request.order(),
+                            normalizeRequired(request.label()),
+                            request.curationRawProductId()
+                    );
+                })
                 .sorted(Comparator.comparing(BannerStyleAnswerChip::order))
                 .toList();
 
@@ -199,8 +204,10 @@ public class AdminBannerSupport {
         if (ids == null || ids.isEmpty()) {
             return List.of();
         }
+        if (ids.stream().anyMatch(Objects::isNull)) {
+            throw new GeneralException(ErrorCode.NOT_VALID_EXCEPTION);
+        }
         return ids.stream()
-                .filter(Objects::nonNull)
                 .collect(Collectors.collectingAndThen(
                         Collectors.toCollection(LinkedHashSet::new),
                         ArrayList::new

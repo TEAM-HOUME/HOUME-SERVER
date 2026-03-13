@@ -8,6 +8,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import or.sopt.houme.domain.user.presentation.admin.controller.dto.banner.request.AdminBannerImageUploadRequest;
@@ -49,6 +50,7 @@ class AdminStyleControllerTest {
 
     @Test
     @DisplayName("POST /api/v1/admin/styles 요청으로 스타일을 생성할 수 있다")
+    @WithMockUser(roles = "ADMIN")
     void createStyle_success() throws Exception {
         AdminStyleCreateRequest request = new AdminStyleCreateRequest(
                 "https://image",
@@ -69,6 +71,7 @@ class AdminStyleControllerTest {
 
     @Test
     @DisplayName("GET /api/v1/admin/styles 요청으로 스타일 목록을 조회할 수 있다")
+    @WithMockUser(roles = "ADMIN")
     void getStyles_success() throws Exception {
         when(adminStyleService.getAll()).thenReturn(new AdminStyleListResponse(List.of(sampleResponse())));
 
@@ -80,6 +83,7 @@ class AdminStyleControllerTest {
 
     @Test
     @DisplayName("PATCH /api/v1/admin/styles/{id} 요청으로 스타일을 수정할 수 있다")
+    @WithMockUser(roles = "ADMIN")
     void updateStyle_success() throws Exception {
         AdminStyleUpdateRequest request = new AdminStyleUpdateRequest(
                 null,
@@ -109,6 +113,7 @@ class AdminStyleControllerTest {
 
     @Test
     @DisplayName("POST /api/v1/admin/styles/image-upload-url 요청으로 presigned URL을 생성할 수 있다")
+    @WithMockUser(roles = "ADMIN")
     void createStyleImageUploadUrl_success() throws Exception {
         AdminBannerImageUploadRequest request = new AdminBannerImageUploadRequest("png");
         when(adminStyleService.createImageUploadUrl(any(AdminBannerImageUploadRequest.class), any(String.class)))
@@ -125,6 +130,7 @@ class AdminStyleControllerTest {
 
     @Test
     @DisplayName("GET /api/v1/admin/styles/raw-products/search 요청으로 스타일용 RAW 상품을 검색할 수 있다")
+    @WithMockUser(roles = "ADMIN")
     void searchRawProducts_success() throws Exception {
         when(adminStyleService.searchRawProducts("책상", 10))
                 .thenReturn(new AdminBannerRawProductSearchResponse(
@@ -140,6 +146,7 @@ class AdminStyleControllerTest {
 
     @Test
     @DisplayName("DELETE /api/v1/admin/styles/{id} 요청으로 스타일을 삭제할 수 있다")
+    @WithMockUser(roles = "ADMIN")
     void deleteStyle_success() throws Exception {
         doNothing().when(adminStyleService).delete(1L);
 

@@ -14,6 +14,7 @@ import or.sopt.houme.domain.user.presentation.admin.controller.dto.style.respons
 import or.sopt.houme.domain.user.service.admin.AdminStyleService;
 import or.sopt.houme.global.api.ApiResponse;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -28,6 +29,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/admin/styles")
 @Tag(name = "어드민 스타일 API")
+@PreAuthorize("hasRole('ADMIN')")
 public class AdminStyleController {
 
     private final AdminStyleService adminStyleService;

@@ -1,5 +1,6 @@
 package or.sopt.houme.domain.user.service.admin;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -21,13 +22,17 @@ import or.sopt.houme.domain.user.presentation.admin.controller.dto.banner.respon
 import or.sopt.houme.domain.user.presentation.admin.controller.dto.banner.response.AdminBannerMappedRawProductResponse;
 import or.sopt.houme.domain.user.presentation.admin.controller.dto.banner.response.AdminBannerRawProductSearchResponse;
 import or.sopt.houme.domain.user.presentation.admin.controller.dto.banner.response.AdminBannerResponse;
+import or.sopt.houme.global.api.ErrorCode;
+import or.sopt.houme.global.api.GeneralException;
 
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.eq;
@@ -45,6 +50,44 @@ class AdminBannerServiceImplTest {
 
     @Mock
     private AdminBannerSupport adminBannerSupport;
+
+    @Test
+    @DisplayName("normalizeStyleAnswerChips()는 null 요청 요소를 거절한다")
+    void normalizeStyleAnswerChips_rejectsNullRequestItem() {
+        AdminBannerSupport support = new AdminBannerSupport(null, new ObjectMapper(), null);
+
+        assertThatThrownBy(() -> support.normalizeStyleAnswerChips(Arrays.asList(
+                new AdminBannerStyleAnswerChipRequest(1, "칩", 1L),
+                null
+        )))
+                .isInstanceOf(GeneralException.class)
+                .extracting(e -> ((GeneralException) e).getErrorCode())
+                .isEqualTo(ErrorCode.NOT_VALID_EXCEPTION);
+    }
+
+    @Test
+    @DisplayName("normalizeStyleAnswerChips()는 null order를 거절한다")
+    void normalizeStyleAnswerChips_rejectsNullOrder() {
+        AdminBannerSupport support = new AdminBannerSupport(null, new ObjectMapper(), null);
+
+        assertThatThrownBy(() -> support.normalizeStyleAnswerChips(List.of(
+                new AdminBannerStyleAnswerChipRequest(null, "칩", 1L)
+        )))
+                .isInstanceOf(GeneralException.class)
+                .extracting(e -> ((GeneralException) e).getErrorCode())
+                .isEqualTo(ErrorCode.NOT_VALID_EXCEPTION);
+    }
+
+    @Test
+    @DisplayName("deduplicateIds()는 null 요소를 거절한다")
+    void deduplicateIds_rejectsNullElement() {
+        AdminBannerSupport support = new AdminBannerSupport(null, new ObjectMapper(), null);
+
+        assertThatThrownBy(() -> support.deduplicateIds(Arrays.asList(1L, null, 2L)))
+                .isInstanceOf(GeneralException.class)
+                .extracting(e -> ((GeneralException) e).getErrorCode())
+                .isEqualTo(ErrorCode.NOT_VALID_EXCEPTION);
+    }
 
     @Test
     @DisplayName("create()는 배너를 생성한다")

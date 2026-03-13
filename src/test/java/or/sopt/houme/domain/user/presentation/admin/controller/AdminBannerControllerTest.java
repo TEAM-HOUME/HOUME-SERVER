@@ -8,6 +8,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import or.sopt.houme.domain.user.presentation.admin.controller.dto.banner.request.AdminBannerCreateRequest;
@@ -51,6 +52,7 @@ class AdminBannerControllerTest {
 
     @Test
     @DisplayName("POST /api/v1/admin/banners 요청으로 배너를 생성할 수 있다")
+    @WithMockUser(roles = "ADMIN")
     void createBanner_success() throws Exception {
         AdminBannerCreateRequest request = new AdminBannerCreateRequest(
                 "https://image",
@@ -75,6 +77,7 @@ class AdminBannerControllerTest {
 
     @Test
     @DisplayName("GET /api/v1/admin/banners 요청으로 배너 목록을 조회할 수 있다")
+    @WithMockUser(roles = "ADMIN")
     void getBanners_success() throws Exception {
         when(adminBannerService.getAll()).thenReturn(new AdminBannerListResponse(List.of(sampleResponse())));
 
@@ -86,6 +89,7 @@ class AdminBannerControllerTest {
 
     @Test
     @DisplayName("PATCH /api/v1/admin/banners/{id} 요청으로 배너를 수정할 수 있다")
+    @WithMockUser(roles = "ADMIN")
     void updateBanner_success() throws Exception {
         AdminBannerUpdateRequest request = new AdminBannerUpdateRequest(
                 null,
@@ -120,6 +124,7 @@ class AdminBannerControllerTest {
 
     @Test
     @DisplayName("POST /api/v1/admin/banners/image-upload-url 요청으로 presigned URL을 생성할 수 있다")
+    @WithMockUser(roles = "ADMIN")
     void createBannerImageUploadUrl_success() throws Exception {
         AdminBannerImageUploadRequest request = new AdminBannerImageUploadRequest("png");
         when(adminBannerService.createImageUploadUrl(any(AdminBannerImageUploadRequest.class), any(String.class)))
@@ -136,6 +141,7 @@ class AdminBannerControllerTest {
 
     @Test
     @DisplayName("GET /api/v1/admin/banners/raw-products/search 요청으로 배너용 RAW 상품을 검색할 수 있다")
+    @WithMockUser(roles = "ADMIN")
     void searchRawProducts_success() throws Exception {
         when(adminBannerService.searchRawProducts("책상", 10))
                 .thenReturn(new AdminBannerRawProductSearchResponse(
@@ -151,6 +157,7 @@ class AdminBannerControllerTest {
 
     @Test
     @DisplayName("DELETE /api/v1/admin/banners/{id} 요청으로 배너를 삭제할 수 있다")
+    @WithMockUser(roles = "ADMIN")
     void deleteBanner_success() throws Exception {
         doNothing().when(adminBannerService).delete(1L);
 

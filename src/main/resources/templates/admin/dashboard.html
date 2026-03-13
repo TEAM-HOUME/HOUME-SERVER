@@ -750,7 +750,7 @@
                                     <span id="bannerImageUploadStatus" class="text-muted small">이미지를 선택하고 업로드하세요.</span>
                                 </div>
                                 <div id="bannerImagePreview" class="banner-image-preview">
-                                    <img id="bannerImagePreviewImg" src="" alt="배너 미리보기">
+                                    <img id="bannerImagePreviewImg" alt="배너 미리보기">
                                     <div class="banner-image-preview-meta">
                                         <strong id="bannerImagePreviewName">업로드된 배너 이미지</strong>
                                         <a id="bannerImagePreviewLink" href="#" target="_blank" rel="noopener noreferrer"></a>
@@ -844,7 +844,7 @@
                                     <span id="styleImageUploadStatus" class="text-muted small">이미지를 선택하고 업로드하세요.</span>
                                 </div>
                                 <div id="styleImagePreview" class="banner-image-preview">
-                                    <img id="styleImagePreviewImg" src="" alt="스타일 미리보기">
+                                    <img id="styleImagePreviewImg" alt="스타일 미리보기">
                                     <div class="banner-image-preview-meta">
                                         <strong id="styleImagePreviewName">업로드된 스타일 이미지</strong>
                                         <a id="styleImagePreviewLink" href="#" target="_blank" rel="noopener noreferrer"></a>
@@ -1382,6 +1382,10 @@
         });
 
         document.getElementById('update-banner-button').addEventListener('click', function() {
+            const form = document.getElementById('banner-form');
+            if (!form.reportValidity()) {
+                return;
+            }
             updateBanner();
         });
 
@@ -1392,7 +1396,6 @@
             uploadBannerImage();
         });
         document.getElementById('bannerImageFile').addEventListener('change', function() {
-            document.getElementById('bannerImageUrl').value = '';
             if (this.files && this.files.length > 0) {
                 document.getElementById('bannerImageUploadStatus').textContent = `${this.files[0].name} 선택됨. 업로드를 진행하세요.`;
             } else {
@@ -1421,6 +1424,10 @@
         });
 
         document.getElementById('update-style-button').addEventListener('click', function() {
+            const form = document.getElementById('style-form');
+            if (!form.reportValidity()) {
+                return;
+            }
             updateStyle();
         });
 
@@ -1433,7 +1440,6 @@
         });
 
         document.getElementById('styleImageFile').addEventListener('change', function() {
-            document.getElementById('styleImageUrl').value = '';
             if (this.files && this.files.length > 0) {
                 document.getElementById('styleImageUploadStatus').textContent = `${this.files[0].name} 선택됨. 업로드를 진행하세요.`;
             } else {
@@ -1495,7 +1501,7 @@
 
         if (!config.imageUrl) {
             previewContainer.classList.remove('visible');
-            previewImage.src = '';
+            previewImage.removeAttribute('src');
             previewLink.href = '#';
             previewLink.textContent = '';
             previewName.textContent = config.defaultLabel;
@@ -1597,8 +1603,6 @@
             config.renderPreview(publicUrl, imageFile.name);
             statusElement.textContent = `${config.entityName} 이미지 업로드가 완료되었습니다.`;
         } catch (error) {
-            hiddenUrlInput.value = '';
-            config.renderPreview('');
             statusElement.textContent = error.message || `${config.entityName} 이미지 업로드 중 오류가 발생했습니다.`;
         }
     }
