@@ -15,7 +15,10 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@DataJpaTest
+@DataJpaTest(properties = {
+        "external.image-api.base-url=http://localhost:8080",
+        "gemini.api-base-url=https://generativelanguage.googleapis.com/v1beta"
+})
 @Import({FactorRepositoryImpl.class, QuerydslConfig.class})
 public class FactorRepositoryImplTest {
     @Autowired

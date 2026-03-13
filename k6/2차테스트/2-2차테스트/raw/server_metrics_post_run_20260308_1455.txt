@@ -1,0 +1,22 @@
+[Prometheus 시계열 메트릭]
+- host_cpu_max_percent: 6.104347826087334
+- host_memory_used_max_percent: 90.18620907715841
+- swap_used_max_bytes: 599339008
+- jvm_heap_used_max_bytes: 168875040
+- executor_active_max: 10
+- executor_available_permits_min: 6
+- executor_rejected_total_max: 0
+- hikaricp_active_max: 10
+- hikaricp_pending_max: 1
+- app_container_memory_max_bytes: 349982720
+- app_container_cpu_rate_max: 0.020449747683669858
+- http_request_rate_max_success: 0.15652446129497907
+- http_request_rate_max_error: 0.017391304347826087
+
+[로그 관찰]
+- nginx 500 count in run window(05:38~05:52 UTC): 2
+- nginx 499 count in run window(05:38~05:52 UTC): 0
+- app stub failure logs in run window:
+  - 2026-03-08T05:42:31.168Z [load_test] Gemini Stub 실패 시뮬레이션
+  - 2026-03-08T05:42:58.259Z [load_test] Gemini Stub 실패 시뮬레이션
+- note: 종료 직전 05:53:01 UTC에 nginx 499가 6건 발생했고, k6 summary의 interrupted iterations(6건)와 맞물리는 teardown 흔적으로 해석함.

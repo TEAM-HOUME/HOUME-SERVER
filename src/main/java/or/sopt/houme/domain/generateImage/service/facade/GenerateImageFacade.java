@@ -356,13 +356,8 @@ public class GenerateImageFacade {
             PromptRequestDTO promptRequestDTO1 = PromptRequestDTO.of(generateImageRequest.floorPlan().floorPlanId(),
                     priorityIdList.get(0).id(), equilibrium, promptFurnitureListDTO);
 
-            // OpenAI/Gemini로 image 비동기 생성
             // 1번 이미지 (항상 실행됨)
-            if (useGemini) {
-                futures.add(asyncGenerateImageService.generateGeminiImageAsync(promptRequestDTO1));
-            } else {
-                futures.add(asyncGenerateImageService.generateImageAsync(promptRequestDTO1));
-            }
+            futures.add(requestAsyncImage(promptRequestDTO1, useGemini));
 
             // 2번째 태그가 존재할 시에 2번 이미지 준비
             if (priorityIdList.size() > 1) {
@@ -370,13 +365,8 @@ public class GenerateImageFacade {
                 PromptRequestDTO promptRequestDTO2 = PromptRequestDTO.of(generateImageRequest.floorPlan().floorPlanId(),
                         priorityIdList.get(1).id(), equilibrium, promptFurnitureListDTO);
 
-                // OpenAI/Gemini로 image 비동기 생성
                 // 2번 이미지
-                if (useGemini) {
-                    futures.add(asyncGenerateImageService.generateGeminiImageAsync(promptRequestDTO2));
-                } else {
-                    futures.add(asyncGenerateImageService.generateImageAsync(promptRequestDTO2));
-                }
+                futures.add(requestAsyncImage(promptRequestDTO2, useGemini));
             }
 
             // allOf로 모든 1번, 2번 이미지 생성 기다리기
@@ -389,7 +379,7 @@ public class GenerateImageFacade {
                 allFutures.orTimeout(200, TimeUnit.SECONDS).join();
 
                 // 모든 비동기 작업이 성공했을 때만 DB에 결과를 저장
-                List<ImageUploadResponseDTO> results = futures.stream().map(CompletableFuture::join).collect(Collectors.toList());
+                List<ImageUploadResponseDTO> results = collectAsyncResults(futures);
 
                 // 리스트가 비어있다면, 재요청 시도하라는 반환 (429, Too_Many_Requests)
                 if (results.isEmpty()) {
@@ -476,6 +466,24 @@ public class GenerateImageFacade {
             }
         }
     
+    }
+
+    private CompletableFuture<ImageUploadResponseDTO> requestAsyncImage(
+            PromptRequestDTO promptRequestDTO,
+            boolean useGemini
+    ) {
+        if (useGemini) {
+            return asyncGenerateImageService.generateGeminiImageAsync(promptRequestDTO);
+        }
+        return asyncGenerateImageService.generateImageAsync(promptRequestDTO);
+    }
+
+    private List<ImageUploadResponseDTO> collectAsyncResults(
+            List<CompletableFuture<ImageUploadResponseDTO>> futures
+    ) {
+        return futures.stream()
+                .map(CompletableFuture::join)
+                .collect(Collectors.toList());
     }
 
     // houseId로 결과 이미지 찾아오기

@@ -32,10 +32,10 @@ jobs:
     steps:
       - name: checkout the code
         uses: actions/checkout@v4
-      - name: JDK 17 설정
+      - name: JDK 21 설정
         uses: actions/setup-java@v4
         with:
-          java-version: 17
+          java-version: 21
           distribution: 'temurin'
       - name: Gradle 설정
         uses: gradle/actions/setup-gradle@v5

@@ -17,6 +17,11 @@ jobs:
     steps:
       - name: checkout the code
         uses: actions/checkout@v4
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: 21
+          distribution: "temurin"
       - name: AWS 설정
         id: credentials
         uses: aws-actions/configure-aws-credentials@v4

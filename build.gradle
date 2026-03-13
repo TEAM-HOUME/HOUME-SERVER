@@ -11,7 +11,7 @@ version = '0.0.1-SNAPSHOT'
 
 java {
     toolchain {
-        languageVersion = JavaLanguageVersion.of(17)
+        languageVersion = JavaLanguageVersion.of(21)
     }
 }
 
@@ -157,7 +157,7 @@ tasks.named('test') {
 
 jib {
     from {
-        image = 'eclipse-temurin:17-jdk' // 베이스 이미지 지정
+        image = 'eclipse-temurin:21-jdk' // 베이스 이미지 지정
     }
     to {
         image = project.hasProperty('jibToImage') ? project.getProperty('jibToImage') : 'default/image'

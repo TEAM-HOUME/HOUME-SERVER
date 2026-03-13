@@ -14,11 +14,13 @@ import or.sopt.houme.global.dto.ImageUploadResponseDTO;
 import or.sopt.houme.global.util.S3Util;
 import or.sopt.houme.global.util.constant.S3Constant;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
 import java.util.Base64;
 
 @Service
+@Profile("!load_test")
 @RequiredArgsConstructor
 @Slf4j
 public class GeminiImageServiceImpl implements GeminiImageService {
