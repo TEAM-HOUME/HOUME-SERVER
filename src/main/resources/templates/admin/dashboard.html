@@ -83,6 +83,48 @@
             padding: 16px;
             background: #fafbfc;
         }
+        .banner-image-upload-panel {
+            display: grid;
+            gap: 12px;
+            padding: 14px;
+            border: 1px dashed #cbd5e1;
+            border-radius: 14px;
+            background: #f8fafc;
+        }
+        .banner-image-upload-actions {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .banner-image-preview {
+            display: none;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 12px;
+            border-radius: 12px;
+            background: #ffffff;
+            border: 1px solid #e5e7eb;
+        }
+        .banner-image-preview.visible {
+            display: flex;
+        }
+        .banner-image-preview img {
+            width: 96px;
+            height: 64px;
+            border-radius: 10px;
+            object-fit: cover;
+            background: #e5e7eb;
+        }
+        .banner-image-preview-meta {
+            display: grid;
+            gap: 4px;
+            min-width: 0;
+        }
+        .banner-image-preview-meta a {
+            word-break: break-all;
+            font-size: 0.85rem;
+        }
         .banner-chip-editor-header {
             display: flex;
             align-items: center;
@@ -196,23 +238,6 @@
             display: flex;
             flex-direction: column;
             gap: 8px;
-        }
-        .banner-badge {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            padding: 4px 10px;
-            border-radius: 999px;
-            font-size: 0.8rem;
-            font-weight: 700;
-        }
-        .banner-badge.exposed {
-            background: #dcfce7;
-            color: #166534;
-        }
-        .banner-badge.hidden {
-            background: #fee2e2;
-            color: #991b1b;
         }
         @media (max-width: 1200px) {
             .banner-editor-grid,
@@ -710,16 +735,23 @@
                             <label for="bannerEditId" class="form-label">수정 대상 배너 ID</label>
                             <input type="text" class="form-control" id="bannerEditId" placeholder="목록에서 수정 선택 시 자동 입력" readonly>
                         </div>
-                        <div>
-                            <label for="bannerIsExposed" class="form-label">노출 여부</label>
-                            <select class="form-select" id="bannerIsExposed">
-                                <option value="true">노출</option>
-                                <option value="false">숨김</option>
-                            </select>
-                        </div>
                         <div class="full-span">
-                            <label for="bannerImageUrl" class="form-label">배너 이미지 URL</label>
-                            <input type="url" class="form-control" id="bannerImageUrl" placeholder="https://..." required>
+                            <label for="bannerImageFile" class="form-label">배너 이미지 업로드</label>
+                            <div class="banner-image-upload-panel">
+                                <input type="file" class="form-control" id="bannerImageFile" accept="image/*">
+                                <input type="hidden" id="bannerImageUrl">
+                                <div class="banner-image-upload-actions">
+                                    <button type="button" id="upload-banner-image-button" class="btn btn-outline-primary">S3 업로드</button>
+                                    <span id="bannerImageUploadStatus" class="text-muted small">이미지를 선택하고 업로드하세요.</span>
+                                </div>
+                                <div id="bannerImagePreview" class="banner-image-preview">
+                                    <img id="bannerImagePreviewImg" src="" alt="배너 미리보기">
+                                    <div class="banner-image-preview-meta">
+                                        <strong id="bannerImagePreviewName">업로드된 배너 이미지</strong>
+                                        <a id="bannerImagePreviewLink" href="#" target="_blank" rel="noopener noreferrer"></a>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                         <div>
                             <label for="bannerTitle" class="form-label">배너 타이틀</label>
@@ -1263,6 +1295,17 @@
         document.getElementById('reset-banner-form-button').addEventListener('click', function() {
             resetBannerForm();
         });
+        document.getElementById('upload-banner-image-button').addEventListener('click', function() {
+            uploadBannerImage();
+        });
+        document.getElementById('bannerImageFile').addEventListener('change', function() {
+            document.getElementById('bannerImageUrl').value = '';
+            if (this.files && this.files.length > 0) {
+                document.getElementById('bannerImageUploadStatus').textContent = `${this.files[0].name} 선택됨. 업로드를 진행하세요.`;
+            } else {
+                document.getElementById('bannerImageUploadStatus').textContent = '이미지를 선택하고 업로드하세요.';
+            }
+        });
 
         document.getElementById('search-banner-mapped-raw-products-button').addEventListener('click', function() {
             searchBannerMappedRawProducts();
@@ -1290,7 +1333,103 @@
     function initializeBannerManagement() {
         renderBannerChipEditors();
         renderBannerMappedRawProducts();
+        renderBannerImagePreview('');
         loadBanners();
+    }
+
+    function renderBannerImagePreview(imageUrl, label = '업로드된 배너 이미지') {
+        const previewContainer = document.getElementById('bannerImagePreview');
+        const previewImage = document.getElementById('bannerImagePreviewImg');
+        const previewLink = document.getElementById('bannerImagePreviewLink');
+        const previewName = document.getElementById('bannerImagePreviewName');
+        if (!previewContainer || !previewImage || !previewLink || !previewName) {
+            return;
+        }
+
+        if (!imageUrl) {
+            previewContainer.classList.remove('visible');
+            previewImage.src = '';
+            previewLink.href = '#';
+            previewLink.textContent = '';
+            previewName.textContent = '업로드된 배너 이미지';
+            return;
+        }
+
+        previewContainer.classList.add('visible');
+        previewImage.src = imageUrl;
+        previewLink.href = imageUrl;
+        previewLink.textContent = imageUrl;
+        previewName.textContent = label;
+    }
+
+    async function uploadBannerImage() {
+        const accessToken = localStorage.getItem('accessToken');
+        const fileInput = document.getElementById('bannerImageFile');
+        const statusElement = document.getElementById('bannerImageUploadStatus');
+        const hiddenUrlInput = document.getElementById('bannerImageUrl');
+
+        if (!accessToken) {
+            statusElement.textContent = '액세스 토큰이 없습니다.';
+            return;
+        }
+
+        const imageFile = fileInput.files && fileInput.files[0];
+        if (!imageFile) {
+            statusElement.textContent = '업로드할 이미지를 먼저 선택해주세요.';
+            return;
+        }
+
+        const extension = imageFile.name.includes('.') ? imageFile.name.split('.').pop().toLowerCase() : '';
+        if (!extension) {
+            statusElement.textContent = '파일 확장자를 확인할 수 없습니다.';
+            return;
+        }
+
+        statusElement.textContent = 'Presigned URL을 요청하는 중입니다...';
+
+        try {
+            const uploadUrlResponse = await fetch(`/api/v1/admin/banners/image-upload-url?contentType=${encodeURIComponent(imageFile.type || 'application/octet-stream')}`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': 'Bearer ' + accessToken,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ imageExtension: extension })
+            });
+
+            if (!uploadUrlResponse.ok) {
+                const errorBody = await uploadUrlResponse.json().catch(() => null);
+                throw new Error(errorBody?.msg || '배너 이미지 업로드 URL 발급에 실패했습니다.');
+            }
+
+            const uploadUrlPayload = await uploadUrlResponse.json();
+            const uploadUrl = uploadUrlPayload?.data?.uploadUrl;
+            const publicUrl = uploadUrlPayload?.data?.publicUrl;
+
+            if (!uploadUrl || !publicUrl) {
+                throw new Error('배너 이미지 업로드 URL 응답이 올바르지 않습니다.');
+            }
+
+            statusElement.textContent = 'S3에 이미지를 업로드하는 중입니다...';
+
+            const s3UploadResponse = await fetch(uploadUrl, {
+                method: 'PUT',
+                headers: imageFile.type ? { 'Content-Type': imageFile.type } : {},
+                body: imageFile
+            });
+
+            if (!s3UploadResponse.ok) {
+                throw new Error('S3 이미지 업로드에 실패했습니다.');
+            }
+
+            hiddenUrlInput.value = publicUrl;
+            renderBannerImagePreview(publicUrl, imageFile.name);
+            statusElement.textContent = '배너 이미지 업로드가 완료되었습니다.';
+        } catch (error) {
+            hiddenUrlInput.value = '';
+            renderBannerImagePreview('');
+            statusElement.textContent = error.message || '배너 이미지 업로드 중 오류가 발생했습니다.';
+        }
     }
 
     function renderBannerChipEditors() {
@@ -1579,7 +1718,6 @@
                 <div class="banner-card-body">
                     <div class="banner-card-title-row">
                         <span class="banner-card-title">${escapeHtml(banner.bannerTitle)}</span>
-                        <span class="banner-badge ${banner.isExposed ? 'exposed' : 'hidden'}">${banner.isExposed ? '노출' : '숨김'}</span>
                         <span class="text-muted small">#${banner.id}</span>
                     </div>
                     <div class="banner-card-meta">
@@ -1625,12 +1763,14 @@
 
         document.getElementById('bannerEditId').value = banner.id;
         document.getElementById('bannerImageUrl').value = banner.bannerImageUrl ?? '';
+        document.getElementById('bannerImageFile').value = '';
         document.getElementById('bannerTitle').value = banner.bannerTitle ?? '';
         document.getElementById('bannerStyleQuestion').value = banner.styleQuestion ?? '';
         document.getElementById('bannerStylePrompt').value = banner.stylePrompt ?? '';
-        document.getElementById('bannerIsExposed').value = String(Boolean(banner.isExposed));
         document.getElementById('bannerMappedRawProductKeyword').value = '';
         document.getElementById('bannerMappedRawProductSearchResult').innerHTML = '';
+        document.getElementById('bannerImageUploadStatus').textContent = banner.bannerImageUrl ? '기존 배너 이미지가 연결되어 있습니다. 새 파일을 업로드하면 교체됩니다.' : '이미지를 선택하고 업로드하세요.';
+        renderBannerImagePreview(banner.bannerImageUrl ?? '');
 
         const styleAnswerChips = Array.isArray(banner.styleAnswerChips) ? banner.styleAnswerChips : [];
         styleAnswerChips.slice(0, BANNER_CHIP_MAX_COUNT).forEach((chip, index) => {
@@ -1670,9 +1810,11 @@
         bannerAdminState = createInitialBannerAdminState();
         document.getElementById('banner-form').reset();
         document.getElementById('bannerEditId').value = '';
-        document.getElementById('bannerIsExposed').value = 'true';
+        document.getElementById('bannerImageUrl').value = '';
+        document.getElementById('bannerImageUploadStatus').textContent = '이미지를 선택하고 업로드하세요.';
         document.getElementById('bannerMappedRawProductSearchResult').innerHTML = '';
         document.getElementById('banner-form-result').innerHTML = '';
+        renderBannerImagePreview('');
         renderBannerChipEditors();
         renderBannerMappedRawProducts();
     }
@@ -1699,12 +1841,16 @@
             });
         }
 
+        const bannerImageUrl = parseStringValue(document.getElementById('bannerImageUrl').value);
+        if (!bannerImageUrl) {
+            throw new Error('배너 이미지를 업로드해주세요.');
+        }
+
         return {
-            bannerImageUrl: parseStringValue(document.getElementById('bannerImageUrl').value),
+            bannerImageUrl,
             bannerTitle: parseStringValue(document.getElementById('bannerTitle').value),
             styleQuestion: parseStringValue(document.getElementById('bannerStyleQuestion').value),
             stylePrompt: parseStringValue(document.getElementById('bannerStylePrompt').value),
-            isExposed: document.getElementById('bannerIsExposed').value === 'true',
             styleAnswerChips,
             mappedRawProductIds: bannerAdminState.selectedMappedRawProducts.map(product => product.id)
         };
