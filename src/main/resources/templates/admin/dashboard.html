@@ -69,6 +69,478 @@
             background-color: #6c757d;
             border-color: #6c757d;
         }
+        .raw-admin-page {
+            display: grid;
+            gap: 20px;
+        }
+        .raw-admin-lead {
+            margin: -6px 0 0;
+            color: #6b7280;
+            font-size: 0.95rem;
+        }
+        .raw-admin-toolbar-grid {
+            display: grid;
+            grid-template-columns: repeat(12, minmax(0, 1fr));
+            gap: 16px;
+            align-items: flex-end;
+            padding: 20px;
+            background: #f8fafc;
+            border-radius: 16px;
+            border: 1px solid #e2e8f0;
+        }
+        .raw-admin-toolbar-grid label {
+            font-weight: 700;
+            font-size: 0.85rem;
+            color: #475569;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .raw-admin-toolbar-grid .form-select,
+        .raw-admin-toolbar-grid .form-control {
+            border-radius: 10px;
+            border-color: #cbd5e1;
+            padding: 10px 14px;
+            font-size: 0.95rem;
+        }
+        .raw-admin-toolbar-grid .form-select:focus,
+        .raw-admin-toolbar-grid .form-control:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+        .raw-admin-span-2 { grid-column: span 2; }
+        .raw-admin-span-3 { grid-column: span 3; }
+        .raw-admin-span-4 { grid-column: span 4; }
+        .raw-admin-span-5 { grid-column: span 5; }
+        .raw-admin-span-6 { grid-column: span 6; }
+        .raw-admin-span-8 { grid-column: span 8; }
+        .raw-admin-actions-inline {
+            display: flex;
+            gap: 10px;
+            align-items: stretch;
+        }
+        .raw-admin-actions-inline .btn {
+            border-radius: 10px;
+            padding: 10px 16px;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+        .raw-admin-workspace {
+            display: grid;
+            grid-template-columns: minmax(0, 1.6fr) minmax(320px, 1fr);
+            gap: 20px;
+        }
+        .raw-admin-column {
+            display: grid;
+            gap: 20px;
+            align-content: start;
+        }
+        .raw-admin-card .card-body {
+            padding: 18px 20px 20px;
+        }
+        .raw-form-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 14px 16px;
+        }
+        .raw-form-field {
+            min-width: 0;
+        }
+        .raw-form-field--wide {
+            grid-column: 1 / -1;
+        }
+        .raw-form-field--third {
+            grid-column: span 1;
+        }
+        .raw-form-actions {
+            grid-column: 1 / -1;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+            padding-top: 6px;
+        }
+        .raw-admin-note {
+            margin: 0;
+            color: #6b7280;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+        .raw-product-list {
+            display: grid;
+            gap: 20px;
+            margin-top: 24px;
+        }
+        .raw-product-card {
+            border: 1px solid #e2e8f0;
+            border-radius: 20px;
+            background: #ffffff;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            padding: 24px;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        .raw-product-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            border-color: #cbd5e1;
+        }
+        .raw-product-card__top {
+            display: grid;
+            grid-template-columns: auto 120px minmax(0, 1fr) auto;
+            gap: 24px;
+            align-items: start;
+        }
+        .raw-product-checkbox {
+            margin-top: 10px;
+        }
+        .raw-product-checkbox .form-check-input {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            border-radius: 6px;
+        }
+        .raw-product-thumb {
+            width: 120px;
+            height: 120px;
+            border-radius: 16px;
+            overflow: hidden;
+            background: #f1f5f9;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid #f1f5f9;
+            box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.05);
+        }
+        .raw-product-thumb img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+        }
+        .raw-product-card:hover .raw-product-thumb img {
+            transform: scale(1.05);
+        }
+        .raw-product-thumb-empty {
+            color: #94a3b8;
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+        }
+        .raw-product-title-row {
+            display: flex;
+            justify-content: space-between;
+            gap: 16px;
+            align-items: flex-start;
+        }
+        .raw-product-title {
+            margin: 0;
+            font-size: 1.25rem;
+            line-height: 1.4;
+            font-weight: 700;
+            color: #1e293b;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        .raw-product-subtitle {
+            margin-top: 4px;
+            color: #64748b;
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .raw-product-subtitle i {
+            font-size: 0.8rem;
+            opacity: 0.7;
+        }
+        .raw-product-identity-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 12px 20px;
+            margin-top: 16px;
+            padding: 12px 16px;
+            background: #f8fafc;
+            border-radius: 12px;
+        }
+        .raw-meta-item {
+            min-width: 0;
+        }
+        .raw-meta-label {
+            display: block;
+            color: #94a3b8;
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 2px;
+        }
+        .raw-meta-value {
+            color: #334155;
+            font-size: 0.9rem;
+            font-weight: 600;
+            word-break: break-word;
+        }
+        .raw-visibility-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            padding: 6px 14px;
+            border-radius: 10px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+        .raw-visibility-badge.is-exposed {
+            color: #059669;
+            background: #ecfdf5;
+            border: 1px solid #d1fae5;
+        }
+        .raw-visibility-badge.is-hidden {
+            color: #dc2626;
+            background: #fef2f2;
+            border: 1px solid #fee2e2;
+        }
+        .raw-product-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            align-items: stretch;
+        }
+        .raw-product-actions .btn {
+            border-radius: 10px;
+            padding: 8px 16px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        .raw-product-card__body {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 20px;
+            margin-top: 24px;
+            padding-top: 24px;
+            border-top: 1px solid #f1f5f9;
+        }
+        .raw-info-panel {
+            background: #ffffff;
+            min-width: 0;
+        }
+        .raw-info-panel__title {
+            margin: 0 0 16px;
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: #475569;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        .raw-info-panel__title i {
+            color: #94a3b8;
+        }
+        .raw-data-list {
+            display: grid;
+            gap: 10px;
+        }
+        .raw-data-item {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            align-items: center;
+            padding: 4px 0;
+        }
+        .raw-data-item strong {
+            color: #64748b;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+        .raw-data-item span {
+            color: #1e293b;
+            font-size: 0.95rem;
+            font-weight: 700;
+        }
+        .raw-chip-section + .raw-chip-section {
+            margin-top: 20px;
+        }
+        .raw-chip-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        .raw-chip-title {
+            color: #64748b;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+        .raw-chip-stack {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .raw-chip {
+            display: inline-flex;
+            align-items: center;
+            padding: 6px 12px;
+            border-radius: 8px;
+            background: #f1f5f9;
+            color: #475569;
+            font-size: 0.8rem;
+            font-weight: 600;
+            border: 1px solid #e2e8f0;
+        }
+        .raw-chip--muted {
+            background: transparent;
+            color: #94a3b8;
+            border: 1px dashed #cbd5e1;
+        }
+        .raw-link-list {
+            display: grid;
+            gap: 12px;
+        }
+        .raw-link-item {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .raw-link-item strong {
+            color: #64748b;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        .raw-link-item a, .raw-link-item span {
+            color: #3b82f6;
+            font-size: 0.85rem;
+            text-decoration: none;
+            word-break: break-all;
+            font-weight: 500;
+        }
+        .raw-link-item a:hover {
+            text-decoration: underline;
+        }
+        .raw-link-item span {
+            color: #475569;
+        }
+        .raw-product-pagination {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 16px;
+            flex-wrap: wrap;
+            margin-top: 32px;
+            padding: 20px 24px;
+            background: #ffffff;
+            border-radius: 16px;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        }
+        .raw-product-pagination__meta {
+            color: #64748b;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+        .raw-product-pagination__pages {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+        }
+        .raw-product-pagination .btn {
+            border-radius: 10px;
+            padding: 8px 18px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: all 0.2s ease;
+        }
+        .raw-product-page-button {
+            min-width: 40px;
+            padding: 8px 12px !important;
+        }
+        .raw-product-page-button.is-active {
+            background: #0ea5e9;
+            border-color: #0ea5e9;
+            color: #ffffff;
+            box-shadow: 0 10px 20px -16px rgba(14, 165, 233, 0.9);
+        }
+        .raw-product-page-button.is-active:hover {
+            background: #0284c7 !important;
+            border-color: #0284c7 !important;
+            color: #ffffff !important;
+        }
+        .raw-product-page-ellipsis {
+            color: #94a3b8;
+            font-size: 0.85rem;
+            font-weight: 700;
+            padding: 0 2px;
+        }
+        .raw-product-pagination .btn:hover:not(:disabled) {
+            background-color: #f1f5f9;
+            border-color: #cbd5e1;
+            transform: translateY(-1px);
+        }
+        @media (max-width: 1399px) {
+            .raw-product-card__body {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+            .raw-product-identity-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+        @media (max-width: 1199px) {
+            .raw-admin-toolbar-grid,
+            .raw-form-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+            .raw-admin-workspace,
+            .raw-product-card__body {
+                grid-template-columns: 1fr;
+            }
+            .raw-admin-span-2,
+            .raw-admin-span-3,
+            .raw-admin-span-4,
+            .raw-admin-span-5,
+            .raw-admin-span-6,
+            .raw-admin-span-8 {
+                grid-column: span 1;
+            }
+            .raw-form-field--wide {
+                grid-column: auto;
+            }
+        }
+        @media (max-width: 767px) {
+            #content {
+                padding: 20px 16px;
+            }
+            .raw-admin-toolbar-grid,
+            .raw-form-grid,
+            .raw-product-identity-grid {
+                grid-template-columns: 1fr;
+            }
+            .raw-product-card {
+                padding: 14px;
+            }
+            .raw-product-card__top {
+                grid-template-columns: 1fr;
+            }
+            .raw-product-thumb {
+                width: 100%;
+                height: 180px;
+            }
+            .raw-product-actions {
+                flex-direction: row;
+            }
+        }
     </style>
 </head>
 <body>
@@ -390,13 +862,16 @@
     </div>
 
     <!-- RAW 상품 관리 섹션 -->
-    <div id="raw-product-management" class="content-section">
-        <h2>RAW 상품 관리</h2>
-        <div class="card">
+    <div id="raw-product-management" class="content-section raw-admin-page">
+        <div>
+            <h2>RAW 상품 관리</h2>
+            <p class="raw-admin-lead">등록, 수정, 태그 매핑, 노출 제어를 한 화면에서 다루기 쉽게 다시 정리했다.</p>
+        </div>
+        <div class="card raw-admin-card">
             <div class="card-header">RAW 상품 전체 조회</div>
             <div class="card-body">
-                <div class="row g-2 mb-3">
-                    <div class="col-md-4">
+                <div class="raw-admin-toolbar-grid mb-3">
+                    <div class="raw-admin-span-4">
                         <label for="rawFilterCategory" class="form-label">카테고리</label>
                         <select class="form-select" id="rawFilterCategory">
                             <option value="">전체</option>
@@ -408,171 +883,277 @@
                             <option value="ACCESSORY">ACCESSORY</option>
                         </select>
                     </div>
-                    <div class="col-md-3">
+                    <div class="raw-admin-span-3">
                         <label for="rawFilterMinListPrice" class="form-label">최소 가격(listPrice)</label>
                         <input type="number" class="form-control" id="rawFilterMinListPrice" min="0" placeholder="예: 100000">
                     </div>
-                    <div class="col-md-3">
+                    <div class="raw-admin-span-3">
                         <label for="rawFilterMaxListPrice" class="form-label">최대 가격(listPrice)</label>
                         <input type="number" class="form-control" id="rawFilterMaxListPrice" min="0" placeholder="예: 500000">
                     </div>
-                    <div class="col-md-2 d-grid gap-2">
-                        <button id="apply-raw-filters-button" class="btn btn-outline-primary">필터 적용</button>
-                        <button id="reset-raw-filters-button" class="btn btn-outline-secondary">필터 초기화</button>
+                    <div class="raw-admin-span-2 raw-admin-actions-inline">
+                        <button id="apply-raw-filters-button" class="btn btn-outline-primary w-100">필터 적용</button>
+                        <button id="reset-raw-filters-button" class="btn btn-outline-secondary w-100">필터 초기화</button>
                     </div>
                 </div>
-                <button id="get-raw-products-button" class="btn btn-secondary">RAW 상품 목록 보기</button>
-                <div class="row g-2 mt-3">
-                    <div class="col-md-4">
+                <div class="raw-admin-toolbar-grid">
+                    <div class="raw-admin-span-4">
                         <label for="rawBulkExposureValue" class="form-label">선택 상품 노출 여부</label>
                         <select class="form-select" id="rawBulkExposureValue">
                             <option value="true" selected>노출</option>
                             <option value="false">숨김</option>
                         </select>
                     </div>
-                    <div class="col-md-3 d-grid">
-                        <label class="form-label invisible">적용</label>
-                        <button id="raw-bulk-exposure-button" class="btn btn-outline-dark">선택 상품 일괄 적용</button>
+                    <div class="raw-admin-span-3 raw-admin-actions-inline">
+                        <button id="get-raw-products-button" class="btn btn-secondary w-100">RAW 상품 목록 보기</button>
+                        <button id="raw-bulk-exposure-button" class="btn btn-outline-dark w-100">선택 상품 일괄 적용</button>
                     </div>
                 </div>
-                <div id="get-raw-products-result" class="api-result"></div>
+                <div id="get-raw-products-result"></div>
             </div>
         </div>
-        <div class="card">
-            <div class="card-header">RAW 상품 상세 조회</div>
-            <div class="card-body">
-                <form id="raw-product-detail-form">
-                    <div class="mb-3">
-                        <label for="rawProductDetailId" class="form-label">RAW 상품 ID</label>
-                        <input type="number" class="form-control" id="rawProductDetailId" required>
+        <div class="raw-admin-workspace">
+            <div class="raw-admin-column">
+                <div class="card raw-admin-card">
+                    <div class="card-header">RAW 상품 등록</div>
+                    <div class="card-body">
+                        <form id="raw-product-create-form" class="raw-form-grid">
+                            <div class="raw-form-field">
+                                <label for="rawCreateSource" class="form-label">source</label>
+                                <input type="text" class="form-control" id="rawCreateSource" placeholder="예: soozip, ohouse" required>
+                            </div>
+                            <div class="raw-form-field">
+                                <label for="rawCreateCategory" class="form-label">category</label>
+                                <select class="form-select" id="rawCreateCategory" required>
+                                    <option value="" selected disabled>카테고리를 선택하세요...</option>
+                                    <option value="MINI_ELECTRONICS">MINI_ELECTRONICS</option>
+                                    <option value="FURNITURE">FURNITURE</option>
+                                    <option value="LIGHTING">LIGHTING</option>
+                                    <option value="LIVING_GOODS">LIVING_GOODS</option>
+                                    <option value="HOME_FABRIC">HOME_FABRIC</option>
+                                    <option value="ACCESSORY">ACCESSORY</option>
+                                </select>
+                            </div>
+                            <div class="raw-form-field">
+                                <label for="rawCreateProductId" class="form-label">productId</label>
+                                <input type="number" class="form-control" id="rawCreateProductId" required>
+                            </div>
+                            <div class="raw-form-field">
+                                <label for="rawCreateProductMallName" class="form-label">productMallName</label>
+                                <input type="text" class="form-control" id="rawCreateProductMallName">
+                            </div>
+                            <div class="raw-form-field raw-form-field--wide">
+                                <label for="rawCreateProductName" class="form-label">productName</label>
+                                <input type="text" class="form-control" id="rawCreateProductName" required>
+                            </div>
+                            <div class="raw-form-field raw-form-field--wide">
+                                <label for="rawCreateProductImageUrl" class="form-label">productImageUrl</label>
+                                <input type="url" class="form-control" id="rawCreateProductImageUrl" required>
+                            </div>
+                            <div class="raw-form-field raw-form-field--wide">
+                                <label for="rawCreateProductSiteUrl" class="form-label">productSiteUrl</label>
+                                <input type="url" class="form-control" id="rawCreateProductSiteUrl" required>
+                            </div>
+                            <div class="raw-form-field">
+                                <label for="rawCreateBrand" class="form-label">brand</label>
+                                <input type="text" class="form-control" id="rawCreateBrand">
+                            </div>
+                            <div class="raw-form-field">
+                                <label for="rawCreateIsExposed" class="form-label">isExposed</label>
+                                <select class="form-select" id="rawCreateIsExposed">
+                                    <option value="true" selected>노출</option>
+                                    <option value="false">숨김</option>
+                                </select>
+                            </div>
+                            <div class="raw-form-field">
+                                <label for="rawCreateListPrice" class="form-label">listPrice</label>
+                                <input type="number" class="form-control" id="rawCreateListPrice">
+                            </div>
+                            <div class="raw-form-field">
+                                <label for="rawCreateDiscountRate" class="form-label">discountRate</label>
+                                <input type="number" class="form-control" id="rawCreateDiscountRate">
+                            </div>
+                            <div class="raw-form-field">
+                                <label for="rawCreateDiscountPrice" class="form-label">discountPrice</label>
+                                <input type="number" class="form-control" id="rawCreateDiscountPrice">
+                            </div>
+                            <div class="raw-form-field">
+                                <label for="rawCreateBaseShippingFee" class="form-label">baseShippingFee</label>
+                                <input type="number" class="form-control" id="rawCreateBaseShippingFee">
+                            </div>
+                            <div class="raw-form-field">
+                                <label for="rawCreateFreeShippingCondition" class="form-label">freeShippingCondition</label>
+                                <input type="number" class="form-control" id="rawCreateFreeShippingCondition">
+                            </div>
+                            <div class="raw-form-field">
+                                <label for="rawCreateFetchedAt" class="form-label">fetchedAt</label>
+                                <input type="datetime-local" class="form-control" id="rawCreateFetchedAt">
+                            </div>
+                            <div class="raw-form-actions">
+                                <button type="submit" class="btn btn-primary">RAW 상품 등록</button>
+                                <p class="raw-admin-note">긴 URL과 상품명은 넓게, 숫자/상태 필드는 나란히 배치해 입력 흐름을 줄였다.</p>
+                            </div>
+                        </form>
+                        <div id="raw-product-create-result" class="api-result"></div>
                     </div>
-                    <button type="submit" class="btn btn-info">상세 조회</button>
-                </form>
-                <div class="form-text mt-2">상세 조회 시 현재 값이 수정 폼에도 자동으로 채워집니다.</div>
-                <div id="raw-product-detail-result" class="api-result"></div>
+                </div>
+                <div class="card raw-admin-card">
+                    <div class="card-header">RAW 상품 수정</div>
+                    <div class="card-body">
+                        <form id="raw-product-update-form" class="raw-form-grid">
+                            <div class="raw-form-field">
+                                <label for="rawUpdateId" class="form-label">수정 대상 RAW 상품 ID</label>
+                                <input type="number" class="form-control" id="rawUpdateId" required>
+                            </div>
+                            <div class="raw-form-field">
+                                <label for="rawUpdateSource" class="form-label">source</label>
+                                <input type="text" class="form-control" id="rawUpdateSource">
+                            </div>
+                            <div class="raw-form-field">
+                                <label for="rawUpdateCategory" class="form-label">category</label>
+                                <select class="form-select" id="rawUpdateCategory">
+                                    <option value="" selected>미변경</option>
+                                    <option value="MINI_ELECTRONICS">MINI_ELECTRONICS</option>
+                                    <option value="FURNITURE">FURNITURE</option>
+                                    <option value="LIGHTING">LIGHTING</option>
+                                    <option value="LIVING_GOODS">LIVING_GOODS</option>
+                                    <option value="HOME_FABRIC">HOME_FABRIC</option>
+                                    <option value="ACCESSORY">ACCESSORY</option>
+                                </select>
+                            </div>
+                            <div class="raw-form-field">
+                                <label for="rawUpdateProductId" class="form-label">productId</label>
+                                <input type="number" class="form-control" id="rawUpdateProductId">
+                            </div>
+                            <div class="raw-form-field raw-form-field--wide">
+                                <label for="rawUpdateProductName" class="form-label">productName</label>
+                                <input type="text" class="form-control" id="rawUpdateProductName">
+                            </div>
+                            <div class="raw-form-field raw-form-field--wide">
+                                <label for="rawUpdateProductImageUrl" class="form-label">productImageUrl</label>
+                                <input type="url" class="form-control" id="rawUpdateProductImageUrl">
+                            </div>
+                            <div class="raw-form-field raw-form-field--wide">
+                                <label for="rawUpdateProductSiteUrl" class="form-label">productSiteUrl</label>
+                                <input type="url" class="form-control" id="rawUpdateProductSiteUrl">
+                            </div>
+                            <div class="raw-form-field">
+                                <label for="rawUpdateProductMallName" class="form-label">productMallName</label>
+                                <input type="text" class="form-control" id="rawUpdateProductMallName">
+                            </div>
+                            <div class="raw-form-field">
+                                <label for="rawUpdateBrand" class="form-label">brand</label>
+                                <input type="text" class="form-control" id="rawUpdateBrand">
+                            </div>
+                            <div class="raw-form-field">
+                                <label for="rawUpdateIsExposed" class="form-label">isExposed</label>
+                                <select class="form-select" id="rawUpdateIsExposed">
+                                    <option value="" selected>미변경</option>
+                                    <option value="true">노출</option>
+                                    <option value="false">숨김</option>
+                                </select>
+                            </div>
+                            <div class="raw-form-field">
+                                <label for="rawUpdateFetchedAt" class="form-label">fetchedAt</label>
+                                <input type="datetime-local" class="form-control" id="rawUpdateFetchedAt">
+                            </div>
+                            <div class="raw-form-field">
+                                <label for="rawUpdateListPrice" class="form-label">listPrice</label>
+                                <input type="number" class="form-control" id="rawUpdateListPrice">
+                            </div>
+                            <div class="raw-form-field">
+                                <label for="rawUpdateDiscountRate" class="form-label">discountRate</label>
+                                <input type="number" class="form-control" id="rawUpdateDiscountRate">
+                            </div>
+                            <div class="raw-form-field">
+                                <label for="rawUpdateDiscountPrice" class="form-label">discountPrice</label>
+                                <input type="number" class="form-control" id="rawUpdateDiscountPrice">
+                            </div>
+                            <div class="raw-form-field">
+                                <label for="rawUpdateBaseShippingFee" class="form-label">baseShippingFee</label>
+                                <input type="number" class="form-control" id="rawUpdateBaseShippingFee">
+                            </div>
+                            <div class="raw-form-field">
+                                <label for="rawUpdateFreeShippingCondition" class="form-label">freeShippingCondition</label>
+                                <input type="number" class="form-control" id="rawUpdateFreeShippingCondition">
+                            </div>
+                            <div class="raw-form-actions">
+                                <button type="submit" class="btn btn-warning">RAW 상품 수정</button>
+                                <p class="raw-admin-note">상세 조회 후 폼 자동 채우기를 그대로 유지하면서, 수정 필드만 넓게 재배치했다.</p>
+                            </div>
+                        </form>
+                        <div id="raw-product-update-result" class="api-result"></div>
+                    </div>
+                </div>
             </div>
-        </div>
-        <div class="card">
-            <div class="card-header">RAW 상품 등록</div>
-            <div class="card-body">
-                <form id="raw-product-create-form">
-                    <div class="mb-3"><label for="rawCreateSource" class="form-label">source</label><input type="text" class="form-control" id="rawCreateSource" placeholder="예: soozip, ohouse" required></div>
-                    <div class="mb-3">
-                        <label for="rawCreateCategory" class="form-label">category</label>
-                        <select class="form-select" id="rawCreateCategory" required>
-                            <option value="" selected disabled>카테고리를 선택하세요...</option>
-                            <option value="MINI_ELECTRONICS">MINI_ELECTRONICS</option>
-                            <option value="FURNITURE">FURNITURE</option>
-                            <option value="LIGHTING">LIGHTING</option>
-                            <option value="LIVING_GOODS">LIVING_GOODS</option>
-                            <option value="HOME_FABRIC">HOME_FABRIC</option>
-                            <option value="ACCESSORY">ACCESSORY</option>
-                        </select>
+            <div class="raw-admin-column">
+                <div class="card raw-admin-card">
+                    <div class="card-header">RAW 상품 상세 조회</div>
+                    <div class="card-body">
+                        <form id="raw-product-detail-form" class="raw-form-grid">
+                            <div class="raw-form-field raw-form-field--wide">
+                                <label for="rawProductDetailId" class="form-label">RAW 상품 ID</label>
+                                <input type="number" class="form-control" id="rawProductDetailId" required>
+                            </div>
+                            <div class="raw-form-actions">
+                                <button type="submit" class="btn btn-info">상세 조회</button>
+                                <p class="raw-admin-note">상세 조회 시 현재 값이 수정 폼과 태그 매핑 폼에 자동으로 채워진다.</p>
+                            </div>
+                        </form>
+                        <div id="raw-product-detail-result" class="api-result"></div>
                     </div>
-                    <div class="mb-3"><label for="rawCreateProductId" class="form-label">productId</label><input type="number" class="form-control" id="rawCreateProductId" required></div>
-                    <div class="mb-3"><label for="rawCreateProductImageUrl" class="form-label">productImageUrl</label><input type="url" class="form-control" id="rawCreateProductImageUrl" required></div>
-                    <div class="mb-3"><label for="rawCreateProductSiteUrl" class="form-label">productSiteUrl</label><input type="url" class="form-control" id="rawCreateProductSiteUrl" required></div>
-                    <div class="mb-3"><label for="rawCreateProductName" class="form-label">productName</label><input type="text" class="form-control" id="rawCreateProductName" required></div>
-                    <div class="mb-3"><label for="rawCreateProductMallName" class="form-label">productMallName</label><input type="text" class="form-control" id="rawCreateProductMallName"></div>
-                    <div class="mb-3"><label for="rawCreateBrand" class="form-label">brand</label><input type="text" class="form-control" id="rawCreateBrand"></div>
-                    <div class="mb-3"><label for="rawCreateListPrice" class="form-label">listPrice</label><input type="number" class="form-control" id="rawCreateListPrice"></div>
-                    <div class="mb-3"><label for="rawCreateDiscountRate" class="form-label">discountRate</label><input type="number" class="form-control" id="rawCreateDiscountRate"></div>
-                    <div class="mb-3"><label for="rawCreateDiscountPrice" class="form-label">discountPrice</label><input type="number" class="form-control" id="rawCreateDiscountPrice"></div>
-                    <div class="mb-3"><label for="rawCreateBaseShippingFee" class="form-label">baseShippingFee</label><input type="number" class="form-control" id="rawCreateBaseShippingFee"></div>
-                    <div class="mb-3"><label for="rawCreateFreeShippingCondition" class="form-label">freeShippingCondition</label><input type="number" class="form-control" id="rawCreateFreeShippingCondition"></div>
-                    <div class="mb-3">
-                        <label for="rawCreateIsExposed" class="form-label">isExposed</label>
-                        <select class="form-select" id="rawCreateIsExposed">
-                            <option value="true" selected>노출</option>
-                            <option value="false">숨김</option>
-                        </select>
+                </div>
+                <div class="card raw-admin-card">
+                    <div class="card-header">RAW 상품 가구 태그 매핑 관리</div>
+                    <div class="card-body">
+                        <form id="raw-product-furniture-tag-form" class="raw-form-grid">
+                            <div class="raw-form-field">
+                                <label for="rawFurnitureTagRawProductId" class="form-label">RAW 상품 ID</label>
+                                <input type="number" class="form-control" id="rawFurnitureTagRawProductId" required>
+                            </div>
+                            <div class="raw-form-field">
+                                <label for="rawFurnitureTagMappingId" class="form-label">매핑 ID (수정/삭제 시)</label>
+                                <input type="number" class="form-control" id="rawFurnitureTagMappingId">
+                            </div>
+                            <div class="raw-form-field raw-form-field--wide">
+                                <label for="rawFurnitureTagId" class="form-label">furnitureTagId</label>
+                                <input type="number" class="form-control" id="rawFurnitureTagId" required>
+                            </div>
+                            <div class="raw-form-actions">
+                                <button type="button" id="raw-furniture-tag-create-button" class="btn btn-primary">매핑 추가</button>
+                                <button type="button" id="raw-furniture-tag-update-button" class="btn btn-warning">매핑 수정</button>
+                                <button type="button" id="raw-furniture-tag-delete-button" class="btn btn-danger">매핑 삭제</button>
+                            </div>
+                        </form>
+                        <div id="raw-product-furniture-tag-result" class="api-result"></div>
                     </div>
-                    <div class="mb-3"><label for="rawCreateFetchedAt" class="form-label">fetchedAt</label><input type="datetime-local" class="form-control" id="rawCreateFetchedAt"></div>
-                    <button type="submit" class="btn btn-primary">RAW 상품 등록</button>
-                </form>
-                <div id="raw-product-create-result" class="api-result"></div>
-            </div>
-        </div>
-        <div class="card">
-            <div class="card-header">RAW 상품 수정</div>
-            <div class="card-body">
-                <form id="raw-product-update-form">
-                    <div class="mb-3"><label for="rawUpdateId" class="form-label">수정 대상 RAW 상품 ID</label><input type="number" class="form-control" id="rawUpdateId" required></div>
-                    <div class="mb-3"><label for="rawUpdateSource" class="form-label">source</label><input type="text" class="form-control" id="rawUpdateSource"></div>
-                    <div class="mb-3">
-                        <label for="rawUpdateCategory" class="form-label">category</label>
-                        <select class="form-select" id="rawUpdateCategory">
-                            <option value="" selected>미변경</option>
-                            <option value="MINI_ELECTRONICS">MINI_ELECTRONICS</option>
-                            <option value="FURNITURE">FURNITURE</option>
-                            <option value="LIGHTING">LIGHTING</option>
-                            <option value="LIVING_GOODS">LIVING_GOODS</option>
-                            <option value="HOME_FABRIC">HOME_FABRIC</option>
-                            <option value="ACCESSORY">ACCESSORY</option>
-                        </select>
+                </div>
+                <div class="card raw-admin-card">
+                    <div class="card-header">RAW 상품 삭제</div>
+                    <div class="card-body">
+                        <form id="raw-product-delete-form" class="raw-form-grid">
+                            <div class="raw-form-field raw-form-field--wide">
+                                <label for="rawDeleteId" class="form-label">삭제할 RAW 상품 ID</label>
+                                <input type="number" class="form-control" id="rawDeleteId" required>
+                            </div>
+                            <div class="raw-form-actions">
+                                <button type="submit" class="btn btn-danger">RAW 상품 삭제</button>
+                            </div>
+                        </form>
+                        <div id="raw-product-delete-result" class="api-result"></div>
                     </div>
-                    <div class="mb-3"><label for="rawUpdateProductId" class="form-label">productId</label><input type="number" class="form-control" id="rawUpdateProductId"></div>
-                    <div class="mb-3"><label for="rawUpdateProductImageUrl" class="form-label">productImageUrl</label><input type="url" class="form-control" id="rawUpdateProductImageUrl"></div>
-                    <div class="mb-3"><label for="rawUpdateProductSiteUrl" class="form-label">productSiteUrl</label><input type="url" class="form-control" id="rawUpdateProductSiteUrl"></div>
-                    <div class="mb-3"><label for="rawUpdateProductName" class="form-label">productName</label><input type="text" class="form-control" id="rawUpdateProductName"></div>
-                    <div class="mb-3"><label for="rawUpdateProductMallName" class="form-label">productMallName</label><input type="text" class="form-control" id="rawUpdateProductMallName"></div>
-                    <div class="mb-3"><label for="rawUpdateBrand" class="form-label">brand</label><input type="text" class="form-control" id="rawUpdateBrand"></div>
-                    <div class="mb-3"><label for="rawUpdateListPrice" class="form-label">listPrice</label><input type="number" class="form-control" id="rawUpdateListPrice"></div>
-                    <div class="mb-3"><label for="rawUpdateDiscountRate" class="form-label">discountRate</label><input type="number" class="form-control" id="rawUpdateDiscountRate"></div>
-                    <div class="mb-3"><label for="rawUpdateDiscountPrice" class="form-label">discountPrice</label><input type="number" class="form-control" id="rawUpdateDiscountPrice"></div>
-                    <div class="mb-3"><label for="rawUpdateBaseShippingFee" class="form-label">baseShippingFee</label><input type="number" class="form-control" id="rawUpdateBaseShippingFee"></div>
-                    <div class="mb-3"><label for="rawUpdateFreeShippingCondition" class="form-label">freeShippingCondition</label><input type="number" class="form-control" id="rawUpdateFreeShippingCondition"></div>
-                    <div class="mb-3">
-                        <label for="rawUpdateIsExposed" class="form-label">isExposed</label>
-                        <select class="form-select" id="rawUpdateIsExposed">
-                            <option value="" selected>미변경</option>
-                            <option value="true">노출</option>
-                            <option value="false">숨김</option>
-                        </select>
-                    </div>
-                    <div class="mb-3"><label for="rawUpdateFetchedAt" class="form-label">fetchedAt</label><input type="datetime-local" class="form-control" id="rawUpdateFetchedAt"></div>
-                    <button type="submit" class="btn btn-warning">RAW 상품 수정</button>
-                </form>
-                <div id="raw-product-update-result" class="api-result"></div>
-            </div>
-        </div>
-        <div class="card">
-            <div class="card-header">RAW 상품 가구 태그 매핑 관리</div>
-            <div class="card-body">
-                <form id="raw-product-furniture-tag-form">
-                    <div class="mb-3"><label for="rawFurnitureTagRawProductId" class="form-label">RAW 상품 ID</label><input type="number" class="form-control" id="rawFurnitureTagRawProductId" required></div>
-                    <div class="mb-3"><label for="rawFurnitureTagMappingId" class="form-label">매핑 ID (수정/삭제 시)</label><input type="number" class="form-control" id="rawFurnitureTagMappingId"></div>
-                    <div class="mb-3"><label for="rawFurnitureTagId" class="form-label">furnitureTagId</label><input type="number" class="form-control" id="rawFurnitureTagId" required></div>
-                    <div class="d-flex gap-2">
-                        <button type="button" id="raw-furniture-tag-create-button" class="btn btn-primary">매핑 추가</button>
-                        <button type="button" id="raw-furniture-tag-update-button" class="btn btn-warning">매핑 수정</button>
-                        <button type="button" id="raw-furniture-tag-delete-button" class="btn btn-danger">매핑 삭제</button>
-                    </div>
-                </form>
-                <div id="raw-product-furniture-tag-result" class="api-result"></div>
-            </div>
-        </div>
-        <div class="card">
-            <div class="card-header">RAW 상품 삭제</div>
-            <div class="card-body">
-                <form id="raw-product-delete-form">
-                    <div class="mb-3">
-                        <label for="rawDeleteId" class="form-label">삭제할 RAW 상품 ID</label>
-                        <input type="number" class="form-control" id="rawDeleteId" required>
-                    </div>
-                    <button type="submit" class="btn btn-danger">RAW 상품 삭제</button>
-                </form>
-                <div id="raw-product-delete-result" class="api-result"></div>
+                </div>
             </div>
         </div>
     </div>
+</div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
 <script>
     let rawProductsPageState = {
         page: 0,
-        size: 50,
+        size: 10,
         totalPages: 0,
         hasNext: false,
         hasPrevious: false
@@ -1209,6 +1790,156 @@
             .join('\n');
     }
 
+    function formatRawProductNumber(value) {
+        if (value == null || value === '') {
+            return '-';
+        }
+        const parsed = Number(value);
+        if (Number.isNaN(parsed)) {
+            return String(value);
+        }
+        return parsed.toLocaleString('ko-KR');
+    }
+
+    function buildRawChipSection(title, items, emptyText, sectionId) {
+        const labels = Array.isArray(items) ? items.filter(Boolean) : [];
+        const collapsed = labels.length > 6;
+        const chips = labels.length === 0
+            ? `<span class="raw-chip raw-chip--muted">${emptyText}</span>`
+            : labels.map(item => `<span class="raw-chip">${item}</span>`).join('');
+        const toggleButton = collapsed
+            ? `<button type="button" class="btn btn-sm btn-link p-0" onclick="toggleRawChipSection('${sectionId}', this)">더보기</button>`
+            : '';
+        return `
+            <div class="raw-chip-section">
+                <div class="raw-chip-header">
+                    <span class="raw-chip-title">${title}</span>
+                    ${toggleButton}
+                </div>
+                <div id="${sectionId}" class="raw-chip-stack ${collapsed ? 'is-collapsed' : ''}">${chips}</div>
+            </div>
+        `;
+    }
+
+    function toggleRawChipSection(sectionId, button) {
+        const section = document.getElementById(sectionId);
+        if (!section) {
+            return;
+        }
+        const collapsed = section.classList.toggle('is-collapsed');
+        button.textContent = collapsed ? '더보기' : '접기';
+    }
+
+    function buildRawProductCardHtml(product) {
+        const rawProductId = Number(product.id);
+        const imageUrl = parseStringValue(product.productImageUrl);
+        const siteUrl = parseStringValue(product.productSiteUrl);
+        const imageBlock = imageUrl
+            ? `${siteUrl ? `<a href="${siteUrl}" target="_blank" rel="noopener noreferrer">` : ''}<img src="${imageUrl}" alt="${product.productName || 'RAW 상품'} 이미지" loading="lazy">${siteUrl ? '</a>' : ''}`
+            : '<span class="raw-product-thumb-empty">NO IMAGE</span>';
+        
+        const colorLabels = Array.isArray(product.colors)
+            ? product.colors.map(color => color.clientColorName || color.rawColorName || `ID:${color.id}`)
+            : [];
+        const tagLabels = Array.isArray(product.furnitureTags)
+            ? product.furnitureTags.map(tag => `${tag.furnitureNameKr || '-'} / ${tag.tagNameKr || '-'} (#${tag.furnitureTagId})`)
+            : [];
+
+        return `
+            <article class="raw-product-card">
+                <div class="raw-product-card__top">
+                    <div class="raw-product-checkbox">
+                        <input type="checkbox" class="form-check-input raw-product-select-checkbox" 
+                               data-raw-product-id="${Number.isNaN(rawProductId) ? '' : rawProductId}" 
+                               ${selectedRawProductIds.has(rawProductId) ? 'checked' : ''} 
+                               ${Number.isNaN(rawProductId) ? 'disabled' : ''}>
+                    </div>
+                    <div class="raw-product-thumb">${imageBlock}</div>
+                    <div>
+                        <div class="raw-product-title-row">
+                            <div>
+                                <h3 class="raw-product-title">${product.productName || '이름 없음'}</h3>
+                                <div class="raw-product-subtitle">
+                                    <i class="fas fa-store"></i> <span>${product.productMallName || '-'}</span>
+                                    <span class="mx-1">·</span>
+                                    <i class="fas fa-tag"></i> <span>${product.brand || '-'}</span>
+                                </div>
+                            </div>
+                            <span class="raw-visibility-badge ${product.isExposed ? 'is-exposed' : 'is-hidden'}">
+                                <i class="fas ${product.isExposed ? 'fa-eye' : 'fa-eye-slash'}"></i>
+                                ${product.isExposed ? '노출 중' : '숨김'}
+                            </span>
+                        </div>
+                        <div class="raw-product-identity-grid">
+                            <div class="raw-meta-item">
+                                <span class="raw-meta-label">System ID</span>
+                                <span class="raw-meta-value">#${product.id ?? '-'}</span>
+                            </div>
+                            <div class="raw-meta-item">
+                                <span class="raw-meta-label">Source</span>
+                                <span class="raw-meta-value">${product.source || '-'}</span>
+                            </div>
+                            <div class="raw-meta-item">
+                                <span class="raw-meta-label">Category</span>
+                                <span class="raw-meta-value">${product.category || '-'}</span>
+                            </div>
+                            <div class="raw-meta-item">
+                                <span class="raw-meta-label">External ID</span>
+                                <span class="raw-meta-value">${product.productId ?? '-'}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="raw-product-actions">
+                        <button type="button" class="btn btn-info raw-product-detail-button" 
+                                data-raw-product-id="${Number.isNaN(rawProductId) ? '' : rawProductId}" 
+                                ${Number.isNaN(rawProductId) ? 'disabled' : ''}>
+                            <i class="fas fa-search"></i> 상세
+                        </button>
+                        <button type="button" class="btn btn-danger raw-product-delete-button" 
+                                data-raw-product-id="${Number.isNaN(rawProductId) ? '' : rawProductId}" 
+                                ${Number.isNaN(rawProductId) ? 'disabled' : ''}>
+                            <i class="fas fa-trash-alt"></i> 삭제
+                        </button>
+                    </div>
+                </div>
+                <div class="raw-product-card__body">
+                    <section class="raw-info-panel">
+                        <h4 class="raw-info-panel__title"><i class="fas fa-won-sign"></i> 가격 및 배송</h4>
+                        <div class="raw-data-list">
+                            <div class="raw-data-item"><strong>정상가</strong><span>${formatRawProductNumber(product.listPrice)}원</span></div>
+                            <div class="raw-data-item"><strong>할인율</strong><span>${product.discountRate || 0}%</span></div>
+                            <div class="raw-data-item"><strong>판매가</strong><span>${formatRawProductNumber(product.discountPrice)}원</span></div>
+                            <div class="raw-data-item"><strong>기본 배송비</strong><span>${formatRawProductNumber(product.baseShippingFee)}원</span></div>
+                            <div class="raw-data-item"><strong>무료배송 조건</strong><span>${formatRawProductNumber(product.freeShippingCondition)}원 이상</span></div>
+                        </div>
+                    </section>
+                    <section class="raw-info-panel">
+                        <h4 class="raw-info-panel__title"><i class="fas fa-palette"></i> 속성 및 태그</h4>
+                        ${buildRawChipSection('보유 색상', colorLabels, '등록된 색상 없음', `raw-colors-${product.id}`)}
+                        ${buildRawChipSection('가구 태그 매핑', tagLabels, '매핑된 태그 없음', `raw-tags-${product.id}`)}
+                    </section>
+                    <section class="raw-info-panel">
+                        <h4 class="raw-info-panel__title"><i class="fas fa-link"></i> 링크 및 메타</h4>
+                        <div class="raw-link-list">
+                            <div class="raw-link-item">
+                                <strong>이미지 URL</strong>
+                                ${imageUrl ? `<a href="${imageUrl}" target="_blank" rel="noopener noreferrer">${imageUrl}</a>` : '<span>없음</span>'}
+                            </div>
+                            <div class="raw-link-item">
+                                <strong>판매 사이트</strong>
+                                ${siteUrl ? `<a href="${siteUrl}" target="_blank" rel="noopener noreferrer">${siteUrl}</a>` : '<span>없음</span>'}
+                            </div>
+                            <div class="raw-link-item">
+                                <strong>마지막 수집일</strong>
+                                <span>${formatRawProductDateTime(product.fetchedAt)}</span>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+            </article>
+        `;
+    }
+
     function displayRawProductsAsTable(data, resultDiv) {
         const payload = data && data.data ? data.data : {};
         const products = Array.isArray(payload.products) ? payload.products : [];
@@ -1235,132 +1966,95 @@
 
         resultDiv.innerHTML = '';
 
-        const tableWrapper = document.createElement('div');
-        tableWrapper.className = 'table-responsive';
+        const list = document.createElement('div');
+        list.className = 'raw-product-list';
+        list.innerHTML = products.map(buildRawProductCardHtml).join('');
+        resultDiv.appendChild(list);
 
-        const table = document.createElement('table');
-        table.className = 'table table-hover align-middle';
-
-        const thead = document.createElement('thead');
-        const headRow = document.createElement('tr');
-        [
-            '',
-            'ID',
-            '이미지',
-            'source',
-            'category',
-            'productId',
-            '상품명',
-            '몰명',
-            'brand',
-            'listPrice',
-            'discountRate',
-            'discountPrice',
-            'baseShippingFee',
-            'freeShippingCondition',
-            '노출',
-            'productImageUrl',
-            'productSiteUrl',
-            '색상',
-            '가구 태그',
-            'fetchedAt',
-            '작업'
-        ].forEach(header => {
-            const th = document.createElement('th');
-            th.textContent = header;
-            headRow.appendChild(th);
-        });
-        thead.appendChild(headRow);
-
-        const tbody = document.createElement('tbody');
-
-        products.forEach(product => {
-            const row = document.createElement('tr');
-            const rawProductId = Number(product.id);
-
-            const checkboxCell = document.createElement('td');
-            const checkbox = document.createElement('input');
-            checkbox.type = 'checkbox';
-            checkbox.className = 'form-check-input';
-            checkbox.checked = selectedRawProductIds.has(rawProductId);
-            checkbox.disabled = Number.isNaN(rawProductId);
+        list.querySelectorAll('.raw-product-select-checkbox').forEach(checkbox => {
             checkbox.addEventListener('change', event => {
+                const rawProductId = Number(event.target.dataset.rawProductId);
+                if (Number.isNaN(rawProductId)) {
+                    return;
+                }
                 if (event.target.checked) {
                     selectedRawProductIds.add(rawProductId);
                 } else {
                     selectedRawProductIds.delete(rawProductId);
                 }
             });
-            checkboxCell.appendChild(checkbox);
-            row.appendChild(checkboxCell);
-
-            appendCell(row, product.id);
-            appendImageCell(row, product.productImageUrl, product.productName, product.productSiteUrl);
-            appendCell(row, product.source);
-            appendCell(row, product.category);
-            appendCell(row, product.productId);
-            appendCell(row, product.productName);
-            appendCell(row, product.productMallName);
-            appendCell(row, product.brand);
-            appendCell(row, product.listPrice);
-            appendCell(row, product.discountRate);
-            appendCell(row, product.discountPrice);
-            appendCell(row, product.baseShippingFee);
-            appendCell(row, product.freeShippingCondition);
-            appendCell(row, product.isExposed ? '노출' : '숨김');
-            appendLinkCell(row, product.productImageUrl, '이미지 링크');
-            appendLinkCell(row, product.productSiteUrl, '상품 링크');
-            appendCell(row, renderRawProductColorSummary(product.colors));
-            appendCell(row, renderRawProductFurnitureTagSummary(product.furnitureTags));
-            appendCell(row, product.fetchedAt);
-
-            const actionCell = document.createElement('td');
-            const detailButton = document.createElement('button');
-            detailButton.className = 'btn btn-sm btn-info me-1';
-            detailButton.textContent = '상세';
-            detailButton.disabled = Number.isNaN(rawProductId);
-            detailButton.addEventListener('click', () => loadRawProductDetail(rawProductId));
-
-            const deleteButton = document.createElement('button');
-            deleteButton.className = 'btn btn-sm btn-danger';
-            deleteButton.textContent = '삭제';
-            deleteButton.disabled = Number.isNaN(rawProductId);
-            deleteButton.addEventListener('click', () => deleteRawProductById(rawProductId));
-
-            actionCell.appendChild(detailButton);
-            actionCell.appendChild(deleteButton);
-            row.appendChild(actionCell);
-            tbody.appendChild(row);
         });
 
-        table.appendChild(thead);
-        table.appendChild(tbody);
-        tableWrapper.appendChild(table);
-        resultDiv.appendChild(tableWrapper);
+        list.querySelectorAll('.raw-product-detail-button').forEach(button => {
+            button.addEventListener('click', () => {
+                const rawProductId = Number(button.dataset.rawProductId);
+                if (!Number.isNaN(rawProductId)) {
+                    loadRawProductDetail(rawProductId);
+                }
+            });
+        });
 
-        const meta = document.createElement('div');
-        meta.className = 'mt-2 text-muted';
-        meta.textContent = `page=${page + 1}/${Math.max(totalPages, 1)}, size=${size}, total=${totalElements}`;
-        resultDiv.appendChild(meta);
+        list.querySelectorAll('.raw-product-delete-button').forEach(button => {
+            button.addEventListener('click', () => {
+                const rawProductId = Number(button.dataset.rawProductId);
+                if (!Number.isNaN(rawProductId)) {
+                    deleteRawProductById(rawProductId);
+                }
+            });
+        });
 
+        const pageButtons = buildRawProductPaginationButtons(page, totalPages);
         const pagination = document.createElement('div');
-        pagination.className = 'd-flex align-items-center gap-2 mt-2';
-
-        const prevButton = document.createElement('button');
-        prevButton.className = 'btn btn-outline-secondary btn-sm';
-        prevButton.textContent = '이전';
-        prevButton.disabled = !hasPrevious;
-        prevButton.addEventListener('click', () => fetchRawProducts(page - 1, size));
-
-        const nextButton = document.createElement('button');
-        nextButton.className = 'btn btn-outline-secondary btn-sm';
-        nextButton.textContent = '다음';
-        nextButton.disabled = !hasNext;
-        nextButton.addEventListener('click', () => fetchRawProducts(page + 1, size));
-
-        pagination.appendChild(prevButton);
-        pagination.appendChild(nextButton);
+        pagination.className = 'raw-product-pagination';
+        pagination.innerHTML = `
+            <div class="raw-product-pagination__meta">page=${page + 1}/${Math.max(totalPages, 1)} · size=${size} · total=${totalElements}</div>
+            <div class="raw-product-pagination__pages">
+                ${pageButtons}
+            </div>
+        `;
         resultDiv.appendChild(pagination);
+
+        pagination.querySelectorAll('.raw-product-page-button').forEach(button => {
+            button.addEventListener('click', () => {
+                const targetPage = Number(button.dataset.page);
+                if (!Number.isNaN(targetPage) && targetPage !== page) {
+                    fetchRawProducts(targetPage, size);
+                }
+            });
+        });
+    }
+
+    function buildRawProductPaginationButtons(currentPage, totalPages) {
+        const normalizedTotalPages = Math.max(totalPages, 1);
+        const pages = [];
+
+        for (let pageIndex = 0; pageIndex < normalizedTotalPages; pageIndex += 1) {
+            const isBoundary = pageIndex === 0 || pageIndex === normalizedTotalPages - 1;
+            const isNearCurrent = Math.abs(pageIndex - currentPage) <= 2;
+            if (isBoundary || isNearCurrent) {
+                pages.push(pageIndex);
+            }
+        }
+
+        const uniquePages = [...new Set(pages)].sort((left, right) => left - right);
+        let previousPage = null;
+
+        return uniquePages.map(pageIndex => {
+            const pieces = [];
+            if (previousPage !== null && pageIndex - previousPage > 1) {
+                pieces.push('<span class="raw-product-page-ellipsis">...</span>');
+            }
+            pieces.push(`
+                <button
+                    type="button"
+                    class="btn btn-outline-secondary btn-sm raw-product-page-button ${pageIndex === currentPage ? 'is-active' : ''}"
+                    data-page="${pageIndex}"
+                    ${pageIndex === currentPage ? 'disabled' : ''}
+                >${pageIndex + 1}</button>
+            `);
+            previousPage = pageIndex;
+            return pieces.join('');
+        }).join('');
     }
 
     function displayTagsAsTable(data, resultDiv) {
