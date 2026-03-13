@@ -27,13 +27,13 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/admin/banners")
-@Tag(name = "어드민 스타일 배너 API")
+@Tag(name = "어드민 배너 API")
 public class AdminBannerController {
 
     private final AdminBannerService adminBannerService;
 
     @PostMapping("/image-upload-url")
-    @Operation(summary = "스타일 배너 이미지 업로드용 presigned url 생성 API")
+    @Operation(summary = "배너 이미지 업로드용 presigned url 생성 API")
     public ResponseEntity<ApiResponse<AdminBannerImageUploadResponse>> createBannerImageUploadUrl(
             @Valid @RequestBody AdminBannerImageUploadRequest request,
             @RequestParam("contentType") String contentType
@@ -42,7 +42,7 @@ public class AdminBannerController {
     }
 
     @PostMapping
-    @Operation(summary = "스타일 배너 생성 API")
+    @Operation(summary = "배너 생성 API")
     public ResponseEntity<ApiResponse<AdminBannerResponse>> createBanner(
             @Valid @RequestBody AdminBannerCreateRequest request
     ) {
@@ -50,19 +50,19 @@ public class AdminBannerController {
     }
 
     @GetMapping
-    @Operation(summary = "스타일 배너 목록 조회 API")
+    @Operation(summary = "배너 목록 조회 API")
     public ResponseEntity<ApiResponse<AdminBannerListResponse>> getBanners() {
         return ResponseEntity.ok(ApiResponse.ok(adminBannerService.getAll()));
     }
 
     @GetMapping("/{bannerId}")
-    @Operation(summary = "스타일 배너 상세 조회 API")
+    @Operation(summary = "배너 상세 조회 API")
     public ResponseEntity<ApiResponse<AdminBannerResponse>> getBanner(@PathVariable Long bannerId) {
         return ResponseEntity.ok(ApiResponse.ok(adminBannerService.getById(bannerId)));
     }
 
     @PatchMapping("/{bannerId}")
-    @Operation(summary = "스타일 배너 수정 API")
+    @Operation(summary = "배너 수정 API")
     public ResponseEntity<ApiResponse<AdminBannerResponse>> updateBanner(
             @PathVariable Long bannerId,
             @Valid @RequestBody AdminBannerUpdateRequest request
@@ -74,11 +74,11 @@ public class AdminBannerController {
     @Operation(summary = "스타일 배너 삭제 API")
     public ResponseEntity<ApiResponse<String>> deleteBanner(@PathVariable Long bannerId) {
         adminBannerService.delete(bannerId);
-        return ResponseEntity.ok(ApiResponse.ok("스타일 배너가 삭제되었습니다."));
+        return ResponseEntity.ok(ApiResponse.ok("배너가 삭제되었습니다."));
     }
 
     @GetMapping("/raw-products/search")
-    @Operation(summary = "스타일 배너용 RAW 상품 검색 API")
+    @Operation(summary = "배너용 RAW 상품 검색 API")
     public ResponseEntity<ApiResponse<AdminBannerRawProductSearchResponse>> searchRawProducts(
             @RequestParam(required = false) String keyword,
             @RequestParam(defaultValue = "20") int size

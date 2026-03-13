@@ -8,6 +8,7 @@ import java.util.List;
 public record AdminBannerUpdateRequest(
         String bannerImageUrl,
         String bannerTitle,
+        String styleDescription,
         String styleQuestion,
         String stylePrompt,
         @Size(max = 4) List<@Valid AdminBannerStyleAnswerChipRequest> styleAnswerChips,
