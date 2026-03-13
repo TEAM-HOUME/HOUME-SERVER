@@ -69,6 +69,168 @@
             background-color: #6c757d;
             border-color: #6c757d;
         }
+        .banner-editor-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 16px;
+        }
+        .banner-editor-grid .full-span {
+            grid-column: 1 / -1;
+        }
+        .banner-chip-editor {
+            border: 1px solid #e5e7eb;
+            border-radius: 14px;
+            padding: 16px;
+            background: #fafbfc;
+        }
+        .banner-chip-editor-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+        }
+        .banner-chip-editor-title {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: #1f2937;
+        }
+        .banner-search-results {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-top: 12px;
+        }
+        .banner-search-result-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 10px 12px;
+            border-radius: 12px;
+            background: #ffffff;
+            border: 1px solid #e5e7eb;
+        }
+        .banner-selected-product,
+        .banner-mapped-products {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 12px;
+        }
+        .banner-selected-product-chip,
+        .banner-mapped-product-chip,
+        .banner-card-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            border-radius: 999px;
+            background: #eaf3ff;
+            color: #0f4c81;
+            font-size: 0.87rem;
+            font-weight: 600;
+        }
+        .banner-card-chip button,
+        .banner-selected-product-chip button,
+        .banner-mapped-product-chip button {
+            border: none;
+            background: transparent;
+            color: inherit;
+            padding: 0;
+            font-weight: 700;
+        }
+        .banner-list {
+            display: grid;
+            gap: 16px;
+        }
+        .banner-card {
+            display: grid;
+            grid-template-columns: 180px minmax(0, 1fr) auto;
+            gap: 20px;
+            padding: 20px;
+            border: 1px solid #e5e7eb;
+            border-radius: 18px;
+            background: #fff;
+        }
+        .banner-card-image {
+            width: 180px;
+            height: 120px;
+            border-radius: 14px;
+            object-fit: cover;
+            background: #e5e7eb;
+        }
+        .banner-card-body {
+            display: grid;
+            gap: 12px;
+        }
+        .banner-card-title-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .banner-card-title {
+            font-size: 1.1rem;
+            font-weight: 800;
+            color: #111827;
+        }
+        .banner-card-meta {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 12px 18px;
+            font-size: 0.92rem;
+            color: #4b5563;
+        }
+        .banner-card-block {
+            display: grid;
+            gap: 8px;
+        }
+        .banner-card-label {
+            font-size: 0.78rem;
+            font-weight: 700;
+            color: #6b7280;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+        .banner-card-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .banner-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 4px 10px;
+            border-radius: 999px;
+            font-size: 0.8rem;
+            font-weight: 700;
+        }
+        .banner-badge.exposed {
+            background: #dcfce7;
+            color: #166534;
+        }
+        .banner-badge.hidden {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+        @media (max-width: 1200px) {
+            .banner-editor-grid,
+            .banner-card-meta {
+                grid-template-columns: 1fr;
+            }
+            .banner-card {
+                grid-template-columns: 1fr;
+            }
+            .banner-card-image {
+                width: 100%;
+                height: 220px;
+            }
+            .banner-card-actions {
+                flex-direction: row;
+                flex-wrap: wrap;
+            }
+        }
     </style>
 </head>
 <body>
@@ -99,6 +261,11 @@
         <li class="nav-item">
             <a class="nav-link" href="#" data-target="raw-product-management">
                 <i class="fas fa-box-open"></i>RAW 상품 관리
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="#" data-target="banner-management">
+                <i class="fas fa-image"></i>스타일 배너 관리
             </a>
         </li>
     </ul>
@@ -521,6 +688,89 @@
             </div>
         </div>
     </div>
+
+    <div id="banner-management" class="content-section">
+        <h2>스타일 배너 관리</h2>
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span>스타일 배너 목록</span>
+                <button id="get-banners-button" class="btn btn-secondary btn-sm">배너 목록 새로고침</button>
+            </div>
+            <div class="card-body">
+                <div id="banner-list-result" class="api-result"></div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">스타일 배너 등록 / 수정</div>
+            <div class="card-body">
+                <form id="banner-form">
+                    <div class="banner-editor-grid">
+                        <div>
+                            <label for="bannerEditId" class="form-label">수정 대상 배너 ID</label>
+                            <input type="text" class="form-control" id="bannerEditId" placeholder="목록에서 수정 선택 시 자동 입력" readonly>
+                        </div>
+                        <div>
+                            <label for="bannerIsExposed" class="form-label">노출 여부</label>
+                            <select class="form-select" id="bannerIsExposed">
+                                <option value="true">노출</option>
+                                <option value="false">숨김</option>
+                            </select>
+                        </div>
+                        <div class="full-span">
+                            <label for="bannerImageUrl" class="form-label">배너 이미지 URL</label>
+                            <input type="url" class="form-control" id="bannerImageUrl" placeholder="https://..." required>
+                        </div>
+                        <div>
+                            <label for="bannerTitle" class="form-label">배너 타이틀</label>
+                            <input type="text" class="form-control" id="bannerTitle" required>
+                        </div>
+                        <div>
+                            <label for="bannerStyleQuestion" class="form-label">스타일 질문</label>
+                            <input type="text" class="form-control" id="bannerStyleQuestion" required>
+                        </div>
+                        <div class="full-span">
+                            <label for="bannerStylePrompt" class="form-label">이미지 생성 스타일 프롬프트</label>
+                            <textarea class="form-control" id="bannerStylePrompt" rows="4" required></textarea>
+                        </div>
+                    </div>
+
+                    <div class="mt-4">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5 class="mb-0">스타일 답변 칩</h5>
+                            <span class="text-muted small">최대 4개</span>
+                        </div>
+                        <div id="banner-chip-editors" class="d-grid gap-3"></div>
+                    </div>
+
+                    <div class="mt-4">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <h5 class="mb-0">배너에 매핑된 가구</h5>
+                            <span class="text-muted small">검색 후 추가 / 제거</span>
+                        </div>
+                        <div class="row g-2 align-items-end">
+                            <div class="col-md-10">
+                                <label for="bannerMappedRawProductKeyword" class="form-label">RAW 상품 검색</label>
+                                <input type="text" class="form-control" id="bannerMappedRawProductKeyword" placeholder="상품명, 브랜드, source, productId 검색">
+                            </div>
+                            <div class="col-md-2 d-grid">
+                                <button type="button" id="search-banner-mapped-raw-products-button" class="btn btn-outline-primary">검색</button>
+                            </div>
+                        </div>
+                        <div id="bannerMappedRawProductSearchResult" class="banner-search-results"></div>
+                        <div id="bannerMappedRawProductsSelected" class="banner-mapped-products"></div>
+                    </div>
+
+                    <div class="d-flex flex-wrap gap-2 mt-4">
+                        <button type="submit" id="create-banner-button" class="btn btn-primary">배너 등록</button>
+                        <button type="button" id="update-banner-button" class="btn btn-warning">배너 수정</button>
+                        <button type="button" id="reset-banner-form-button" class="btn btn-outline-secondary">폼 초기화</button>
+                    </div>
+                </form>
+                <div id="banner-form-result" class="api-result"></div>
+            </div>
+        </div>
+    </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
@@ -537,6 +787,8 @@
         minListPrice: null,
         maxListPrice: null
     };
+    const BANNER_CHIP_MAX_COUNT = 4;
+    let bannerAdminState = createInitialBannerAdminState();
 
     window.onload = function() {
         const urlParams = new URLSearchParams(window.location.search);
@@ -550,6 +802,7 @@
         populateTagDropdown();
         populateMoodboardTagDropdown();
         populateFurnitureTypeDropdown();
+        initializeBannerManagement();
 
         // Sidebar navigation
         document.querySelectorAll('#sidebar .nav-link').forEach(link => {
@@ -993,7 +1246,515 @@
                 fetchRawProducts();
             });
         });
+
+        document.getElementById('get-banners-button').addEventListener('click', function() {
+            loadBanners();
+        });
+
+        document.getElementById('banner-form').addEventListener('submit', function(event) {
+            event.preventDefault();
+            createBanner();
+        });
+
+        document.getElementById('update-banner-button').addEventListener('click', function() {
+            updateBanner();
+        });
+
+        document.getElementById('reset-banner-form-button').addEventListener('click', function() {
+            resetBannerForm();
+        });
+
+        document.getElementById('search-banner-mapped-raw-products-button').addEventListener('click', function() {
+            searchBannerMappedRawProducts();
+        });
+
+        document.getElementById('bannerMappedRawProductKeyword').addEventListener('keydown', function(event) {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                searchBannerMappedRawProducts();
+            }
+        });
     };
+
+    function createInitialBannerAdminState() {
+        return {
+            editingBannerId: null,
+            selectedMappedRawProducts: [],
+            chipSelections: Array.from({ length: BANNER_CHIP_MAX_COUNT }, (_, index) => ({
+                order: index + 1,
+                rawProduct: null
+            }))
+        };
+    }
+
+    function initializeBannerManagement() {
+        renderBannerChipEditors();
+        renderBannerMappedRawProducts();
+        loadBanners();
+    }
+
+    function renderBannerChipEditors() {
+        const container = document.getElementById('banner-chip-editors');
+        container.innerHTML = '';
+
+        for (let index = 0; index < BANNER_CHIP_MAX_COUNT; index += 1) {
+            const selection = bannerAdminState.chipSelections[index];
+            const chipEditor = document.createElement('div');
+            chipEditor.className = 'banner-chip-editor';
+            chipEditor.innerHTML = `
+                <div class="banner-chip-editor-header">
+                    <span class="banner-chip-editor-title">답변 칩 ${index + 1}</span>
+                    <span class="text-muted small">순서 ${selection.order}</span>
+                </div>
+                <div class="row g-3">
+                    <div class="col-md-2">
+                        <label class="form-label" for="bannerChipOrder-${index}">순서</label>
+                        <input type="number" class="form-control" id="bannerChipOrder-${index}" min="1" max="4" value="${selection.order}">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label" for="bannerChipLabel-${index}">칩 문구</label>
+                        <input type="text" class="form-control" id="bannerChipLabel-${index}" placeholder="예: 모니터 받침대가 결합된 책상">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label" for="bannerChipRawKeyword-${index}">연결 RAW 상품 검색</label>
+                        <input type="text" class="form-control" id="bannerChipRawKeyword-${index}" placeholder="상품명, 브랜드, source, productId">
+                    </div>
+                    <div class="col-md-2 d-grid">
+                        <label class="form-label d-none d-md-block">검색</label>
+                        <button type="button" class="btn btn-outline-primary" id="searchBannerChipButton-${index}">검색</button>
+                    </div>
+                </div>
+                <div id="bannerChipSearchResult-${index}" class="banner-search-results"></div>
+                <div id="bannerChipSelected-${index}" class="banner-selected-product"></div>
+            `;
+            container.appendChild(chipEditor);
+
+            document.getElementById(`searchBannerChipButton-${index}`).addEventListener('click', function() {
+                searchBannerChipRawProducts(index);
+            });
+
+            document.getElementById(`bannerChipRawKeyword-${index}`).addEventListener('keydown', function(event) {
+                if (event.key === 'Enter') {
+                    event.preventDefault();
+                    searchBannerChipRawProducts(index);
+                }
+            });
+        }
+
+        renderAllChipSelections();
+    }
+
+    function renderAllChipSelections() {
+        for (let index = 0; index < BANNER_CHIP_MAX_COUNT; index += 1) {
+            renderBannerChipSelection(index);
+        }
+    }
+
+    function renderBannerChipSelection(index) {
+        const resultContainer = document.getElementById(`bannerChipSelected-${index}`);
+        const selection = bannerAdminState.chipSelections[index];
+        if (!resultContainer || !selection) return;
+
+        resultContainer.innerHTML = '';
+        if (!selection.rawProduct) {
+            const empty = document.createElement('div');
+            empty.className = 'text-muted small';
+            empty.textContent = '선택된 RAW 상품이 없습니다.';
+            resultContainer.appendChild(empty);
+            return;
+        }
+
+        const chip = document.createElement('div');
+        chip.className = 'banner-selected-product-chip';
+        chip.innerHTML = `
+            <span>${escapeHtml(selection.rawProduct.productName)} (#${selection.rawProduct.id})</span>
+            <button type="button" data-banner-chip-clear="${index}" aria-label="선택 해제">×</button>
+        `;
+        chip.querySelector('button').addEventListener('click', function() {
+            bannerAdminState.chipSelections[index].rawProduct = null;
+            renderBannerChipSelection(index);
+        });
+        resultContainer.appendChild(chip);
+    }
+
+    function searchBannerChipRawProducts(index) {
+        const keyword = parseStringValue(document.getElementById(`bannerChipRawKeyword-${index}`).value);
+        const resultContainer = document.getElementById(`bannerChipSearchResult-${index}`);
+        if (!resultContainer) return;
+        if (!keyword) {
+            resultContainer.innerHTML = '<div class="text-muted small">검색어를 입력해주세요.</div>';
+            return;
+        }
+
+        fetchBannerRawProducts(keyword, 8)
+            .then(rawProducts => {
+                renderBannerChipSearchResults(index, rawProducts);
+            })
+            .catch(error => {
+                resultContainer.innerHTML = `<div class="alert alert-danger">오류: ${escapeHtml(error.message)}</div>`;
+            });
+    }
+
+    function renderBannerChipSearchResults(index, rawProducts) {
+        const resultContainer = document.getElementById(`bannerChipSearchResult-${index}`);
+        resultContainer.innerHTML = '';
+
+        if (!Array.isArray(rawProducts) || rawProducts.length === 0) {
+            resultContainer.innerHTML = '<div class="text-muted small">검색 결과가 없습니다.</div>';
+            return;
+        }
+
+        rawProducts.forEach(rawProduct => {
+            const item = document.createElement('div');
+            item.className = 'banner-search-result-item';
+            item.innerHTML = `
+                <div>
+                    <div class="fw-semibold">${escapeHtml(rawProduct.productName)}</div>
+                    <div class="text-muted small">${escapeHtml(rawProduct.source || '-')} · productId ${rawProduct.productId ?? '-'} · raw #${rawProduct.id}</div>
+                </div>
+            `;
+
+            const button = document.createElement('button');
+            button.type = 'button';
+            button.className = 'btn btn-sm btn-primary';
+            button.textContent = '선택';
+            button.addEventListener('click', function() {
+                bannerAdminState.chipSelections[index].rawProduct = rawProduct;
+                renderBannerChipSelection(index);
+                resultContainer.innerHTML = '';
+            });
+            item.appendChild(button);
+            resultContainer.appendChild(item);
+        });
+    }
+
+    function searchBannerMappedRawProducts() {
+        const keyword = parseStringValue(document.getElementById('bannerMappedRawProductKeyword').value);
+        const resultContainer = document.getElementById('bannerMappedRawProductSearchResult');
+        if (!keyword) {
+            resultContainer.innerHTML = '<div class="text-muted small">검색어를 입력해주세요.</div>';
+            return;
+        }
+
+        fetchBannerRawProducts(keyword, 12)
+            .then(rawProducts => {
+                renderBannerMappedRawProductSearchResults(rawProducts);
+            })
+            .catch(error => {
+                resultContainer.innerHTML = `<div class="alert alert-danger">오류: ${escapeHtml(error.message)}</div>`;
+            });
+    }
+
+    function renderBannerMappedRawProductSearchResults(rawProducts) {
+        const resultContainer = document.getElementById('bannerMappedRawProductSearchResult');
+        resultContainer.innerHTML = '';
+
+        if (!Array.isArray(rawProducts) || rawProducts.length === 0) {
+            resultContainer.innerHTML = '<div class="text-muted small">검색 결과가 없습니다.</div>';
+            return;
+        }
+
+        rawProducts.forEach(rawProduct => {
+            const item = document.createElement('div');
+            item.className = 'banner-search-result-item';
+            item.innerHTML = `
+                <div>
+                    <div class="fw-semibold">${escapeHtml(rawProduct.productName)}</div>
+                    <div class="text-muted small">${escapeHtml(rawProduct.source || '-')} · productId ${rawProduct.productId ?? '-'} · raw #${rawProduct.id}</div>
+                </div>
+            `;
+
+            const button = document.createElement('button');
+            button.type = 'button';
+            button.className = 'btn btn-sm btn-outline-primary';
+            button.textContent = bannerAdminState.selectedMappedRawProducts.some(product => product.id === rawProduct.id)
+                ? '선택됨'
+                : '추가';
+            button.disabled = bannerAdminState.selectedMappedRawProducts.some(product => product.id === rawProduct.id);
+            button.addEventListener('click', function() {
+                addBannerMappedRawProduct(rawProduct);
+                renderBannerMappedRawProductSearchResults(rawProducts);
+            });
+            item.appendChild(button);
+            resultContainer.appendChild(item);
+        });
+    }
+
+    function addBannerMappedRawProduct(rawProduct) {
+        if (bannerAdminState.selectedMappedRawProducts.some(product => product.id === rawProduct.id)) {
+            return;
+        }
+        bannerAdminState.selectedMappedRawProducts.push(rawProduct);
+        renderBannerMappedRawProducts();
+    }
+
+    function removeBannerMappedRawProduct(rawProductId) {
+        bannerAdminState.selectedMappedRawProducts = bannerAdminState.selectedMappedRawProducts
+            .filter(product => product.id !== rawProductId);
+        renderBannerMappedRawProducts();
+    }
+
+    function renderBannerMappedRawProducts() {
+        const container = document.getElementById('bannerMappedRawProductsSelected');
+        if (!container) return;
+        container.innerHTML = '';
+
+        if (bannerAdminState.selectedMappedRawProducts.length === 0) {
+            container.innerHTML = '<div class="text-muted small">아직 배너에 매핑된 가구가 없습니다.</div>';
+            return;
+        }
+
+        bannerAdminState.selectedMappedRawProducts.forEach(rawProduct => {
+            const chip = document.createElement('div');
+            chip.className = 'banner-mapped-product-chip';
+            chip.innerHTML = `
+                <span>${escapeHtml(rawProduct.productName)} (#${rawProduct.id})</span>
+                <button type="button" aria-label="제거">×</button>
+            `;
+            chip.querySelector('button').addEventListener('click', function() {
+                removeBannerMappedRawProduct(rawProduct.id);
+            });
+            container.appendChild(chip);
+        });
+    }
+
+    function fetchBannerRawProducts(keyword, size = 10) {
+        const accessToken = localStorage.getItem('accessToken');
+        if (!accessToken) {
+            return Promise.reject(new Error('액세스 토큰을 찾을 수 없습니다.'));
+        }
+        const queryParams = new URLSearchParams();
+        if (keyword) {
+            queryParams.set('keyword', keyword);
+        }
+        queryParams.set('size', String(size));
+
+        return fetch(`/api/v1/admin/banners/raw-products/search?${queryParams.toString()}`, {
+            method: 'GET',
+            headers: {
+                'Authorization': 'Bearer ' + accessToken,
+                'Content-Type': 'application/json'
+            }
+        })
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(err => { throw new Error(err.msg || '서버 오류'); });
+                }
+                return response.json();
+            })
+            .then(data => (data && data.data && Array.isArray(data.data.rawProducts)) ? data.data.rawProducts : []);
+    }
+
+    function loadBanners() {
+        const accessToken = localStorage.getItem('accessToken');
+        const resultDiv = document.getElementById('banner-list-result');
+        testApiCall(accessToken, resultDiv, '/api/v1/admin/banners', 'GET', null, displayBanners);
+    }
+
+    function displayBanners(data, resultDiv) {
+        const banners = data && data.data && Array.isArray(data.data.banners) ? data.data.banners : [];
+        if (banners.length === 0) {
+            resultDiv.innerHTML = '<div class="alert alert-info">등록된 스타일 배너가 없습니다.</div>';
+            return;
+        }
+
+        resultDiv.innerHTML = '';
+        const list = document.createElement('div');
+        list.className = 'banner-list';
+
+        banners.forEach(banner => {
+            const card = document.createElement('div');
+            card.className = 'banner-card';
+            const mappedRawProducts = Array.isArray(banner.mappedRawProducts) ? banner.mappedRawProducts : [];
+            const styleAnswerChips = Array.isArray(banner.styleAnswerChips) ? banner.styleAnswerChips : [];
+            const chipHtml = styleAnswerChips.length > 0
+                ? styleAnswerChips.map(chip => `<span class="banner-card-chip">${escapeHtml(chip.label)} · #${chip.curationRawProductId}</span>`).join('')
+                : '<span class="text-muted small">등록된 스타일 답변이 없습니다.</span>';
+            const mappedHtml = mappedRawProducts.length > 0
+                ? mappedRawProducts.map(product => `<span class="banner-card-chip">${escapeHtml(product.productName)} · #${product.id}</span>`).join('')
+                : '<span class="text-muted small">매핑된 가구가 없습니다.</span>';
+
+            card.innerHTML = `
+                <img class="banner-card-image" src="${escapeHtml(banner.bannerImageUrl)}" alt="${escapeHtml(banner.bannerTitle)}">
+                <div class="banner-card-body">
+                    <div class="banner-card-title-row">
+                        <span class="banner-card-title">${escapeHtml(banner.bannerTitle)}</span>
+                        <span class="banner-badge ${banner.isExposed ? 'exposed' : 'hidden'}">${banner.isExposed ? '노출' : '숨김'}</span>
+                        <span class="text-muted small">#${banner.id}</span>
+                    </div>
+                    <div class="banner-card-meta">
+                        <div class="banner-card-block">
+                            <span class="banner-card-label">스타일 질문</span>
+                            <span>${escapeHtml(banner.styleQuestion)}</span>
+                        </div>
+                        <div class="banner-card-block">
+                            <span class="banner-card-label">이미지 생성 프롬프트</span>
+                            <span>${escapeHtml(banner.stylePrompt)}</span>
+                        </div>
+                        <div class="banner-card-block">
+                            <span class="banner-card-label">스타일 답변 칩</span>
+                            <div class="d-flex flex-wrap gap-2">${chipHtml}</div>
+                        </div>
+                        <div class="banner-card-block">
+                            <span class="banner-card-label">배너에 매핑된 가구</span>
+                            <div class="d-flex flex-wrap gap-2">${mappedHtml}</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="banner-card-actions">
+                    <button type="button" class="btn btn-sm btn-info" data-banner-edit="${banner.id}">수정</button>
+                    <button type="button" class="btn btn-sm btn-danger" data-banner-delete="${banner.id}">삭제</button>
+                </div>
+            `;
+
+            card.querySelector('[data-banner-edit]').addEventListener('click', function() {
+                populateBannerForm(banner);
+            });
+            card.querySelector('[data-banner-delete]').addEventListener('click', function() {
+                deleteBanner(banner.id);
+            });
+            list.appendChild(card);
+        });
+
+        resultDiv.appendChild(list);
+    }
+
+    function populateBannerForm(banner) {
+        bannerAdminState = createInitialBannerAdminState();
+        bannerAdminState.editingBannerId = banner.id;
+
+        document.getElementById('bannerEditId').value = banner.id;
+        document.getElementById('bannerImageUrl').value = banner.bannerImageUrl ?? '';
+        document.getElementById('bannerTitle').value = banner.bannerTitle ?? '';
+        document.getElementById('bannerStyleQuestion').value = banner.styleQuestion ?? '';
+        document.getElementById('bannerStylePrompt').value = banner.stylePrompt ?? '';
+        document.getElementById('bannerIsExposed').value = String(Boolean(banner.isExposed));
+        document.getElementById('bannerMappedRawProductKeyword').value = '';
+        document.getElementById('bannerMappedRawProductSearchResult').innerHTML = '';
+
+        const styleAnswerChips = Array.isArray(banner.styleAnswerChips) ? banner.styleAnswerChips : [];
+        styleAnswerChips.slice(0, BANNER_CHIP_MAX_COUNT).forEach((chip, index) => {
+            bannerAdminState.chipSelections[index] = {
+                order: chip.order ?? index + 1,
+                rawProduct: chip.curationRawProductId != null ? {
+                    id: chip.curationRawProductId,
+                    productName: chip.curationRawProductName ?? `RAW #${chip.curationRawProductId}`,
+                    productImageUrl: chip.curationRawProductImageUrl ?? null,
+                    source: null,
+                    productId: null,
+                    brand: null
+                } : null
+            };
+        });
+
+        renderBannerChipEditors();
+        styleAnswerChips.slice(0, BANNER_CHIP_MAX_COUNT).forEach((chip, index) => {
+            document.getElementById(`bannerChipOrder-${index}`).value = chip.order ?? index + 1;
+            document.getElementById(`bannerChipLabel-${index}`).value = chip.label ?? '';
+        });
+
+        bannerAdminState.selectedMappedRawProducts = (Array.isArray(banner.mappedRawProducts) ? banner.mappedRawProducts : []).map(product => ({
+            id: product.id,
+            source: product.source,
+            category: product.category,
+            productId: product.productId,
+            productName: product.productName,
+            productImageUrl: product.productImageUrl,
+            brand: product.brand
+        }));
+        renderBannerMappedRawProducts();
+        document.getElementById('banner-form-result').innerHTML = '<div class="alert alert-info">배너 수정 모드로 전환했습니다.</div>';
+    }
+
+    function resetBannerForm() {
+        bannerAdminState = createInitialBannerAdminState();
+        document.getElementById('banner-form').reset();
+        document.getElementById('bannerEditId').value = '';
+        document.getElementById('bannerIsExposed').value = 'true';
+        document.getElementById('bannerMappedRawProductSearchResult').innerHTML = '';
+        document.getElementById('banner-form-result').innerHTML = '';
+        renderBannerChipEditors();
+        renderBannerMappedRawProducts();
+    }
+
+    function buildBannerPayload() {
+        const styleAnswerChips = [];
+        for (let index = 0; index < BANNER_CHIP_MAX_COUNT; index += 1) {
+            const order = parseNumberValue(document.getElementById(`bannerChipOrder-${index}`).value);
+            const label = parseStringValue(document.getElementById(`bannerChipLabel-${index}`).value);
+            const rawProduct = bannerAdminState.chipSelections[index].rawProduct;
+
+            if (!label && !rawProduct && order == null) {
+                continue;
+            }
+
+            if (!label || !rawProduct || order == null) {
+                throw new Error(`스타일 답변 칩 ${index + 1}의 문구, 순서, RAW 상품을 모두 입력해주세요.`);
+            }
+
+            styleAnswerChips.push({
+                order,
+                label,
+                curationRawProductId: rawProduct.id
+            });
+        }
+
+        return {
+            bannerImageUrl: parseStringValue(document.getElementById('bannerImageUrl').value),
+            bannerTitle: parseStringValue(document.getElementById('bannerTitle').value),
+            styleQuestion: parseStringValue(document.getElementById('bannerStyleQuestion').value),
+            stylePrompt: parseStringValue(document.getElementById('bannerStylePrompt').value),
+            isExposed: document.getElementById('bannerIsExposed').value === 'true',
+            styleAnswerChips,
+            mappedRawProductIds: bannerAdminState.selectedMappedRawProducts.map(product => product.id)
+        };
+    }
+
+    function createBanner() {
+        const accessToken = localStorage.getItem('accessToken');
+        const resultDiv = document.getElementById('banner-form-result');
+        try {
+            const payload = buildBannerPayload();
+            testApiCall(accessToken, resultDiv, '/api/v1/admin/banners', 'POST', payload, function(data, target) {
+                target.innerHTML = '<div class="alert alert-success">스타일 배너가 등록되었습니다.</div>';
+                resetBannerForm();
+                loadBanners();
+            });
+        } catch (error) {
+            resultDiv.innerHTML = `<div class="alert alert-danger">오류: ${escapeHtml(error.message)}</div>`;
+        }
+    }
+
+    function updateBanner() {
+        const accessToken = localStorage.getItem('accessToken');
+        const resultDiv = document.getElementById('banner-form-result');
+        if (!bannerAdminState.editingBannerId) {
+            resultDiv.innerHTML = '<div class="alert alert-danger">수정할 배너를 먼저 선택해주세요.</div>';
+            return;
+        }
+
+        try {
+            const payload = buildBannerPayload();
+            testApiCall(accessToken, resultDiv, `/api/v1/admin/banners/${bannerAdminState.editingBannerId}`, 'PATCH', payload, function(data, target) {
+                target.innerHTML = '<div class="alert alert-success">스타일 배너가 수정되었습니다.</div>';
+                loadBanners();
+            });
+        } catch (error) {
+            resultDiv.innerHTML = `<div class="alert alert-danger">오류: ${escapeHtml(error.message)}</div>`;
+        }
+    }
+
+    function deleteBanner(bannerId) {
+        if (!confirm(`스타일 배너 ID ${bannerId}를 정말로 삭제하시겠습니까?`)) return;
+        const accessToken = localStorage.getItem('accessToken');
+        const resultDiv = document.getElementById('banner-list-result');
+        testApiCall(accessToken, resultDiv, `/api/v1/admin/banners/${bannerId}`, 'DELETE', null, function() {
+            if (bannerAdminState.editingBannerId === bannerId) {
+                resetBannerForm();
+            }
+            loadBanners();
+        });
+    }
 
     function displayMoodboards(data, resultDiv) {
         const moodboards = data.data.dtos; // Corrected to dtos
@@ -1525,6 +2286,15 @@
         if (value == null) return null;
         const trimmed = String(value).trim();
         return trimmed.length === 0 ? null : trimmed;
+    }
+
+    function escapeHtml(value) {
+        return String(value ?? '')
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
     }
 
     function buildRawProductCreatePayload() {
