@@ -184,6 +184,7 @@ public enum ErrorCode {
 
     // 로그 저장시 objectMapper 에러
     OBJECTMAPPER_EXCEPTION(HttpStatus.INTERNAL_SERVER_ERROR, 50019, "생성 로그 JSON 변환에 실패, 서버 개발자에게 문의해주세요"),
+    NICKNAME_RESOURCE_EMPTY(HttpStatus.INTERNAL_SERVER_ERROR, 50020, "닉네임 리소스가 비어 있습니다. 서버 관리자에게 문의해주세요"),
 
     /**
      * 502 BAD_GATEWAY

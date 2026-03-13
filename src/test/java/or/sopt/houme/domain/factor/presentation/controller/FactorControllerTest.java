@@ -27,6 +27,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
         @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, classes = {
                 JWTFilter.class
         })
+}, properties = {
+        "external.image-api.base-url=http://localhost:8080",
+        "gemini.api-base-url=https://generativelanguage.googleapis.com/v1beta"
 })
 @AutoConfigureMockMvc(addFilters = false)
 class FactorControllerTest {

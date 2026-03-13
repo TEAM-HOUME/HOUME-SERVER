@@ -335,6 +335,7 @@ class UserServiceImplTest {
 
         // then
         assertEquals("New Name", dbUser.getName());
+        assertEquals(null, dbUser.getNickname());
         assertEquals(Gender.MALE, dbUser.getGender());
         assertEquals(LocalDate.of(2000, 5, 15), dbUser.getBirthday());
     }
@@ -371,6 +372,7 @@ class UserServiceImplTest {
 
         // then
         assertEquals("New Name", dbUser.getName());
+        assertEquals(null, dbUser.getNickname());
         assertEquals(Gender.MALE, dbUser.getGender());
         assertEquals(LocalDate.of(2000, 5, 15), dbUser.getBirthday());
 
@@ -411,6 +413,32 @@ class UserServiceImplTest {
         ))
                 .isInstanceOf(CreditException.class)
                 .hasMessageContaining("크레딧 생성 과정 중 예외가 발생하였습니다.");
+    }
+
+    @Test
+    @DisplayName("v2 회원가입은 닉네임 필드를 함께 업데이트한다")
+    void updateUserV2_success() {
+        // given
+        User inputUser = User.builder().id(1L).build();
+
+        User dbUser = User.builder()
+                .id(1L)
+                .name(null)
+                .nickname(null)
+                .birthday(null)
+                .gender(null)
+                .build();
+
+        given(userRepository.findById(1L)).willReturn(Optional.of(dbUser));
+
+        // when
+        userService.updateUserV2(inputUser, "새닉네임1234", Gender.MALE, LocalDate.of(2000, 5, 15));
+
+        // then
+        assertEquals("새닉네임1234", dbUser.getName());
+        assertEquals("새닉네임1234", dbUser.getNickname());
+        assertEquals(Gender.MALE, dbUser.getGender());
+        assertEquals(LocalDate.of(2000, 5, 15), dbUser.getBirthday());
     }
 
 }
