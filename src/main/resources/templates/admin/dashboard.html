@@ -911,6 +911,14 @@
         maxListPrice: null
     };
     const BANNER_CHIP_MAX_COUNT = 4;
+    const ALLOWED_IMAGE_EXTENSIONS = new Set(['jpg', 'jpeg', 'png', 'gif', 'webp']);
+    const ALLOWED_IMAGE_CONTENT_TYPES = {
+        jpg: 'image/jpeg',
+        jpeg: 'image/jpeg',
+        png: 'image/png',
+        gif: 'image/gif',
+        webp: 'image/webp'
+    };
     let bannerAdminState = createInitialBannerAdminState();
     let styleAdminState = createInitialStyleAdminState();
 
@@ -1544,6 +1552,7 @@
         const fileInput = document.getElementById(config.fileInputId);
         const statusElement = document.getElementById(config.statusId);
         const hiddenUrlInput = document.getElementById(config.hiddenUrlInputId);
+        const uploadButton = document.getElementById(config.buttonId);
 
         if (!accessToken) {
             statusElement.textContent = '액세스 토큰이 없습니다.';
@@ -1561,11 +1570,24 @@
             statusElement.textContent = '파일 확장자를 확인할 수 없습니다.';
             return;
         }
+        if (!ALLOWED_IMAGE_EXTENSIONS.has(extension)) {
+            statusElement.textContent = 'jpg, jpeg, png, gif, webp 형식의 이미지만 업로드할 수 있습니다.';
+            return;
+        }
+        const expectedContentType = ALLOWED_IMAGE_CONTENT_TYPES[extension];
+        const actualContentType = imageFile.type ? imageFile.type.toLowerCase() : '';
+        if (!expectedContentType || !actualContentType || !actualContentType.startsWith('image/') || actualContentType !== expectedContentType) {
+            statusElement.textContent = '선택한 파일의 확장자와 MIME 타입이 올바르지 않습니다.';
+            return;
+        }
 
         statusElement.textContent = 'Presigned URL을 요청하는 중입니다...';
+        if (uploadButton) {
+            uploadButton.disabled = true;
+        }
 
         try {
-            const uploadUrlResponse = await fetch(`${config.uploadUrl}?contentType=${encodeURIComponent(imageFile.type || 'application/octet-stream')}`, {
+            const uploadUrlResponse = await fetch(`${config.uploadUrl}?contentType=${encodeURIComponent(expectedContentType)}`, {
                 method: 'POST',
                 headers: {
                     'Authorization': 'Bearer ' + accessToken,
@@ -1604,6 +1626,10 @@
             statusElement.textContent = `${config.entityName} 이미지 업로드가 완료되었습니다.`;
         } catch (error) {
             statusElement.textContent = error.message || `${config.entityName} 이미지 업로드 중 오류가 발생했습니다.`;
+        } finally {
+            if (uploadButton) {
+                uploadButton.disabled = false;
+            }
         }
     }
 
@@ -1614,6 +1640,7 @@
             hiddenUrlInputId: 'bannerImageUrl',
             uploadUrl: '/api/v1/admin/banners/image-upload-url',
             entityName: '배너',
+            buttonId: 'upload-banner-image-button',
             renderPreview: renderBannerImagePreview
         });
     }
@@ -1625,6 +1652,7 @@
             hiddenUrlInputId: 'styleImageUrl',
             uploadUrl: '/api/v1/admin/styles/image-upload-url',
             entityName: '스타일',
+            buttonId: 'upload-style-image-button',
             renderPreview: renderStyleImagePreview
         });
     }
@@ -2036,12 +2064,15 @@
             const label = parseStringValue(document.getElementById(`bannerChipLabel-${index}`).value);
             const rawProduct = bannerAdminState.chipSelections[index].rawProduct;
 
-            if (!label && !rawProduct && order == null) {
+            if (!label && !rawProduct) {
                 continue;
             }
 
-            if (!label || !rawProduct || order == null) {
+            if (!label || !rawProduct || order == null || !Number.isInteger(order)) {
                 throw new Error(`스타일 답변 칩 ${index + 1}의 문구, 순서, RAW 상품을 모두 입력해주세요.`);
+            }
+            if (order < 1 || order > BANNER_CHIP_MAX_COUNT) {
+                throw new Error(`스타일 답변 칩 ${index + 1}의 순서는 1부터 ${BANNER_CHIP_MAX_COUNT} 사이여야 합니다.`);
             }
 
             styleAnswerChips.push({
@@ -2067,24 +2098,33 @@
         };
     }
 
-    function createBanner() {
+    async function createBanner() {
         const accessToken = localStorage.getItem('accessToken');
         const resultDiv = document.getElementById('banner-form-result');
+        const submitButton = document.getElementById('create-banner-button');
         try {
             const payload = buildBannerPayload();
-            testApiCall(accessToken, resultDiv, '/api/v1/admin/banners', 'POST', payload, function(data, target) {
+            if (submitButton) {
+                submitButton.disabled = true;
+            }
+            await testApiCall(accessToken, resultDiv, '/api/v1/admin/banners', 'POST', payload, function(data, target) {
                 target.innerHTML = '<div class="alert alert-success">배너가 등록되었습니다.</div>';
                 resetBannerForm();
                 loadBanners();
             });
         } catch (error) {
             resultDiv.innerHTML = `<div class="alert alert-danger">오류: ${escapeHtml(error.message)}</div>`;
+        } finally {
+            if (submitButton) {
+                submitButton.disabled = false;
+            }
         }
     }
 
-    function updateBanner() {
+    async function updateBanner() {
         const accessToken = localStorage.getItem('accessToken');
         const resultDiv = document.getElementById('banner-form-result');
+        const submitButton = document.getElementById('update-banner-button');
         if (!bannerAdminState.editingBannerId) {
             resultDiv.innerHTML = '<div class="alert alert-danger">수정할 배너를 먼저 선택해주세요.</div>';
             return;
@@ -2092,12 +2132,19 @@
 
         try {
             const payload = buildBannerPayload();
-            testApiCall(accessToken, resultDiv, `/api/v1/admin/banners/${bannerAdminState.editingBannerId}`, 'PATCH', payload, function(data, target) {
+            if (submitButton) {
+                submitButton.disabled = true;
+            }
+            await testApiCall(accessToken, resultDiv, `/api/v1/admin/banners/${bannerAdminState.editingBannerId}`, 'PATCH', payload, function(data, target) {
                 target.innerHTML = '<div class="alert alert-success">배너가 수정되었습니다.</div>';
                 loadBanners();
             });
         } catch (error) {
             resultDiv.innerHTML = `<div class="alert alert-danger">오류: ${escapeHtml(error.message)}</div>`;
+        } finally {
+            if (submitButton) {
+                submitButton.disabled = false;
+            }
         }
     }
 
@@ -2323,24 +2370,33 @@
         };
     }
 
-    function createStyle() {
+    async function createStyle() {
         const accessToken = localStorage.getItem('accessToken');
         const resultDiv = document.getElementById('style-form-result');
+        const submitButton = document.getElementById('create-style-button');
         try {
             const payload = buildStylePayload();
-            testApiCall(accessToken, resultDiv, '/api/v1/admin/styles', 'POST', payload, function(data, target) {
+            if (submitButton) {
+                submitButton.disabled = true;
+            }
+            await testApiCall(accessToken, resultDiv, '/api/v1/admin/styles', 'POST', payload, function(data, target) {
                 target.innerHTML = '<div class="alert alert-success">스타일이 등록되었습니다.</div>';
                 resetStyleForm();
                 loadStyles();
             });
         } catch (error) {
             resultDiv.innerHTML = `<div class="alert alert-danger">오류: ${escapeHtml(error.message)}</div>`;
+        } finally {
+            if (submitButton) {
+                submitButton.disabled = false;
+            }
         }
     }
 
-    function updateStyle() {
+    async function updateStyle() {
         const accessToken = localStorage.getItem('accessToken');
         const resultDiv = document.getElementById('style-form-result');
+        const submitButton = document.getElementById('update-style-button');
         if (!styleAdminState.editingStyleId) {
             resultDiv.innerHTML = '<div class="alert alert-danger">수정할 스타일을 먼저 선택해주세요.</div>';
             return;
@@ -2348,12 +2404,19 @@
 
         try {
             const payload = buildStylePayload();
-            testApiCall(accessToken, resultDiv, `/api/v1/admin/styles/${styleAdminState.editingStyleId}`, 'PATCH', payload, function(data, target) {
+            if (submitButton) {
+                submitButton.disabled = true;
+            }
+            await testApiCall(accessToken, resultDiv, `/api/v1/admin/styles/${styleAdminState.editingStyleId}`, 'PATCH', payload, function(data, target) {
                 target.innerHTML = '<div class="alert alert-success">스타일이 수정되었습니다.</div>';
                 loadStyles();
             });
         } catch (error) {
             resultDiv.innerHTML = `<div class="alert alert-danger">오류: ${escapeHtml(error.message)}</div>`;
+        } finally {
+            if (submitButton) {
+                submitButton.disabled = false;
+            }
         }
     }
 
@@ -2656,7 +2719,7 @@
     function testApiCall(accessToken, resultDiv, endpoint, method, body = null, successCallback = null) {
         if (!accessToken) {
             resultDiv.innerHTML = '<div class="alert alert-danger">액세스 토큰을 찾을 수 없습니다.</div>';
-            return;
+            return Promise.reject(new Error('액세스 토큰을 찾을 수 없습니다.'));
         }
         const fetchOptions = {
             method: method,
@@ -2666,7 +2729,7 @@
             },
             body: body ? JSON.stringify(body) : null
         };
-        fetch(endpoint, fetchOptions)
+        return fetch(endpoint, fetchOptions)
             .then(response => {
                 if (!response.ok) {
                     return response.json().then(err => { throw new Error(err.msg || '서버 오류'); });
