@@ -17,6 +17,7 @@ import or.sopt.houme.domain.user.presentation.admin.controller.dto.banner.respon
 import or.sopt.houme.global.api.ErrorCode;
 import or.sopt.houme.global.api.GeneralException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
@@ -31,6 +32,7 @@ public class AdminBannerServiceImpl implements AdminBannerService {
     private final AdminBannerSupport adminBannerSupport;
 
     @Override
+    @Transactional(propagation = Propagation.NOT_SUPPORTED)
     public AdminBannerImageUploadResponse createImageUploadUrl(AdminBannerImageUploadRequest request, String contentType) {
         return adminBannerSupport.createImageUploadUrl(request, contentType, "banner");
     }
@@ -54,9 +56,7 @@ public class AdminBannerServiceImpl implements AdminBannerService {
         );
         banner.replaceRawProducts(adminBannerSupport.buildMappings(banner, request.mappedRawProductIds(), requiredRawProducts));
         Banner savedBanner = bannerRepository.saveAndFlush(banner);
-        Banner savedWithRawProducts = bannerRepository.findByIdWithRawProducts(savedBanner.getId(), BannerType.BANNER, true)
-                .orElseThrow(() -> new GeneralException(ErrorCode.NOT_FOUND_BANNER));
-        return buildResponse(savedWithRawProducts, requiredRawProducts);
+        return buildResponse(savedBanner, requiredRawProducts);
     }
 
     @Override
@@ -104,9 +104,7 @@ public class AdminBannerServiceImpl implements AdminBannerService {
         banner.replaceRawProducts(adminBannerSupport.buildMappings(banner, targetMappedRawProductIds, requiredRawProducts));
 
         Banner savedBanner = bannerRepository.saveAndFlush(banner);
-        Banner savedWithRawProducts = bannerRepository.findByIdWithRawProducts(savedBanner.getId(), BannerType.BANNER, true)
-                .orElseThrow(() -> new GeneralException(ErrorCode.NOT_FOUND_BANNER));
-        return buildResponse(savedWithRawProducts, requiredRawProducts);
+        return buildResponse(savedBanner, requiredRawProducts);
     }
 
     @Override

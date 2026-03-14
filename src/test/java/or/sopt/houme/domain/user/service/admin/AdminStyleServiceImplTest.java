@@ -19,12 +19,14 @@ import or.sopt.houme.domain.user.presentation.admin.controller.dto.banner.respon
 import or.sopt.houme.domain.user.presentation.admin.controller.dto.style.request.AdminStyleCreateRequest;
 import or.sopt.houme.domain.user.presentation.admin.controller.dto.style.request.AdminStyleUpdateRequest;
 import or.sopt.houme.domain.user.presentation.admin.controller.dto.style.response.AdminStyleResponse;
+import or.sopt.houme.global.api.GeneralException;
 
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -72,7 +74,6 @@ class AdminStyleServiceImplTest {
         when(adminBannerSupport.normalizeRequired(any())).thenAnswer(invocation -> invocation.getArgument(0));
         when(adminBannerSupport.buildMappings(any(Banner.class), eq(List.of(1L)), any())).thenReturn(List.of());
         when(bannerRepository.saveAndFlush(any(Banner.class))).thenReturn(style);
-        when(bannerRepository.findByIdWithRawProducts(20L, BannerType.STYLE, false)).thenReturn(Optional.of(style));
         when(adminBannerSupport.toMappedRawProductResponses(eq(style), eq(Map.of(1L, rawProduct))))
                 .thenReturn(List.of(AdminBannerMappedRawProductResponse.of(rawProduct)));
 
@@ -149,6 +150,80 @@ class AdminStyleServiceImplTest {
         AdminBannerRawProductSearchResponse response = adminStyleService.searchRawProducts("책상", 10);
 
         assertThat(response.rawProducts()).hasSize(1);
+    }
+
+    @Test
+    @DisplayName("getById()는 STYLE 타입이 아닌 배너를 거절한다")
+    void getById_rejectsNonStyleBanner() {
+        Banner banner = Banner.create(
+                BannerType.BANNER,
+                "https://image",
+                "배너",
+                "설명",
+                "질문",
+                "prompt",
+                "[]"
+        );
+
+        when(bannerRepository.findByIdWithRawProducts(99L, BannerType.STYLE, false)).thenReturn(Optional.of(banner));
+
+        assertThatThrownBy(() -> adminStyleService.getById(99L))
+                .isInstanceOf(GeneralException.class);
+    }
+
+    @Test
+    @DisplayName("getAll()은 STYLE 타입만 반환한다")
+    void getAll_filtersNonStyleBanner() {
+        Banner style = Banner.create(
+                BannerType.STYLE,
+                "https://style-image",
+                "스타일",
+                "설명",
+                null,
+                "prompt",
+                null
+        );
+        ReflectionTestUtils.setField(style, "id", 30L);
+        ReflectionTestUtils.setField(style, "createdAt", LocalDateTime.of(2026, 3, 13, 12, 0));
+        ReflectionTestUtils.setField(style, "updatedAt", LocalDateTime.of(2026, 3, 13, 12, 5));
+
+        Banner banner = Banner.create(
+                BannerType.BANNER,
+                "https://banner-image",
+                "배너",
+                "배너 설명",
+                "질문",
+                "prompt",
+                "[]"
+        );
+        ReflectionTestUtils.setField(banner, "id", 31L);
+
+        when(bannerRepository.findAllWithRawProducts(BannerType.STYLE, false)).thenReturn(List.of(style, banner));
+        when(adminBannerSupport.toMappedRawProductResponses(eq(style), any())).thenReturn(List.of());
+
+        var response = adminStyleService.getAll();
+
+        assertThat(response.styles()).hasSize(1);
+        assertThat(response.styles().getFirst().id()).isEqualTo(30L);
+    }
+
+    @Test
+    @DisplayName("delete()는 STYLE 타입이 아닌 배너를 거절한다")
+    void delete_rejectsNonStyleBanner() {
+        Banner banner = Banner.create(
+                BannerType.BANNER,
+                "https://image",
+                "배너",
+                "설명",
+                "질문",
+                "prompt",
+                "[]"
+        );
+
+        when(bannerRepository.findByIdWithRawProducts(55L, BannerType.STYLE, false)).thenReturn(Optional.of(banner));
+
+        assertThatThrownBy(() -> adminStyleService.delete(55L))
+                .isInstanceOf(GeneralException.class);
     }
 
     private CurationRawProduct rawProduct(Long id, Long productId, String productName) {

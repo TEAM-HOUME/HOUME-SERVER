@@ -15,6 +15,7 @@ import or.sopt.houme.domain.user.presentation.admin.controller.dto.style.respons
 import or.sopt.houme.global.api.ErrorCode;
 import or.sopt.houme.global.api.GeneralException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
@@ -29,6 +30,7 @@ public class AdminStyleServiceImpl implements AdminStyleService {
     private final AdminBannerSupport adminBannerSupport;
 
     @Override
+    @Transactional(propagation = Propagation.NOT_SUPPORTED)
     public AdminBannerImageUploadResponse createImageUploadUrl(AdminBannerImageUploadRequest request, String contentType) {
         return adminBannerSupport.createImageUploadUrl(request, contentType, "style");
     }
@@ -50,22 +52,24 @@ public class AdminStyleServiceImpl implements AdminStyleService {
         style.replaceRawProducts(adminBannerSupport.buildMappings(style, request.mappedRawProductIds(), requiredRawProducts));
 
         Banner savedStyle = bannerRepository.saveAndFlush(style);
-        Banner savedWithRawProducts = bannerRepository.findByIdWithRawProducts(savedStyle.getId(), BannerType.STYLE, false)
-                .orElseThrow(() -> new GeneralException(ErrorCode.NOT_FOUND_STYLE));
-        return buildResponse(savedWithRawProducts, requiredRawProducts);
+        return buildResponse(savedStyle, requiredRawProducts);
     }
 
     @Override
     public AdminStyleListResponse getAll() {
         List<Banner> styles = bannerRepository.findAllWithRawProducts(BannerType.STYLE, false);
-        return new AdminStyleListResponse(buildResponses(styles));
+        return new AdminStyleListResponse(buildResponses(
+                styles.stream()
+                        .filter(this::isStyle)
+                        .toList()
+        ));
     }
 
     @Override
     public AdminStyleResponse getById(Long styleId) {
         Banner style = bannerRepository.findByIdWithRawProducts(styleId, BannerType.STYLE, false)
                 .orElseThrow(() -> new GeneralException(ErrorCode.NOT_FOUND_STYLE));
-        return buildResponses(List.of(style)).getFirst();
+        return buildResponses(List.of(requireStyle(style))).getFirst();
     }
 
     @Override
@@ -73,6 +77,7 @@ public class AdminStyleServiceImpl implements AdminStyleService {
     public AdminStyleResponse update(Long styleId, AdminStyleUpdateRequest request) {
         Banner style = bannerRepository.findByIdWithRawProducts(styleId, BannerType.STYLE, false)
                 .orElseThrow(() -> new GeneralException(ErrorCode.NOT_FOUND_STYLE));
+        requireStyle(style);
 
         List<Long> targetMappedRawProductIds = request.mappedRawProductIds() != null
                 ? request.mappedRawProductIds()
@@ -92,9 +97,7 @@ public class AdminStyleServiceImpl implements AdminStyleService {
         style.replaceRawProducts(adminBannerSupport.buildMappings(style, targetMappedRawProductIds, requiredRawProducts));
 
         Banner savedStyle = bannerRepository.saveAndFlush(style);
-        Banner savedWithRawProducts = bannerRepository.findByIdWithRawProducts(savedStyle.getId(), BannerType.STYLE, false)
-                .orElseThrow(() -> new GeneralException(ErrorCode.NOT_FOUND_STYLE));
-        return buildResponse(savedWithRawProducts, requiredRawProducts);
+        return buildResponse(savedStyle, requiredRawProducts);
     }
 
     @Override
@@ -102,6 +105,7 @@ public class AdminStyleServiceImpl implements AdminStyleService {
     public void delete(Long styleId) {
         Banner style = bannerRepository.findByIdWithRawProducts(styleId, BannerType.STYLE, false)
                 .orElseThrow(() -> new GeneralException(ErrorCode.NOT_FOUND_STYLE));
+        requireStyle(style);
         bannerRepository.delete(style);
         bannerRepository.flush();
     }
@@ -129,5 +133,16 @@ public class AdminStyleServiceImpl implements AdminStyleService {
                 style.getCreatedAt(),
                 style.getUpdatedAt()
         );
+    }
+
+    private Banner requireStyle(Banner banner) {
+        if (!isStyle(banner)) {
+            throw new GeneralException(ErrorCode.NOT_FOUND_STYLE);
+        }
+        return banner;
+    }
+
+    private boolean isStyle(Banner banner) {
+        return banner != null && BannerType.STYLE.equals(banner.getBannerType());
     }
 }

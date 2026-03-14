@@ -129,7 +129,6 @@ class AdminBannerServiceImplTest {
         when(adminBannerSupport.buildMappings(any(Banner.class), eq(List.of(1L)), eq(Map.of(1L, chipRawProduct))))
                 .thenReturn(List.of());
         when(bannerRepository.saveAndFlush(any(Banner.class))).thenReturn(banner);
-        when(bannerRepository.findByIdWithRawProducts(10L, BannerType.BANNER, true)).thenReturn(Optional.of(banner));
         when(adminBannerSupport.parseStyleAnswerChipsJson(any())).thenReturn(List.of(new BannerStyleAnswerChip(1, "칩", 1L)));
         when(adminBannerSupport.toMappedRawProductResponses(eq(banner), eq(Map.of(1L, chipRawProduct)))).thenReturn(List.of());
 

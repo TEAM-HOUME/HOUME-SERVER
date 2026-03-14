@@ -15,13 +15,20 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import or.sopt.houme.domain.furniture.model.entity.CurationRawProduct;
 import or.sopt.houme.global.entity.BaseEntity;
 import org.hibernate.annotations.Comment;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Entity
 @Getter
@@ -57,7 +64,7 @@ public class Banner extends BaseEntity {
     @Comment("스타일 질문")
     private String styleQuestion;
 
-    @Column(name = "style_prompt", nullable = false, columnDefinition = "TEXT")
+    @Column(name = "style_prompt", columnDefinition = "TEXT")
     @Comment("이미지 생성용 스타일 프롬프트")
     private String stylePrompt;
 
@@ -109,7 +116,31 @@ public class Banner extends BaseEntity {
     }
 
     public void replaceRawProducts(List<BannerCurationRawProduct> mappings) {
-        this.bannerRawProducts.clear();
-        this.bannerRawProducts.addAll(mappings);
+        List<BannerCurationRawProduct> safeMappings = mappings == null ? List.of() : mappings;
+        Map<Long, BannerCurationRawProduct> existingByRawProductId = this.bannerRawProducts.stream()
+                .collect(Collectors.toMap(
+                        Banner::extractRawProductId,
+                        Function.identity(),
+                        (left, right) -> left
+                ));
+        Set<Long> incomingRawProductIds = safeMappings.stream()
+                .map(Banner::extractRawProductId)
+                .collect(Collectors.toCollection(LinkedHashSet::new));
+
+        this.bannerRawProducts.removeIf(mapping -> !incomingRawProductIds.contains(extractRawProductId(mapping)));
+
+        safeMappings.stream()
+                .map(Banner::extractRawProduct)
+                .filter(rawProduct -> !existingByRawProductId.containsKey(rawProduct.getId()))
+                .forEach(rawProduct -> this.bannerRawProducts.add(BannerCurationRawProduct.of(this, rawProduct)));
+    }
+
+    private static Long extractRawProductId(BannerCurationRawProduct mapping) {
+        return extractRawProduct(mapping).getId();
+    }
+
+    private static CurationRawProduct extractRawProduct(BannerCurationRawProduct mapping) {
+        BannerCurationRawProduct safeMapping = Objects.requireNonNull(mapping, "mapping must not be null");
+        return Objects.requireNonNull(safeMapping.getCurationRawProduct(), "curationRawProduct must not be null");
     }
 }
