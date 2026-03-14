@@ -140,6 +140,19 @@ class AdminBannerControllerTest {
     }
 
     @Test
+    @DisplayName("POST /api/v1/admin/banners/image-upload-url 요청에서 허용되지 않은 확장자는 400을 반환한다")
+    @WithMockUser(roles = "ADMIN")
+    void createBannerImageUploadUrl_invalidExtension() throws Exception {
+        AdminBannerImageUploadRequest request = new AdminBannerImageUploadRequest("svg");
+
+        mockMvc.perform(post("/api/v1/admin/banners/image-upload-url")
+                        .param("contentType", "image/svg+xml")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
     @DisplayName("GET /api/v1/admin/banners/raw-products/search 요청으로 배너용 RAW 상품을 검색할 수 있다")
     @WithMockUser(roles = "ADMIN")
     void searchRawProducts_success() throws Exception {

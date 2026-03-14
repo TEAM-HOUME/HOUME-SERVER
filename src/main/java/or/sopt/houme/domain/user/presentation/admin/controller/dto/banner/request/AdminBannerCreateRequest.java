@@ -3,6 +3,7 @@ package or.sopt.houme.domain.user.presentation.admin.controller.dto.banner.reque
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
 
 import java.util.List;
@@ -13,7 +14,7 @@ public record AdminBannerCreateRequest(
         @NotBlank String styleDescription,
         @NotBlank String styleQuestion,
         @NotBlank String stylePrompt,
-        @NotNull @Size(max = 4) List<@Valid AdminBannerStyleAnswerChipRequest> styleAnswerChips,
-        @NotNull List<Long> mappedRawProductIds
+        @NotNull @Size(max = 4) List<@NotNull @Valid AdminBannerStyleAnswerChipRequest> styleAnswerChips,
+        @NotNull List<@NotNull @Positive Long> mappedRawProductIds
 ) {
 }

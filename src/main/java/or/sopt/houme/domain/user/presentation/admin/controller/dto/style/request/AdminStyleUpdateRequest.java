@@ -1,5 +1,8 @@
 package or.sopt.houme.domain.user.presentation.admin.controller.dto.style.request;
 
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
+
 import java.util.List;
 
 public record AdminStyleUpdateRequest(
@@ -7,6 +10,6 @@ public record AdminStyleUpdateRequest(
         String bannerTitle,
         String styleDescription,
         String stylePrompt,
-        List<Long> mappedRawProductIds
+        List<@NotNull @Positive Long> mappedRawProductIds
 ) {
 }

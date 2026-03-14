@@ -23,6 +23,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -38,6 +39,7 @@ public class AdminBannerSupport {
     private static final int MAX_STYLE_ANSWER_CHIPS = 4;
     private static final int MAX_SEARCH_SIZE = 50;
     private static final TypeReference<List<BannerStyleAnswerChip>> STYLE_ANSWER_CHIP_TYPE = new TypeReference<>() {};
+    private static final Map<String, String> IMAGE_CONTENT_TYPES = createImageContentTypes();
 
     private final CurationRawProductRepository curationRawProductRepository;
     private final ObjectMapper objectMapper;
@@ -48,10 +50,12 @@ public class AdminBannerSupport {
             String contentType,
             String directory
     ) {
+        String normalizedExtension = normalizeRequired(request.imageExtension()).toLowerCase();
+        String normalizedContentType = validateImageContentType(normalizedExtension, contentType);
         S3PresignedUrlResponseDTO presignedUrl = s3PresignedUtil.createPresignedUrl(
-                normalizeRequired(request.imageExtension()),
+                normalizedExtension,
                 directory,
-                contentType
+                normalizedContentType
         );
         return new AdminBannerImageUploadResponse(presignedUrl.uploadUrl(), presignedUrl.publicUrl());
     }
@@ -228,5 +232,31 @@ public class AdminBannerSupport {
         }
         String trimmed = value.trim();
         return trimmed.isEmpty() ? null : trimmed;
+    }
+
+    private String validateImageContentType(String imageExtension, String contentType) {
+        String expectedContentType = IMAGE_CONTENT_TYPES.get(imageExtension);
+        String normalizedContentType = normalizeOptional(contentType);
+
+        if (expectedContentType == null || normalizedContentType == null) {
+            throw new GeneralException(ErrorCode.NOT_VALID_EXCEPTION);
+        }
+
+        String lowerContentType = normalizedContentType.toLowerCase();
+        if (!expectedContentType.equals(lowerContentType)) {
+            throw new GeneralException(ErrorCode.NOT_VALID_EXCEPTION);
+        }
+
+        return lowerContentType;
+    }
+
+    private static Map<String, String> createImageContentTypes() {
+        Map<String, String> contentTypes = new HashMap<>();
+        contentTypes.put("jpg", "image/jpeg");
+        contentTypes.put("jpeg", "image/jpeg");
+        contentTypes.put("png", "image/png");
+        contentTypes.put("gif", "image/gif");
+        contentTypes.put("webp", "image/webp");
+        return Map.copyOf(contentTypes);
     }
 }

@@ -3,6 +3,9 @@ package or.sopt.houme.domain.user.presentation.admin.controller;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
 import or.sopt.houme.domain.user.presentation.admin.controller.dto.banner.request.AdminBannerImageUploadRequest;
 import or.sopt.houme.domain.user.presentation.admin.controller.dto.banner.response.AdminBannerImageUploadResponse;
@@ -13,8 +16,11 @@ import or.sopt.houme.domain.user.presentation.admin.controller.dto.style.respons
 import or.sopt.houme.domain.user.presentation.admin.controller.dto.style.response.AdminStyleResponse;
 import or.sopt.houme.domain.user.service.admin.AdminStyleService;
 import or.sopt.houme.global.api.ApiResponse;
+import or.sopt.houme.global.api.ErrorCode;
+import or.sopt.houme.global.api.GeneralException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -30,7 +36,10 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/v1/admin/styles")
 @Tag(name = "어드민 스타일 API")
 @PreAuthorize("hasRole('ADMIN')")
+@Validated
 public class AdminStyleController {
+
+    private static final int MAX_RAW_PRODUCT_SEARCH_SIZE = 50;
 
     private final AdminStyleService adminStyleService;
 
@@ -38,7 +47,7 @@ public class AdminStyleController {
     @Operation(summary = "스타일 이미지 업로드용 presigned url 생성 API")
     public ResponseEntity<ApiResponse<AdminBannerImageUploadResponse>> createStyleImageUploadUrl(
             @Valid @RequestBody AdminBannerImageUploadRequest request,
-            @RequestParam("contentType") String contentType
+            @RequestParam("contentType") @NotBlank String contentType
     ) {
         return ResponseEntity.ok(ApiResponse.ok(adminStyleService.createImageUploadUrl(request, contentType)));
     }
@@ -83,8 +92,15 @@ public class AdminStyleController {
     @Operation(summary = "스타일용 RAW 상품 검색 API")
     public ResponseEntity<ApiResponse<AdminBannerRawProductSearchResponse>> searchRawProducts(
             @RequestParam(required = false) String keyword,
-            @RequestParam(defaultValue = "20") int size
+            @RequestParam(defaultValue = "20") @Min(1) @Max(50) int size
     ) {
+        validateSearchSize(size);
         return ResponseEntity.ok(ApiResponse.ok(adminStyleService.searchRawProducts(keyword, size)));
+    }
+
+    private void validateSearchSize(int size) {
+        if (size < 1 || size > MAX_RAW_PRODUCT_SEARCH_SIZE) {
+            throw new GeneralException(ErrorCode.NOT_VALID_EXCEPTION);
+        }
     }
 }
