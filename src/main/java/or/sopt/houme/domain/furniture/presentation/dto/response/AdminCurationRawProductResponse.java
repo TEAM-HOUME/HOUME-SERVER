@@ -4,6 +4,7 @@ import or.sopt.houme.domain.furniture.model.entity.CurationRawProduct;
 import or.sopt.houme.domain.furniture.model.entity.SoozipCategory;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 public record AdminCurationRawProductResponse(
         Long id,
@@ -20,9 +21,16 @@ public record AdminCurationRawProductResponse(
         Long discountPrice,
         Long baseShippingFee,
         Long freeShippingCondition,
-        LocalDateTime fetchedAt
+        LocalDateTime fetchedAt,
+        Boolean isExposed,
+        List<AdminCurationRawProductColorResponse> colors,
+        List<AdminCurationRawProductFurnitureTagResponse> furnitureTags
 ) {
-    public static AdminCurationRawProductResponse of(CurationRawProduct rawProduct) {
+    public static AdminCurationRawProductResponse of(
+            CurationRawProduct rawProduct,
+            List<AdminCurationRawProductColorResponse> colors,
+            List<AdminCurationRawProductFurnitureTagResponse> furnitureTags
+    ) {
         return new AdminCurationRawProductResponse(
                 rawProduct.getId(),
                 rawProduct.getSource(),
@@ -38,7 +46,10 @@ public record AdminCurationRawProductResponse(
                 rawProduct.getDiscountPrice(),
                 rawProduct.getBaseShippingFee(),
                 rawProduct.getFreeShippingCondition(),
-                rawProduct.getFetchedAt()
+                rawProduct.getFetchedAt(),
+                rawProduct.getIsExposed(),
+                colors,
+                furnitureTags
         );
     }
 }

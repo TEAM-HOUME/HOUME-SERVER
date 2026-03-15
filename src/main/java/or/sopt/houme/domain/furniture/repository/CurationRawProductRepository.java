@@ -47,6 +47,7 @@ public interface CurationRawProductRepository extends JpaRepository<CurationRawP
             from CurationRawProduct rawProduct
             join rawProduct.furnitureTagMappings mapping
             where mapping.furnitureTag = :furnitureTag
+              and rawProduct.isExposed = true
             """)
     List<CurationRawProduct> findAllByFurnitureTag(@Param("furnitureTag") FurnitureTag furnitureTag);
 
@@ -56,6 +57,7 @@ public interface CurationRawProductRepository extends JpaRepository<CurationRawP
             join rawProduct.furnitureTagMappings mapping
             where mapping.furnitureTag = :furnitureTag
               and rawProduct.productId in :productIds
+              and rawProduct.isExposed = true
             """)
     List<CurationRawProduct> findAllByFurnitureTagAndProductIdIn(
             @Param("furnitureTag") FurnitureTag furnitureTag,

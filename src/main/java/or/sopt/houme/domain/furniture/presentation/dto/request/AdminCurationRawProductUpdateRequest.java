@@ -31,6 +31,7 @@ public record AdminCurationRawProductUpdateRequest(
         Long baseShippingFee,
         @PositiveOrZero(message = "freeShippingCondition는 0 이상이어야 합니다.")
         Long freeShippingCondition,
+        Boolean isExposed,
         LocalDateTime fetchedAt
 ) {
 }

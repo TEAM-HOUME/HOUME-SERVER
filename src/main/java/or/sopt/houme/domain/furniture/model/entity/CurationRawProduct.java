@@ -112,6 +112,11 @@ public class CurationRawProduct {
     @Comment("수집 시각")
     private LocalDateTime fetchedAt;
 
+    @Builder.Default
+    @Column(name = "is_exposed")
+    @Comment("노출 여부")
+    private Boolean isExposed = true;
+
     @OneToMany(mappedBy = "curationRawProduct", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     @Comment("수동 매핑된 가구 태그(다중 매핑)")
@@ -169,7 +174,8 @@ public class CurationRawProduct {
             Integer discountRate,
             Long discountPrice,
             Long baseShippingFee,
-            Long freeShippingCondition
+            Long freeShippingCondition,
+            Boolean isExposed
     ) {
         if (brand != null && !brand.isBlank()) {
             this.brand = brand;
@@ -189,6 +195,9 @@ public class CurationRawProduct {
         if (freeShippingCondition != null) {
             this.freeShippingCondition = freeShippingCondition;
         }
+        if (isExposed != null) {
+            this.isExposed = isExposed;
+        }
     }
 
     public void updateAdminFields(
@@ -205,7 +214,8 @@ public class CurationRawProduct {
             Long discountPrice,
             Long baseShippingFee,
             Long freeShippingCondition,
-            LocalDateTime fetchedAt
+            LocalDateTime fetchedAt,
+            Boolean isExposed
     ) {
         if (source != null && !source.isBlank()) {
             this.source = normalizeSource(source);
@@ -217,7 +227,7 @@ public class CurationRawProduct {
             this.productId = productId;
         }
         updateFrom(productImageUrl, productSiteUrl, productName, productMallName, fetchedAt);
-        updateMeta(brand, listPrice, discountRate, discountPrice, baseShippingFee, freeShippingCondition);
+        updateMeta(brand, listPrice, discountRate, discountPrice, baseShippingFee, freeShippingCondition, isExposed);
     }
 
     public boolean addFurnitureTag(FurnitureTag furnitureTag) {
@@ -239,6 +249,10 @@ public class CurationRawProduct {
 
     public void clearFurnitureTags() {
         furnitureTagMappings.clear();
+    }
+
+    public void updateExposure(boolean isExposed) {
+        this.isExposed = isExposed;
     }
 
     private static String normalizeSource(String source) {

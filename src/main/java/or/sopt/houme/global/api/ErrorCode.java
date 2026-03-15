@@ -34,6 +34,7 @@ public enum ErrorCode {
     USERNAME_DUPLICATE(HttpStatus.BAD_REQUEST,40009,"username이 중복되었습니다."),
     EMAIL_ALREADY_EXISTS(HttpStatus.BAD_REQUEST, 40021, "이미 가입된 이메일입니다."),
     DUPLICATE_CURATION_RAW_PRODUCT(HttpStatus.BAD_REQUEST, 40022, "이미 동일한 원본 상품(source/category/product_id)이 존재합니다."),
+    DUPLICATE_CURATION_RAW_PRODUCT_FURNITURE_TAG(HttpStatus.BAD_REQUEST, 40023, "이미 동일한 원본 상품 가구 태그 매핑이 존재합니다."),
 
     // 소셜 회원가입 관련
     SIGNUP_TOKEN_INVALID(HttpStatus.BAD_REQUEST, 40020, "회원가입 토큰이 유효하지 않습니다."),
@@ -127,8 +128,9 @@ public enum ErrorCode {
     // House_taste
     NOT_FOUND_HOUSE_TASTE(HttpStatus.NOT_FOUND, 40423, "집 취향을 찾을 수 없습니다."),
     NOT_FOUND_CURATION_RAW_PRODUCT(HttpStatus.NOT_FOUND, 40424, "원본 상품 객체를 찾을 수 없습니다."),
-    NOT_FOUND_BANNER(HttpStatus.NOT_FOUND, 40425, "배너 객체를 찾을 수 없습니다."),
-    NOT_FOUND_STYLE(HttpStatus.NOT_FOUND, 40426, "스타일 객체를 찾을 수 없습니다."),
+    NOT_FOUND_CURATION_RAW_PRODUCT_FURNITURE_TAG_MAPPING(HttpStatus.NOT_FOUND, 40425, "원본 상품 가구 태그 매핑을 찾을 수 없습니다."),
+    NOT_FOUND_BANNER(HttpStatus.NOT_FOUND, 40426, "배너 객체를 찾을 수 없습니다."),
+    NOT_FOUND_STYLE(HttpStatus.NOT_FOUND, 40427, "스타일 객체를 찾을 수 없습니다."),
 
 
     /**

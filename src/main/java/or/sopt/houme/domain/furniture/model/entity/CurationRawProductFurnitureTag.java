@@ -51,6 +51,10 @@ public class CurationRawProductFurnitureTag {
     @JoinColumn(name = "furniture_tag_id", nullable = false)
     private FurnitureTag furnitureTag;
 
+    public void updateFurnitureTag(FurnitureTag furnitureTag) {
+        this.furnitureTag = furnitureTag;
+    }
+
     public static CurationRawProductFurnitureTag of(CurationRawProduct rawProduct, FurnitureTag furnitureTag) {
         return CurationRawProductFurnitureTag.builder()
                 .curationRawProduct(rawProduct)
