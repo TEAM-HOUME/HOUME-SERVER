@@ -72,6 +72,14 @@ public class AdminFurnitureController {
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
+    @GetMapping("/furniture/types/{furnitureTypeId}/tags")
+    @Operation(summary = "가구 타입별 furniture_tag 조회 API")
+    public ResponseEntity<ApiResponse<AdminFurnitureTagOptionListResponse>> getFurnitureTagsByType(
+            @PathVariable Long furnitureTypeId
+    ) {
+        return ResponseEntity.ok(ApiResponse.ok(adminFurnitureService.getFurnitureTagsByType(furnitureTypeId)));
+    }
+
 
     @PatchMapping("/furniture")
     @Operation(summary = "가구 정보 수정 API")

@@ -48,3 +48,4 @@ src/main/generated
 
 ### .DS 무시 ###
 .DS_Store
+src/main/resources/application-prod.yml

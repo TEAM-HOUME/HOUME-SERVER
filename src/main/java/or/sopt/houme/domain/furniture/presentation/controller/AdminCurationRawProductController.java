@@ -6,7 +6,11 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import or.sopt.houme.domain.furniture.presentation.dto.request.AdminCurationRawProductCreateRequest;
+import or.sopt.houme.domain.furniture.presentation.dto.request.AdminCurationRawProductExposureUpdateRequest;
+import or.sopt.houme.domain.furniture.presentation.dto.request.AdminCurationRawProductFurnitureTagCreateRequest;
+import or.sopt.houme.domain.furniture.presentation.dto.request.AdminCurationRawProductFurnitureTagUpdateRequest;
 import or.sopt.houme.domain.furniture.presentation.dto.request.AdminCurationRawProductUpdateRequest;
+import or.sopt.houme.domain.furniture.presentation.dto.response.AdminCurationRawProductFurnitureTagResponse;
 import or.sopt.houme.domain.furniture.presentation.dto.response.AdminCurationRawProductListResponse;
 import or.sopt.houme.domain.furniture.presentation.dto.response.AdminCurationRawProductResponse;
 import or.sopt.houme.domain.furniture.service.admin.AdminCurationRawProductService;
@@ -67,6 +71,48 @@ public class AdminCurationRawProductController {
             @Valid @RequestBody AdminCurationRawProductUpdateRequest request
     ) {
         return ResponseEntity.ok(ApiResponse.ok(adminCurationRawProductService.update(curationRawProductId, request)));
+    }
+
+    @PatchMapping("/exposure")
+    @Operation(summary = "curation_raw_product 노출 여부 일괄 수정 API")
+    public ResponseEntity<ApiResponse<String>> updateRawProductExposure(
+            @Valid @RequestBody AdminCurationRawProductExposureUpdateRequest request
+    ) {
+        adminCurationRawProductService.updateExposure(request);
+        return ResponseEntity.ok(ApiResponse.ok("RAW 상품 노출 여부가 수정되었습니다."));
+    }
+
+    @PostMapping("/{curationRawProductId}/furniture-tags")
+    @Operation(summary = "curation_raw_product 가구 태그 매핑 추가 API")
+    public ResponseEntity<ApiResponse<AdminCurationRawProductFurnitureTagResponse>> createRawProductFurnitureTagMapping(
+            @PathVariable Long curationRawProductId,
+            @Valid @RequestBody AdminCurationRawProductFurnitureTagCreateRequest request
+    ) {
+        return ResponseEntity.ok(ApiResponse.ok(
+                adminCurationRawProductService.createFurnitureTagMapping(curationRawProductId, request)
+        ));
+    }
+
+    @PatchMapping("/{curationRawProductId}/furniture-tags/{mappingId}")
+    @Operation(summary = "curation_raw_product 가구 태그 매핑 수정 API")
+    public ResponseEntity<ApiResponse<AdminCurationRawProductFurnitureTagResponse>> updateRawProductFurnitureTagMapping(
+            @PathVariable Long curationRawProductId,
+            @PathVariable Long mappingId,
+            @Valid @RequestBody AdminCurationRawProductFurnitureTagUpdateRequest request
+    ) {
+        return ResponseEntity.ok(ApiResponse.ok(
+                adminCurationRawProductService.updateFurnitureTagMapping(curationRawProductId, mappingId, request)
+        ));
+    }
+
+    @DeleteMapping("/{curationRawProductId}/furniture-tags/{mappingId}")
+    @Operation(summary = "curation_raw_product 가구 태그 매핑 삭제 API")
+    public ResponseEntity<ApiResponse<String>> deleteRawProductFurnitureTagMapping(
+            @PathVariable Long curationRawProductId,
+            @PathVariable Long mappingId
+    ) {
+        adminCurationRawProductService.deleteFurnitureTagMapping(curationRawProductId, mappingId);
+        return ResponseEntity.ok(ApiResponse.ok("RAW 상품 가구 태그 매핑이 삭제되었습니다."));
     }
 
     @DeleteMapping("/{curationRawProductId}")
