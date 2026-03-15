@@ -19,7 +19,6 @@ import or.sopt.houme.global.api.ApiResponse;
 import or.sopt.houme.global.api.ErrorCode;
 import or.sopt.houme.global.api.GeneralException;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -35,7 +34,6 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/admin/banners")
 @Tag(name = "어드민 배너 API")
-@PreAuthorize("hasRole('ADMIN')")
 @Validated
 public class AdminBannerController {
 

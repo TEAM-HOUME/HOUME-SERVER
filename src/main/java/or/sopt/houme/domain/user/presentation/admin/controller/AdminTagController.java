@@ -12,7 +12,6 @@ import or.sopt.houme.domain.user.presentation.admin.controller.dto.tag.AdminTagG
 import or.sopt.houme.domain.user.service.admin.AdminTagService;
 import or.sopt.houme.global.api.ApiResponse;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -21,7 +20,6 @@ import java.util.List;
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/admin")
 @Tag(name = "어드민 스타일 태그 관련 API")
-@PreAuthorize("hasRole('ADMIN')")
 public class AdminTagController {
 
     private final AdminTagService adminTagService;

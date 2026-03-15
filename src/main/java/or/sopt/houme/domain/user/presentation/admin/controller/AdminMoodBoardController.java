@@ -9,14 +9,12 @@ import or.sopt.houme.domain.user.presentation.admin.controller.dto.moodboard.Adm
 import or.sopt.houme.domain.user.service.admin.AdminMoodBoardService;
 import or.sopt.houme.global.api.ApiResponse;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/admin")
 @Tag(name = "어드민 무드보드 관련 API")
-@PreAuthorize("hasRole('ADMIN')")
 public class AdminMoodBoardController {
 
 
