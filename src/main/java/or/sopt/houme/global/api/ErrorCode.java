@@ -129,6 +129,8 @@ public enum ErrorCode {
     NOT_FOUND_HOUSE_TASTE(HttpStatus.NOT_FOUND, 40423, "집 취향을 찾을 수 없습니다."),
     NOT_FOUND_CURATION_RAW_PRODUCT(HttpStatus.NOT_FOUND, 40424, "원본 상품 객체를 찾을 수 없습니다."),
     NOT_FOUND_CURATION_RAW_PRODUCT_FURNITURE_TAG_MAPPING(HttpStatus.NOT_FOUND, 40425, "원본 상품 가구 태그 매핑을 찾을 수 없습니다."),
+    NOT_FOUND_BANNER(HttpStatus.NOT_FOUND, 40426, "배너 객체를 찾을 수 없습니다."),
+    NOT_FOUND_STYLE(HttpStatus.NOT_FOUND, 40427, "스타일 객체를 찾을 수 없습니다."),
 
 
     /**

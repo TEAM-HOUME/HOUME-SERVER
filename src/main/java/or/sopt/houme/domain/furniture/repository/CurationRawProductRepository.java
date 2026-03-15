@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface CurationRawProductRepository extends JpaRepository<CurationRawProduct, Long> {
+public interface CurationRawProductRepository extends JpaRepository<CurationRawProduct, Long>, CurationRawProductRepositoryCustom {
     @Query("""
             select rawProduct
             from CurationRawProduct rawProduct
