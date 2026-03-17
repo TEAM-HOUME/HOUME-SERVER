@@ -25,6 +25,8 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -39,7 +41,10 @@ class AdminFloorPlanServiceImplTest {
     private FloorPlanRepository floorPlanRepository;
 
     @Mock
-    private AdminFloorPlanSupport adminFloorPlanSupport;
+    private AdminFloorPlanImageUploadService adminFloorPlanImageUploadService;
+
+    @Mock
+    private FloorPlanImageJsonCodec floorPlanImageJsonCodec;
 
     @Test
     @DisplayName("create()는 다중 이미지 기반 도면을 생성한다")
@@ -60,24 +65,18 @@ class AdminFloorPlanServiceImplTest {
         );
         FloorPlanImageItem representative = images.getFirst();
         FloorPlan floorPlan = FloorPlan.create(
-                representative.url(),
-                representative.filename(),
-                representative.originalFilename(),
-                representative.fileExtension(),
                 Form.OFFICETEL,
                 Structure.OPEN_ONE_ROOM,
                 Equilibrium.UNDER_5,
                 "도면 프롬프트",
+                or.sopt.houme.domain.house.model.floorPlan.vo.FloorPlanImages.from(images),
                 "[{\"url\":\"https://image/1\"}]"
         );
         ReflectionTestUtils.setField(floorPlan, "id", 1L);
 
-        when(adminFloorPlanSupport.normalizeImages(request.images())).thenReturn(images);
-        when(adminFloorPlanSupport.extractRepresentativeImage(images)).thenReturn(representative);
-        when(adminFloorPlanSupport.normalizeRequired("도면 프롬프트")).thenReturn("도면 프롬프트");
-        when(adminFloorPlanSupport.toImagesJson(images)).thenReturn("[{\"url\":\"https://image/1\"}]");
+        when(floorPlanImageJsonCodec.write(anyList())).thenReturn("[{\"url\":\"https://image/1\"}]");
         when(floorPlanRepository.saveAndFlush(any(FloorPlan.class))).thenReturn(floorPlan);
-        when(adminFloorPlanSupport.resolveImages(floorPlan)).thenReturn(images);
+        when(floorPlanImageJsonCodec.read(anyString())).thenReturn(images);
 
         AdminFloorPlanResponse response = adminFloorPlanService.create(request);
 
@@ -94,14 +93,13 @@ class AdminFloorPlanServiceImplTest {
     @DisplayName("update()는 대표 이미지를 포함해 도면 정보를 수정한다")
     void update_success() {
         FloorPlan floorPlan = FloorPlan.create(
-                "https://old-image",
-                "old.png",
-                "old-original.png",
-                "png",
                 Form.VILLA,
                 Structure.SEPARATED_ONE_ROOM,
                 Equilibrium.BETWEEN_6_10,
                 "기존 프롬프트",
+                or.sopt.houme.domain.house.model.floorPlan.vo.FloorPlanImages.from(List.of(
+                        new FloorPlanImageItem("https://old-image", "old.png", "old-original.png", "png", 1)
+                )),
                 "[{\"url\":\"https://old-image\"}]"
         );
         ReflectionTestUtils.setField(floorPlan, "id", 2L);
@@ -122,12 +120,9 @@ class AdminFloorPlanServiceImplTest {
         );
 
         when(floorPlanRepository.findById(2L)).thenReturn(Optional.of(floorPlan));
-        when(adminFloorPlanSupport.normalizeImages(request.images())).thenReturn(updatedImages);
-        when(adminFloorPlanSupport.extractRepresentativeImage(updatedImages)).thenReturn(updatedImages.getFirst());
-        when(adminFloorPlanSupport.normalizeRequired("수정 프롬프트")).thenReturn("수정 프롬프트");
-        when(adminFloorPlanSupport.toImagesJson(updatedImages)).thenReturn("[{\"url\":\"https://new-image/1\"}]");
+        when(floorPlanImageJsonCodec.write(anyList())).thenReturn("[{\"url\":\"https://new-image/1\"}]");
         when(floorPlanRepository.saveAndFlush(floorPlan)).thenReturn(floorPlan);
-        when(adminFloorPlanSupport.resolveImages(floorPlan)).thenReturn(updatedImages);
+        when(floorPlanImageJsonCodec.read(anyString())).thenReturn(updatedImages);
 
         AdminFloorPlanResponse response = adminFloorPlanService.update(2L, request);
 
@@ -145,7 +140,7 @@ class AdminFloorPlanServiceImplTest {
     @Test
     @DisplayName("createImageUploadUrl()은 presigned URL을 반환한다")
     void createImageUploadUrl_success() {
-        when(adminFloorPlanSupport.createImageUploadUrl(any(AdminFloorPlanImageUploadRequest.class), eq("image/png")))
+        when(adminFloorPlanImageUploadService.createImageUploadUrl(any(AdminFloorPlanImageUploadRequest.class), eq("image/png")))
                 .thenReturn(new AdminFloorPlanImageUploadResponse("https://upload-url", "https://public-url"));
 
         AdminFloorPlanImageUploadResponse response = adminFloorPlanService.createImageUploadUrl(

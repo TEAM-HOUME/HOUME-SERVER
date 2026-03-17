@@ -5,6 +5,8 @@ import lombok.*;
 import or.sopt.houme.domain.house.model.entity.enums.Equilibrium;
 import or.sopt.houme.domain.house.model.entity.enums.Form;
 import or.sopt.houme.domain.house.model.entity.enums.Structure;
+import or.sopt.houme.domain.house.model.floorPlan.vo.FloorPlanImageItem;
+import or.sopt.houme.domain.house.model.floorPlan.vo.FloorPlanImages;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
@@ -51,48 +53,44 @@ public class FloorPlan {
     private String imagesJson;
 
     public static FloorPlan create(
-            String url,
-            String filename,
-            String originalFilename,
-            String fileExtension,
             Form form,
             Structure structure,
             Equilibrium equilibrium,
             String floorPlanPrompt,
+            FloorPlanImages images,
             String imagesJson
     ) {
-        return FloorPlan.builder()
-                .url(url)
-                .filename(filename)
-                .originalFilename(originalFilename)
-                .fileExtension(fileExtension)
+        FloorPlan floorPlan = FloorPlan.builder()
                 .form(form)
                 .structure(structure)
                 .equilibrium(equilibrium)
                 .floorPlanPrompt(floorPlanPrompt)
-                .imagesJson(imagesJson)
                 .build();
+        floorPlan.applyImages(images, imagesJson);
+        return floorPlan;
     }
 
     public void update(
-            String url,
-            String filename,
-            String originalFilename,
-            String fileExtension,
             Form form,
             Structure structure,
             Equilibrium equilibrium,
             String floorPlanPrompt,
+            FloorPlanImages images,
             String imagesJson
     ) {
-        this.url = url;
-        this.filename = filename;
-        this.originalFilename = originalFilename;
-        this.fileExtension = fileExtension;
         this.form = form;
         this.structure = structure;
         this.equilibrium = equilibrium;
         this.floorPlanPrompt = floorPlanPrompt;
+        applyImages(images, imagesJson);
+    }
+
+    private void applyImages(FloorPlanImages images, String imagesJson) {
+        FloorPlanImageItem representativeImage = images.representative();
+        this.url = representativeImage.url();
+        this.filename = representativeImage.filename();
+        this.originalFilename = representativeImage.originalFilename();
+        this.fileExtension = representativeImage.fileExtension();
         this.imagesJson = imagesJson;
     }
 }
