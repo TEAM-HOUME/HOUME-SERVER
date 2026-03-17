@@ -27,8 +27,12 @@
 - `service`
   - 도메인 규칙, 트랜잭션 경계, 엔티티 변경을 담당합니다.
   - 읽기 메서드는 `@Transactional(readOnly = true)`를 기본으로 고려합니다.
+  - 실제 유즈케이스를 실행하는 클래스에만 `*Service` 명칭을 사용합니다.
 - `service/facade`
   - 여러 서비스/외부 인프라를 조합하는 유스케이스 오케스트레이션을 담당합니다.
+- `util`
+  - 유즈케이스가 아닌 직렬화/역직렬화, presigned URL 생성, mapper, codec, validator 같은 보조 컴포넌트를 위치시킵니다.
+  - `Support`, `Helper` 같은 포괄 명칭은 사용하지 않고, 역할이 드러나는 이름(`*JsonCodec`, `*PresignedUrlGenerator`, `*Mapper`, `*Validator`, `*Provider`)을 사용합니다.
 - `repository`
   - 단순 조회는 Spring Data JPA 메서드를 우선 사용합니다.
   - 복잡 조회는 Custom Repository + QueryDSL 구현(`*RepositoryImpl`)로 분리합니다.
@@ -54,6 +58,9 @@
 - 공통 시간 필드는 `BaseEntity` 감사 필드를 사용합니다.
 - Enum 저장은 현재 패턴대로 `@Enumerated(EnumType.STRING)`을 우선 사용합니다.
 - 테이블/인덱스/유니크 제약 이름은 현재 네이밍 패턴(`idx_*`, `uk_*`, `chk_*`)을 따릅니다.
+- 도메인 규칙(정렬, 대표값 선택, 중복 방지, 상태 검증)은 엔티티 또는 VO가 책임집니다.
+- JSON 직렬화/역직렬화, 파일 업로드 URL 생성, 외부 저장소 연동은 도메인 밖에서 처리합니다.
+- 저장 포맷(JSON)과 도메인 규칙을 한 클래스에 섞지 않습니다.
 
 ## 8. DB 스키마 변경 시 필수 규칙
 - 현재 `ddl-auto: update` 기반 운영이므로, 파괴적 변경은 특히 신중히 처리합니다.

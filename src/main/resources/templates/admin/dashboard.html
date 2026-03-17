@@ -607,6 +607,60 @@
             border: 1px dashed #cbd5e1;
             font-style: italic;
         }
+        .floor-plan-image-stack {
+            display: grid;
+            gap: 12px;
+            margin-top: 16px;
+        }
+        .floor-plan-image-card {
+            display: grid;
+            grid-template-columns: 88px 1fr auto;
+            gap: 16px;
+            align-items: center;
+            padding: 14px 16px;
+            border: 1px solid #e2e8f0;
+            border-radius: 14px;
+            background: #f8fafc;
+        }
+        .floor-plan-image-card img {
+            width: 88px;
+            height: 88px;
+            border-radius: 12px;
+            object-fit: cover;
+            background: #e2e8f0;
+        }
+        .floor-plan-image-card-title {
+            display: block;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 4px;
+        }
+        .floor-plan-image-card-meta {
+            color: #64748b;
+            font-size: 0.88rem;
+            word-break: break-all;
+        }
+        .floor-plan-image-card-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            min-width: 96px;
+        }
+        .floor-plan-summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 14px;
+        }
+        .floor-plan-summary-item {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .floor-plan-summary-item-label {
+            font-size: 0.82rem;
+            font-weight: 700;
+            color: #64748b;
+        }
     </style>
 </head>
 <body>
@@ -647,6 +701,11 @@
         <li class="nav-item">
             <a class="nav-link" href="#" data-target="style-management">
                 <i class="fas fa-palette"></i>스타일로 시작하기 관리
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="#" data-target="floor-plan-management">
+                <i class="fas fa-drafting-compass"></i>도면 관리
             </a>
         </li>
     </ul>
@@ -1445,6 +1504,93 @@
             </div>
         </div>
     </div>
+
+    <div id="floor-plan-management" class="content-section">
+        <h2>도면 관리</h2>
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span>도면 목록</span>
+                <button id="get-floor-plans-button" class="btn btn-secondary btn-sm">도면 목록 새로고침</button>
+            </div>
+            <div class="card-body">
+                <div id="floor-plan-list-result" class="api-result"></div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">도면 등록 / 수정</div>
+            <div class="card-body">
+                <form id="floor-plan-form">
+                    <div class="banner-editor-grid">
+                        <div>
+                            <label for="floorPlanEditId" class="form-label">수정 대상 도면 ID</label>
+                            <input type="text" class="form-control" id="floorPlanEditId" placeholder="목록에서 수정 선택 시 자동 입력" readonly>
+                        </div>
+                        <div class="full-span">
+                            <label for="floorPlanImageFile" class="form-label">도면 이미지 업로드</label>
+                            <div class="banner-image-upload-panel">
+                                <input type="file" class="form-control" id="floorPlanImageFile" accept="image/*">
+                                <div class="banner-image-upload-actions">
+                                    <button type="button" id="upload-floor-plan-image-button" class="btn btn-outline-primary">S3 업로드 후 목록 추가</button>
+                                    <span id="floorPlanImageUploadStatus" class="text-muted small">이미지를 하나씩 업로드해 도면 이미지 목록을 구성하세요.</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <label for="floorPlanForm" class="form-label">주거형태</label>
+                            <select class="form-select" id="floorPlanForm" required>
+                                <option value="">주거형태를 선택하세요.</option>
+                                <option value="OFFICETEL">오피스텔</option>
+                                <option value="VILLA">빌라/다세대</option>
+                                <option value="APARTMENT">아파트</option>
+                                <option value="ETC">그 외</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="floorPlanStructure" class="form-label">구조</label>
+                            <select class="form-select" id="floorPlanStructure" required>
+                                <option value="">구조를 선택하세요.</option>
+                                <option value="OPEN_ONE_ROOM">오픈형 원룸</option>
+                                <option value="SEPARATED_ONE_ROOM">분리형 원룸</option>
+                                <option value="DUPLEX">복층형</option>
+                                <option value="TWO_ROOM">투룸</option>
+                                <option value="THREE_ROOM_OVER">쓰리룸+</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="floorPlanEquilibrium" class="form-label">평형</label>
+                            <select class="form-select" id="floorPlanEquilibrium" required>
+                                <option value="">평형을 선택하세요.</option>
+                                <option value="UNDER_5">5평 이하</option>
+                                <option value="BETWEEN_6_10">6~10평</option>
+                                <option value="BETWEEN_11_15">11~15평</option>
+                                <option value="OVER_16">16평 이상</option>
+                            </select>
+                        </div>
+                        <div class="full-span">
+                            <label for="floorPlanPrompt" class="form-label">도면 프롬프트</label>
+                            <textarea class="form-control" id="floorPlanPrompt" rows="4" required></textarea>
+                        </div>
+                    </div>
+
+                    <div class="mt-4">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <h5 class="mb-0">도면 이미지 목록</h5>
+                            <span class="text-muted small">첫 번째 이미지가 기존 대표 이미지 필드와 동기화됩니다.</span>
+                        </div>
+                        <div id="floorPlanImagesSelected" class="floor-plan-image-stack"></div>
+                    </div>
+
+                    <div class="d-flex flex-wrap gap-2 mt-4">
+                        <button type="submit" id="create-floor-plan-button" class="btn btn-primary">도면 등록</button>
+                        <button type="button" id="update-floor-plan-button" class="btn btn-warning">도면 수정</button>
+                        <button type="button" id="reset-floor-plan-form-button" class="btn btn-outline-secondary">폼 초기화</button>
+                    </div>
+                </form>
+                <div id="floor-plan-form-result" class="api-result"></div>
+            </div>
+        </div>
+    </div>
 </div>
 </div>
 
@@ -1476,6 +1622,26 @@
     let selectedRawProductIds = new Set();
     let bannerAdminState = createInitialBannerAdminState();
     let styleAdminState = createInitialStyleAdminState();
+    let floorPlanAdminState = createInitialFloorPlanAdminState();
+    const FLOOR_PLAN_FORM_LABELS = {
+        OFFICETEL: '오피스텔',
+        VILLA: '빌라/다세대',
+        APARTMENT: '아파트',
+        ETC: '그 외'
+    };
+    const FLOOR_PLAN_STRUCTURE_LABELS = {
+        OPEN_ONE_ROOM: '오픈형 원룸',
+        SEPARATED_ONE_ROOM: '분리형 원룸',
+        DUPLEX: '복층형',
+        TWO_ROOM: '투룸',
+        THREE_ROOM_OVER: '쓰리룸+'
+    };
+    const FLOOR_PLAN_EQUILIBRIUM_LABELS = {
+        UNDER_5: '5평 이하',
+        BETWEEN_6_10: '6~10평',
+        BETWEEN_11_15: '11~15평',
+        OVER_16: '16평 이상'
+    };
 
     window.onload = function() {
         const urlParams = new URLSearchParams(window.location.search);
@@ -1491,6 +1657,7 @@
         populateFurnitureTypeDropdown();
         initializeBannerManagement();
         initializeStyleManagement();
+        initializeFloorPlanManagement();
         populateRawFurnitureTypeDropdownForRawMapping();
 
         // Sidebar navigation
@@ -2075,6 +2242,36 @@
                 searchStyleMappedRawProducts();
             }
         });
+
+        document.getElementById('get-floor-plans-button').addEventListener('click', function() {
+            loadFloorPlans();
+        });
+
+        document.getElementById('floor-plan-form').addEventListener('submit', function(event) {
+            event.preventDefault();
+            createFloorPlan();
+        });
+
+        document.getElementById('update-floor-plan-button').addEventListener('click', function() {
+            updateFloorPlan();
+        });
+
+        document.getElementById('reset-floor-plan-form-button').addEventListener('click', function() {
+            resetFloorPlanForm();
+        });
+
+        document.getElementById('upload-floor-plan-image-button').addEventListener('click', function() {
+            uploadFloorPlanImage();
+        });
+
+        document.getElementById('floorPlanImageFile').addEventListener('change', function() {
+            const statusElement = document.getElementById('floorPlanImageUploadStatus');
+            if (this.files && this.files.length > 0) {
+                statusElement.textContent = `${this.files[0].name} 선택됨. 업로드 후 목록에 추가하세요.`;
+            } else {
+                statusElement.textContent = '이미지를 하나씩 업로드해 도면 이미지 목록을 구성하세요.';
+            }
+        });
     };
 
     function createInitialBannerAdminState() {
@@ -2095,6 +2292,13 @@
         };
     }
 
+    function createInitialFloorPlanAdminState() {
+        return {
+            editingFloorPlanId: null,
+            images: []
+        };
+    }
+
     function initializeBannerManagement() {
         renderBannerChipEditors();
         renderBannerMappedRawProducts();
@@ -2106,6 +2310,11 @@
         renderStyleMappedRawProducts();
         renderStyleImagePreview('');
         loadStyles();
+    }
+
+    function initializeFloorPlanManagement() {
+        renderFloorPlanImages();
+        loadFloorPlans();
     }
 
     function renderManagedImagePreview(config) {
@@ -2265,6 +2474,169 @@
             buttonId: 'upload-style-image-button',
             renderPreview: renderStyleImagePreview
         });
+    }
+
+    function extractFilenameFromUrl(url) {
+        if (!url) {
+            return '';
+        }
+        try {
+            const parsed = new URL(url);
+            const pathname = parsed.pathname || '';
+            return pathname.split('/').filter(Boolean).pop() || '';
+        } catch (error) {
+            return url.split('/').filter(Boolean).pop() || '';
+        }
+    }
+
+    function normalizeFloorPlanImageOrders() {
+        floorPlanAdminState.images = floorPlanAdminState.images.map((image, index) => ({
+            ...image,
+            sortOrder: index + 1
+        }));
+    }
+
+    function renderFloorPlanImages() {
+        const container = document.getElementById('floorPlanImagesSelected');
+        if (!container) return;
+        container.innerHTML = '';
+
+        if (floorPlanAdminState.images.length === 0) {
+            container.innerHTML = '<div class="text-muted small">아직 업로드된 도면 이미지가 없습니다.</div>';
+            return;
+        }
+
+        floorPlanAdminState.images.forEach((image, index) => {
+            const card = document.createElement('div');
+            card.className = 'floor-plan-image-card';
+            card.innerHTML = `
+                <img src="${escapeHtml(image.url)}" alt="${escapeHtml(image.originalFilename || image.filename || `도면 이미지 ${index + 1}`)}">
+                <div>
+                    <span class="floor-plan-image-card-title">도면 이미지 ${index + 1}</span>
+                    <div class="floor-plan-image-card-meta">원본 파일명: ${escapeHtml(image.originalFilename || '-')}</div>
+                    <div class="floor-plan-image-card-meta">저장 파일명: ${escapeHtml(image.filename || '-')}</div>
+                    <div class="floor-plan-image-card-meta">확장자: ${escapeHtml(image.fileExtension || '-')} · 순서: ${image.sortOrder}</div>
+                </div>
+                <div class="floor-plan-image-card-actions">
+                    <button type="button" class="btn btn-sm btn-outline-secondary" ${index === 0 ? 'disabled' : ''} data-floor-plan-move-up="${index}">위로</button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary" ${index === floorPlanAdminState.images.length - 1 ? 'disabled' : ''} data-floor-plan-move-down="${index}">아래로</button>
+                    <button type="button" class="btn btn-sm btn-outline-danger" data-floor-plan-remove="${index}">삭제</button>
+                </div>
+            `;
+
+            card.querySelector('[data-floor-plan-remove]').addEventListener('click', function() {
+                floorPlanAdminState.images.splice(index, 1);
+                normalizeFloorPlanImageOrders();
+                renderFloorPlanImages();
+            });
+
+            const moveUpButton = card.querySelector('[data-floor-plan-move-up]');
+            if (moveUpButton) {
+                moveUpButton.addEventListener('click', function() {
+                    if (index === 0) return;
+                    const previous = floorPlanAdminState.images[index - 1];
+                    floorPlanAdminState.images[index - 1] = floorPlanAdminState.images[index];
+                    floorPlanAdminState.images[index] = previous;
+                    normalizeFloorPlanImageOrders();
+                    renderFloorPlanImages();
+                });
+            }
+
+            const moveDownButton = card.querySelector('[data-floor-plan-move-down]');
+            if (moveDownButton) {
+                moveDownButton.addEventListener('click', function() {
+                    if (index >= floorPlanAdminState.images.length - 1) return;
+                    const next = floorPlanAdminState.images[index + 1];
+                    floorPlanAdminState.images[index + 1] = floorPlanAdminState.images[index];
+                    floorPlanAdminState.images[index] = next;
+                    normalizeFloorPlanImageOrders();
+                    renderFloorPlanImages();
+                });
+            }
+
+            container.appendChild(card);
+        });
+    }
+
+    async function uploadFloorPlanImage() {
+        const accessToken = localStorage.getItem('accessToken');
+        const fileInput = document.getElementById('floorPlanImageFile');
+        const statusElement = document.getElementById('floorPlanImageUploadStatus');
+        const uploadButton = document.getElementById('upload-floor-plan-image-button');
+        const imageFile = fileInput.files && fileInput.files[0];
+
+        if (!accessToken) {
+            statusElement.textContent = '액세스 토큰이 없습니다.';
+            return;
+        }
+        if (!imageFile) {
+            statusElement.textContent = '업로드할 이미지를 먼저 선택해주세요.';
+            return;
+        }
+
+        const extension = imageFile.name.includes('.') ? imageFile.name.split('.').pop().toLowerCase() : '';
+        if (!extension || !ALLOWED_IMAGE_EXTENSIONS.has(extension)) {
+            statusElement.textContent = 'jpg, jpeg, png, gif, webp 형식의 이미지만 업로드할 수 있습니다.';
+            return;
+        }
+        const expectedContentType = ALLOWED_IMAGE_CONTENT_TYPES[extension];
+        const actualContentType = imageFile.type ? imageFile.type.toLowerCase() : '';
+        if (!expectedContentType || !actualContentType || actualContentType !== expectedContentType) {
+            statusElement.textContent = '선택한 파일의 확장자와 MIME 타입이 올바르지 않습니다.';
+            return;
+        }
+
+        uploadButton.disabled = true;
+        statusElement.textContent = '도면 이미지 업로드 URL을 요청하는 중입니다...';
+
+        try {
+            const response = await fetch(`/api/v1/admin/floor-plans/image-upload-url?contentType=${encodeURIComponent(expectedContentType)}`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': 'Bearer ' + accessToken,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ imageExtension: extension })
+            });
+
+            if (!response.ok) {
+                const errorBody = await response.json().catch(() => null);
+                throw new Error(errorBody?.msg || '도면 이미지 업로드 URL 발급에 실패했습니다.');
+            }
+
+            const payload = await response.json();
+            const uploadUrl = payload?.data?.uploadUrl;
+            const publicUrl = payload?.data?.publicUrl;
+            if (!uploadUrl || !publicUrl) {
+                throw new Error('도면 이미지 업로드 URL 응답이 올바르지 않습니다.');
+            }
+
+            statusElement.textContent = 'S3에 도면 이미지를 업로드하는 중입니다...';
+            const s3Response = await fetch(uploadUrl, {
+                method: 'PUT',
+                headers: imageFile.type ? { 'Content-Type': imageFile.type } : {},
+                body: imageFile
+            });
+            if (!s3Response.ok) {
+                throw new Error('S3 이미지 업로드에 실패했습니다.');
+            }
+
+            floorPlanAdminState.images.push({
+                url: publicUrl,
+                filename: extractFilenameFromUrl(publicUrl),
+                originalFilename: imageFile.name,
+                fileExtension: extension,
+                sortOrder: floorPlanAdminState.images.length + 1
+            });
+            normalizeFloorPlanImageOrders();
+            renderFloorPlanImages();
+            fileInput.value = '';
+            statusElement.textContent = `${imageFile.name} 업로드가 완료되어 도면 이미지 목록에 추가되었습니다.`;
+        } catch (error) {
+            statusElement.textContent = error.message || '도면 이미지 업로드 중 오류가 발생했습니다.';
+        } finally {
+            uploadButton.disabled = false;
+        }
     }
 
     function renderBannerChipEditors() {
@@ -3039,6 +3411,189 @@
                 resetStyleForm();
             }
             loadStyles();
+        });
+    }
+
+    function loadFloorPlans() {
+        const accessToken = localStorage.getItem('accessToken');
+        const resultDiv = document.getElementById('floor-plan-list-result');
+        testApiCall(accessToken, resultDiv, '/api/v1/admin/floor-plans', 'GET', null, displayFloorPlans);
+    }
+
+    function displayFloorPlans(data, resultDiv) {
+        const floorPlans = data && data.data && Array.isArray(data.data.floorPlans) ? data.data.floorPlans : [];
+        if (floorPlans.length === 0) {
+            resultDiv.innerHTML = '<div class="alert alert-info">등록된 도면이 없습니다.</div>';
+            return;
+        }
+
+        resultDiv.innerHTML = '';
+        const list = document.createElement('div');
+        list.className = 'banner-list';
+
+        floorPlans.forEach(floorPlan => {
+            const card = document.createElement('div');
+            card.className = 'banner-card';
+            const imageCount = Array.isArray(floorPlan.images) ? floorPlan.images.length : 0;
+            card.innerHTML = `
+                <img class="banner-card-image" src="${escapeHtml(floorPlan.representativeImageUrl || '')}" alt="도면 #${floorPlan.id}">
+                <div class="banner-card-body">
+                    <div class="banner-card-title-row">
+                        <span class="banner-card-title">도면 #${floorPlan.id}</span>
+                        <span class="text-muted small">이미지 ${imageCount}장</span>
+                    </div>
+                    <div class="floor-plan-summary-grid">
+                        <div class="floor-plan-summary-item">
+                            <span class="floor-plan-summary-item-label">주거형태</span>
+                            <span>${escapeHtml(FLOOR_PLAN_FORM_LABELS[floorPlan.form] || floorPlan.form || '-')}</span>
+                        </div>
+                        <div class="floor-plan-summary-item">
+                            <span class="floor-plan-summary-item-label">구조</span>
+                            <span>${escapeHtml(FLOOR_PLAN_STRUCTURE_LABELS[floorPlan.structure] || floorPlan.structure || '-')}</span>
+                        </div>
+                        <div class="floor-plan-summary-item">
+                            <span class="floor-plan-summary-item-label">평형</span>
+                            <span>${escapeHtml(FLOOR_PLAN_EQUILIBRIUM_LABELS[floorPlan.equilibrium] || floorPlan.equilibrium || '-')}</span>
+                        </div>
+                        <div class="floor-plan-summary-item" style="grid-column: 1 / -1;">
+                            <span class="floor-plan-summary-item-label">도면 프롬프트</span>
+                            <span>${escapeHtml(floorPlan.floorPlanPrompt || '-')}</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="banner-card-actions">
+                    <button type="button" class="btn btn-sm btn-info" data-floor-plan-edit="${floorPlan.id}">수정</button>
+                    <button type="button" class="btn btn-sm btn-danger" data-floor-plan-delete="${floorPlan.id}">삭제</button>
+                </div>
+            `;
+
+            card.querySelector('[data-floor-plan-edit]').addEventListener('click', function() {
+                populateFloorPlanForm(floorPlan);
+            });
+            card.querySelector('[data-floor-plan-delete]').addEventListener('click', function() {
+                deleteFloorPlan(floorPlan.id);
+            });
+            list.appendChild(card);
+        });
+
+        resultDiv.appendChild(list);
+    }
+
+    function populateFloorPlanForm(floorPlan) {
+        floorPlanAdminState = createInitialFloorPlanAdminState();
+        floorPlanAdminState.editingFloorPlanId = floorPlan.id;
+        floorPlanAdminState.images = Array.isArray(floorPlan.images)
+            ? floorPlan.images.map(image => ({
+                url: image.url,
+                filename: image.filename,
+                originalFilename: image.originalFilename,
+                fileExtension: image.fileExtension,
+                sortOrder: image.sortOrder
+            })).sort((a, b) => a.sortOrder - b.sortOrder)
+            : [];
+        normalizeFloorPlanImageOrders();
+
+        document.getElementById('floorPlanEditId').value = floorPlan.id;
+        document.getElementById('floorPlanForm').value = floorPlan.form || '';
+        document.getElementById('floorPlanStructure').value = floorPlan.structure || '';
+        document.getElementById('floorPlanEquilibrium').value = floorPlan.equilibrium || '';
+        document.getElementById('floorPlanPrompt').value = floorPlan.floorPlanPrompt || '';
+        document.getElementById('floorPlanImageFile').value = '';
+        document.getElementById('floorPlanImageUploadStatus').textContent = '기존 도면 이미지가 로드되었습니다. 새 이미지를 업로드하면 목록에 추가됩니다.';
+        document.getElementById('floor-plan-form-result').innerHTML = '<div class="alert alert-info">도면 수정 모드로 전환했습니다.</div>';
+        renderFloorPlanImages();
+    }
+
+    function resetFloorPlanForm() {
+        floorPlanAdminState = createInitialFloorPlanAdminState();
+        document.getElementById('floor-plan-form').reset();
+        document.getElementById('floorPlanEditId').value = '';
+        document.getElementById('floorPlanImageUploadStatus').textContent = '이미지를 하나씩 업로드해 도면 이미지 목록을 구성하세요.';
+        document.getElementById('floor-plan-form-result').innerHTML = '';
+        renderFloorPlanImages();
+    }
+
+    function buildFloorPlanPayload() {
+        if (floorPlanAdminState.images.length === 0) {
+            throw new Error('최소 1개의 도면 이미지를 등록해주세요.');
+        }
+
+        const form = parseStringValue(document.getElementById('floorPlanForm').value);
+        const structure = parseStringValue(document.getElementById('floorPlanStructure').value);
+        const equilibrium = parseStringValue(document.getElementById('floorPlanEquilibrium').value);
+        const floorPlanPrompt = parseStringValue(document.getElementById('floorPlanPrompt').value);
+
+        if (!form || !structure || !equilibrium || !floorPlanPrompt) {
+            throw new Error('주거형태, 구조, 평형, 도면 프롬프트를 모두 입력해주세요.');
+        }
+
+        return {
+            form,
+            structure,
+            equilibrium,
+            floorPlanPrompt,
+            images: floorPlanAdminState.images.map((image, index) => ({
+                url: image.url,
+                filename: image.filename,
+                originalFilename: image.originalFilename,
+                fileExtension: image.fileExtension,
+                sortOrder: index + 1
+            }))
+        };
+    }
+
+    async function createFloorPlan() {
+        const accessToken = localStorage.getItem('accessToken');
+        const resultDiv = document.getElementById('floor-plan-form-result');
+        const submitButton = document.getElementById('create-floor-plan-button');
+        try {
+            const payload = buildFloorPlanPayload();
+            submitButton.disabled = true;
+            await testApiCall(accessToken, resultDiv, '/api/v1/admin/floor-plans', 'POST', payload, function(data, target) {
+                target.innerHTML = '<div class="alert alert-success">도면이 등록되었습니다.</div>';
+                resetFloorPlanForm();
+                loadFloorPlans();
+            });
+        } catch (error) {
+            resultDiv.innerHTML = `<div class="alert alert-danger">오류: ${escapeHtml(error.message)}</div>`;
+        } finally {
+            submitButton.disabled = false;
+        }
+    }
+
+    async function updateFloorPlan() {
+        const accessToken = localStorage.getItem('accessToken');
+        const resultDiv = document.getElementById('floor-plan-form-result');
+        const submitButton = document.getElementById('update-floor-plan-button');
+
+        if (!floorPlanAdminState.editingFloorPlanId) {
+            resultDiv.innerHTML = '<div class="alert alert-danger">수정할 도면을 먼저 선택해주세요.</div>';
+            return;
+        }
+
+        try {
+            const payload = buildFloorPlanPayload();
+            submitButton.disabled = true;
+            await testApiCall(accessToken, resultDiv, `/api/v1/admin/floor-plans/${floorPlanAdminState.editingFloorPlanId}`, 'PATCH', payload, function(data, target) {
+                target.innerHTML = '<div class="alert alert-success">도면이 수정되었습니다.</div>';
+                loadFloorPlans();
+            });
+        } catch (error) {
+            resultDiv.innerHTML = `<div class="alert alert-danger">오류: ${escapeHtml(error.message)}</div>`;
+        } finally {
+            submitButton.disabled = false;
+        }
+    }
+
+    function deleteFloorPlan(floorPlanId) {
+        if (!confirm(`도면 ID ${floorPlanId}를 정말로 삭제하시겠습니까?`)) return;
+        const accessToken = localStorage.getItem('accessToken');
+        const resultDiv = document.getElementById('floor-plan-list-result');
+        testApiCall(accessToken, resultDiv, `/api/v1/admin/floor-plans/${floorPlanId}`, 'DELETE', null, function() {
+            if (floorPlanAdminState.editingFloorPlanId === floorPlanId) {
+                resetFloorPlanForm();
+            }
+            loadFloorPlans();
         });
     }
 
