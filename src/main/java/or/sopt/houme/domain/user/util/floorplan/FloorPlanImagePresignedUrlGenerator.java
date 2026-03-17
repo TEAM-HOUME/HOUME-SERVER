@@ -1,4 +1,4 @@
-package or.sopt.houme.domain.user.service.admin;
+package or.sopt.houme.domain.user.util.floorplan;
 
 import lombok.RequiredArgsConstructor;
 import or.sopt.houme.domain.user.presentation.admin.controller.dto.floorplan.request.AdminFloorPlanImageUploadRequest;
@@ -14,7 +14,7 @@ import java.util.Map;
 
 @Component
 @RequiredArgsConstructor
-public class AdminFloorPlanImageUploadService {
+public class FloorPlanImagePresignedUrlGenerator {
 
     private static final Map<String, String> IMAGE_CONTENT_TYPES = createImageContentTypes();
 

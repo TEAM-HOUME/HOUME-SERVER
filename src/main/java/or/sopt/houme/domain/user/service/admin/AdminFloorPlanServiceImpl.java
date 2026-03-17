@@ -13,6 +13,8 @@ import or.sopt.houme.domain.user.presentation.admin.controller.dto.floorplan.res
 import or.sopt.houme.domain.user.presentation.admin.controller.dto.floorplan.response.AdminFloorPlanImageUploadResponse;
 import or.sopt.houme.domain.user.presentation.admin.controller.dto.floorplan.response.AdminFloorPlanListResponse;
 import or.sopt.houme.domain.user.presentation.admin.controller.dto.floorplan.response.AdminFloorPlanResponse;
+import or.sopt.houme.domain.user.util.floorplan.FloorPlanImageJsonCodec;
+import or.sopt.houme.domain.user.util.floorplan.FloorPlanImagePresignedUrlGenerator;
 import or.sopt.houme.global.api.ErrorCode;
 import or.sopt.houme.global.api.GeneralException;
 import org.springframework.data.domain.Sort;
@@ -28,13 +30,13 @@ import java.util.List;
 public class AdminFloorPlanServiceImpl implements AdminFloorPlanService {
 
     private final FloorPlanRepository floorPlanRepository;
-    private final AdminFloorPlanImageUploadService adminFloorPlanImageUploadService;
+    private final FloorPlanImagePresignedUrlGenerator floorPlanImagePresignedUrlGenerator;
     private final FloorPlanImageJsonCodec floorPlanImageJsonCodec;
 
     @Override
     @Transactional(propagation = Propagation.NOT_SUPPORTED)
     public AdminFloorPlanImageUploadResponse createImageUploadUrl(AdminFloorPlanImageUploadRequest request, String contentType) {
-        return adminFloorPlanImageUploadService.createImageUploadUrl(request, contentType);
+        return floorPlanImagePresignedUrlGenerator.createImageUploadUrl(request, contentType);
     }
 
     @Override

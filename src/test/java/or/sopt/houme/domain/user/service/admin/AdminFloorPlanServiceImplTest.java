@@ -19,6 +19,8 @@ import or.sopt.houme.domain.user.presentation.admin.controller.dto.floorplan.req
 import or.sopt.houme.domain.user.presentation.admin.controller.dto.floorplan.request.AdminFloorPlanUpdateRequest;
 import or.sopt.houme.domain.user.presentation.admin.controller.dto.floorplan.response.AdminFloorPlanImageUploadResponse;
 import or.sopt.houme.domain.user.presentation.admin.controller.dto.floorplan.response.AdminFloorPlanResponse;
+import or.sopt.houme.domain.user.util.floorplan.FloorPlanImageJsonCodec;
+import or.sopt.houme.domain.user.util.floorplan.FloorPlanImagePresignedUrlGenerator;
 
 import java.util.List;
 import java.util.Optional;
@@ -41,7 +43,7 @@ class AdminFloorPlanServiceImplTest {
     private FloorPlanRepository floorPlanRepository;
 
     @Mock
-    private AdminFloorPlanImageUploadService adminFloorPlanImageUploadService;
+    private FloorPlanImagePresignedUrlGenerator floorPlanImagePresignedUrlGenerator;
 
     @Mock
     private FloorPlanImageJsonCodec floorPlanImageJsonCodec;
@@ -140,7 +142,7 @@ class AdminFloorPlanServiceImplTest {
     @Test
     @DisplayName("createImageUploadUrl()은 presigned URL을 반환한다")
     void createImageUploadUrl_success() {
-        when(adminFloorPlanImageUploadService.createImageUploadUrl(any(AdminFloorPlanImageUploadRequest.class), eq("image/png")))
+        when(floorPlanImagePresignedUrlGenerator.createImageUploadUrl(any(AdminFloorPlanImageUploadRequest.class), eq("image/png")))
                 .thenReturn(new AdminFloorPlanImageUploadResponse("https://upload-url", "https://public-url"));
 
         AdminFloorPlanImageUploadResponse response = adminFloorPlanService.createImageUploadUrl(

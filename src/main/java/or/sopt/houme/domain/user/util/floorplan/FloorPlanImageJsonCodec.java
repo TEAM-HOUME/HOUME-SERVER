@@ -1,4 +1,4 @@
-package or.sopt.houme.domain.user.service.admin;
+package or.sopt.houme.domain.user.util.floorplan;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
