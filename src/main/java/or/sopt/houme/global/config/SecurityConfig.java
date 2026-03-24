@@ -108,6 +108,7 @@ public class SecurityConfig {
                 .requestMatchers(WhiteListConfig.serverWhitelist().toArray(new String[0])).permitAll()
                 .requestMatchers(WhiteListConfig.makeHouseWhitelist().toArray(new String[0])).permitAll()
                 .requestMatchers(WhiteListConfig.userWhiteList().toArray(new String[0])).permitAll()
+                .requestMatchers(WhiteListConfig.exploreWhiteList().toArray(new String[0])).permitAll()
                 .requestMatchers(WhiteListConfig.monitoringWhiteList().toArray(new String[0])).permitAll()
                 .requestMatchers(WhiteListConfig.adminWhiteList().toArray(new String[0])).permitAll()
                 .anyRequest().authenticated());
@@ -124,4 +125,3 @@ public class SecurityConfig {
         return http.build();
     }
 }
-

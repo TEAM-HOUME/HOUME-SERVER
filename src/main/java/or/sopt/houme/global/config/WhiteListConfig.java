@@ -55,6 +55,13 @@ public class WhiteListConfig {
         );
     }
 
+    // 탐색 탭 관련 인가 설정
+    public static final List<String> exploreWhiteList() {
+        return List.of(
+                "/api/v1/explore/banners/**"
+        );
+    }
+
     // 모니터링 관련 인가 설정
     public static final List<String> monitoringWhiteList() {
         return List.of(
