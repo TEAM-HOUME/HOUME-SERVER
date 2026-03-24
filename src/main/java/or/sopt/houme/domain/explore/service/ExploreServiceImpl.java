@@ -14,7 +14,6 @@ import or.sopt.houme.domain.explore.presentation.dto.response.BannerExploreListR
 import or.sopt.houme.domain.explore.presentation.dto.response.BannerExploreResponse;
 import or.sopt.houme.global.api.ErrorCode;
 import or.sopt.houme.global.api.GeneralException;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -33,7 +32,9 @@ public class ExploreServiceImpl implements ExploreService {
 
     @Override
     public BannerExploreListResponse getExploreBanners(Long bannerId) {
-        List<Banner> banners = bannerRepository.findAll(Sort.by(Sort.Direction.ASC, "id"));
+        List<Banner> banners = bannerRepository.findAllWithRawProducts(BannerType.BANNER, false).stream()
+                .sorted((left, right) -> Long.compare(left.getId(), right.getId()))
+                .toList();
         int startIndex = findBannerStartIndex(banners, bannerId);
 
         List<BannerExploreResponse> orderedBanners = new ArrayList<>(banners.size());

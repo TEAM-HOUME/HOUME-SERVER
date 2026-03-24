@@ -15,7 +15,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.data.domain.Sort;
 
 import java.util.List;
 
@@ -45,7 +44,7 @@ class ExploreServiceImplTest {
         Banner fifthBanner = Banner.builder().id(5L).bannerTitle("다섯 번째").bannerImageUrl("https://google.com/5").build();
         Banner seventhBanner = Banner.builder().id(7L).bannerTitle("일곱 번째").bannerImageUrl("https://google.com/7").build();
         Banner ninthBanner = Banner.builder().id(9L).bannerTitle("아홉 번째").bannerImageUrl("https://google.com/9").build();
-        when(bannerRepository.findAll(Sort.by(Sort.Direction.ASC, "id")))
+        when(bannerRepository.findAllWithRawProducts(BannerType.BANNER, false))
                 .thenReturn(List.of(firstBanner, secondBanner, fifthBanner, seventhBanner, ninthBanner));
 
         BannerExploreListResponse result = exploreService.getExploreBanners(5L);
@@ -59,7 +58,7 @@ class ExploreServiceImplTest {
     void getExploreBanners_throwsWhenBannerIdNotFound() {
         Banner firstBanner = Banner.builder().id(1L).bannerTitle("첫 번째").bannerImageUrl("https://google.com/1").build();
         Banner secondBanner = Banner.builder().id(2L).bannerTitle("두 번째").bannerImageUrl("https://google.com/2").build();
-        when(bannerRepository.findAll(Sort.by(Sort.Direction.ASC, "id")))
+        when(bannerRepository.findAllWithRawProducts(BannerType.BANNER, false))
                 .thenReturn(List.of(firstBanner, secondBanner));
 
         GeneralException exception = assertThrows(GeneralException.class,

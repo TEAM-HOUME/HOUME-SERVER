@@ -3,6 +3,7 @@ package or.sopt.houme.domain.user.service;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import or.sopt.houme.domain.banner.model.entity.BannerType;
 import or.sopt.houme.domain.banner.repository.BannerRepository;
 import or.sopt.houme.domain.user.model.entity.User;
 import or.sopt.houme.domain.user.presentation.controller.dto.LandingListResponse;
@@ -13,7 +14,6 @@ import or.sopt.houme.global.api.ErrorCode;
 import or.sopt.houme.global.api.handler.TokenException;
 import or.sopt.houme.global.api.handler.UserException;
 import or.sopt.houme.global.jwt.JWTUtil;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -32,7 +32,8 @@ public class UserLandingServiceImpl implements UserLandingService {
     @Override
     public LandingListResponse getLandings() {
         return LandingListResponse.of(
-                bannerRepository.findAll(Sort.by(Sort.Direction.ASC, "id")).stream()
+                bannerRepository.findAllWithRawProducts(BannerType.BANNER, false).stream()
+                        .sorted((left, right) -> Long.compare(left.getId(), right.getId()))
                         .map(LandingResponse::from)
                         .toList()
         );
