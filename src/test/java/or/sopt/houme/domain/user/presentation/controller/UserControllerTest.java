@@ -6,6 +6,7 @@ import or.sopt.houme.domain.user.presentation.controller.dto.MyPageGeneratedImag
 import or.sopt.houme.domain.user.presentation.controller.dto.MyPageInfoResponse;
 import or.sopt.houme.domain.user.model.entity.*;
 import or.sopt.houme.domain.user.repository.BlacklistTokenRepository;
+import or.sopt.houme.domain.user.service.NicknameService;
 import or.sopt.houme.domain.user.service.OAuthService;
 import or.sopt.houme.domain.user.service.UserDeletionService;
 import or.sopt.houme.domain.user.service.UserService;
@@ -59,6 +60,9 @@ class UserControllerTest {
 
     @MockBean
     private OAuthService oAuthService;
+
+    @MockBean
+    private NicknameService nicknameService;
 
     @MockBean
     private JWTConfig jwtConfig;

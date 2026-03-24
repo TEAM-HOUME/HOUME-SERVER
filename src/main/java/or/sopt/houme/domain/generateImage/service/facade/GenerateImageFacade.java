@@ -7,6 +7,7 @@ import or.sopt.houme.domain.credit.model.entity.CreditStatus;
 import or.sopt.houme.domain.credit.service.CreditService;
 import or.sopt.houme.domain.furniture.service.FurnitureService;
 import or.sopt.houme.domain.generateImage.presentation.dto.SelectedTagInfo;
+import or.sopt.houme.domain.generateImage.model.entity.GenerateImageType;
 import or.sopt.houme.domain.generateImage.presentation.dto.request.GenerateImageRequest;
 import or.sopt.houme.domain.generateImage.presentation.dto.response.ImageInfoListResponse;
 import or.sopt.houme.domain.generateImage.presentation.dto.response.ImageInfoResponse;
@@ -149,7 +150,12 @@ public class GenerateImageFacade {
 
             try {
                 // 도면 이미지 생성
-                generateImage = generateImageService.createGenerateImage(imageUploadResponseDTO, house);
+                generateImage = generateImageService.createGenerateImage(
+                        imageUploadResponseDTO,
+                        house,
+                        GenerateImageType.REGULAR,
+                        null
+                );
 
             } catch (Exception e) {
 

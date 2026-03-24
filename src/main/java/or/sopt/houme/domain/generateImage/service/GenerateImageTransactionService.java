@@ -6,6 +6,7 @@ import or.sopt.houme.domain.credit.service.CreditService;
 import or.sopt.houme.domain.generateImage.presentation.dto.request.GenerateImageRequest;
 import or.sopt.houme.domain.generateImage.presentation.dto.response.ImageInfoResponse;
 import or.sopt.houme.domain.generateImage.model.entity.GenerateImage;
+import or.sopt.houme.domain.generateImage.model.entity.GenerateImageType;
 import or.sopt.houme.domain.house.model.entity.House;
 import or.sopt.houme.domain.house.model.entity.enums.Activity;
 import or.sopt.houme.domain.house.service.HouseService;
@@ -46,7 +47,12 @@ public class GenerateImageTransactionService {
 
         // 도면 이미지 생성 및 저장
         List<GenerateImage> generateImages = results.stream()
-                .map(result -> generateImageService.createGenerateImage(result, house))
+                .map(result -> generateImageService.createGenerateImage(
+                        result,
+                        house,
+                        GenerateImageType.REGULAR,
+                        null
+                ))
                 .toList();
 
         // 사용자 계정 이미지 생성여부 업데이트
@@ -84,7 +90,12 @@ public class GenerateImageTransactionService {
         houseService.saveHousePrompt(house, imageResponse.getPullPrompt());
 
         // 3. 이미지 엔티티 생성 및 저장
-        GenerateImage generateImage = generateImageService.createGenerateImage(imageResponse, house);
+        GenerateImage generateImage = generateImageService.createGenerateImage(
+                imageResponse,
+                house,
+                GenerateImageType.REGULAR,
+                null
+        );
 
         // 4. 크레딧 차감 확정 (PENDING -> DELETE)
         creditService.commitCreditDeletion(lockedCredit);
