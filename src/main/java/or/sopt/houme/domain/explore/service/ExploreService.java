@@ -4,6 +4,8 @@ import or.sopt.houme.domain.explore.presentation.dto.response.BannerExploreListR
 import or.sopt.houme.domain.explore.presentation.dto.response.BannerDetailResponse;
 import or.sopt.houme.domain.explore.presentation.dto.response.OtherStyleListResponse;
 import or.sopt.houme.domain.explore.presentation.dto.response.OtherStyleDetailResponse;
+import or.sopt.houme.domain.explore.presentation.dto.response.RecentFloorPlanResponse;
+import or.sopt.houme.domain.user.model.entity.User;
 
 public interface ExploreService {
     BannerExploreListResponse getExploreBanners(Long bannerId);
@@ -13,4 +15,6 @@ public interface ExploreService {
     OtherStyleListResponse getOtherStyles(Integer size);
 
     OtherStyleDetailResponse getOtherStyleDetail(Long styleId);
+
+    RecentFloorPlanResponse getRecentFloorPlan(User user);
 }

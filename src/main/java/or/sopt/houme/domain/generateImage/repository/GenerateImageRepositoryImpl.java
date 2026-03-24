@@ -43,6 +43,22 @@ public class GenerateImageRepositoryImpl implements GenerateImageRepositoryCusto
     }
 
     @Override
+    public Optional<GenerateImage> findMostRecentByUserId(Long userId) {
+        QGenerateImage generateImage = QGenerateImage.generateImage;
+        QHouse house = QHouse.house;
+
+        return Optional.ofNullable(queryFactory
+                .selectFrom(generateImage)
+                .join(generateImage.house, house).fetchJoin()
+                .where(house.user.id.eq(userId))
+                .orderBy(
+                        generateImage.createdAt.desc(),
+                        generateImage.id.desc())
+                .limit(1)
+                .fetchFirst());
+    }
+
+    @Override
     public List<GenerateImage> findGenerateImagesByHouseId(Long houseId) {
         QGenerateImage generateImage = QGenerateImage.generateImage;
         QHouse house = QHouse.house;

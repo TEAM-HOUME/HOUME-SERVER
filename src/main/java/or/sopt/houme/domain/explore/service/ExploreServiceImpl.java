@@ -9,6 +9,8 @@ import or.sopt.houme.domain.banner.model.entity.BannerCurationRawProduct;
 import or.sopt.houme.domain.banner.model.entity.BannerType;
 import or.sopt.houme.domain.banner.model.vo.BannerStyleAnswerChip;
 import or.sopt.houme.domain.banner.repository.BannerRepository;
+import or.sopt.houme.domain.explore.presentation.dto.response.RecentFloorPlanItemResponse;
+import or.sopt.houme.domain.explore.presentation.dto.response.RecentFloorPlanResponse;
 import or.sopt.houme.domain.explore.presentation.dto.response.BannerDetailAnswerResponse;
 import or.sopt.houme.domain.explore.presentation.dto.response.BannerDetailResponse;
 import or.sopt.houme.domain.explore.presentation.dto.response.BannerExploreListResponse;
@@ -17,6 +19,13 @@ import or.sopt.houme.domain.explore.presentation.dto.response.OtherStyleDetailPr
 import or.sopt.houme.domain.explore.presentation.dto.response.OtherStyleDetailResponse;
 import or.sopt.houme.domain.explore.presentation.dto.response.OtherStyleListResponse;
 import or.sopt.houme.domain.explore.presentation.dto.response.OtherStyleResponse;
+import or.sopt.houme.domain.generateImage.model.entity.GenerateImage;
+import or.sopt.houme.domain.generateImage.repository.GenerateImageRepository;
+import or.sopt.houme.domain.house.model.entity.mapping.HouseFloorPlan;
+import or.sopt.houme.domain.house.model.floorPlan.entity.FloorPlan;
+import or.sopt.houme.domain.house.model.floorPlan.vo.FloorPlanImageItem;
+import or.sopt.houme.domain.user.model.entity.User;
+import or.sopt.houme.domain.user.util.floorplan.FloorPlanImageJsonCodec;
 import or.sopt.houme.global.api.ErrorCode;
 import or.sopt.houme.global.api.GeneralException;
 import org.springframework.stereotype.Service;
@@ -24,6 +33,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -33,6 +43,8 @@ public class ExploreServiceImpl implements ExploreService {
     private static final TypeReference<List<BannerStyleAnswerChip>> STYLE_ANSWER_CHIP_TYPE = new TypeReference<>() {};
 
     private final BannerRepository bannerRepository;
+    private final GenerateImageRepository generateImageRepository;
+    private final FloorPlanImageJsonCodec floorPlanImageJsonCodec;
     private final ObjectMapper objectMapper;
 
     @Override
@@ -102,6 +114,30 @@ public class ExploreServiceImpl implements ExploreService {
         );
     }
 
+    @Override
+    public RecentFloorPlanResponse getRecentFloorPlan(User user) {
+        Optional<GenerateImage> recentGenerateImage = generateImageRepository.findMostRecentByUserId(user.getId());
+        if (recentGenerateImage.isEmpty()) {
+            return RecentFloorPlanResponse.noRecent();
+        }
+
+        FloorPlan floorPlan = recentGenerateImage.get().getHouse().getHouseFloorPlans().stream()
+                .sorted((left, right) -> Long.compare(safeHouseFloorPlanId(left), safeHouseFloorPlanId(right)))
+                .map(HouseFloorPlan::getFloorPlan)
+                .filter(java.util.Objects::nonNull)
+                .findFirst()
+                .orElse(null);
+
+        if (floorPlan == null) {
+            return RecentFloorPlanResponse.noRecent();
+        }
+
+        FloorPlanImageItem representativeImage = resolveRepresentativeFloorPlanImage(floorPlan);
+        return RecentFloorPlanResponse.withRecent(
+                RecentFloorPlanItemResponse.of(floorPlan, representativeImage.url(), representativeImage.view())
+        );
+    }
+
     private int findBannerStartIndex(List<Banner> banners, Long bannerId) {
         for (int index = 0; index < banners.size(); index++) {
             if (banners.get(index).getId().equals(bannerId)) {
@@ -133,5 +169,26 @@ public class ExploreServiceImpl implements ExploreService {
             return Long.MAX_VALUE;
         }
         return mapping.getId();
+    }
+
+    private long safeHouseFloorPlanId(HouseFloorPlan mapping) {
+        if (mapping == null || mapping.getId() == null) {
+            return Long.MAX_VALUE;
+        }
+        return mapping.getId();
+    }
+
+    private FloorPlanImageItem resolveRepresentativeFloorPlanImage(FloorPlan floorPlan) {
+        return floorPlanImageJsonCodec.read(floorPlan.getImagesJson()).stream()
+                .filter(item -> item.url() != null && !item.url().isBlank())
+                .findFirst()
+                .orElseGet(() -> FloorPlanImageItem.create(
+                        floorPlan.getUrl(),
+                        floorPlan.getFilename(),
+                        floorPlan.getOriginalFilename(),
+                        floorPlan.getFileExtension(),
+                        1,
+                        null
+                ));
     }
 }
