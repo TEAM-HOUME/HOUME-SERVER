@@ -2,12 +2,15 @@ package or.sopt.houme.domain.explore.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import or.sopt.houme.domain.banner.model.entity.Banner;
+import or.sopt.houme.domain.banner.model.entity.BannerCurationRawProduct;
 import or.sopt.houme.domain.banner.model.entity.BannerType;
 import or.sopt.houme.domain.banner.model.vo.BannerStyleAnswerChip;
 import or.sopt.houme.domain.banner.repository.BannerRepository;
 import or.sopt.houme.domain.explore.presentation.dto.response.BannerDetailResponse;
 import or.sopt.houme.domain.explore.presentation.dto.response.BannerExploreListResponse;
+import or.sopt.houme.domain.explore.presentation.dto.response.OtherStyleDetailResponse;
 import or.sopt.houme.domain.explore.presentation.dto.response.OtherStyleListResponse;
+import or.sopt.houme.domain.furniture.model.entity.CurationRawProduct;
 import or.sopt.houme.global.api.ErrorCode;
 import or.sopt.houme.global.api.GeneralException;
 import org.junit.jupiter.api.DisplayName;
@@ -145,5 +148,53 @@ class ExploreServiceImplTest {
                 () -> exploreService.getOtherStyles(0));
 
         assertEquals(ErrorCode.NOT_VALID_EXCEPTION, exception.getErrorCode());
+    }
+
+    @Test
+    @DisplayName("스타일 디테일 조회 시 STYLE 타입 배너와 매핑 상품 목록을 반환한다")
+    void getOtherStyleDetail_returnsMappedProducts() {
+        CurationRawProduct product = CurationRawProduct.builder()
+                .id(10L)
+                .productName("리샘 코지 저상형 평상형 무헤드 침대(SS/Q) 매트리스 선택")
+                .productImageUrl("https://google.com/product")
+                .listPrice(39900L)
+                .discountRate(30)
+                .discountPrice(27990L)
+                .productSiteUrl("https://google.com/link")
+                .build();
+        Banner style = Banner.builder()
+                .id(1L)
+                .bannerType(BannerType.STYLE)
+                .bannerTitle("미니멀한 개발자의 집")
+                .bannerImageUrl("https://google.com/style")
+                .styleDescription("블랙을 중심으로 모노톤 인테리어 스타일")
+                .bannerRawProducts(List.of(
+                        BannerCurationRawProduct.builder().id(2L).curationRawProduct(product).build()
+                ))
+                .build();
+        when(bannerRepository.findByIdWithRawProducts(1L, BannerType.STYLE, false))
+                .thenReturn(java.util.Optional.of(style));
+
+        OtherStyleDetailResponse result = exploreService.getOtherStyleDetail(1L);
+
+        assertEquals("미니멀한 개발자의 집", result.styleName());
+        assertEquals("https://google.com/style", result.styleImageUrl());
+        assertEquals("블랙을 중심으로 모노톤 인테리어 스타일", result.styleDescription());
+        assertEquals(1, result.products().size());
+        assertEquals(10L, result.products().get(0).id());
+        assertEquals(39900L, result.products().get(0).originalPrice());
+        assertEquals(27990L, result.products().get(0).finalPrice());
+    }
+
+    @Test
+    @DisplayName("스타일 디테일 조회 시 STYLE 타입 배너가 없으면 NOT_FOUND_STYLE 예외가 발생한다")
+    void getOtherStyleDetail_throwsWhenStyleNotFound() {
+        when(bannerRepository.findByIdWithRawProducts(99L, BannerType.STYLE, false))
+                .thenReturn(java.util.Optional.empty());
+
+        GeneralException exception = assertThrows(GeneralException.class,
+                () -> exploreService.getOtherStyleDetail(99L));
+
+        assertEquals(ErrorCode.NOT_FOUND_STYLE, exception.getErrorCode());
     }
 }

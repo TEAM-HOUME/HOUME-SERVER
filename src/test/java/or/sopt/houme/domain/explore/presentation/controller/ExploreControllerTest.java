@@ -4,6 +4,8 @@ import or.sopt.houme.domain.explore.presentation.dto.response.BannerDetailAnswer
 import or.sopt.houme.domain.explore.presentation.dto.response.BannerDetailResponse;
 import or.sopt.houme.domain.explore.presentation.dto.response.BannerExploreListResponse;
 import or.sopt.houme.domain.explore.presentation.dto.response.BannerExploreResponse;
+import or.sopt.houme.domain.explore.presentation.dto.response.OtherStyleDetailProductResponse;
+import or.sopt.houme.domain.explore.presentation.dto.response.OtherStyleDetailResponse;
 import or.sopt.houme.domain.explore.presentation.dto.response.OtherStyleListResponse;
 import or.sopt.houme.domain.explore.presentation.dto.response.OtherStyleResponse;
 import or.sopt.houme.domain.explore.service.ExploreService;
@@ -122,5 +124,42 @@ class ExploreControllerTest {
                 .andExpect(jsonPath("$.msg").value("응답 성공"))
                 .andExpect(jsonPath("$.data.otherStyles[0].id").value(1L))
                 .andExpect(jsonPath("$.data.otherStyles[2].id").value(3L));
+    }
+
+    @Test
+    @DisplayName("스타일 디테일 조회 API는 스타일 정보와 원본 상품 목록을 반환한다")
+    void getOtherStyleDetail_returnsStyleDetail() throws Exception {
+        Mockito.when(exploreService.getOtherStyleDetail(1L))
+                .thenReturn(OtherStyleDetailResponse.of(
+                        "미니멀한 개발자의 집",
+                        "https://google.com/style",
+                        "블랙을 중심으로 모노톤 인테리어 스타일",
+                        List.of(
+                                new OtherStyleDetailProductResponse(
+                                        1L,
+                                        "리샘 코지 저상형 평상형 무헤드 침대(SS/Q) 매트리스 선택",
+                                        "https://google.com/product",
+                                        39900L,
+                                        30,
+                                        27990L,
+                                        "https://google.com/link"
+                                )
+                        )
+                ));
+
+        mockMvc.perform(get("/api/v1/explore/other-styles/1")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value(200))
+                .andExpect(jsonPath("$.msg").value("응답 성공"))
+                .andExpect(jsonPath("$.data.styleName").value("미니멀한 개발자의 집"))
+                .andExpect(jsonPath("$.data.styleImageUrl").value("https://google.com/style"))
+                .andExpect(jsonPath("$.data.styleDescription").value("블랙을 중심으로 모노톤 인테리어 스타일"))
+                .andExpect(jsonPath("$.data.products[0].id").value(1L))
+                .andExpect(jsonPath("$.data.products[0].name").value("리샘 코지 저상형 평상형 무헤드 침대(SS/Q) 매트리스 선택"))
+                .andExpect(jsonPath("$.data.products[0].originalPrice").value(39900))
+                .andExpect(jsonPath("$.data.products[0].discountRate").value(30))
+                .andExpect(jsonPath("$.data.products[0].finalPrice").value(27990))
+                .andExpect(jsonPath("$.data.products[0].linkUrl").value("https://google.com/link"));
     }
 }
