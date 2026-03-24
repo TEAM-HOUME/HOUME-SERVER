@@ -7,9 +7,12 @@ import or.sopt.houme.domain.explore.presentation.dto.response.BannerDetailRespon
 import or.sopt.houme.domain.explore.presentation.dto.response.BannerExploreListResponse;
 import or.sopt.houme.domain.explore.presentation.dto.response.OtherStyleDetailResponse;
 import or.sopt.houme.domain.explore.presentation.dto.response.OtherStyleListResponse;
+import or.sopt.houme.domain.explore.presentation.dto.response.RecentFloorPlanResponse;
 import or.sopt.houme.domain.explore.service.ExploreService;
+import or.sopt.houme.domain.user.presentation.controller.dto.CustomUserDetails;
 import or.sopt.houme.global.api.ApiResponse;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -49,5 +52,13 @@ public class ExploreController {
     @Operation(summary = "스타일 디테일 페이지 조회 API")
     public ResponseEntity<ApiResponse<OtherStyleDetailResponse>> getOtherStyleDetail(@PathVariable Long styleId) {
         return ResponseEntity.ok(ApiResponse.ok(exploreService.getOtherStyleDetail(styleId)));
+    }
+
+    @GetMapping("/recent-floor-plan")
+    @Operation(summary = "최근 사용한 도면 데이터 조회 API")
+    public ResponseEntity<ApiResponse<RecentFloorPlanResponse>> getRecentFloorPlan(
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        return ResponseEntity.ok(ApiResponse.ok(exploreService.getRecentFloorPlan(userDetails.getUser())));
     }
 }

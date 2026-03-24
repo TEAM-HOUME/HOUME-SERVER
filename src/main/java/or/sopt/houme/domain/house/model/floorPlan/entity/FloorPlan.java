@@ -33,6 +33,9 @@ public class FloorPlan {
     @Column(name = "file_extension", nullable = false)
     private String fileExtension;
 
+    @Column(name = "floor_plan_name", nullable = false)
+    private String floorPlanName;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "form", nullable = false)
     private Form form;                      // 구조
@@ -53,6 +56,7 @@ public class FloorPlan {
     private String imagesJson;
 
     public static FloorPlan create(
+            String floorPlanName,
             Form form,
             Structure structure,
             Equilibrium equilibrium,
@@ -61,6 +65,7 @@ public class FloorPlan {
             String imagesJson
     ) {
         FloorPlan floorPlan = FloorPlan.builder()
+                .floorPlanName(floorPlanName)
                 .form(form)
                 .structure(structure)
                 .equilibrium(equilibrium)
@@ -71,6 +76,7 @@ public class FloorPlan {
     }
 
     public void update(
+            String floorPlanName,
             Form form,
             Structure structure,
             Equilibrium equilibrium,
@@ -78,6 +84,7 @@ public class FloorPlan {
             FloorPlanImages images,
             String imagesJson
     ) {
+        this.floorPlanName = floorPlanName;
         this.form = form;
         this.structure = structure;
         this.equilibrium = equilibrium;
@@ -94,4 +101,3 @@ public class FloorPlan {
         this.imagesJson = imagesJson;
     }
 }
-
