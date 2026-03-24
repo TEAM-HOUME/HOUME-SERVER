@@ -5,6 +5,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import or.sopt.houme.domain.banner.model.entity.Banner;
+import or.sopt.houme.domain.banner.model.entity.BannerCurationRawProduct;
 import or.sopt.houme.domain.banner.model.entity.BannerType;
 import or.sopt.houme.domain.banner.model.vo.BannerStyleAnswerChip;
 import or.sopt.houme.domain.banner.repository.BannerRepository;
@@ -12,6 +13,8 @@ import or.sopt.houme.domain.explore.presentation.dto.response.BannerDetailAnswer
 import or.sopt.houme.domain.explore.presentation.dto.response.BannerDetailResponse;
 import or.sopt.houme.domain.explore.presentation.dto.response.BannerExploreListResponse;
 import or.sopt.houme.domain.explore.presentation.dto.response.BannerExploreResponse;
+import or.sopt.houme.domain.explore.presentation.dto.response.OtherStyleDetailProductResponse;
+import or.sopt.houme.domain.explore.presentation.dto.response.OtherStyleDetailResponse;
 import or.sopt.houme.domain.explore.presentation.dto.response.OtherStyleListResponse;
 import or.sopt.houme.domain.explore.presentation.dto.response.OtherStyleResponse;
 import or.sopt.houme.global.api.ErrorCode;
@@ -79,6 +82,26 @@ public class ExploreServiceImpl implements ExploreService {
         return OtherStyleListResponse.of(styles.stream().limit(size).toList());
     }
 
+    @Override
+    public OtherStyleDetailResponse getOtherStyleDetail(Long styleId) {
+        Banner style = bannerRepository.findByIdWithRawProducts(styleId, BannerType.STYLE, false)
+                .orElseThrow(() -> new GeneralException(ErrorCode.NOT_FOUND_STYLE));
+
+        List<OtherStyleDetailProductResponse> products = style.getBannerRawProducts().stream()
+                .sorted((left, right) -> Long.compare(safeMappingId(left), safeMappingId(right)))
+                .map(BannerCurationRawProduct::getCurationRawProduct)
+                .filter(java.util.Objects::nonNull)
+                .map(OtherStyleDetailProductResponse::from)
+                .toList();
+
+        return OtherStyleDetailResponse.of(
+                style.getBannerTitle(),
+                style.getBannerImageUrl(),
+                style.getStyleDescription(),
+                products
+        );
+    }
+
     private int findBannerStartIndex(List<Banner> banners, Long bannerId) {
         for (int index = 0; index < banners.size(); index++) {
             if (banners.get(index).getId().equals(bannerId)) {
@@ -103,5 +126,12 @@ public class ExploreServiceImpl implements ExploreService {
         } catch (JsonProcessingException e) {
             throw new GeneralException(ErrorCode.OBJECTMAPPER_EXCEPTION);
         }
+    }
+
+    private long safeMappingId(BannerCurationRawProduct mapping) {
+        if (mapping == null || mapping.getId() == null) {
+            return Long.MAX_VALUE;
+        }
+        return mapping.getId();
     }
 }
