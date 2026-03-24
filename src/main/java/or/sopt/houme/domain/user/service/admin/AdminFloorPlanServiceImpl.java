@@ -45,6 +45,7 @@ public class AdminFloorPlanServiceImpl implements AdminFloorPlanService {
         FloorPlanImages images = toFloorPlanImages(request.images());
 
         FloorPlan floorPlan = FloorPlan.create(
+                normalizeRequired(request.floorPlanName()),
                 request.form(),
                 request.structure(),
                 request.equilibrium(),
@@ -82,6 +83,7 @@ public class AdminFloorPlanServiceImpl implements AdminFloorPlanService {
                 : resolveImages(floorPlan);
 
         floorPlan.update(
+                request.floorPlanName() != null ? normalizeRequired(request.floorPlanName()) : floorPlan.getFloorPlanName(),
                 request.form() != null ? request.form() : floorPlan.getForm(),
                 request.structure() != null ? request.structure() : floorPlan.getStructure(),
                 request.equilibrium() != null ? request.equilibrium() : floorPlan.getEquilibrium(),
@@ -106,6 +108,7 @@ public class AdminFloorPlanServiceImpl implements AdminFloorPlanService {
         FloorPlanImages images = resolveImages(floorPlan);
         return new AdminFloorPlanResponse(
                 floorPlan.getId(),
+                floorPlan.getFloorPlanName(),
                 floorPlan.getForm(),
                 floorPlan.getStructure(),
                 floorPlan.getEquilibrium(),
@@ -135,7 +138,8 @@ public class AdminFloorPlanServiceImpl implements AdminFloorPlanService {
                     floorPlan.getFilename(),
                     floorPlan.getOriginalFilename(),
                     floorPlan.getFileExtension(),
-                    1
+                    1,
+                    null
             );
         }
         return FloorPlanImages.restore(parsedImages, legacyImage);
@@ -150,7 +154,8 @@ public class AdminFloorPlanServiceImpl implements AdminFloorPlanService {
                 request.filename(),
                 request.originalFilename(),
                 request.fileExtension(),
-                request.sortOrder()
+                request.sortOrder(),
+                normalizeNullable(request.view())
         );
     }
 
@@ -161,6 +166,17 @@ public class AdminFloorPlanServiceImpl implements AdminFloorPlanService {
         String trimmed = value.trim();
         if (trimmed.isEmpty()) {
             throw new GeneralException(ErrorCode.NOT_VALID_EXCEPTION);
+        }
+        return trimmed;
+    }
+
+    private String normalizeNullable(String value) {
+        if (value == null) {
+            return null;
+        }
+        String trimmed = value.trim();
+        if (trimmed.isEmpty()) {
+            return null;
         }
         return trimmed;
     }

@@ -7,7 +7,8 @@ public record AdminFloorPlanImageResponse(
         String filename,
         String originalFilename,
         String fileExtension,
-        Integer sortOrder
+        Integer sortOrder,
+        String view
 ) {
     public static AdminFloorPlanImageResponse of(FloorPlanImageItem item) {
         return new AdminFloorPlanImageResponse(
@@ -15,7 +16,8 @@ public record AdminFloorPlanImageResponse(
                 item.filename(),
                 item.originalFilename(),
                 item.fileExtension(),
-                item.sortOrder()
+                item.sortOrder(),
+                item.view()
         );
     }
 }

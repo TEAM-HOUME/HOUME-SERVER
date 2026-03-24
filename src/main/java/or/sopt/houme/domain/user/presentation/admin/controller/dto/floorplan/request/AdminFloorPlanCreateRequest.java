@@ -11,6 +11,8 @@ import or.sopt.houme.domain.house.model.entity.enums.Structure;
 import java.util.List;
 
 public record AdminFloorPlanCreateRequest(
+        @NotBlank
+        String floorPlanName,
         @NotNull
         Form form,
         @NotNull

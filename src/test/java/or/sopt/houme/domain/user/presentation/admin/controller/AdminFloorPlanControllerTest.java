@@ -53,11 +53,12 @@ class AdminFloorPlanControllerTest {
     @DisplayName("POST /api/v1/admin/floor-plans 요청으로 도면을 생성할 수 있다")
     void createFloorPlan_success() throws Exception {
         AdminFloorPlanCreateRequest request = new AdminFloorPlanCreateRequest(
+                "테스트 도면",
                 Form.OFFICETEL,
                 Structure.OPEN_ONE_ROOM,
                 Equilibrium.UNDER_5,
                 "도면 프롬프트",
-                List.of(new AdminFloorPlanImageRequest("https://image/1", "fp-1.png", "room-1.png", "png", 1))
+                List.of(new AdminFloorPlanImageRequest("https://image/1", "fp-1.png", "room-1.png", "png", 1, "창가 뷰"))
         );
 
         when(adminFloorPlanService.create(any(AdminFloorPlanCreateRequest.class))).thenReturn(sampleResponse());
@@ -86,20 +87,22 @@ class AdminFloorPlanControllerTest {
     @DisplayName("PATCH /api/v1/admin/floor-plans/{id} 요청으로 도면을 수정할 수 있다")
     void updateFloorPlan_success() throws Exception {
         AdminFloorPlanUpdateRequest request = new AdminFloorPlanUpdateRequest(
+                "수정 도면",
                 Form.APARTMENT,
                 Structure.TWO_ROOM,
                 Equilibrium.OVER_16,
                 "수정 프롬프트",
-                List.of(new AdminFloorPlanImageRequest("https://image/2", "fp-2.png", "room-2.png", "png", 1))
+                List.of(new AdminFloorPlanImageRequest("https://image/2", "fp-2.png", "room-2.png", "png", 1, "강변 뷰"))
         );
         AdminFloorPlanResponse response = new AdminFloorPlanResponse(
                 1L,
+                "수정 도면",
                 Form.APARTMENT,
                 Structure.TWO_ROOM,
                 Equilibrium.OVER_16,
                 "수정 프롬프트",
                 "https://image/2",
-                List.of(new AdminFloorPlanImageResponse("https://image/2", "fp-2.png", "room-2.png", "png", 1))
+                List.of(new AdminFloorPlanImageResponse("https://image/2", "fp-2.png", "room-2.png", "png", 1, "강변 뷰"))
         );
 
         when(adminFloorPlanService.update(any(Long.class), any(AdminFloorPlanUpdateRequest.class))).thenReturn(response);
@@ -140,12 +143,13 @@ class AdminFloorPlanControllerTest {
     private AdminFloorPlanResponse sampleResponse() {
         return new AdminFloorPlanResponse(
                 1L,
+                "테스트 도면",
                 Form.OFFICETEL,
                 Structure.OPEN_ONE_ROOM,
                 Equilibrium.UNDER_5,
                 "도면 프롬프트",
                 "https://image/1",
-                List.of(new AdminFloorPlanImageResponse("https://image/1", "fp-1.png", "room-1.png", "png", 1))
+                List.of(new AdminFloorPlanImageResponse("https://image/1", "fp-1.png", "room-1.png", "png", 1, "창가 뷰"))
         );
     }
 }

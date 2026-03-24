@@ -9,6 +9,7 @@ import or.sopt.houme.domain.house.model.entity.enums.Structure;
 import java.util.List;
 
 public record AdminFloorPlanUpdateRequest(
+        String floorPlanName,
         Form form,
         Structure structure,
         Equilibrium equilibrium,
