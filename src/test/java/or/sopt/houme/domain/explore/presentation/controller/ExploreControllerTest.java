@@ -8,7 +8,12 @@ import or.sopt.houme.domain.explore.presentation.dto.response.OtherStyleDetailPr
 import or.sopt.houme.domain.explore.presentation.dto.response.OtherStyleDetailResponse;
 import or.sopt.houme.domain.explore.presentation.dto.response.OtherStyleListResponse;
 import or.sopt.houme.domain.explore.presentation.dto.response.OtherStyleResponse;
+import or.sopt.houme.domain.explore.presentation.dto.response.RecentFloorPlanItemResponse;
+import or.sopt.houme.domain.explore.presentation.dto.response.RecentFloorPlanResponse;
 import or.sopt.houme.domain.explore.service.ExploreService;
+import or.sopt.houme.domain.user.model.entity.Role;
+import or.sopt.houme.domain.user.model.entity.User;
+import or.sopt.houme.domain.user.presentation.controller.dto.CustomUserDetails;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -22,12 +27,15 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
 
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
-@AutoConfigureMockMvc(addFilters = false)
+@AutoConfigureMockMvc
 @ActiveProfiles("test")
 class ExploreControllerTest {
 
@@ -161,5 +169,39 @@ class ExploreControllerTest {
                 .andExpect(jsonPath("$.data.products[0].discountRate").value(30))
                 .andExpect(jsonPath("$.data.products[0].finalPrice").value(27990))
                 .andExpect(jsonPath("$.data.products[0].linkUrl").value("https://google.com/link"));
+    }
+
+    @Test
+    @DisplayName("최근 사용한 도면 조회 API는 최근 도면 데이터를 반환한다")
+    void getRecentFloorPlan_returnsRecentFloorPlan() throws Exception {
+        Mockito.when(exploreService.getRecentFloorPlan(Mockito.any(User.class)))
+                .thenReturn(RecentFloorPlanResponse.withRecent(
+                        RecentFloorPlanItemResponse.of(
+                                or.sopt.houme.domain.house.model.floorPlan.entity.FloorPlan.builder()
+                                        .id(1L)
+                                        .floorPlanName("다용도실이 있는 원룸")
+                                        .equilibrium(or.sopt.houme.domain.house.model.entity.enums.Equilibrium.BETWEEN_6_10)
+                                        .build(),
+                                "https://google.com/floor-plan",
+                                "창가 뷰"
+                        )
+                ));
+        CustomUserDetails customUserDetails = new CustomUserDetails(User.builder().id(1L).role(Role.ROLE_USER).build());
+        UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
+                customUserDetails,
+                null,
+                customUserDetails.getAuthorities()
+        );
+
+        mockMvc.perform(get("/api/v1/explore/recent-floor-plan")
+                        .with(authentication(authToken))
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value(200))
+                .andExpect(jsonPath("$.msg").value("응답 성공"))
+                .andExpect(jsonPath("$.data.hasRecentImage").value(true))
+                .andExpect(jsonPath("$.data.floorPlan.id").value(1L))
+                .andExpect(jsonPath("$.data.floorPlan.name").value("다용도실이 있는 원룸"))
+                .andExpect(jsonPath("$.data.floorPlan.imageUrl").value("https://google.com/floor-plan"));
     }
 }
