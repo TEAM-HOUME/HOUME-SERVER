@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import or.sopt.houme.domain.explore.presentation.dto.response.BannerDetailResponse;
 import or.sopt.houme.domain.explore.presentation.dto.response.BannerExploreListResponse;
+import or.sopt.houme.domain.explore.presentation.dto.response.OtherStyleDetailResponse;
 import or.sopt.houme.domain.explore.presentation.dto.response.OtherStyleListResponse;
 import or.sopt.houme.domain.explore.service.ExploreService;
 import or.sopt.houme.global.api.ApiResponse;
@@ -42,5 +43,11 @@ public class ExploreController {
             @RequestParam(required = false) Integer size
     ) {
         return ResponseEntity.ok(ApiResponse.ok(exploreService.getOtherStyles(size)));
+    }
+
+    @GetMapping("/other-styles/{styleId}")
+    @Operation(summary = "스타일 디테일 페이지 조회 API")
+    public ResponseEntity<ApiResponse<OtherStyleDetailResponse>> getOtherStyleDetail(@PathVariable Long styleId) {
+        return ResponseEntity.ok(ApiResponse.ok(exploreService.getOtherStyleDetail(styleId)));
     }
 }
