@@ -5,11 +5,9 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
-import jakarta.persistence.UniqueConstraint;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -23,19 +21,7 @@ import org.hibernate.annotations.Comment;
 @Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
-@Table(
-        name = "generate_image_used_products",
-        indexes = {
-                @Index(name = "idx_generate_image_used_product_image_id", columnList = "generate_image_id"),
-                @Index(name = "idx_generate_image_used_product_raw_product_id", columnList = "curation_raw_product_id")
-        },
-        uniqueConstraints = {
-                @UniqueConstraint(
-                        name = "uk_generate_image_used_product",
-                        columnNames = {"generate_image_id", "curation_raw_product_id"}
-                )
-        }
-)
+@Table(name = "generate_image_used_products")
 @Comment("생성 이미지와 추천 가구(raw product) 매핑 테이블")
 public class GenerateImageUsedProduct {
 
