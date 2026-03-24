@@ -59,6 +59,7 @@ public class WhiteListConfig {
     public static final List<String> exploreWhiteList() {
         return List.of(
                 "/api/v1/explore/house-templates",
+                "/api/v1/explore/house-templates/**",
                 "/api/v1/explore/banners/**",
                 "/api/v1/explore/other-styles",
                 "/api/v1/explore/other-styles/**"

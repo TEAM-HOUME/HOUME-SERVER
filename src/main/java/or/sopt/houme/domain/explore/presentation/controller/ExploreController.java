@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import or.sopt.houme.domain.explore.presentation.dto.response.BannerDetailResponse;
 import or.sopt.houme.domain.explore.presentation.dto.response.BannerExploreListResponse;
+import or.sopt.houme.domain.explore.presentation.dto.response.ExploreHouseTemplateDetailResponse;
 import or.sopt.houme.domain.explore.presentation.dto.response.ExploreHouseTemplateListResponse;
 import or.sopt.houme.domain.explore.presentation.dto.response.OtherStyleDetailResponse;
 import or.sopt.houme.domain.explore.presentation.dto.response.OtherStyleListResponse;
@@ -76,6 +77,14 @@ public class ExploreController {
                         userDetails != null ? userDetails.getUser() : null
                 )
         ));
+    }
+
+    @GetMapping("/house-templates/{floorPlanId}")
+    @Operation(summary = "도면 상세 조회 API")
+    public ResponseEntity<ApiResponse<ExploreHouseTemplateDetailResponse>> getExploreHouseTemplateDetail(
+            @PathVariable Long floorPlanId
+    ) {
+        return ResponseEntity.ok(ApiResponse.ok(exploreService.getExploreHouseTemplateDetail(floorPlanId)));
     }
 
     @GetMapping("/recent-floor-plan")
