@@ -15,15 +15,21 @@ import or.sopt.houme.domain.explore.presentation.dto.response.BannerDetailAnswer
 import or.sopt.houme.domain.explore.presentation.dto.response.BannerDetailResponse;
 import or.sopt.houme.domain.explore.presentation.dto.response.BannerExploreListResponse;
 import or.sopt.houme.domain.explore.presentation.dto.response.BannerExploreResponse;
+import or.sopt.houme.domain.explore.presentation.dto.response.ExploreHouseTemplateItemResponse;
+import or.sopt.houme.domain.explore.presentation.dto.response.ExploreHouseTemplateListResponse;
 import or.sopt.houme.domain.explore.presentation.dto.response.OtherStyleDetailProductResponse;
 import or.sopt.houme.domain.explore.presentation.dto.response.OtherStyleDetailResponse;
 import or.sopt.houme.domain.explore.presentation.dto.response.OtherStyleListResponse;
 import or.sopt.houme.domain.explore.presentation.dto.response.OtherStyleResponse;
 import or.sopt.houme.domain.generateImage.model.entity.GenerateImage;
 import or.sopt.houme.domain.generateImage.repository.GenerateImageRepository;
+import or.sopt.houme.domain.house.model.entity.enums.Equilibrium;
+import or.sopt.houme.domain.house.model.entity.enums.Form;
+import or.sopt.houme.domain.house.model.entity.enums.Structure;
 import or.sopt.houme.domain.house.model.entity.mapping.HouseFloorPlan;
 import or.sopt.houme.domain.house.model.floorPlan.entity.FloorPlan;
 import or.sopt.houme.domain.house.model.floorPlan.vo.FloorPlanImageItem;
+import or.sopt.houme.domain.house.repository.floorPlan.FloorPlanRepository;
 import or.sopt.houme.domain.user.model.entity.User;
 import or.sopt.houme.domain.user.util.floorplan.FloorPlanImageJsonCodec;
 import or.sopt.houme.global.api.ErrorCode;
@@ -32,8 +38,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -44,6 +53,7 @@ public class ExploreServiceImpl implements ExploreService {
 
     private final BannerRepository bannerRepository;
     private final GenerateImageRepository generateImageRepository;
+    private final FloorPlanRepository floorPlanRepository;
     private final FloorPlanImageJsonCodec floorPlanImageJsonCodec;
     private final ObjectMapper objectMapper;
 
@@ -138,6 +148,46 @@ public class ExploreServiceImpl implements ExploreService {
         );
     }
 
+    @Override
+    public ExploreHouseTemplateListResponse getExploreHouseTemplates(
+            Integer size,
+            Form residenceType,
+            Structure layoutType,
+            Equilibrium equilibrium,
+            User user
+    ) {
+        validateSize(size);
+
+        List<FloorPlan> allFloorPlans = floorPlanRepository.findAll().stream()
+                .sorted((left, right) -> Long.compare(left.getId(), right.getId()))
+                .toList();
+
+        List<FloorPlan> exactFloorPlans = allFloorPlans.stream()
+                .filter(floorPlan -> matchesExactFilter(floorPlan, residenceType, layoutType, equilibrium))
+                .toList();
+
+        boolean isExact = !exactFloorPlans.isEmpty();
+        List<FloorPlan> selectedFloorPlans = isExact
+                ? exactFloorPlans
+                : recommendSimilarFloorPlans(allFloorPlans, residenceType, layoutType);
+
+        List<FloorPlan> limitedFloorPlans = applySize(selectedFloorPlans, size);
+        Long latestFloorPlanId = resolveLatestFloorPlanId(user);
+
+        List<ExploreHouseTemplateItemResponse> responses = limitedFloorPlans.stream()
+                .map(floorPlan -> {
+                    FloorPlanImageItem representative = resolveRepresentativeFloorPlanImage(floorPlan);
+                    return ExploreHouseTemplateItemResponse.of(
+                            floorPlan,
+                            representative.url(),
+                            latestFloorPlanId != null && latestFloorPlanId.equals(floorPlan.getId())
+                    );
+                })
+                .toList();
+
+        return ExploreHouseTemplateListResponse.of(isExact, responses);
+    }
+
     private int findBannerStartIndex(List<Banner> banners, Long bannerId) {
         for (int index = 0; index < banners.size(); index++) {
             if (banners.get(index).getId().equals(bannerId)) {
@@ -190,5 +240,84 @@ public class ExploreServiceImpl implements ExploreService {
                         1,
                         null
                 ));
+    }
+
+    private void validateSize(Integer size) {
+        if (size != null && size < 1) {
+            throw new GeneralException(ErrorCode.NOT_VALID_EXCEPTION);
+        }
+    }
+
+    private boolean matchesExactFilter(
+            FloorPlan floorPlan,
+            Form residenceType,
+            Structure layoutType,
+            Equilibrium equilibrium
+    ) {
+        if (residenceType != null && floorPlan.getForm() != residenceType) {
+            return false;
+        }
+        if (layoutType != null && floorPlan.getStructure() != layoutType) {
+            return false;
+        }
+        if (equilibrium != null && floorPlan.getEquilibrium() != equilibrium) {
+            return false;
+        }
+        return true;
+    }
+
+    private List<FloorPlan> recommendSimilarFloorPlans(
+            List<FloorPlan> allFloorPlans,
+            Form residenceType,
+            Structure layoutType
+    ) {
+        if (residenceType == null && layoutType == null) {
+            return allFloorPlans;
+        }
+
+        List<FloorPlan> similar = allFloorPlans.stream()
+                .filter(floorPlan ->
+                        (residenceType != null && floorPlan.getForm() == residenceType)
+                                || (layoutType != null && floorPlan.getStructure() == layoutType))
+                .toList();
+
+        if (!similar.isEmpty()) {
+            return deduplicateById(similar);
+        }
+        return allFloorPlans;
+    }
+
+    private List<FloorPlan> applySize(List<FloorPlan> floorPlans, Integer size) {
+        if (size == null) {
+            return floorPlans;
+        }
+        return floorPlans.stream().limit(size).toList();
+    }
+
+    private Long resolveLatestFloorPlanId(User user) {
+        if (user == null) {
+            return null;
+        }
+
+        return generateImageRepository.findMostRecentByUserId(user.getId())
+                .map(GenerateImage::getHouse)
+                .flatMap(house -> house.getHouseFloorPlans().stream()
+                        .sorted((left, right) -> Long.compare(safeHouseFloorPlanId(left), safeHouseFloorPlanId(right)))
+                        .map(HouseFloorPlan::getFloorPlan)
+                        .filter(java.util.Objects::nonNull)
+                        .map(FloorPlan::getId)
+                        .findFirst())
+                .orElse(null);
+    }
+
+    private List<FloorPlan> deduplicateById(List<FloorPlan> floorPlans) {
+        Map<Long, FloorPlan> byId = floorPlans.stream()
+                .collect(Collectors.toMap(
+                        FloorPlan::getId,
+                        floorPlan -> floorPlan,
+                        (left, right) -> left,
+                        LinkedHashMap::new
+                ));
+        return List.copyOf(byId.values());
     }
 }

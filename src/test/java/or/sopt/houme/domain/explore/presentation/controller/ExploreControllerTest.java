@@ -4,6 +4,8 @@ import or.sopt.houme.domain.explore.presentation.dto.response.BannerDetailAnswer
 import or.sopt.houme.domain.explore.presentation.dto.response.BannerDetailResponse;
 import or.sopt.houme.domain.explore.presentation.dto.response.BannerExploreListResponse;
 import or.sopt.houme.domain.explore.presentation.dto.response.BannerExploreResponse;
+import or.sopt.houme.domain.explore.presentation.dto.response.ExploreHouseTemplateItemResponse;
+import or.sopt.houme.domain.explore.presentation.dto.response.ExploreHouseTemplateListResponse;
 import or.sopt.houme.domain.explore.presentation.dto.response.OtherStyleDetailProductResponse;
 import or.sopt.houme.domain.explore.presentation.dto.response.OtherStyleDetailResponse;
 import or.sopt.houme.domain.explore.presentation.dto.response.OtherStyleListResponse;
@@ -169,6 +171,29 @@ class ExploreControllerTest {
                 .andExpect(jsonPath("$.data.products[0].discountRate").value(30))
                 .andExpect(jsonPath("$.data.products[0].finalPrice").value(27990))
                 .andExpect(jsonPath("$.data.products[0].linkUrl").value("https://google.com/link"));
+    }
+
+    @Test
+    @DisplayName("도면 전체 조회 API는 토큰 없이도 조회 가능하고 isExact/floorPlans를 반환한다")
+    void getExploreHouseTemplates_returnsListWithoutToken() throws Exception {
+        Mockito.when(exploreService.getExploreHouseTemplates(null, null, null, null, null))
+                .thenReturn(ExploreHouseTemplateListResponse.of(
+                        true,
+                        List.of(
+                                new ExploreHouseTemplateItemResponse(1L, "일자형 원룸", "https://google.com/fp1", false),
+                                new ExploreHouseTemplateItemResponse(2L, "분리형 원룸", "https://google.com/fp2", false)
+                        )
+                ));
+
+        mockMvc.perform(get("/api/v1/explore/house-templates")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value(200))
+                .andExpect(jsonPath("$.msg").value("응답 성공"))
+                .andExpect(jsonPath("$.data.isExact").value(true))
+                .andExpect(jsonPath("$.data.floorPlans[0].id").value(1L))
+                .andExpect(jsonPath("$.data.floorPlans[0].name").value("일자형 원룸"))
+                .andExpect(jsonPath("$.data.floorPlans[0].isLatest").value(false));
     }
 
     @Test
