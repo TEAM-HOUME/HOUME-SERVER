@@ -50,7 +50,8 @@ public class WhiteListConfig {
     // 회원 관련 인가 설정
     public static final List<String> userWhiteList() {
         return List.of(
-                "/api/v1/check-has-generated-image"
+                "/api/v1/check-has-generated-image",
+                "/api/v1/landings"
         );
     }
 
