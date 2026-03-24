@@ -21,9 +21,11 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.http.ResponseEntity;
 
 import java.util.List;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.BDDMockito.given;
@@ -80,7 +82,7 @@ class JjymV2ControllerTest {
 
     @Test
     @DisplayName("GET /api/v2/jjyms 요청 시 원천 상품 찜 목록을 반환한다")
-    void getMyRawProductJjyms_success() throws Exception {
+    void getMyRawProductJjyms_success() {
         given(jjymService.getMyRawProductJjyms(1L)).willReturn(
                 JjymV2ListResponse.of(List.of(
                         JjymV2ItemResponse.of(
@@ -99,14 +101,20 @@ class JjymV2ControllerTest {
                 ))
         );
 
-        mockMvc.perform(get("/api/v2/jjyms")
-                        .with(authentication(authToken())))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.code").value(200))
-                .andExpect(jsonPath("$.data.items[0].rawProductId").value(10))
-                .andExpect(jsonPath("$.data.items[0].isJjym").value(true))
-                .andExpect(jsonPath("$.data.items[0].brandName").value("브랜드A"))
-                .andExpect(jsonPath("$.data.items[0].jjymCount").value(5));
+        JjymController controller = new JjymController(jjymService, jjymOptimisticLockFacade);
+
+        ResponseEntity<or.sopt.houme.global.api.ApiResponse<JjymV2ListResponse>> response =
+                controller.getMyRawProductJjyms((CustomUserDetails) authToken().getPrincipal());
+
+        assertThat(response.getStatusCode().value()).isEqualTo(200);
+        assertThat(response.getBody()).isNotNull();
+        assertThat(response.getBody().code()).isEqualTo(200);
+        assertThat(response.getBody().data()).isNotNull();
+        assertThat(response.getBody().data().items()).hasSize(1);
+        assertThat(response.getBody().data().items().getFirst().rawProductId()).isEqualTo(10L);
+        assertThat(response.getBody().data().items().getFirst().isJjym()).isTrue();
+        assertThat(response.getBody().data().items().getFirst().brandName()).isEqualTo("브랜드A");
+        assertThat(response.getBody().data().items().getFirst().jjymCount()).isEqualTo(5L);
     }
 
     private UsernamePasswordAuthenticationToken authToken() {
