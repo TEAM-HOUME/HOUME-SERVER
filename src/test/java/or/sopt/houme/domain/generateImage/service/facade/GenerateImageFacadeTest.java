@@ -6,6 +6,7 @@ import or.sopt.houme.domain.furniture.service.FurnitureService;
 import or.sopt.houme.domain.generateImage.presentation.dto.request.GenerateImageRequest;
 import or.sopt.houme.domain.generateImage.presentation.dto.response.ImageInfoResponse;
 import or.sopt.houme.domain.generateImage.model.entity.GenerateImage;
+import or.sopt.houme.domain.generateImage.model.entity.GenerateImageType;
 import or.sopt.houme.domain.generateImage.service.GenerateImageService;
 import or.sopt.houme.domain.generateImage.service.GenerateImageTransactionService;
 import or.sopt.houme.domain.generateImage.service.imageGenerationLog.ImageGenerationLogService;
@@ -157,7 +158,12 @@ class GenerateImageFacadeTest {
                 .house(house)
                 .build();
 
-        when(generateImageService.createGenerateImage(imageUploadResponseDTO, house)).thenReturn(generateImage);
+        when(generateImageService.createGenerateImage(
+                imageUploadResponseDTO,
+                house,
+                GenerateImageType.RECOMMEND,
+                null
+        )).thenReturn(generateImage);
 
         // When
         ImageInfoResponse imageInfoResponse = generateImageFacade.generateImage(user, generateImageRequest);
@@ -270,7 +276,15 @@ class GenerateImageFacadeTest {
         when(tagService.findTagByTasteId(moodBoardIds.get(0))).thenReturn(tag);
         when(tagService.findTagByTasteId(moodBoardIds.get(1))).thenReturn(tag);
         when(tasteTagService.findDistinctTagsByTasteIds(moodBoardIds)).thenReturn(tagList);
-        when(generateImageTransactionService.saveAllDataAndConfirmCredit(user, lockedCredit, generateImageRequest, imageUploadResponseDTO, tag, Activity.valueOf(generateImageRequest.activity()))).thenReturn(tempImageInfoResponse);
+        when(generateImageTransactionService.saveAllDataAndConfirmCredit(
+                user,
+                lockedCredit,
+                generateImageRequest,
+                imageUploadResponseDTO,
+                tag,
+                Activity.valueOf(generateImageRequest.activity()),
+                GenerateImageType.RECOMMEND
+        )).thenReturn(tempImageInfoResponse);
 
         // When
         ImageInfoResponse imageInfoResponse = generateImageFacade.generateImageByFastApi(user, generateImageRequest);

@@ -445,14 +445,14 @@ class UserServiceImplTest {
         assertThat(group.items()).hasSize(2);
 
         MyPageGeneratedImageV2Response.ItemResponse firstItem = group.items().get(0);
-        assertThat(firstItem.viewType()).isEqualTo(MyPageGeneratedImageV2Response.ViewType.LIST);
+        assertThat(firstItem.viewType()).isEqualTo(MyPageGeneratedImageV2Response.ViewType.RECOMMEND);
         assertThat(firstItem.bannerTitle()).isEqualTo("테스트 배너");
         assertThat(firstItem.productSummaryText()).isEqualTo("배너 가구로 생성된 이미지");
         assertThat(firstItem.usedProducts()).hasSize(1);
         assertThat(firstItem.usedProducts().get(0).isJjym()).isFalse();
 
         MyPageGeneratedImageV2Response.ItemResponse secondItem = group.items().get(1);
-        assertThat(secondItem.viewType()).isEqualTo(MyPageGeneratedImageV2Response.ViewType.RECOMMEND);
+        assertThat(secondItem.viewType()).isEqualTo(MyPageGeneratedImageV2Response.ViewType.LIST);
         assertThat(secondItem.bannerTitle()).isNull();
         assertThat(secondItem.productSummaryText()).isEqualTo("일반 가구로 생성된 이미지");
         assertThat(secondItem.usedProducts()).hasSize(1);

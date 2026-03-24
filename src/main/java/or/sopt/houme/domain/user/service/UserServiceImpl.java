@@ -171,8 +171,8 @@ public class UserServiceImpl implements UserService {
             MyPageGeneratedImageV2Response.ItemResponse item = MyPageGeneratedImageV2Response.ItemResponse.of(
                     generateImage.getId(),
                     generationType == GenerateImageType.REGULAR
-                            ? MyPageGeneratedImageV2Response.ViewType.RECOMMEND
-                            : MyPageGeneratedImageV2Response.ViewType.LIST,
+                            ? MyPageGeneratedImageV2Response.ViewType.LIST
+                            : MyPageGeneratedImageV2Response.ViewType.RECOMMEND,
                     generateImage.getUrl(),
                     generateImage.getCreatedAt(),
                     banner != null ? banner.getBannerTitle() : null,
@@ -358,7 +358,7 @@ public class UserServiceImpl implements UserService {
         List<Long> regularImageIds = new ArrayList<>();
 
         for (GenerateImage generateImage : generateImages) {
-            if (generateImage.getResolvedGenerationType() == GenerateImageType.REGULAR) {
+            if (usesMappedRawProducts(generateImage.getResolvedGenerationType())) {
                 regularImageIds.add(generateImage.getId());
                 continue;
             }
@@ -391,6 +391,13 @@ public class UserServiceImpl implements UserService {
         }
 
         return rawProductsByImageId;
+    }
+
+    /**
+     * 일반/추천 생성 이미지는 별도 매핑 테이블에서 raw product를 조회합니다.
+     */
+    private boolean usesMappedRawProducts(GenerateImageType generationType) {
+        return generationType == GenerateImageType.REGULAR || generationType == GenerateImageType.RECOMMEND;
     }
 
     /**

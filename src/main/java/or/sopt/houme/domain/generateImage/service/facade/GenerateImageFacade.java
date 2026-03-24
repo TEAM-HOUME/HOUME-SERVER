@@ -153,7 +153,7 @@ public class GenerateImageFacade {
                 generateImage = generateImageService.createGenerateImage(
                         imageUploadResponseDTO,
                         house,
-                        GenerateImageType.REGULAR,
+                        GenerateImageType.RECOMMEND,
                         null
                 );
 
@@ -262,7 +262,13 @@ public class GenerateImageFacade {
             }
 
             ImageInfoResponse imageInfoResponse = generateImageTransactionService.saveAllDataAndConfirmCredit(
-                    user, lockedCredit, generateImageRequest, imageUploadResponseDTO, priorityTag, activity
+                    user,
+                    lockedCredit,
+                    generateImageRequest,
+                    imageUploadResponseDTO,
+                    priorityTag,
+                    activity,
+                    GenerateImageType.RECOMMEND
             );
 
             // 만약 Fallback 이미지라면, 예외처리
@@ -411,7 +417,13 @@ public class GenerateImageFacade {
 
                 // DB 작업을 별도의 트랜잭션 클래스의 메서드로 분리하여 호출 (크레딧 차감은 여기서)
                 List<ImageInfoResponse> imageInfoResponses = generateImageTransactionService.saveResultsAndCreateResponse(
-                        user, house, results, generateImageRequest, priorityIdList, lockedCredit
+                        user,
+                        house,
+                        results,
+                        generateImageRequest,
+                        priorityIdList,
+                        lockedCredit,
+                        useGemini ? GenerateImageType.REGULAR : GenerateImageType.RECOMMEND
                 );
 
 

@@ -35,7 +35,8 @@ public class GenerateImageTransactionService {
     @Transactional
     public List<ImageInfoResponse> saveResultsAndCreateResponse(
             User user, House house, List<ImageUploadResponseDTO> results,
-            GenerateImageRequest generateImageRequest, List<TagDTO> priorityIdList, Credit credit) {
+            GenerateImageRequest generateImageRequest, List<TagDTO> priorityIdList, Credit credit,
+            GenerateImageType generationType) {
 
         // 크레딧 차감 로직
         creditService.commitCreditDeletion(credit);
@@ -50,7 +51,7 @@ public class GenerateImageTransactionService {
                 .map(result -> generateImageService.createGenerateImage(
                         result,
                         house,
-                        GenerateImageType.REGULAR,
+                        generationType,
                         null
                 ))
                 .toList();
@@ -78,7 +79,8 @@ public class GenerateImageTransactionService {
             GenerateImageRequest request,
             ImageUploadResponseDTO imageResponse,
             Tag priorityTag,
-            Activity activity
+            Activity activity,
+            GenerateImageType generationType
     ) {
         // 1. House 정보 업데이트
         House house = houseService.updateHouseActivity(request.houseId(), activity);
@@ -93,7 +95,7 @@ public class GenerateImageTransactionService {
         GenerateImage generateImage = generateImageService.createGenerateImage(
                 imageResponse,
                 house,
-                GenerateImageType.REGULAR,
+                generationType,
                 null
         );
 
