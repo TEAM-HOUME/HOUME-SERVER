@@ -45,7 +45,7 @@ public class GenerateImage extends BaseEntity {
 
     // 정적 메서드
     public static GenerateImage createGenerateImage(ImageUploadResponseDTO request, House house) {
-        return createGenerateImage(request, house, GenerateImageType.LIST, null);
+        return createGenerateImage(request, house, GenerateImageType.RECOMMEND, null);
     }
 
     public static GenerateImage createGenerateImage(
@@ -69,6 +69,6 @@ public class GenerateImage extends BaseEntity {
         if (generationType != null) {
             return generationType;
         }
-        return banner != null ? GenerateImageType.RECOMMEND : GenerateImageType.LIST;
+        return banner != null ? GenerateImageType.LIST : GenerateImageType.RECOMMEND;
     }
 }

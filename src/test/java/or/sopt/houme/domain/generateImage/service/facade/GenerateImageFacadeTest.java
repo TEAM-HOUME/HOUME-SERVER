@@ -161,7 +161,7 @@ class GenerateImageFacadeTest {
         when(generateImageService.createGenerateImage(
                 imageUploadResponseDTO,
                 house,
-                GenerateImageType.LIST,
+                GenerateImageType.RECOMMEND,
                 null
         )).thenReturn(generateImage);
 
@@ -283,7 +283,7 @@ class GenerateImageFacadeTest {
                 imageUploadResponseDTO,
                 tag,
                 Activity.valueOf(generateImageRequest.activity()),
-                GenerateImageType.LIST
+                GenerateImageType.RECOMMEND
         )).thenReturn(tempImageInfoResponse);
 
         // When
