@@ -3,25 +3,40 @@ package or.sopt.houme.domain.user.service;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import or.sopt.houme.domain.banner.repository.BannerRepository;
 import or.sopt.houme.domain.user.model.entity.User;
+import or.sopt.houme.domain.user.presentation.controller.dto.LandingListResponse;
+import or.sopt.houme.domain.user.presentation.controller.dto.LandingResponse;
 import or.sopt.houme.domain.user.repository.RefreshTokenRepository;
 import or.sopt.houme.domain.user.repository.UserRepository;
-import or.sopt.houme.domain.user.presentation.valid.RefreshTokenValidator;
 import or.sopt.houme.global.api.ErrorCode;
 import or.sopt.houme.global.api.handler.TokenException;
 import or.sopt.houme.global.api.handler.UserException;
 import or.sopt.houme.global.jwt.JWTUtil;
 import org.springframework.stereotype.Service;
+import org.springframework.data.domain.Sort;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class UserLandingServiceImpl implements UserLandingService {
 
     private final UserRepository userRepository;
     private final JWTUtil jwtUtil;
     private final RefreshTokenRepository refreshTokenRepository;
+    private final BannerRepository bannerRepository;
+
+    @Override
+    public LandingListResponse getLandings() {
+        return LandingListResponse.of(
+                bannerRepository.findAll(Sort.by(Sort.Direction.ASC, "id")).stream()
+                        .map(LandingResponse::from)
+                        .toList()
+        );
+    }
 
     @Override
     public Boolean getHasGeneratedImage(HttpServletRequest request){

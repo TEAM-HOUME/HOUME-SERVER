@@ -2,15 +2,17 @@ package or.sopt.houme.domain.user.service;
 
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
+import or.sopt.houme.domain.banner.model.entity.Banner;
+import or.sopt.houme.domain.banner.repository.BannerRepository;
 import or.sopt.houme.domain.user.model.entity.User;
+import or.sopt.houme.domain.user.presentation.controller.dto.LandingListResponse;
 import or.sopt.houme.domain.user.repository.RefreshTokenRepository;
 import or.sopt.houme.domain.user.repository.UserRepository;
-import or.sopt.houme.domain.user.service.UserLandingServiceImpl;
-import or.sopt.houme.domain.user.presentation.valid.RefreshTokenValidator;
 import or.sopt.houme.global.api.ErrorCode;
 import or.sopt.houme.global.api.handler.TokenException;
 import or.sopt.houme.global.api.handler.UserException;
 import or.sopt.houme.global.jwt.JWTUtil;
+import org.springframework.data.domain.Sort;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -18,6 +20,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -30,16 +33,40 @@ class UserLandingServiceImplTest {
     private UserRepository userRepository;
 
     @Mock
-    private RefreshTokenValidator refreshTokenValidator;
-
-    @Mock
     private JWTUtil jwtUtil;
 
     @Mock
     private RefreshTokenRepository refreshTokenRepository;
 
+    @Mock
+    private BannerRepository bannerRepository;
+
     @InjectMocks
     private UserLandingServiceImpl userLandingService;
+
+    @Test
+    @DisplayName("랜딩 목록 조회 시 배너를 랜딩 응답으로 변환한다")
+    void getLandings_returnsBanners() {
+        Banner firstBanner = Banner.builder()
+                .id(1L)
+                .bannerTitle("재택근무가 필요한")
+                .bannerImageUrl("https://google.com")
+                .build();
+        Banner secondBanner = Banner.builder()
+                .id(2L)
+                .bannerTitle("취향 탐색이 필요한")
+                .bannerImageUrl("https://google.com")
+                .build();
+        when(bannerRepository.findAll(Sort.by(Sort.Direction.ASC, "id")))
+                .thenReturn(List.of(firstBanner, secondBanner));
+
+        LandingListResponse result = userLandingService.getLandings();
+
+        assertEquals(2, result.landings().size());
+        assertEquals(1L, result.landings().get(0).id());
+        assertEquals("재택근무가 필요한", result.landings().get(0).name());
+        assertEquals("https://google.com", result.landings().get(0).imageUrl());
+    }
 
     @Test
     @DisplayName("쿠키가 없으면 true 반환")
