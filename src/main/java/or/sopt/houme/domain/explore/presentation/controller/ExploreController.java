@@ -5,11 +5,13 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import or.sopt.houme.domain.explore.presentation.dto.response.BannerDetailResponse;
 import or.sopt.houme.domain.explore.presentation.dto.response.BannerExploreListResponse;
+import or.sopt.houme.domain.explore.presentation.dto.response.OtherStyleListResponse;
 import or.sopt.houme.domain.explore.service.ExploreService;
 import or.sopt.houme.global.api.ApiResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -32,5 +34,13 @@ public class ExploreController {
     @Operation(summary = "배너 디테일 페이지 조회 API")
     public ResponseEntity<ApiResponse<BannerDetailResponse>> getExploreBannerDetail(@PathVariable Long bannerId) {
         return ResponseEntity.ok(ApiResponse.ok(exploreService.getExploreBannerDetail(bannerId)));
+    }
+
+    @GetMapping("/other-styles")
+    @Operation(summary = "다른 스타일 전체 조회 API")
+    public ResponseEntity<ApiResponse<OtherStyleListResponse>> getOtherStyles(
+            @RequestParam(required = false) Integer size
+    ) {
+        return ResponseEntity.ok(ApiResponse.ok(exploreService.getOtherStyles(size)));
     }
 }

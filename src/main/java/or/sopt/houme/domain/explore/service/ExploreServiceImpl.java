@@ -12,6 +12,8 @@ import or.sopt.houme.domain.explore.presentation.dto.response.BannerDetailAnswer
 import or.sopt.houme.domain.explore.presentation.dto.response.BannerDetailResponse;
 import or.sopt.houme.domain.explore.presentation.dto.response.BannerExploreListResponse;
 import or.sopt.houme.domain.explore.presentation.dto.response.BannerExploreResponse;
+import or.sopt.houme.domain.explore.presentation.dto.response.OtherStyleListResponse;
+import or.sopt.houme.domain.explore.presentation.dto.response.OtherStyleResponse;
 import or.sopt.houme.global.api.ErrorCode;
 import or.sopt.houme.global.api.GeneralException;
 import org.springframework.stereotype.Service;
@@ -58,6 +60,23 @@ public class ExploreServiceImpl implements ExploreService {
                         .map(chip -> BannerDetailAnswerResponse.of(chip.label()))
                         .toList()
         );
+    }
+
+    @Override
+    public OtherStyleListResponse getOtherStyles(Integer size) {
+        if (size != null && size < 1) {
+            throw new GeneralException(ErrorCode.NOT_VALID_EXCEPTION);
+        }
+
+        List<OtherStyleResponse> styles = bannerRepository.findAllWithRawProducts(BannerType.STYLE, false).stream()
+                .sorted((left, right) -> Long.compare(left.getId(), right.getId()))
+                .map(OtherStyleResponse::from)
+                .toList();
+
+        if (size == null) {
+            return OtherStyleListResponse.of(styles);
+        }
+        return OtherStyleListResponse.of(styles.stream().limit(size).toList());
     }
 
     private int findBannerStartIndex(List<Banner> banners, Long bannerId) {
