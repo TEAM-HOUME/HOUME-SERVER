@@ -15,6 +15,9 @@ public interface UserService {
 
     UserImageHistoryListResponse getUserImageHistoryList(User user);
 
+    /**
+     * 마이페이지 생성 이미지 이력 v2 응답을 조회합니다.
+     */
     MyPageGeneratedImageV2Response getUserGeneratedImageHistoryListV2(User user);
 
     ImageHistoriesResultPageResponse getImageHistoryResultPage(User user, Long houseId);

@@ -131,6 +131,9 @@ public class UserServiceImpl implements UserService {
         return UserImageHistoryListResponse.of(histories);
     }
 
+    /**
+     * 배너/스타일/일반 생성 이미지를 날짜별로 묶어 마이페이지 v2 응답을 생성합니다.
+     */
     @Override
     @Transactional(readOnly = true)
     public MyPageGeneratedImageV2Response getUserGeneratedImageHistoryListV2(User user) {
@@ -314,6 +317,9 @@ public class UserServiceImpl implements UserService {
         userRepository.save(user);
     }
 
+    /**
+     * 생성 이미지 목록에서 배너가 연결된 항목만 추려 배너 맵을 구성합니다.
+     */
     private Map<Long, Banner> buildBannerMap(List<GenerateImage> generateImages) {
         Set<Long> bannerIds = generateImages.stream()
                 .map(GenerateImage::getBanner)
@@ -328,6 +334,9 @@ public class UserServiceImpl implements UserService {
         return fetchBanners(bannerIds);
     }
 
+    /**
+     * 배너 id 목록으로 배너와 매핑된 raw product를 함께 조회합니다.
+     */
     private Map<Long, Banner> fetchBanners(Set<Long> bannerIds) {
         return bannerRepository.findAllByIdInWithRawProducts(List.copyOf(bannerIds)).stream()
                 .collect(Collectors.toMap(
@@ -338,6 +347,9 @@ public class UserServiceImpl implements UserService {
                 ));
     }
 
+    /**
+     * 생성 이미지별로 실제 노출할 raw product 목록을 구성합니다.
+     */
     private Map<Long, List<CurationRawProduct>> buildRawProductsByImageId(
             List<GenerateImage> generateImages,
             Map<Long, Banner> bannersById
@@ -381,6 +393,9 @@ public class UserServiceImpl implements UserService {
         return rawProductsByImageId;
     }
 
+    /**
+     * raw product별 색상 목록을 조회해 화면용 문자열 리스트로 변환합니다.
+     */
     private Map<Long, List<String>> buildColorsByRawProductId(Map<Long, List<CurationRawProduct>> rawProductsByImageId) {
         List<Long> rawProductIds = rawProductsByImageId.values().stream()
                 .flatMap(List::stream)
@@ -416,6 +431,9 @@ public class UserServiceImpl implements UserService {
                 ));
     }
 
+    /**
+     * raw product별 찜 여부를 현재 사용자 기준으로 계산합니다.
+     */
     private Map<Long, Boolean> buildJjymByRawProductId(Long userId, Map<Long, List<CurationRawProduct>> rawProductsByImageId) {
         List<CurationRawProduct> rawProducts = rawProductsByImageId.values().stream()
                 .flatMap(List::stream)
@@ -463,6 +481,9 @@ public class UserServiceImpl implements UserService {
         return result;
     }
 
+    /**
+     * 생성 이미지에 연결된 배너를 배너 맵 기준으로 보정하여 반환합니다.
+     */
     private Banner resolveBanner(GenerateImage generateImage, Map<Long, Banner> bannersById) {
         Banner banner = generateImage.getBanner();
         if (banner != null) {
@@ -471,6 +492,9 @@ public class UserServiceImpl implements UserService {
         return null;
     }
 
+    /**
+     * 사용 상품 목록으로 요약 문구를 생성합니다.
+     */
     private String buildProductSummaryText(List<CurationRawProduct> rawProducts) {
         if (rawProducts == null || rawProducts.isEmpty()) {
             return null;
