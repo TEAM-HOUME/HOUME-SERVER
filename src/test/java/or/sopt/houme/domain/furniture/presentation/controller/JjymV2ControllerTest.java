@@ -72,7 +72,7 @@ class JjymV2ControllerTest {
         given(jjymOptimisticLockFacade.toggleRawProduct(any(), anyLong())).willReturn(true);
 
         mockMvc.perform(post("/api/v2/curation-raw-products/10/jjym")
-                        .with(authentication(authentication())))
+                        .with(authentication(authToken())))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.code").value(200))
                 .andExpect(jsonPath("$.data.favorited").value(true));
@@ -100,7 +100,7 @@ class JjymV2ControllerTest {
         );
 
         mockMvc.perform(get("/api/v2/jjyms")
-                        .with(authentication(authentication())))
+                        .with(authentication(authToken())))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.code").value(200))
                 .andExpect(jsonPath("$.data.items[0].rawProductId").value(10))
@@ -109,7 +109,7 @@ class JjymV2ControllerTest {
                 .andExpect(jsonPath("$.data.items[0].jjymCount").value(5));
     }
 
-    private UsernamePasswordAuthenticationToken authentication() {
+    private UsernamePasswordAuthenticationToken authToken() {
         User user = User.builder()
                 .id(1L)
                 .email("test@example.com")
