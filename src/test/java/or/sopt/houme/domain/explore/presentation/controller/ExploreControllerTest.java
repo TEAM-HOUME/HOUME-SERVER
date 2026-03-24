@@ -4,6 +4,8 @@ import or.sopt.houme.domain.explore.presentation.dto.response.BannerDetailAnswer
 import or.sopt.houme.domain.explore.presentation.dto.response.BannerDetailResponse;
 import or.sopt.houme.domain.explore.presentation.dto.response.BannerExploreListResponse;
 import or.sopt.houme.domain.explore.presentation.dto.response.BannerExploreResponse;
+import or.sopt.houme.domain.explore.presentation.dto.response.ExploreHouseTemplateDetailItemResponse;
+import or.sopt.houme.domain.explore.presentation.dto.response.ExploreHouseTemplateDetailResponse;
 import or.sopt.houme.domain.explore.presentation.dto.response.ExploreHouseTemplateItemResponse;
 import or.sopt.houme.domain.explore.presentation.dto.response.ExploreHouseTemplateListResponse;
 import or.sopt.houme.domain.explore.presentation.dto.response.OtherStyleDetailProductResponse;
@@ -194,6 +196,38 @@ class ExploreControllerTest {
                 .andExpect(jsonPath("$.data.floorPlans[0].id").value(1L))
                 .andExpect(jsonPath("$.data.floorPlans[0].name").value("일자형 원룸"))
                 .andExpect(jsonPath("$.data.floorPlans[0].isLatest").value(false));
+    }
+
+    @Test
+    @DisplayName("도면 상세 조회 API는 floorPlan 리스트를 반환한다")
+    void getExploreHouseTemplateDetail_returnsDetailList() throws Exception {
+        Mockito.when(exploreService.getExploreHouseTemplateDetail(1L))
+                .thenReturn(ExploreHouseTemplateDetailResponse.of(
+                        1L,
+                        "다용도실이 있는 원룸",
+                        "6~10평",
+                        List.of(
+                                new ExploreHouseTemplateDetailItemResponse(
+                                        "https://google.com/1",
+                                        "창가 뷰"
+                                ),
+                                new ExploreHouseTemplateDetailItemResponse(
+                                        "https://google.com/2",
+                                        "주방 뷰"
+                                )
+                        )
+                ));
+
+        mockMvc.perform(get("/api/v1/explore/house-templates/1")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value(200))
+                .andExpect(jsonPath("$.msg").value("응답 성공"))
+                .andExpect(jsonPath("$.data.floorPlanId").value(1L))
+                .andExpect(jsonPath("$.data.floorPlanName").value("다용도실이 있는 원룸"))
+                .andExpect(jsonPath("$.data.equilibrium").value("6~10평"))
+                .andExpect(jsonPath("$.data.floorPlans[0].imageUrl").value("https://google.com/1"))
+                .andExpect(jsonPath("$.data.floorPlans[1].view").value("주방 뷰"));
     }
 
     @Test

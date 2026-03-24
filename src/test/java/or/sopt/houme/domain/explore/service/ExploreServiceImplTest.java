@@ -8,6 +8,7 @@ import or.sopt.houme.domain.banner.model.vo.BannerStyleAnswerChip;
 import or.sopt.houme.domain.banner.repository.BannerRepository;
 import or.sopt.houme.domain.explore.presentation.dto.response.BannerDetailResponse;
 import or.sopt.houme.domain.explore.presentation.dto.response.BannerExploreListResponse;
+import or.sopt.houme.domain.explore.presentation.dto.response.ExploreHouseTemplateDetailResponse;
 import or.sopt.houme.domain.explore.presentation.dto.response.ExploreHouseTemplateListResponse;
 import or.sopt.houme.domain.explore.presentation.dto.response.OtherStyleDetailResponse;
 import or.sopt.houme.domain.explore.presentation.dto.response.OtherStyleListResponse;
@@ -399,5 +400,36 @@ class ExploreServiceImplTest {
         assertEquals(false, result.isExact());
         assertEquals(List.of(1L, 2L), result.floorPlans().stream().map(item -> item.id()).toList());
         assertEquals(false, result.floorPlans().getFirst().isLatest());
+    }
+
+    @Test
+    @DisplayName("도면 상세 조회 시 images_json의 각 이미지 정보를 리스트로 반환한다")
+    void getExploreHouseTemplateDetail_returnsFloorPlanDetailFromImagesJson() {
+        FloorPlan floorPlan = FloorPlan.builder()
+                .id(1L)
+                .floorPlanName("다용도실이 있는 원룸")
+                .equilibrium(Equilibrium.BETWEEN_6_10)
+                .url("https://img/fallback")
+                .filename("fallback.png")
+                .originalFilename("fallback-origin.png")
+                .fileExtension("png")
+                .imagesJson("[{\"url\":\"https://img/1\",\"view\":\"창가 뷰\"}]")
+                .build();
+
+        when(floorPlanRepository.findById(1L)).thenReturn(java.util.Optional.of(floorPlan));
+        when(floorPlanImageJsonCodec.read(floorPlan.getImagesJson()))
+                .thenReturn(List.of(
+                        new FloorPlanImageItem("https://img/1", "f1.png", "of1.png", "png", 1, "창가 뷰"),
+                        new FloorPlanImageItem("https://img/2", "f2.png", "of2.png", "png", 2, "주방 뷰")
+                ));
+
+        ExploreHouseTemplateDetailResponse result = exploreService.getExploreHouseTemplateDetail(1L);
+
+        assertEquals(1L, result.floorPlanId());
+        assertEquals("다용도실이 있는 원룸", result.floorPlanName());
+        assertEquals("6~10평", result.equilibrium());
+        assertEquals(2, result.floorPlans().size());
+        assertEquals("https://img/1", result.floorPlans().getFirst().imageUrl());
+        assertEquals("창가 뷰", result.floorPlans().getFirst().view());
     }
 }
