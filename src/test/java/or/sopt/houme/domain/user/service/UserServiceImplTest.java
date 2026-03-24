@@ -365,7 +365,7 @@ class UserServiceImplTest {
                 .id(201L)
                 .url("https://cdn.com/banner-image.png")
                 .house(house)
-                .generationType(GenerateImageType.BANNER)
+                .generationType(GenerateImageType.RECOMMEND)
                 .banner(banner)
                 .build();
         ReflectionTestUtils.setField(bannerImage, "createdAt", LocalDateTime.of(2026, 3, 24, 11, 0));
@@ -388,7 +388,7 @@ class UserServiceImplTest {
                 .id(202L)
                 .url("https://cdn.com/regular-image.png")
                 .house(house)
-                .generationType(GenerateImageType.REGULAR)
+                .generationType(GenerateImageType.LIST)
                 .build();
         ReflectionTestUtils.setField(regularImage, "createdAt", LocalDateTime.of(2026, 3, 24, 10, 0));
 

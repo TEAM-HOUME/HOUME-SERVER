@@ -25,7 +25,7 @@ public class GenerateImageServiceImpl implements GenerateImageService {
     @Transactional
     @Override
     public GenerateImage createGenerateImage(ImageUploadResponseDTO request, House house) {
-        return createGenerateImage(request, house, GenerateImageType.REGULAR, null);
+        return createGenerateImage(request, house, GenerateImageType.LIST, null);
     }
 
     @Transactional

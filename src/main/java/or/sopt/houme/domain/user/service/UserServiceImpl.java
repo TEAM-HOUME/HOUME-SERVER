@@ -170,9 +170,7 @@ public class UserServiceImpl implements UserService {
             Banner banner = resolveBanner(generateImage, bannersById);
             MyPageGeneratedImageV2Response.ItemResponse item = MyPageGeneratedImageV2Response.ItemResponse.of(
                     generateImage.getId(),
-                    generationType == GenerateImageType.REGULAR
-                            ? MyPageGeneratedImageV2Response.ViewType.LIST
-                            : MyPageGeneratedImageV2Response.ViewType.RECOMMEND,
+                    MyPageGeneratedImageV2Response.ViewType.valueOf(generationType.name()),
                     generateImage.getUrl(),
                     generateImage.getCreatedAt(),
                     banner != null ? banner.getBannerTitle() : null,
@@ -355,49 +353,37 @@ public class UserServiceImpl implements UserService {
             Map<Long, Banner> bannersById
     ) {
         Map<Long, List<CurationRawProduct>> rawProductsByImageId = new LinkedHashMap<>();
-        List<Long> regularImageIds = new ArrayList<>();
+        List<Long> mappedProductImageIds = new ArrayList<>();
 
         for (GenerateImage generateImage : generateImages) {
-            if (usesMappedRawProducts(generateImage.getResolvedGenerationType())) {
-                regularImageIds.add(generateImage.getId());
-                continue;
-            }
-
             Banner banner = resolveBanner(generateImage, bannersById);
-            if (banner == null) {
-                rawProductsByImageId.put(generateImage.getId(), List.of());
+            if (banner != null) {
+                List<CurationRawProduct> rawProducts = banner.getBannerRawProducts().stream()
+                        .map(mapping -> mapping.getCurationRawProduct())
+                        .filter(Objects::nonNull)
+                        .toList();
+                rawProductsByImageId.put(generateImage.getId(), rawProducts);
                 continue;
             }
 
-            List<CurationRawProduct> rawProducts = banner.getBannerRawProducts().stream()
-                    .map(mapping -> mapping.getCurationRawProduct())
-                    .filter(Objects::nonNull)
-                    .toList();
-            rawProductsByImageId.put(generateImage.getId(), rawProducts);
+            mappedProductImageIds.add(generateImage.getId());
         }
 
-        if (!regularImageIds.isEmpty()) {
-            List<GenerateImageUsedProduct> mappings = generateImageUsedProductRepository.findAllByGenerateImageIdInWithRawProduct(regularImageIds);
-            Map<Long, List<CurationRawProduct>> regularProductsByImageId = mappings.stream()
+        if (!mappedProductImageIds.isEmpty()) {
+            List<GenerateImageUsedProduct> mappings = generateImageUsedProductRepository.findAllByGenerateImageIdInWithRawProduct(mappedProductImageIds);
+            Map<Long, List<CurationRawProduct>> mappedProductsByImageId = mappings.stream()
                     .collect(Collectors.groupingBy(
                             mapping -> mapping.getGenerateImage().getId(),
                             LinkedHashMap::new,
                             Collectors.mapping(GenerateImageUsedProduct::getCurationRawProduct, Collectors.toList())
                     ));
 
-            for (Long imageId : regularImageIds) {
-                rawProductsByImageId.put(imageId, regularProductsByImageId.getOrDefault(imageId, List.of()));
+            for (Long imageId : mappedProductImageIds) {
+                rawProductsByImageId.put(imageId, mappedProductsByImageId.getOrDefault(imageId, List.of()));
             }
         }
 
         return rawProductsByImageId;
-    }
-
-    /**
-     * 일반/추천 생성 이미지는 별도 매핑 테이블에서 raw product를 조회합니다.
-     */
-    private boolean usesMappedRawProducts(GenerateImageType generationType) {
-        return generationType == GenerateImageType.REGULAR || generationType == GenerateImageType.RECOMMEND;
     }
 
     /**

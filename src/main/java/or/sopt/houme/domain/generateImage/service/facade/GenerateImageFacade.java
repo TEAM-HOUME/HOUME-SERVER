@@ -153,7 +153,7 @@ public class GenerateImageFacade {
                 generateImage = generateImageService.createGenerateImage(
                         imageUploadResponseDTO,
                         house,
-                        GenerateImageType.REGULAR,
+                        GenerateImageType.LIST,
                         null
                 );
 
@@ -268,7 +268,7 @@ public class GenerateImageFacade {
                     imageUploadResponseDTO,
                     priorityTag,
                     activity,
-                    GenerateImageType.REGULAR
+                    GenerateImageType.LIST
             );
 
             // 만약 Fallback 이미지라면, 예외처리
@@ -423,7 +423,7 @@ public class GenerateImageFacade {
                         generateImageRequest,
                         priorityIdList,
                         lockedCredit,
-                        GenerateImageType.REGULAR
+                        GenerateImageType.LIST
                 );
 
 
