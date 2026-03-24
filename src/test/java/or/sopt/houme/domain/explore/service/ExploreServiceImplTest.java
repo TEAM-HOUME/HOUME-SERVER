@@ -8,6 +8,7 @@ import or.sopt.houme.domain.banner.model.vo.BannerStyleAnswerChip;
 import or.sopt.houme.domain.banner.repository.BannerRepository;
 import or.sopt.houme.domain.explore.presentation.dto.response.BannerDetailResponse;
 import or.sopt.houme.domain.explore.presentation.dto.response.BannerExploreListResponse;
+import or.sopt.houme.domain.explore.presentation.dto.response.ExploreHouseTemplateListResponse;
 import or.sopt.houme.domain.explore.presentation.dto.response.OtherStyleDetailResponse;
 import or.sopt.houme.domain.explore.presentation.dto.response.OtherStyleListResponse;
 import or.sopt.houme.domain.explore.presentation.dto.response.RecentFloorPlanItemResponse;
@@ -17,9 +18,12 @@ import or.sopt.houme.domain.generateImage.model.entity.GenerateImage;
 import or.sopt.houme.domain.generateImage.repository.GenerateImageRepository;
 import or.sopt.houme.domain.house.model.entity.House;
 import or.sopt.houme.domain.house.model.entity.enums.Equilibrium;
+import or.sopt.houme.domain.house.model.entity.enums.Form;
+import or.sopt.houme.domain.house.model.entity.enums.Structure;
 import or.sopt.houme.domain.house.model.entity.mapping.HouseFloorPlan;
 import or.sopt.houme.domain.house.model.floorPlan.entity.FloorPlan;
 import or.sopt.houme.domain.house.model.floorPlan.vo.FloorPlanImageItem;
+import or.sopt.houme.domain.house.repository.floorPlan.FloorPlanRepository;
 import or.sopt.houme.domain.user.model.entity.Role;
 import or.sopt.houme.domain.user.model.entity.User;
 import or.sopt.houme.domain.user.util.floorplan.FloorPlanImageJsonCodec;
@@ -51,6 +55,9 @@ class ExploreServiceImplTest {
 
     @Mock
     private GenerateImageRepository generateImageRepository;
+
+    @Mock
+    private FloorPlanRepository floorPlanRepository;
 
     @Mock
     private FloorPlanImageJsonCodec floorPlanImageJsonCodec;
@@ -273,5 +280,124 @@ class ExploreServiceImplTest {
         assertEquals("https://google.com/image1", floorPlanData.imageUrl());
         assertEquals("6~10평", floorPlanData.equilibrium());
         assertEquals("창가 뷰", floorPlanData.view());
+    }
+
+    @Test
+    @DisplayName("도면 전체 조회는 정확히 일치하는 필터 결과를 반환하고 최근 도면만 isLatest=true 처리한다")
+    void getExploreHouseTemplates_returnsExactFilteredResult() {
+        User user = User.builder().id(1L).role(Role.ROLE_USER).build();
+
+        FloorPlan first = FloorPlan.builder()
+                .id(1L)
+                .floorPlanName("일자형 원룸")
+                .form(Form.OFFICETEL)
+                .structure(Structure.OPEN_ONE_ROOM)
+                .equilibrium(Equilibrium.BETWEEN_6_10)
+                .url("https://img/1")
+                .filename("f1.png")
+                .originalFilename("of1.png")
+                .fileExtension("png")
+                .imagesJson("[{\"url\":\"https://img/1\",\"view\":\"창가 뷰\"}]")
+                .build();
+        FloorPlan second = FloorPlan.builder()
+                .id(2L)
+                .floorPlanName("분리형 원룸")
+                .form(Form.VILLA)
+                .structure(Structure.SEPARATED_ONE_ROOM)
+                .equilibrium(Equilibrium.BETWEEN_6_10)
+                .url("https://img/2")
+                .filename("f2.png")
+                .originalFilename("of2.png")
+                .fileExtension("png")
+                .imagesJson("[{\"url\":\"https://img/2\",\"view\":\"복도 뷰\"}]")
+                .build();
+
+        House house = House.builder().id(10L).houseFloorPlans(new java.util.ArrayList<>()).build();
+        house.getHouseFloorPlans().add(HouseFloorPlan.builder().id(1L).house(house).floorPlan(first).isReverse(false).build());
+        GenerateImage recentImage = GenerateImage.builder()
+                .id(100L)
+                .house(house)
+                .url("https://generated")
+                .filename("generated.png")
+                .originalFilename("generated-origin.png")
+                .fileExtension("png")
+                .build();
+
+        when(floorPlanRepository.findAll()).thenReturn(List.of(first, second));
+        when(generateImageRepository.findMostRecentByUserId(1L)).thenReturn(java.util.Optional.of(recentImage));
+        when(floorPlanImageJsonCodec.read(first.getImagesJson()))
+                .thenReturn(List.of(new FloorPlanImageItem("https://img/1", "f1.png", "of1.png", "png", 1, "창가 뷰")));
+
+        ExploreHouseTemplateListResponse result = exploreService.getExploreHouseTemplates(
+                null,
+                Form.OFFICETEL,
+                Structure.OPEN_ONE_ROOM,
+                Equilibrium.BETWEEN_6_10,
+                user
+        );
+
+        assertEquals(true, result.isExact());
+        assertEquals(1, result.floorPlans().size());
+        assertEquals(1L, result.floorPlans().getFirst().id());
+        assertEquals(true, result.floorPlans().getFirst().isLatest());
+    }
+
+    @Test
+    @DisplayName("도면 전체 조회는 exact 결과가 없으면 평형을 제외한 residence/layout 합집합 추천을 반환한다")
+    void getExploreHouseTemplates_returnsSimilarWhenExactNotFound() {
+        FloorPlan byResidence = FloorPlan.builder()
+                .id(1L)
+                .floorPlanName("오피스텔형")
+                .form(Form.OFFICETEL)
+                .structure(Structure.OPEN_ONE_ROOM)
+                .equilibrium(Equilibrium.UNDER_5)
+                .url("https://img/1")
+                .filename("f1.png")
+                .originalFilename("of1.png")
+                .fileExtension("png")
+                .imagesJson("[{\"url\":\"https://img/1\",\"view\":\"창가 뷰\"}]")
+                .build();
+        FloorPlan byLayout = FloorPlan.builder()
+                .id(2L)
+                .floorPlanName("분리형")
+                .form(Form.VILLA)
+                .structure(Structure.SEPARATED_ONE_ROOM)
+                .equilibrium(Equilibrium.OVER_16)
+                .url("https://img/2")
+                .filename("f2.png")
+                .originalFilename("of2.png")
+                .fileExtension("png")
+                .imagesJson("[{\"url\":\"https://img/2\",\"view\":\"복도 뷰\"}]")
+                .build();
+        FloorPlan other = FloorPlan.builder()
+                .id(3L)
+                .floorPlanName("기타")
+                .form(Form.APARTMENT)
+                .structure(Structure.TWO_ROOM)
+                .equilibrium(Equilibrium.BETWEEN_11_15)
+                .url("https://img/3")
+                .filename("f3.png")
+                .originalFilename("of3.png")
+                .fileExtension("png")
+                .imagesJson("[{\"url\":\"https://img/3\",\"view\":\"테라스 뷰\"}]")
+                .build();
+
+        when(floorPlanRepository.findAll()).thenReturn(List.of(byResidence, byLayout, other));
+        when(floorPlanImageJsonCodec.read(byResidence.getImagesJson()))
+                .thenReturn(List.of(new FloorPlanImageItem("https://img/1", "f1.png", "of1.png", "png", 1, "창가 뷰")));
+        when(floorPlanImageJsonCodec.read(byLayout.getImagesJson()))
+                .thenReturn(List.of(new FloorPlanImageItem("https://img/2", "f2.png", "of2.png", "png", 1, "복도 뷰")));
+
+        ExploreHouseTemplateListResponse result = exploreService.getExploreHouseTemplates(
+                null,
+                Form.OFFICETEL,
+                Structure.SEPARATED_ONE_ROOM,
+                Equilibrium.BETWEEN_6_10,
+                null
+        );
+
+        assertEquals(false, result.isExact());
+        assertEquals(List.of(1L, 2L), result.floorPlans().stream().map(item -> item.id()).toList());
+        assertEquals(false, result.floorPlans().getFirst().isLatest());
     }
 }

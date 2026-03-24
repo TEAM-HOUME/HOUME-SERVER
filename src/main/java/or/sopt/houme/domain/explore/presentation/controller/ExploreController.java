@@ -5,10 +5,14 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import or.sopt.houme.domain.explore.presentation.dto.response.BannerDetailResponse;
 import or.sopt.houme.domain.explore.presentation.dto.response.BannerExploreListResponse;
+import or.sopt.houme.domain.explore.presentation.dto.response.ExploreHouseTemplateListResponse;
 import or.sopt.houme.domain.explore.presentation.dto.response.OtherStyleDetailResponse;
 import or.sopt.houme.domain.explore.presentation.dto.response.OtherStyleListResponse;
 import or.sopt.houme.domain.explore.presentation.dto.response.RecentFloorPlanResponse;
 import or.sopt.houme.domain.explore.service.ExploreService;
+import or.sopt.houme.domain.house.model.entity.enums.Equilibrium;
+import or.sopt.houme.domain.house.model.entity.enums.Form;
+import or.sopt.houme.domain.house.model.entity.enums.Structure;
 import or.sopt.houme.domain.user.presentation.controller.dto.CustomUserDetails;
 import or.sopt.houme.global.api.ApiResponse;
 import org.springframework.http.ResponseEntity;
@@ -52,6 +56,26 @@ public class ExploreController {
     @Operation(summary = "스타일 디테일 페이지 조회 API")
     public ResponseEntity<ApiResponse<OtherStyleDetailResponse>> getOtherStyleDetail(@PathVariable Long styleId) {
         return ResponseEntity.ok(ApiResponse.ok(exploreService.getOtherStyleDetail(styleId)));
+    }
+
+    @GetMapping("/house-templates")
+    @Operation(summary = "도면 전체 조회 API")
+    public ResponseEntity<ApiResponse<ExploreHouseTemplateListResponse>> getExploreHouseTemplates(
+            @RequestParam(required = false) Integer size,
+            @RequestParam(required = false) Form residenceType,
+            @RequestParam(required = false) Structure layoutType,
+            @RequestParam(required = false) Equilibrium equilibrium,
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        return ResponseEntity.ok(ApiResponse.ok(
+                exploreService.getExploreHouseTemplates(
+                        size,
+                        residenceType,
+                        layoutType,
+                        equilibrium,
+                        userDetails != null ? userDetails.getUser() : null
+                )
+        ));
     }
 
     @GetMapping("/recent-floor-plan")
