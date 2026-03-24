@@ -153,7 +153,7 @@ public class GenerateImageFacade {
                 generateImage = generateImageService.createGenerateImage(
                         imageUploadResponseDTO,
                         house,
-                        GenerateImageType.RECOMMEND,
+                        GenerateImageType.REGULAR,
                         null
                 );
 
@@ -268,7 +268,7 @@ public class GenerateImageFacade {
                     imageUploadResponseDTO,
                     priorityTag,
                     activity,
-                    GenerateImageType.RECOMMEND
+                    GenerateImageType.REGULAR
             );
 
             // 만약 Fallback 이미지라면, 예외처리
@@ -423,7 +423,7 @@ public class GenerateImageFacade {
                         generateImageRequest,
                         priorityIdList,
                         lockedCredit,
-                        useGemini ? GenerateImageType.REGULAR : GenerateImageType.RECOMMEND
+                        GenerateImageType.REGULAR
                 );
 
 
