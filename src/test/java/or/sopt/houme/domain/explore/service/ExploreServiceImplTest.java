@@ -7,6 +7,7 @@ import or.sopt.houme.domain.banner.model.vo.BannerStyleAnswerChip;
 import or.sopt.houme.domain.banner.repository.BannerRepository;
 import or.sopt.houme.domain.explore.presentation.dto.response.BannerDetailResponse;
 import or.sopt.houme.domain.explore.presentation.dto.response.BannerExploreListResponse;
+import or.sopt.houme.domain.explore.presentation.dto.response.OtherStyleListResponse;
 import or.sopt.houme.global.api.ErrorCode;
 import or.sopt.houme.global.api.GeneralException;
 import org.junit.jupiter.api.DisplayName;
@@ -105,5 +106,44 @@ class ExploreServiceImplTest {
                 () -> exploreService.getExploreBannerDetail(99L));
 
         assertEquals(ErrorCode.NOT_FOUND_BANNER, exception.getErrorCode());
+    }
+
+    @Test
+    @DisplayName("다른 스타일 전체 조회 시 STYLE 타입만 size 만큼 반환한다")
+    void getOtherStyles_returnsLimitedStyles() {
+        Banner styleOne = Banner.builder().id(1L).bannerType(BannerType.STYLE).bannerTitle("미니멀한 개발자의 집").bannerImageUrl("https://google.com/1").build();
+        Banner styleTwo = Banner.builder().id(2L).bannerType(BannerType.STYLE).bannerTitle("웜톤 우드 하우스").bannerImageUrl("https://google.com/2").build();
+        Banner styleThree = Banner.builder().id(3L).bannerType(BannerType.STYLE).bannerTitle("하이틴 스튜디오").bannerImageUrl("https://google.com/3").build();
+        when(bannerRepository.findAllWithRawProducts(BannerType.STYLE, false))
+                .thenReturn(List.of(styleOne, styleTwo, styleThree));
+
+        OtherStyleListResponse result = exploreService.getOtherStyles(2);
+
+        assertEquals(2, result.otherStyles().size());
+        assertEquals(List.of(1L, 2L), result.otherStyles().stream().map(style -> style.id()).toList());
+    }
+
+    @Test
+    @DisplayName("다른 스타일 전체 조회 시 size가 없으면 전체 STYLE 목록을 반환한다")
+    void getOtherStyles_returnsAllWhenSizeNull() {
+        Banner styleOne = Banner.builder().id(1L).bannerType(BannerType.STYLE).bannerTitle("미니멀한 개발자의 집").bannerImageUrl("https://google.com/1").build();
+        Banner styleTwo = Banner.builder().id(2L).bannerType(BannerType.STYLE).bannerTitle("웜톤 우드 하우스").bannerImageUrl("https://google.com/2").build();
+        Banner styleThree = Banner.builder().id(3L).bannerType(BannerType.STYLE).bannerTitle("하이틴 스튜디오").bannerImageUrl("https://google.com/3").build();
+        when(bannerRepository.findAllWithRawProducts(BannerType.STYLE, false))
+                .thenReturn(List.of(styleOne, styleTwo, styleThree));
+
+        OtherStyleListResponse result = exploreService.getOtherStyles(null);
+
+        assertEquals(3, result.otherStyles().size());
+        assertEquals(List.of(1L, 2L, 3L), result.otherStyles().stream().map(style -> style.id()).toList());
+    }
+
+    @Test
+    @DisplayName("다른 스타일 전체 조회 시 size가 1 미만이면 NOT_VALID_EXCEPTION 예외가 발생한다")
+    void getOtherStyles_throwsWhenSizeInvalid() {
+        GeneralException exception = assertThrows(GeneralException.class,
+                () -> exploreService.getOtherStyles(0));
+
+        assertEquals(ErrorCode.NOT_VALID_EXCEPTION, exception.getErrorCode());
     }
 }

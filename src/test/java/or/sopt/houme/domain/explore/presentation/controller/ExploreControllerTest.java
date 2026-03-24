@@ -4,6 +4,8 @@ import or.sopt.houme.domain.explore.presentation.dto.response.BannerDetailAnswer
 import or.sopt.houme.domain.explore.presentation.dto.response.BannerDetailResponse;
 import or.sopt.houme.domain.explore.presentation.dto.response.BannerExploreListResponse;
 import or.sopt.houme.domain.explore.presentation.dto.response.BannerExploreResponse;
+import or.sopt.houme.domain.explore.presentation.dto.response.OtherStyleListResponse;
+import or.sopt.houme.domain.explore.presentation.dto.response.OtherStyleResponse;
 import or.sopt.houme.domain.explore.service.ExploreService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -81,5 +83,44 @@ class ExploreControllerTest {
                 .andExpect(jsonPath("$.data.question").value("업무 시 어떤 책상을 선호하시나요?"))
                 .andExpect(jsonPath("$.data.answers[0].text").value("모니터 받침대가 결합된 책상"))
                 .andExpect(jsonPath("$.data.answers[1].text").value("데스크테리어 가능한 깔끔한 책상"));
+    }
+
+    @Test
+    @DisplayName("다른 스타일 전체 조회 API는 STYLE 타입 목록을 반환한다")
+    void getOtherStyles_returnsStyleList() throws Exception {
+        Mockito.when(exploreService.getOtherStyles(2))
+                .thenReturn(OtherStyleListResponse.of(List.of(
+                        new OtherStyleResponse(1L, "미니멀한 개발자의 집", "https://google.com"),
+                        new OtherStyleResponse(2L, "웜톤 우드 하우스", "https://google.com")
+                )));
+
+        mockMvc.perform(get("/api/v1/explore/other-styles")
+                        .queryParam("size", "2")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value(200))
+                .andExpect(jsonPath("$.msg").value("응답 성공"))
+                .andExpect(jsonPath("$.data.otherStyles[0].id").value(1L))
+                .andExpect(jsonPath("$.data.otherStyles[0].name").value("미니멀한 개발자의 집"))
+                .andExpect(jsonPath("$.data.otherStyles[1].id").value(2L));
+    }
+
+    @Test
+    @DisplayName("다른 스타일 전체 조회 API는 size가 없으면 전체 목록을 반환한다")
+    void getOtherStyles_withoutSize_returnsAll() throws Exception {
+        Mockito.when(exploreService.getOtherStyles(null))
+                .thenReturn(OtherStyleListResponse.of(List.of(
+                        new OtherStyleResponse(1L, "미니멀한 개발자의 집", "https://google.com"),
+                        new OtherStyleResponse(2L, "웜톤 우드 하우스", "https://google.com"),
+                        new OtherStyleResponse(3L, "하이틴 스튜디오", "https://google.com")
+                )));
+
+        mockMvc.perform(get("/api/v1/explore/other-styles")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value(200))
+                .andExpect(jsonPath("$.msg").value("응답 성공"))
+                .andExpect(jsonPath("$.data.otherStyles[0].id").value(1L))
+                .andExpect(jsonPath("$.data.otherStyles[2].id").value(3L));
     }
 }
