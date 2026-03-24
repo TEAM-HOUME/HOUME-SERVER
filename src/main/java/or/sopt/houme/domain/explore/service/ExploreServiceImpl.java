@@ -9,6 +9,8 @@ import or.sopt.houme.domain.banner.model.entity.BannerCurationRawProduct;
 import or.sopt.houme.domain.banner.model.entity.BannerType;
 import or.sopt.houme.domain.banner.model.vo.BannerStyleAnswerChip;
 import or.sopt.houme.domain.banner.repository.BannerRepository;
+import or.sopt.houme.domain.explore.presentation.dto.response.ExploreHouseTemplateDetailItemResponse;
+import or.sopt.houme.domain.explore.presentation.dto.response.ExploreHouseTemplateDetailResponse;
 import or.sopt.houme.domain.explore.presentation.dto.response.RecentFloorPlanItemResponse;
 import or.sopt.houme.domain.explore.presentation.dto.response.RecentFloorPlanResponse;
 import or.sopt.houme.domain.explore.presentation.dto.response.BannerDetailAnswerResponse;
@@ -186,6 +188,36 @@ public class ExploreServiceImpl implements ExploreService {
                 .toList();
 
         return ExploreHouseTemplateListResponse.of(isExact, responses);
+    }
+
+    @Override
+    public ExploreHouseTemplateDetailResponse getExploreHouseTemplateDetail(Long floorPlanId) {
+        FloorPlan floorPlan = floorPlanRepository.findById(floorPlanId)
+                .orElseThrow(() -> new GeneralException(ErrorCode.NOT_FOUND_FLOOR_PLAN));
+
+        List<FloorPlanImageItem> images = floorPlanImageJsonCodec.read(floorPlan.getImagesJson());
+        if (images.isEmpty()) {
+            images = List.of(FloorPlanImageItem.create(
+                    floorPlan.getUrl(),
+                    floorPlan.getFilename(),
+                    floorPlan.getOriginalFilename(),
+                    floorPlan.getFileExtension(),
+                    1,
+                    null
+            ));
+        }
+
+        List<ExploreHouseTemplateDetailItemResponse> responses = images.stream()
+                .filter(image -> image.url() != null && !image.url().isBlank())
+                .map(image -> ExploreHouseTemplateDetailItemResponse.of(image.url(), image.view()))
+                .toList();
+
+        return ExploreHouseTemplateDetailResponse.of(
+                floorPlan.getId(),
+                floorPlan.getFloorPlanName(),
+                floorPlan.getEquilibrium() != null ? floorPlan.getEquilibrium().getDescription() : null,
+                responses
+        );
     }
 
     private int findBannerStartIndex(List<Banner> banners, Long bannerId) {

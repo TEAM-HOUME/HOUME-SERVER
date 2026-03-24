@@ -2,6 +2,7 @@ package or.sopt.houme.domain.explore.service;
 
 import or.sopt.houme.domain.explore.presentation.dto.response.BannerExploreListResponse;
 import or.sopt.houme.domain.explore.presentation.dto.response.BannerDetailResponse;
+import or.sopt.houme.domain.explore.presentation.dto.response.ExploreHouseTemplateDetailResponse;
 import or.sopt.houme.domain.explore.presentation.dto.response.ExploreHouseTemplateListResponse;
 import or.sopt.houme.domain.explore.presentation.dto.response.OtherStyleListResponse;
 import or.sopt.houme.domain.explore.presentation.dto.response.OtherStyleDetailResponse;
@@ -29,4 +30,6 @@ public interface ExploreService {
             Equilibrium equilibrium,
             User user
     );
+
+    ExploreHouseTemplateDetailResponse getExploreHouseTemplateDetail(Long floorPlanId);
 }
