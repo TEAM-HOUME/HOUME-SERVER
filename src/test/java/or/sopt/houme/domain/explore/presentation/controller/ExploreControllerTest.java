@@ -1,5 +1,7 @@
 package or.sopt.houme.domain.explore.presentation.controller;
 
+import or.sopt.houme.domain.explore.presentation.dto.response.BannerDetailAnswerResponse;
+import or.sopt.houme.domain.explore.presentation.dto.response.BannerDetailResponse;
 import or.sopt.houme.domain.explore.presentation.dto.response.BannerExploreListResponse;
 import or.sopt.houme.domain.explore.presentation.dto.response.BannerExploreResponse;
 import or.sopt.houme.domain.explore.service.ExploreService;
@@ -53,5 +55,31 @@ class ExploreControllerTest {
                 .andExpect(jsonPath("$.data.banners[2].id").value(9L))
                 .andExpect(jsonPath("$.data.banners[3].id").value(1L))
                 .andExpect(jsonPath("$.data.banners[4].id").value(2L));
+    }
+
+    @Test
+    @DisplayName("배너 디테일 페이지 조회 API는 배너 상세 정보를 반환한다")
+    void getExploreBannerDetail_returnsDetail() throws Exception {
+        Mockito.when(exploreService.getExploreBannerDetail(1L))
+                .thenReturn(BannerDetailResponse.of(
+                        "잦은 재택근무하기 좋은 우리 집",
+                        "https://google.com",
+                        "업무 시 어떤 책상을 선호하시나요?",
+                        List.of(
+                                BannerDetailAnswerResponse.of("모니터 받침대가 결합된 책상"),
+                                BannerDetailAnswerResponse.of("데스크테리어 가능한 깔끔한 책상")
+                        )
+                ));
+
+        mockMvc.perform(get("/api/v1/explore/banners/1/detail")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value(200))
+                .andExpect(jsonPath("$.msg").value("응답 성공"))
+                .andExpect(jsonPath("$.data.bannerName").value("잦은 재택근무하기 좋은 우리 집"))
+                .andExpect(jsonPath("$.data.bannerImageUrl").value("https://google.com"))
+                .andExpect(jsonPath("$.data.question").value("업무 시 어떤 책상을 선호하시나요?"))
+                .andExpect(jsonPath("$.data.answers[0].text").value("모니터 받침대가 결합된 책상"))
+                .andExpect(jsonPath("$.data.answers[1].text").value("데스크테리어 가능한 깔끔한 책상"));
     }
 }
