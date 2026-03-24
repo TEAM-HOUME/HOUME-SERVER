@@ -52,21 +52,22 @@ class AdminFloorPlanServiceImplTest {
     @DisplayName("create()는 다중 이미지 기반 도면을 생성한다")
     void create_success() {
         AdminFloorPlanCreateRequest request = new AdminFloorPlanCreateRequest(
+                "테스트 도면",
                 Form.OFFICETEL,
                 Structure.OPEN_ONE_ROOM,
                 Equilibrium.UNDER_5,
                 "도면 프롬프트",
                 List.of(
-                        new AdminFloorPlanImageRequest("https://image/1", "fp-1.png", "room-1.png", "png", 1),
-                        new AdminFloorPlanImageRequest("https://image/2", "fp-2.png", "room-2.png", "png", 2)
+                        new AdminFloorPlanImageRequest("https://image/1", "fp-1.png", "room-1.png", "png", 1, "창가 뷰"),
+                        new AdminFloorPlanImageRequest("https://image/2", "fp-2.png", "room-2.png", "png", 2, "복도 뷰")
                 )
         );
         List<FloorPlanImageItem> images = List.of(
-                new FloorPlanImageItem("https://image/1", "fp-1.png", "room-1.png", "png", 1),
-                new FloorPlanImageItem("https://image/2", "fp-2.png", "room-2.png", "png", 2)
+                new FloorPlanImageItem("https://image/1", "fp-1.png", "room-1.png", "png", 1, "창가 뷰"),
+                new FloorPlanImageItem("https://image/2", "fp-2.png", "room-2.png", "png", 2, "복도 뷰")
         );
-        FloorPlanImageItem representative = images.getFirst();
         FloorPlan floorPlan = FloorPlan.create(
+                "테스트 도면",
                 Form.OFFICETEL,
                 Structure.OPEN_ONE_ROOM,
                 Equilibrium.UNDER_5,
@@ -83,9 +84,11 @@ class AdminFloorPlanServiceImplTest {
         AdminFloorPlanResponse response = adminFloorPlanService.create(request);
 
         assertThat(response.id()).isEqualTo(1L);
+        assertThat(response.floorPlanName()).isEqualTo("테스트 도면");
         assertThat(response.form()).isEqualTo(Form.OFFICETEL);
         assertThat(response.structure()).isEqualTo(Structure.OPEN_ONE_ROOM);
         assertThat(response.equilibrium()).isEqualTo(Equilibrium.UNDER_5);
+        assertThat(response.images().getFirst().view()).isEqualTo("창가 뷰");
         assertThat(response.images()).hasSize(2);
         assertThat(response.representativeImageUrl()).isEqualTo("https://image/1");
         verify(floorPlanRepository).saveAndFlush(any(FloorPlan.class));
@@ -95,30 +98,32 @@ class AdminFloorPlanServiceImplTest {
     @DisplayName("update()는 대표 이미지를 포함해 도면 정보를 수정한다")
     void update_success() {
         FloorPlan floorPlan = FloorPlan.create(
+                "기존 도면",
                 Form.VILLA,
                 Structure.SEPARATED_ONE_ROOM,
                 Equilibrium.BETWEEN_6_10,
                 "기존 프롬프트",
                 or.sopt.houme.domain.house.model.floorPlan.vo.FloorPlanImages.from(List.of(
-                        new FloorPlanImageItem("https://old-image", "old.png", "old-original.png", "png", 1)
+                        new FloorPlanImageItem("https://old-image", "old.png", "old-original.png", "png", 1, "기존 뷰")
                 )),
                 "[{\"url\":\"https://old-image\"}]"
         );
         ReflectionTestUtils.setField(floorPlan, "id", 2L);
 
         AdminFloorPlanUpdateRequest request = new AdminFloorPlanUpdateRequest(
+                "수정 도면",
                 Form.APARTMENT,
                 Structure.TWO_ROOM,
                 Equilibrium.BETWEEN_11_15,
                 "수정 프롬프트",
                 List.of(
-                        new AdminFloorPlanImageRequest("https://new-image/1", "new-1.png", "new-room-1.png", "png", 1),
-                        new AdminFloorPlanImageRequest("https://new-image/2", "new-2.png", "new-room-2.png", "png", 2)
+                        new AdminFloorPlanImageRequest("https://new-image/1", "new-1.png", "new-room-1.png", "png", 1, "한강 뷰"),
+                        new AdminFloorPlanImageRequest("https://new-image/2", "new-2.png", "new-room-2.png", "png", 2, "마운틴 뷰")
                 )
         );
         List<FloorPlanImageItem> updatedImages = List.of(
-                new FloorPlanImageItem("https://new-image/1", "new-1.png", "new-room-1.png", "png", 1),
-                new FloorPlanImageItem("https://new-image/2", "new-2.png", "new-room-2.png", "png", 2)
+                new FloorPlanImageItem("https://new-image/1", "new-1.png", "new-room-1.png", "png", 1, "한강 뷰"),
+                new FloorPlanImageItem("https://new-image/2", "new-2.png", "new-room-2.png", "png", 2, "마운틴 뷰")
         );
 
         when(floorPlanRepository.findById(2L)).thenReturn(Optional.of(floorPlan));
@@ -128,9 +133,11 @@ class AdminFloorPlanServiceImplTest {
 
         AdminFloorPlanResponse response = adminFloorPlanService.update(2L, request);
 
+        assertThat(response.floorPlanName()).isEqualTo("수정 도면");
         assertThat(response.form()).isEqualTo(Form.APARTMENT);
         assertThat(response.structure()).isEqualTo(Structure.TWO_ROOM);
         assertThat(response.equilibrium()).isEqualTo(Equilibrium.BETWEEN_11_15);
+        assertThat(response.images().getFirst().view()).isEqualTo("한강 뷰");
         assertThat(response.representativeImageUrl()).isEqualTo("https://new-image/1");
         assertThat(response.images()).hasSize(2);
         assertThat(floorPlan.getUrl()).isEqualTo("https://new-image/1");
