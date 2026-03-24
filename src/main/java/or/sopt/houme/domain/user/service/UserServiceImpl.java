@@ -1,14 +1,29 @@
 package or.sopt.houme.domain.user.service;
 
 import lombok.RequiredArgsConstructor;
+import or.sopt.houme.domain.banner.model.entity.Banner;
+import or.sopt.houme.domain.banner.repository.BannerRepository;
 import or.sopt.houme.domain.credit.model.entity.Credit;
 import or.sopt.houme.domain.credit.model.entity.CreditStatus;
 import or.sopt.houme.domain.credit.repository.CreditRepository;
+import or.sopt.houme.domain.furniture.model.entity.CurationRawProduct;
+import or.sopt.houme.domain.furniture.model.entity.CurationRawProductColor;
+import or.sopt.houme.domain.furniture.model.entity.CurationSource;
+import or.sopt.houme.domain.furniture.model.entity.Jjym;
+import or.sopt.houme.domain.furniture.model.entity.RecommendFurniture;
+import or.sopt.houme.domain.furniture.repository.CurationRawProductColorRepository;
+import or.sopt.houme.domain.furniture.repository.JjymRepository;
+import or.sopt.houme.domain.furniture.repository.RecommendFurnitureRepository;
 import or.sopt.houme.domain.generateImage.model.entity.GenerateImage;
+import or.sopt.houme.domain.generateImage.model.entity.GenerateImageType;
+import or.sopt.houme.domain.generateImage.model.entity.GenerateImageUsedProduct;
 import or.sopt.houme.domain.generateImage.repository.GenerateImageRepository;
+import or.sopt.houme.domain.generateImage.repository.GenerateImageUsedProductRepository;
 import or.sopt.houme.domain.house.model.entity.House;
 import or.sopt.houme.domain.house.model.entity.mapping.HouseFloorPlan;
+import or.sopt.houme.domain.house.model.taste.entity.Tag;
 import or.sopt.houme.domain.house.repository.HouseRepository;
+import or.sopt.houme.domain.house.repository.taste.tag.TagRepository;
 import or.sopt.houme.domain.preference.model.entity.Factor;
 import or.sopt.houme.domain.preference.model.entity.GenerateImagePreference;
 import or.sopt.houme.domain.preference.model.entity.Preference;
@@ -17,24 +32,33 @@ import or.sopt.houme.domain.preference.repository.FactorRepository;
 import or.sopt.houme.domain.preference.repository.GenerateImagePreferenceRepository;
 import or.sopt.houme.domain.preference.repository.PreferenceFactorRepository;
 import or.sopt.houme.domain.preference.repository.PreferenceRepository;
-import or.sopt.houme.domain.house.model.taste.entity.Tag;
-import or.sopt.houme.domain.house.repository.taste.tag.TagRepository;
+import or.sopt.houme.domain.user.model.entity.Gender;
+import or.sopt.houme.domain.user.model.entity.User;
 import or.sopt.houme.domain.user.presentation.controller.dto.ImageHistoriesResultPageResponse;
+import or.sopt.houme.domain.user.presentation.controller.dto.MyPageGeneratedImageV2Response;
 import or.sopt.houme.domain.user.presentation.controller.dto.MyPageInfoResponse;
 import or.sopt.houme.domain.user.presentation.controller.dto.UserImageHistoryDTO;
 import or.sopt.houme.domain.user.presentation.controller.dto.UserImageHistoryListResponse;
-import or.sopt.houme.domain.user.model.entity.Gender;
-import or.sopt.houme.domain.user.model.entity.User;
 import or.sopt.houme.domain.user.repository.UserRepository;
 import or.sopt.houme.global.api.ErrorCode;
-import or.sopt.houme.global.api.handler.*;
+import or.sopt.houme.global.api.handler.CreditException;
+import or.sopt.houme.global.api.handler.GenerateImageException;
+import or.sopt.houme.global.api.handler.HouseException;
+import or.sopt.houme.global.api.handler.TagException;
+import or.sopt.houme.global.api.handler.UserException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 @Service
@@ -53,6 +77,11 @@ public class UserServiceImpl implements UserService {
     private final FactorRepository factorRepository;
     private final PreferenceRepository preferenceRepository;
     private final PreferenceFactorRepository preferenceFactorRepository;
+    private final BannerRepository bannerRepository;
+    private final GenerateImageUsedProductRepository generateImageUsedProductRepository;
+    private final RecommendFurnitureRepository recommendFurnitureRepository;
+    private final JjymRepository jjymRepository;
+    private final CurationRawProductColorRepository curationRawProductColorRepository;
 
     @Override
     @Transactional(readOnly = true)
@@ -100,6 +129,63 @@ public class UserServiceImpl implements UserService {
         }
 
         return UserImageHistoryListResponse.of(histories);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public MyPageGeneratedImageV2Response getUserGeneratedImageHistoryListV2(User user) {
+        User findUser = findUser(user);
+        List<GenerateImage> generateImages = generateImageRepository.findAllByUserIdWithHouseAndBanner(findUser.getId());
+
+        if (generateImages.isEmpty()) {
+            return MyPageGeneratedImageV2Response.of(List.of());
+        }
+
+        Map<Long, Banner> bannersById = buildBannerMap(generateImages);
+        Map<Long, List<CurationRawProduct>> rawProductsByImageId = buildRawProductsByImageId(generateImages, bannersById);
+        Map<Long, List<String>> colorsByRawProductId = buildColorsByRawProductId(rawProductsByImageId);
+        Map<Long, Boolean> jjymByRawProductId = buildJjymByRawProductId(findUser.getId(), rawProductsByImageId);
+
+        Map<LocalDate, List<MyPageGeneratedImageV2Response.ItemResponse>> grouped = new LinkedHashMap<>();
+        for (GenerateImage generateImage : generateImages) {
+            List<CurationRawProduct> rawProducts = rawProductsByImageId.getOrDefault(generateImage.getId(), List.of());
+            List<MyPageGeneratedImageV2Response.UsedProductResponse> usedProducts = rawProducts.stream()
+                    .map(rawProduct -> MyPageGeneratedImageV2Response.UsedProductResponse.of(
+                            rawProduct.getId(),
+                            rawProduct.getProductImageUrl(),
+                            colorsByRawProductId.getOrDefault(rawProduct.getId(), List.of()),
+                            rawProduct.getProductName(),
+                            rawProduct.getListPrice(),
+                            rawProduct.getDiscountRate(),
+                            rawProduct.getDiscountPrice(),
+                            rawProduct.getProductSiteUrl(),
+                            jjymByRawProductId.getOrDefault(rawProduct.getId(), Boolean.FALSE)
+                    ))
+                    .toList();
+
+            GenerateImageType generationType = generateImage.getResolvedGenerationType();
+            Banner banner = resolveBanner(generateImage, bannersById);
+            MyPageGeneratedImageV2Response.ItemResponse item = MyPageGeneratedImageV2Response.ItemResponse.of(
+                    generateImage.getId(),
+                    generationType == GenerateImageType.REGULAR
+                            ? MyPageGeneratedImageV2Response.ViewType.RECOMMEND
+                            : MyPageGeneratedImageV2Response.ViewType.LIST,
+                    generateImage.getUrl(),
+                    generateImage.getCreatedAt(),
+                    banner != null ? banner.getBannerTitle() : null,
+                    buildProductSummaryText(rawProducts),
+                    usedProducts
+            );
+
+            LocalDate date = generateImage.getCreatedAt().toLocalDate();
+            grouped.computeIfAbsent(date, ignored -> new ArrayList<>()).add(item);
+        }
+
+        List<MyPageGeneratedImageV2Response.DateGroupResponse> groups = grouped.entrySet().stream()
+                .map(entry -> MyPageGeneratedImageV2Response.DateGroupResponse.of(entry.getKey(), List.copyOf(entry.getValue())))
+                .toList();
+
+        return MyPageGeneratedImageV2Response.of(groups);
     }
 
     @Override
@@ -228,8 +314,177 @@ public class UserServiceImpl implements UserService {
         userRepository.save(user);
     }
 
+    private Map<Long, Banner> buildBannerMap(List<GenerateImage> generateImages) {
+        Set<Long> bannerIds = generateImages.stream()
+                .map(GenerateImage::getBanner)
+                .filter(Objects::nonNull)
+                .map(Banner::getId)
+                .collect(Collectors.toCollection(LinkedHashSet::new));
+
+        if (bannerIds.isEmpty()) {
+            return Map.of();
+        }
+
+        return fetchBanners(bannerIds);
+    }
+
+    private Map<Long, Banner> fetchBanners(Set<Long> bannerIds) {
+        return bannerRepository.findAllByIdInWithRawProducts(List.copyOf(bannerIds)).stream()
+                .collect(Collectors.toMap(
+                        Banner::getId,
+                        banner -> banner,
+                        (left, right) -> left,
+                        LinkedHashMap::new
+                ));
+    }
+
+    private Map<Long, List<CurationRawProduct>> buildRawProductsByImageId(
+            List<GenerateImage> generateImages,
+            Map<Long, Banner> bannersById
+    ) {
+        Map<Long, List<CurationRawProduct>> rawProductsByImageId = new LinkedHashMap<>();
+        List<Long> regularImageIds = new ArrayList<>();
+
+        for (GenerateImage generateImage : generateImages) {
+            if (generateImage.getResolvedGenerationType() == GenerateImageType.REGULAR) {
+                regularImageIds.add(generateImage.getId());
+                continue;
+            }
+
+            Banner banner = resolveBanner(generateImage, bannersById);
+            if (banner == null) {
+                rawProductsByImageId.put(generateImage.getId(), List.of());
+                continue;
+            }
+
+            List<CurationRawProduct> rawProducts = banner.getBannerRawProducts().stream()
+                    .map(mapping -> mapping.getCurationRawProduct())
+                    .filter(Objects::nonNull)
+                    .toList();
+            rawProductsByImageId.put(generateImage.getId(), rawProducts);
+        }
+
+        if (!regularImageIds.isEmpty()) {
+            List<GenerateImageUsedProduct> mappings = generateImageUsedProductRepository.findAllByGenerateImageIdInWithRawProduct(regularImageIds);
+            Map<Long, List<CurationRawProduct>> regularProductsByImageId = mappings.stream()
+                    .collect(Collectors.groupingBy(
+                            mapping -> mapping.getGenerateImage().getId(),
+                            LinkedHashMap::new,
+                            Collectors.mapping(GenerateImageUsedProduct::getCurationRawProduct, Collectors.toList())
+                    ));
+
+            for (Long imageId : regularImageIds) {
+                rawProductsByImageId.put(imageId, regularProductsByImageId.getOrDefault(imageId, List.of()));
+            }
+        }
+
+        return rawProductsByImageId;
+    }
+
+    private Map<Long, List<String>> buildColorsByRawProductId(Map<Long, List<CurationRawProduct>> rawProductsByImageId) {
+        List<Long> rawProductIds = rawProductsByImageId.values().stream()
+                .flatMap(List::stream)
+                .map(CurationRawProduct::getId)
+                .filter(Objects::nonNull)
+                .distinct()
+                .toList();
+
+        if (rawProductIds.isEmpty()) {
+            return Map.of();
+        }
+
+        Map<Long, Set<String>> colorSetByRawProductId = new LinkedHashMap<>();
+        List<CurationRawProductColor> colors = curationRawProductColorRepository.findAllByCurationRawProductIdIn(rawProductIds);
+        for (CurationRawProductColor color : colors) {
+            Long rawProductId = color.getCurationRawProduct().getId();
+            String displayColor = color.getClientColorName();
+            if (displayColor == null || displayColor.isBlank()) {
+                displayColor = color.getRawColorName();
+            }
+            if (displayColor == null || displayColor.isBlank()) {
+                continue;
+            }
+            colorSetByRawProductId
+                    .computeIfAbsent(rawProductId, ignored -> new LinkedHashSet<>())
+                    .add(displayColor);
+        }
+
+        return colorSetByRawProductId.entrySet().stream()
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        entry -> List.copyOf(entry.getValue())
+                ));
+    }
+
+    private Map<Long, Boolean> buildJjymByRawProductId(Long userId, Map<Long, List<CurationRawProduct>> rawProductsByImageId) {
+        List<CurationRawProduct> rawProducts = rawProductsByImageId.values().stream()
+                .flatMap(List::stream)
+                .distinct()
+                .toList();
+        if (rawProducts.isEmpty()) {
+            return Map.of();
+        }
+
+        List<Long> productIds = rawProducts.stream()
+                .map(CurationRawProduct::getProductId)
+                .filter(Objects::nonNull)
+                .distinct()
+                .toList();
+        if (productIds.isEmpty()) {
+            return Map.of();
+        }
+
+        Map<Long, Long> recommendFurnitureIdByProductId = recommendFurnitureRepository
+                .findAllBySourceAndFurnitureProductIdIn(CurationSource.RAW, productIds)
+                .stream()
+                .collect(Collectors.toMap(
+                        RecommendFurniture::getFurnitureProductId,
+                        RecommendFurniture::getId,
+                        (left, right) -> left
+                ));
+
+        List<Long> recommendFurnitureIds = recommendFurnitureIdByProductId.values().stream().distinct().toList();
+        if (recommendFurnitureIds.isEmpty()) {
+            return rawProducts.stream().collect(Collectors.toMap(CurationRawProduct::getId, ignored -> Boolean.FALSE));
+        }
+
+        Set<Long> jjymRecommendFurnitureIds = jjymRepository.findAllByUserIdAndRecommendFurnitureIdIn(userId, recommendFurnitureIds)
+                .stream()
+                .map(Jjym::getRecommendFurniture)
+                .filter(Objects::nonNull)
+                .map(RecommendFurniture::getId)
+                .collect(Collectors.toSet());
+
+        Map<Long, Boolean> result = new LinkedHashMap<>();
+        for (CurationRawProduct rawProduct : rawProducts) {
+            Long recommendFurnitureId = recommendFurnitureIdByProductId.get(rawProduct.getProductId());
+            result.put(rawProduct.getId(), recommendFurnitureId != null && jjymRecommendFurnitureIds.contains(recommendFurnitureId));
+        }
+        return result;
+    }
+
+    private Banner resolveBanner(GenerateImage generateImage, Map<Long, Banner> bannersById) {
+        Banner banner = generateImage.getBanner();
+        if (banner != null) {
+            return bannersById.getOrDefault(banner.getId(), banner);
+        }
+        return null;
+    }
+
+    private String buildProductSummaryText(List<CurationRawProduct> rawProducts) {
+        if (rawProducts == null || rawProducts.isEmpty()) {
+            return null;
+        }
+
+        String firstName = rawProducts.get(0).getProductName();
+        int remainingCount = rawProducts.size() - 1;
+        if (remainingCount <= 0) {
+            return firstName + "로 생성된 이미지";
+        }
+        return firstName + " 외 " + remainingCount + "개로 생성된 이미지";
+    }
+
     private User findUser(User user) {
         return userRepository.findById(user.getId()).orElseThrow(() -> new UserException(ErrorCode.USER_NOT_FOUND));
     }
-
 }
