@@ -10,7 +10,19 @@ import or.sopt.houme.domain.explore.presentation.dto.response.BannerDetailRespon
 import or.sopt.houme.domain.explore.presentation.dto.response.BannerExploreListResponse;
 import or.sopt.houme.domain.explore.presentation.dto.response.OtherStyleDetailResponse;
 import or.sopt.houme.domain.explore.presentation.dto.response.OtherStyleListResponse;
+import or.sopt.houme.domain.explore.presentation.dto.response.RecentFloorPlanItemResponse;
+import or.sopt.houme.domain.explore.presentation.dto.response.RecentFloorPlanResponse;
 import or.sopt.houme.domain.furniture.model.entity.CurationRawProduct;
+import or.sopt.houme.domain.generateImage.model.entity.GenerateImage;
+import or.sopt.houme.domain.generateImage.repository.GenerateImageRepository;
+import or.sopt.houme.domain.house.model.entity.House;
+import or.sopt.houme.domain.house.model.entity.enums.Equilibrium;
+import or.sopt.houme.domain.house.model.entity.mapping.HouseFloorPlan;
+import or.sopt.houme.domain.house.model.floorPlan.entity.FloorPlan;
+import or.sopt.houme.domain.house.model.floorPlan.vo.FloorPlanImageItem;
+import or.sopt.houme.domain.user.model.entity.Role;
+import or.sopt.houme.domain.user.model.entity.User;
+import or.sopt.houme.domain.user.util.floorplan.FloorPlanImageJsonCodec;
 import or.sopt.houme.global.api.ErrorCode;
 import or.sopt.houme.global.api.GeneralException;
 import org.junit.jupiter.api.DisplayName;
@@ -36,6 +48,12 @@ class ExploreServiceImplTest {
 
     @Mock
     private ObjectMapper objectMapper;
+
+    @Mock
+    private GenerateImageRepository generateImageRepository;
+
+    @Mock
+    private FloorPlanImageJsonCodec floorPlanImageJsonCodec;
 
     @InjectMocks
     private ExploreServiceImpl exploreService;
@@ -196,5 +214,64 @@ class ExploreServiceImplTest {
                 () -> exploreService.getOtherStyleDetail(99L));
 
         assertEquals(ErrorCode.NOT_FOUND_STYLE, exception.getErrorCode());
+    }
+
+    @Test
+    @DisplayName("최근 사용한 도면 데이터 조회 시 최근 생성 이력이 없으면 hasRecentImage=false를 반환한다")
+    void getRecentFloorPlan_returnsNoRecentWhenNoGenerateImage() {
+        User user = User.builder().id(1L).role(Role.ROLE_USER).build();
+        when(generateImageRepository.findMostRecentByUserId(1L))
+                .thenReturn(java.util.Optional.empty());
+
+        RecentFloorPlanResponse result = exploreService.getRecentFloorPlan(user);
+
+        assertEquals(false, result.hasRecentImage());
+        assertEquals(false, result.floorPlan());
+    }
+
+    @Test
+    @DisplayName("최근 사용한 도면 데이터 조회 시 최신 생성 이력의 도면 정보를 반환한다")
+    void getRecentFloorPlan_returnsRecentFloorPlan() {
+        User user = User.builder().id(1L).role(Role.ROLE_USER).build();
+        FloorPlan floorPlan = FloorPlan.builder()
+                .id(3L)
+                .floorPlanName("다용도실이 있는 원룸")
+                .equilibrium(Equilibrium.BETWEEN_6_10)
+                .imagesJson("[{\"url\":\"https://google.com/image1\"}]")
+                .url("https://google.com/fallback")
+                .build();
+        House house = House.builder().id(10L).houseFloorPlans(new java.util.ArrayList<>()).build();
+        HouseFloorPlan houseFloorPlan = HouseFloorPlan.builder()
+                .id(1L)
+                .house(house)
+                .floorPlan(floorPlan)
+                .isReverse(false)
+                .build();
+        house.getHouseFloorPlans().add(houseFloorPlan);
+        GenerateImage generateImage = GenerateImage.builder()
+                .id(100L)
+                .house(house)
+                .url("https://google.com/generated")
+                .filename("generated.png")
+                .originalFilename("generated-original.png")
+                .fileExtension("png")
+                .build();
+
+        when(generateImageRepository.findMostRecentByUserId(1L))
+                .thenReturn(java.util.Optional.of(generateImage));
+        when(floorPlanImageJsonCodec.read("[{\"url\":\"https://google.com/image1\"}]"))
+                .thenReturn(List.of(
+                        new FloorPlanImageItem("https://google.com/image1", "fp-1.png", "fp-origin-1.png", "png", 1, "창가 뷰")
+                ));
+
+        RecentFloorPlanResponse result = exploreService.getRecentFloorPlan(user);
+
+        assertEquals(true, result.hasRecentImage());
+        RecentFloorPlanItemResponse floorPlanData = (RecentFloorPlanItemResponse) result.floorPlan();
+        assertEquals(3L, floorPlanData.id());
+        assertEquals("다용도실이 있는 원룸", floorPlanData.name());
+        assertEquals("https://google.com/image1", floorPlanData.imageUrl());
+        assertEquals("6~10평", floorPlanData.equilibrium());
+        assertEquals("창가 뷰", floorPlanData.view());
     }
 }
