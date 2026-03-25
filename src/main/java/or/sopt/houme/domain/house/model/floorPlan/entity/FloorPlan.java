@@ -7,6 +7,8 @@ import or.sopt.houme.domain.house.model.entity.enums.Form;
 import or.sopt.houme.domain.house.model.entity.enums.Structure;
 import or.sopt.houme.domain.house.model.floorPlan.vo.FloorPlanImageItem;
 import or.sopt.houme.domain.house.model.floorPlan.vo.FloorPlanImages;
+import or.sopt.houme.global.api.ErrorCode;
+import or.sopt.houme.global.api.handler.HouseException;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
@@ -64,6 +66,8 @@ public class FloorPlan {
             FloorPlanImages images,
             String imagesJson
     ) {
+        validateFloorPlanName(floorPlanName);
+
         FloorPlan floorPlan = FloorPlan.builder()
                 .floorPlanName(floorPlanName)
                 .form(form)
@@ -84,6 +88,8 @@ public class FloorPlan {
             FloorPlanImages images,
             String imagesJson
     ) {
+        validateFloorPlanName(floorPlanName);
+
         this.floorPlanName = floorPlanName;
         this.form = form;
         this.structure = structure;
@@ -99,5 +105,11 @@ public class FloorPlan {
         this.originalFilename = representativeImage.originalFilename();
         this.fileExtension = representativeImage.fileExtension();
         this.imagesJson = imagesJson;
+    }
+
+    private static void validateFloorPlanName(String floorPlanName) {
+        if (floorPlanName == null || floorPlanName.isBlank()) {
+            throw new HouseException(ErrorCode.INVALID_FLOOR_PLAN_NAME);
+        }
     }
 }
