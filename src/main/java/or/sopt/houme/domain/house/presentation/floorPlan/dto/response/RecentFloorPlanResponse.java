@@ -1,4 +1,4 @@
-package or.sopt.houme.domain.explore.presentation.dto.response;
+package or.sopt.houme.domain.house.presentation.floorPlan.dto.response;
 
 public record RecentFloorPlanResponse(
         Boolean hasRecentImage,

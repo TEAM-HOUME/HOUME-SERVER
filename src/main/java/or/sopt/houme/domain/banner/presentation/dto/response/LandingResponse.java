@@ -1,15 +1,15 @@
-package or.sopt.houme.domain.explore.presentation.dto.response;
+package or.sopt.houme.domain.banner.presentation.dto.response;
 
 import or.sopt.houme.domain.banner.model.entity.Banner;
 
-public record OtherStyleResponse(
+public record LandingResponse(
         Long id,
         String name,
         String imageUrl
 ) {
 
-    public static OtherStyleResponse from(Banner banner) {
-        return new OtherStyleResponse(
+    public static LandingResponse from(Banner banner) {
+        return new LandingResponse(
                 banner.getId(),
                 banner.getBannerTitle(),
                 banner.getBannerImageUrl()

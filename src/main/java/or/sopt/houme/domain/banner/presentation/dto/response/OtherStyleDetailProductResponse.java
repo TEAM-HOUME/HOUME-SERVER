@@ -1,4 +1,4 @@
-package or.sopt.houme.domain.explore.presentation.dto.response;
+package or.sopt.houme.domain.banner.presentation.dto.response;
 
 import or.sopt.houme.domain.furniture.model.entity.CurationRawProduct;
 

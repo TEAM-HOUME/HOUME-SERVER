@@ -4,7 +4,6 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
-import or.sopt.houme.domain.user.presentation.controller.dto.LandingListResponse;
 import or.sopt.houme.domain.user.service.UserLandingService;
 import or.sopt.houme.global.api.ApiResponse;
 import org.springframework.http.ResponseEntity;
@@ -19,13 +18,6 @@ import org.springframework.web.bind.annotation.RestController;
 public class UserLandingController {
 
     private final UserLandingService userLandingService;
-
-    @GetMapping("/landings")
-    @Operation(summary = "랜딩 페이지 전체 조회 API",
-            description = "banners 테이블에서 bannerId, banner_title, banner_image_url을 조회해 랜딩 목록으로 반환합니다")
-    public ResponseEntity<ApiResponse<LandingListResponse>> getLandings() {
-        return ResponseEntity.ok(ApiResponse.ok(userLandingService.getLandings()));
-    }
 
     @GetMapping("/check-has-generated-image")
     @Operation(summary = "회원 이미지 생성 이력 조회 API",
