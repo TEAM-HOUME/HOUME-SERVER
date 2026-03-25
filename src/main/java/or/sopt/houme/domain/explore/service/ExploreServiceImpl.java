@@ -36,6 +36,9 @@ import or.sopt.houme.domain.user.model.entity.User;
 import or.sopt.houme.domain.user.util.floorplan.FloorPlanImageJsonCodec;
 import or.sopt.houme.global.api.ErrorCode;
 import or.sopt.houme.global.api.GeneralException;
+import or.sopt.houme.global.api.handler.BannerException;
+import or.sopt.houme.global.api.handler.HouseException;
+import or.sopt.houme.global.api.handler.ValidException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -77,7 +80,7 @@ public class ExploreServiceImpl implements ExploreService {
     @Override
     public BannerDetailResponse getExploreBannerDetail(Long bannerId) {
         Banner banner = bannerRepository.findByIdWithRawProducts(bannerId, BannerType.BANNER, false)
-                .orElseThrow(() -> new GeneralException(ErrorCode.NOT_FOUND_BANNER));
+                .orElseThrow(() -> new BannerException(ErrorCode.NOT_FOUND_BANNER));
 
         return BannerDetailResponse.of(
                 banner.getBannerTitle(),
@@ -92,7 +95,7 @@ public class ExploreServiceImpl implements ExploreService {
     @Override
     public OtherStyleListResponse getOtherStyles(Integer size) {
         if (size != null && size < 1) {
-            throw new GeneralException(ErrorCode.NOT_VALID_EXCEPTION);
+            throw new ValidException(ErrorCode.NOT_VALID_EXCEPTION);
         }
 
         List<OtherStyleResponse> styles = bannerRepository.findAllWithRawProducts(BannerType.STYLE, false).stream()
@@ -109,7 +112,7 @@ public class ExploreServiceImpl implements ExploreService {
     @Override
     public OtherStyleDetailResponse getOtherStyleDetail(Long styleId) {
         Banner style = bannerRepository.findByIdWithRawProducts(styleId, BannerType.STYLE, false)
-                .orElseThrow(() -> new GeneralException(ErrorCode.NOT_FOUND_STYLE));
+                .orElseThrow(() -> new BannerException(ErrorCode.NOT_FOUND_STYLE));
 
         List<OtherStyleDetailProductResponse> products = style.getBannerRawProducts().stream()
                 .sorted((left, right) -> Long.compare(safeMappingId(left), safeMappingId(right)))
@@ -193,7 +196,7 @@ public class ExploreServiceImpl implements ExploreService {
     @Override
     public ExploreHouseTemplateDetailResponse getExploreHouseTemplateDetail(Long floorPlanId) {
         FloorPlan floorPlan = floorPlanRepository.findById(floorPlanId)
-                .orElseThrow(() -> new GeneralException(ErrorCode.NOT_FOUND_FLOOR_PLAN));
+                .orElseThrow(() -> new HouseException(ErrorCode.NOT_FOUND_FLOOR_PLAN));
 
         List<FloorPlanImageItem> images = floorPlanImageJsonCodec.read(floorPlan.getImagesJson());
         if (images.isEmpty()) {
@@ -226,7 +229,7 @@ public class ExploreServiceImpl implements ExploreService {
                 return index;
             }
         }
-        throw new GeneralException(ErrorCode.NOT_FOUND_BANNER);
+        throw new BannerException(ErrorCode.NOT_FOUND_BANNER);
     }
 
     private List<BannerStyleAnswerChip> parseStyleAnswerChips(String styleAnswerChipsJson) {
@@ -276,7 +279,7 @@ public class ExploreServiceImpl implements ExploreService {
 
     private void validateSize(Integer size) {
         if (size != null && size < 1) {
-            throw new GeneralException(ErrorCode.NOT_VALID_EXCEPTION);
+            throw new ValidException(ErrorCode.NOT_VALID_EXCEPTION);
         }
     }
 
