@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import or.sopt.houme.domain.user.model.entity.Gender;
 import or.sopt.houme.domain.user.presentation.controller.dto.CreateUserV2Request;
 import or.sopt.houme.domain.user.presentation.controller.dto.CustomUserDetails;
+import or.sopt.houme.domain.user.presentation.controller.dto.MyPageGeneratedImageV2Response;
 import or.sopt.houme.domain.user.presentation.controller.dto.SocialSignUpV2Request;
 import or.sopt.houme.domain.user.service.NicknameService;
 import or.sopt.houme.domain.user.service.OAuthService;
@@ -76,6 +77,16 @@ public class UserV2Controller {
     @Operation(summary = "닉네임 랜덤 생성 API")
     public ResponseEntity<ApiResponse<String>> rotateNickname() {
         return ResponseEntity.ok(ApiResponse.ok(nicknameService.rotateNickname()));
+    }
+
+    @GetMapping(value = "/mypage/images")
+    @Operation(summary = "마이페이지 생성 이미지 이력 v2 제공 API")
+    public ResponseEntity<ApiResponse<MyPageGeneratedImageV2Response>> getUserImageHistoryListV2(
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        MyPageGeneratedImageV2Response response = userService.getUserGeneratedImageHistoryListV2(userDetails.getUser());
+
+        return ResponseEntity.ok(ApiResponse.ok(response));
     }
 
     private Gender parseGender(String gender) {

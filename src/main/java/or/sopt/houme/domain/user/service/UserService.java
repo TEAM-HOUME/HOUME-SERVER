@@ -2,6 +2,7 @@ package or.sopt.houme.domain.user.service;
 
 import or.sopt.houme.domain.user.presentation.controller.dto.ImageHistoriesResultPageResponse;
 import or.sopt.houme.domain.user.presentation.controller.dto.MyPageInfoResponse;
+import or.sopt.houme.domain.user.presentation.controller.dto.MyPageGeneratedImageV2Response;
 import or.sopt.houme.domain.user.presentation.controller.dto.UserImageHistoryListResponse;
 import or.sopt.houme.domain.user.model.entity.Gender;
 import or.sopt.houme.domain.user.model.entity.User;
@@ -13,6 +14,11 @@ public interface UserService {
     MyPageInfoResponse getMyPageInfo(User user);
 
     UserImageHistoryListResponse getUserImageHistoryList(User user);
+
+    /**
+     * 마이페이지 생성 이미지 이력 v2 응답을 조회합니다.
+     */
+    MyPageGeneratedImageV2Response getUserGeneratedImageHistoryListV2(User user);
 
     ImageHistoriesResultPageResponse getImageHistoryResultPage(User user, Long houseId);
 

@@ -13,4 +13,6 @@ public interface GenerateImageRepositoryCustom {
     Optional<GenerateImage> findLastGenerateImage(Long houseId);
 
     List<GenerateImage> findGenerateImagesByHouseId(Long houseId);
+
+    List<GenerateImage> findAllByUserIdWithHouseAndBanner(Long userId);
 }

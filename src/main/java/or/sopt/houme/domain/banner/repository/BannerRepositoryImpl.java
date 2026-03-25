@@ -61,6 +61,31 @@ public class BannerRepositoryImpl implements BannerRepositoryCustom {
         return List.copyOf(distinctById.values());
     }
 
+    @Override
+    public List<Banner> findAllByIdInWithRawProducts(List<Long> bannerIds) {
+        if (bannerIds == null || bannerIds.isEmpty()) {
+            return List.of();
+        }
+
+        QBanner banner = QBanner.banner;
+        QBannerCurationRawProduct mapping = QBannerCurationRawProduct.bannerCurationRawProduct;
+        QCurationRawProduct rawProduct = QCurationRawProduct.curationRawProduct;
+
+        List<Banner> results = queryFactory
+                .selectFrom(banner)
+                .leftJoin(banner.bannerRawProducts, mapping).fetchJoin()
+                .leftJoin(mapping.curationRawProduct, rawProduct).fetchJoin()
+                .where(banner.id.in(bannerIds))
+                .orderBy(banner.id.asc(), mapping.id.asc())
+                .fetch();
+
+        Map<Long, Banner> distinctById = new LinkedHashMap<>();
+        for (Banner result : results) {
+            distinctById.putIfAbsent(result.getId(), result);
+        }
+        return List.copyOf(distinctById.values());
+    }
+
     private BooleanBuilder bannerTypeCondition(QBanner banner, BannerType bannerType, boolean includeLegacyBanner) {
         BooleanBuilder condition = new BooleanBuilder();
         condition.or(banner.bannerType.eq(bannerType));

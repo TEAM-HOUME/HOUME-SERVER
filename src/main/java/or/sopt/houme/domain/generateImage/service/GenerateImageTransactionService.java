@@ -6,6 +6,7 @@ import or.sopt.houme.domain.credit.service.CreditService;
 import or.sopt.houme.domain.generateImage.presentation.dto.request.GenerateImageRequest;
 import or.sopt.houme.domain.generateImage.presentation.dto.response.ImageInfoResponse;
 import or.sopt.houme.domain.generateImage.model.entity.GenerateImage;
+import or.sopt.houme.domain.generateImage.model.entity.GenerateImageType;
 import or.sopt.houme.domain.house.model.entity.House;
 import or.sopt.houme.domain.house.model.entity.enums.Activity;
 import or.sopt.houme.domain.house.service.HouseService;
@@ -34,7 +35,8 @@ public class GenerateImageTransactionService {
     @Transactional
     public List<ImageInfoResponse> saveResultsAndCreateResponse(
             User user, House house, List<ImageUploadResponseDTO> results,
-            GenerateImageRequest generateImageRequest, List<TagDTO> priorityIdList, Credit credit) {
+            GenerateImageRequest generateImageRequest, List<TagDTO> priorityIdList, Credit credit,
+            GenerateImageType generationType) {
 
         // 크레딧 차감 로직
         creditService.commitCreditDeletion(credit);
@@ -46,7 +48,12 @@ public class GenerateImageTransactionService {
 
         // 도면 이미지 생성 및 저장
         List<GenerateImage> generateImages = results.stream()
-                .map(result -> generateImageService.createGenerateImage(result, house))
+                .map(result -> generateImageService.createGenerateImage(
+                        result,
+                        house,
+                        generationType,
+                        null
+                ))
                 .toList();
 
         // 사용자 계정 이미지 생성여부 업데이트
@@ -72,7 +79,8 @@ public class GenerateImageTransactionService {
             GenerateImageRequest request,
             ImageUploadResponseDTO imageResponse,
             Tag priorityTag,
-            Activity activity
+            Activity activity,
+            GenerateImageType generationType
     ) {
         // 1. House 정보 업데이트
         House house = houseService.updateHouseActivity(request.houseId(), activity);
@@ -84,7 +92,12 @@ public class GenerateImageTransactionService {
         houseService.saveHousePrompt(house, imageResponse.getPullPrompt());
 
         // 3. 이미지 엔티티 생성 및 저장
-        GenerateImage generateImage = generateImageService.createGenerateImage(imageResponse, house);
+        GenerateImage generateImage = generateImageService.createGenerateImage(
+                imageResponse,
+                house,
+                generationType,
+                null
+        );
 
         // 4. 크레딧 차감 확정 (PENDING -> DELETE)
         creditService.commitCreditDeletion(lockedCredit);

@@ -2,6 +2,7 @@ package or.sopt.houme.domain.generateImage.model.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import or.sopt.houme.domain.banner.model.entity.Banner;
 import or.sopt.houme.domain.generateImage.presentation.dto.request.GenerateImageRequest;
 import or.sopt.houme.domain.house.model.entity.House;
 import or.sopt.houme.global.dto.ImageUploadResponseDTO;
@@ -34,14 +35,40 @@ public class GenerateImage extends BaseEntity {
     @JoinColumn(name = "house_id")
     private House house;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "generation_type", length = 20)
+    private GenerateImageType generationType;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "banner_id")
+    private Banner banner;
+
     // 정적 메서드
     public static GenerateImage createGenerateImage(ImageUploadResponseDTO request, House house) {
+        return createGenerateImage(request, house, GenerateImageType.RECOMMEND, null);
+    }
+
+    public static GenerateImage createGenerateImage(
+            ImageUploadResponseDTO request,
+            House house,
+            GenerateImageType generationType,
+            Banner banner
+    ) {
         return GenerateImage.builder()
                 .url(request.getImageLink())
                 .filename(request.getFilename())
                 .originalFilename(request.getOriginalFilename())
                 .fileExtension(request.getContentType())
                 .house(house)
+                .generationType(generationType)
+                .banner(banner)
                 .build();
+    }
+
+    public GenerateImageType getResolvedGenerationType() {
+        if (generationType != null) {
+            return generationType;
+        }
+        return banner != null ? GenerateImageType.LIST : GenerateImageType.RECOMMEND;
     }
 }

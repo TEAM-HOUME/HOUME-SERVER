@@ -4,6 +4,7 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import or.sopt.houme.domain.generateImage.model.entity.GenerateImage;
 import or.sopt.houme.domain.generateImage.model.entity.QGenerateImage;
+import or.sopt.houme.domain.banner.model.entity.QBanner;
 import or.sopt.houme.domain.house.model.entity.QHouse;
 import org.springframework.stereotype.Repository;
 
@@ -51,6 +52,24 @@ public class GenerateImageRepositoryImpl implements GenerateImageRepositoryCusto
                 .join(generateImage.house, house).fetchJoin()
                 .where(house.id.eq(houseId))
                 .orderBy(generateImage.createdAt.asc())
+                .fetch();
+    }
+
+    @Override
+    public List<GenerateImage> findAllByUserIdWithHouseAndBanner(Long userId) {
+        QGenerateImage generateImage = QGenerateImage.generateImage;
+        QHouse house = QHouse.house;
+        QBanner banner = QBanner.banner;
+
+        return queryFactory
+                .selectFrom(generateImage)
+                .join(generateImage.house, house).fetchJoin()
+                .leftJoin(generateImage.banner, banner).fetchJoin()
+                .where(
+                        house.user.id.eq(userId),
+                        house.isValid.isTrue()
+                )
+                .orderBy(generateImage.createdAt.desc(), generateImage.id.desc())
                 .fetch();
     }
 }

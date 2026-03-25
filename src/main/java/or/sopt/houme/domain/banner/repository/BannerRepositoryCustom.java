@@ -11,4 +11,6 @@ public interface BannerRepositoryCustom {
     Optional<Banner> findByIdWithRawProducts(Long bannerId, BannerType bannerType, boolean includeLegacyBanner);
 
     List<Banner> findAllWithRawProducts(BannerType bannerType, boolean includeLegacyBanner);
+
+    List<Banner> findAllByIdInWithRawProducts(List<Long> bannerIds);
 }

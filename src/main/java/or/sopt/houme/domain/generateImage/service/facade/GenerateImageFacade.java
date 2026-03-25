@@ -7,6 +7,7 @@ import or.sopt.houme.domain.credit.model.entity.CreditStatus;
 import or.sopt.houme.domain.credit.service.CreditService;
 import or.sopt.houme.domain.furniture.service.FurnitureService;
 import or.sopt.houme.domain.generateImage.presentation.dto.SelectedTagInfo;
+import or.sopt.houme.domain.generateImage.model.entity.GenerateImageType;
 import or.sopt.houme.domain.generateImage.presentation.dto.request.GenerateImageRequest;
 import or.sopt.houme.domain.generateImage.presentation.dto.response.ImageInfoListResponse;
 import or.sopt.houme.domain.generateImage.presentation.dto.response.ImageInfoResponse;
@@ -149,7 +150,12 @@ public class GenerateImageFacade {
 
             try {
                 // 도면 이미지 생성
-                generateImage = generateImageService.createGenerateImage(imageUploadResponseDTO, house);
+                generateImage = generateImageService.createGenerateImage(
+                        imageUploadResponseDTO,
+                        house,
+                        GenerateImageType.RECOMMEND,
+                        null
+                );
 
             } catch (Exception e) {
 
@@ -256,7 +262,13 @@ public class GenerateImageFacade {
             }
 
             ImageInfoResponse imageInfoResponse = generateImageTransactionService.saveAllDataAndConfirmCredit(
-                    user, lockedCredit, generateImageRequest, imageUploadResponseDTO, priorityTag, activity
+                    user,
+                    lockedCredit,
+                    generateImageRequest,
+                    imageUploadResponseDTO,
+                    priorityTag,
+                    activity,
+                    GenerateImageType.RECOMMEND
             );
 
             // 만약 Fallback 이미지라면, 예외처리
@@ -405,7 +417,13 @@ public class GenerateImageFacade {
 
                 // DB 작업을 별도의 트랜잭션 클래스의 메서드로 분리하여 호출 (크레딧 차감은 여기서)
                 List<ImageInfoResponse> imageInfoResponses = generateImageTransactionService.saveResultsAndCreateResponse(
-                        user, house, results, generateImageRequest, priorityIdList, lockedCredit
+                        user,
+                        house,
+                        results,
+                        generateImageRequest,
+                        priorityIdList,
+                        lockedCredit,
+                        GenerateImageType.RECOMMEND
                 );
 
 
