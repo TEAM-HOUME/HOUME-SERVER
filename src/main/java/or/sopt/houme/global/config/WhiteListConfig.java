@@ -58,12 +58,11 @@ public class WhiteListConfig {
     // 탐색 탭 관련 인가 설정
     public static final List<String> exploreWhiteList() {
         return List.of(
-                "/api/v1/explore/house-templates",
-                "/api/v1/explore/house-templates/**",
-                "/api/v1/explore/banners/**",
-                "/api/v1/explore/other-styles",
-                "/api/v1/explore/other-styles/**",
-                "/api/v1/explore/recent-floor-plan",
+                "/api/v2/house-templates",
+                "/api/v2/house-templates/**",
+                "/api/v1/banners/**",
+                "/api/v1/other-styles",
+                "/api/v1/other-styles/**",
                 "/api/v2/recent-floor-plan"
         );
     }
