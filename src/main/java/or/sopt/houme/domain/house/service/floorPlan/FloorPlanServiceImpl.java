@@ -1,6 +1,7 @@
 package or.sopt.houme.domain.house.service.floorPlan;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import or.sopt.houme.domain.generateImage.model.entity.GenerateImage;
 import or.sopt.houme.domain.generateImage.repository.GenerateImageRepository;
 import or.sopt.houme.domain.house.model.entity.enums.Equilibrium;
@@ -36,6 +37,7 @@ import java.util.stream.Collectors;
 @Service
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
+@Slf4j
 public class FloorPlanServiceImpl implements FloorPlanService {
 
     private final FloorPlanRepository floorPlanRepository;
@@ -132,16 +134,15 @@ public class FloorPlanServiceImpl implements FloorPlanService {
         FloorPlan floorPlan = floorPlanRepository.findById(floorPlanId)
                 .orElseThrow(() -> new HouseException(ErrorCode.NOT_FOUND_FLOOR_PLAN));
 
-        List<FloorPlanImageItem> images = floorPlanImageJsonCodec.read(floorPlan.getImagesJson());
+        List<FloorPlanImageItem> images;
+        try {
+            images = floorPlanImageJsonCodec.read(floorPlan.getImagesJson());
+        } catch (Exception e) {
+            log.warn("Failed to parse floor plan images_json. floorPlanId={}", floorPlan.getId(), e);
+            images = fallbackImages(floorPlan);
+        }
         if (images.isEmpty()) {
-            images = List.of(FloorPlanImageItem.create(
-                    floorPlan.getUrl(),
-                    floorPlan.getFilename(),
-                    floorPlan.getOriginalFilename(),
-                    floorPlan.getFileExtension(),
-                    1,
-                    null
-            ));
+            images = fallbackImages(floorPlan);
         }
 
         List<ExploreHouseTemplateDetailItemResponse> responses = images.stream()
@@ -165,17 +166,32 @@ public class FloorPlanServiceImpl implements FloorPlanService {
     }
 
     private FloorPlanImageItem resolveRepresentativeFloorPlanImage(FloorPlan floorPlan) {
-        return floorPlanImageJsonCodec.read(floorPlan.getImagesJson()).stream()
+        List<FloorPlanImageItem> images;
+        try {
+            images = floorPlanImageJsonCodec.read(floorPlan.getImagesJson());
+        } catch (Exception e) {
+            log.warn("Failed to parse floor plan images_json. floorPlanId={}", floorPlan.getId(), e);
+            images = fallbackImages(floorPlan);
+        }
+        if (images.isEmpty()) {
+            images = fallbackImages(floorPlan);
+        }
+
+        return images.stream()
                 .filter(item -> item.url() != null && !item.url().isBlank())
                 .findFirst()
-                .orElseGet(() -> FloorPlanImageItem.create(
-                        floorPlan.getUrl(),
-                        floorPlan.getFilename(),
-                        floorPlan.getOriginalFilename(),
-                        floorPlan.getFileExtension(),
-                        1,
-                        null
-                ));
+                .orElseGet(() -> fallbackImages(floorPlan).getFirst());
+    }
+
+    private List<FloorPlanImageItem> fallbackImages(FloorPlan floorPlan) {
+        return List.of(FloorPlanImageItem.create(
+                floorPlan.getUrl(),
+                floorPlan.getFilename(),
+                floorPlan.getOriginalFilename(),
+                floorPlan.getFileExtension(),
+                1,
+                null
+        ));
     }
 
     private void validateSize(Integer size) {

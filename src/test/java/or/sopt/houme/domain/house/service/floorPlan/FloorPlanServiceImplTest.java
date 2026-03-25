@@ -1,11 +1,17 @@
 package or.sopt.houme.domain.house.service.floorPlan;
 
+import or.sopt.houme.domain.generateImage.repository.GenerateImageRepository;
 import or.sopt.houme.domain.house.presentation.floorPlan.dto.response.FloorPlanListResponse;
+import or.sopt.houme.domain.house.presentation.floorPlan.dto.response.ExploreHouseTemplateDetailResponse;
+import or.sopt.houme.domain.house.presentation.floorPlan.dto.response.ExploreHouseTemplateListResponse;
 import or.sopt.houme.domain.house.model.floorPlan.entity.FloorPlan;
 import or.sopt.houme.domain.house.repository.floorPlan.FloorPlanRepository;
 import or.sopt.houme.domain.house.model.entity.enums.Equilibrium;
 import or.sopt.houme.domain.house.model.entity.enums.Form;
 import or.sopt.houme.domain.house.model.entity.enums.Structure;
+import or.sopt.houme.domain.user.util.floorplan.FloorPlanImageJsonCodec;
+import or.sopt.houme.global.api.ErrorCode;
+import or.sopt.houme.global.api.GeneralException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -28,6 +34,12 @@ class FloorPlanServiceImplTest {
 
     @Mock
     FloorPlanRepository floorPlanRepository;
+
+    @Mock
+    GenerateImageRepository generateImageRepository;
+
+    @Mock
+    FloorPlanImageJsonCodec floorPlanImageJsonCodec;
 
     @Test
     @DisplayName("사용자가 입력한 값들을 토대로 도면 템플릿을 필터링해서 내려줄 수 있다.")
@@ -89,5 +101,64 @@ class FloorPlanServiceImplTest {
                         tuple(officetel, openOneRoom, url),
                         tuple(officetel, openOneRoom, url)
                 );
+    }
+
+    @Test
+    @DisplayName("도면 상세 조회 시 images_json 파싱 예외가 발생하면 대표 이미지 fallback을 반환한다")
+    void getExploreHouseTemplateDetail_returnsFallbackWhenJsonParseFails() {
+        FloorPlan floorPlan = FloorPlan.builder()
+                .id(1L)
+                .floorPlanName("다용도실이 있는 원룸")
+                .form(Form.OFFICETEL)
+                .structure(Structure.OPEN_ONE_ROOM)
+                .equilibrium(Equilibrium.BETWEEN_6_10)
+                .url("https://fallback-image")
+                .filename("fallback.png")
+                .originalFilename("fallback-origin.png")
+                .fileExtension("png")
+                .imagesJson("invalid-json")
+                .build();
+
+        when(floorPlanRepository.findById(1L)).thenReturn(java.util.Optional.of(floorPlan));
+        when(floorPlanImageJsonCodec.read("invalid-json"))
+                .thenThrow(new GeneralException(ErrorCode.OBJECTMAPPER_EXCEPTION));
+
+        ExploreHouseTemplateDetailResponse result = floorPlanService.getExploreHouseTemplateDetail(1L);
+
+        assertThat(result.floorPlans()).hasSize(1);
+        assertThat(result.floorPlans().getFirst().imageUrl()).isEqualTo("https://fallback-image");
+        assertThat(result.floorPlans().getFirst().view()).isNull();
+    }
+
+    @Test
+    @DisplayName("도면 전체 조회 시 images_json 파싱 예외가 발생해도 fallback 이미지로 응답한다")
+    void getExploreHouseTemplates_returnsFallbackWhenJsonParseFails() {
+        FloorPlan floorPlan = FloorPlan.builder()
+                .id(1L)
+                .floorPlanName("일자형 원룸")
+                .form(Form.OFFICETEL)
+                .structure(Structure.OPEN_ONE_ROOM)
+                .equilibrium(Equilibrium.BETWEEN_6_10)
+                .url("https://fallback-image")
+                .filename("fallback.png")
+                .originalFilename("fallback-origin.png")
+                .fileExtension("png")
+                .imagesJson("invalid-json")
+                .build();
+
+        when(floorPlanRepository.findAll()).thenReturn(List.of(floorPlan));
+        when(floorPlanImageJsonCodec.read("invalid-json"))
+                .thenThrow(new GeneralException(ErrorCode.OBJECTMAPPER_EXCEPTION));
+
+        ExploreHouseTemplateListResponse result = floorPlanService.getExploreHouseTemplates(
+                null,
+                null,
+                null,
+                null,
+                null
+        );
+
+        assertThat(result.floorPlans()).hasSize(1);
+        assertThat(result.floorPlans().getFirst().imageUrl()).isEqualTo("https://fallback-image");
     }
 }
