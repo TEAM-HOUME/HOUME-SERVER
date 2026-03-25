@@ -62,6 +62,10 @@ public class FloorPlanServiceImpl implements FloorPlanService {
 
     @Override
     public RecentFloorPlanResponse getRecentFloorPlan(User user) {
+        if (user == null) {
+            return RecentFloorPlanResponse.noRecent();
+        }
+
         Optional<GenerateImage> recentGenerateImage = generateImageRepository.findMostRecentByUserId(user.getId());
         if (recentGenerateImage.isEmpty()) {
             return RecentFloorPlanResponse.noRecent();

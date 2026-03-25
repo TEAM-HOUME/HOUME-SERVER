@@ -62,7 +62,9 @@ public class WhiteListConfig {
                 "/api/v1/explore/house-templates/**",
                 "/api/v1/explore/banners/**",
                 "/api/v1/explore/other-styles",
-                "/api/v1/explore/other-styles/**"
+                "/api/v1/explore/other-styles/**",
+                "/api/v1/explore/recent-floor-plan",
+                "/api/v2/recent-floor-plan"
         );
     }
 

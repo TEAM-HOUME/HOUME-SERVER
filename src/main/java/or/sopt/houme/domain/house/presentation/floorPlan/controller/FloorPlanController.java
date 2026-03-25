@@ -73,6 +73,8 @@ public class FloorPlanController {
     public ResponseEntity<ApiResponse<RecentFloorPlanResponse>> getRecentFloorPlan(
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        return ResponseEntity.ok(ApiResponse.ok(floorPlanService.getRecentFloorPlan(userDetails.getUser())));
+        return ResponseEntity.ok(ApiResponse.ok(
+                floorPlanService.getRecentFloorPlan(userDetails != null ? userDetails.getUser() : null)
+        ));
     }
 }
