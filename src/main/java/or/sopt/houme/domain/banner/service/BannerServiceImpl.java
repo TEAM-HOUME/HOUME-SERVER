@@ -74,7 +74,7 @@ public class BannerServiceImpl implements BannerService {
                 banner.getBannerImageUrl(),
                 banner.getStyleQuestion(),
                 parseStyleAnswerChips(banner.getStyleAnswerChipsJson()).stream()
-                        .map(chip -> BannerDetailAnswerResponse.of(chip.label()))
+                        .map(chip -> BannerDetailAnswerResponse.of(chip.id(), chip.label()))
                         .toList()
         );
     }

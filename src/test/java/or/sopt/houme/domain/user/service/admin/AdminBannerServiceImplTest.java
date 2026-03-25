@@ -90,6 +90,38 @@ class AdminBannerServiceImplTest {
     }
 
     @Test
+    @DisplayName("normalizeStyleAnswerChips()는 생성 시 칩 id를 자동으로 부여한다")
+    void normalizeStyleAnswerChips_autoAssignsIdsOnCreate() {
+        AdminBannerSupport support = new AdminBannerSupport(null, new ObjectMapper(), null);
+
+        List<BannerStyleAnswerChip> chips = support.normalizeStyleAnswerChips(List.of(
+                new AdminBannerStyleAnswerChipRequest(2, "두 번째", "프롬프트2", 2L),
+                new AdminBannerStyleAnswerChipRequest(1, "첫 번째", "프롬프트1", 1L)
+        ));
+
+        assertThat(chips).extracting(BannerStyleAnswerChip::id).containsExactly(1L, 2L);
+        assertThat(chips).extracting(BannerStyleAnswerChip::order).containsExactly(1, 2);
+    }
+
+    @Test
+    @DisplayName("normalizeStyleAnswerChips()는 수정 시 동일 order의 기존 id를 유지한다")
+    void normalizeStyleAnswerChips_keepsIdsOnUpdate() {
+        AdminBannerSupport support = new AdminBannerSupport(null, new ObjectMapper(), null);
+
+        List<BannerStyleAnswerChip> existing = List.of(
+                new BannerStyleAnswerChip(11L, 1, "기존1", "기존프롬프트1", 1L),
+                new BannerStyleAnswerChip(22L, 2, "기존2", "기존프롬프트2", 2L)
+        );
+
+        List<BannerStyleAnswerChip> updated = support.normalizeStyleAnswerChips(List.of(
+                new AdminBannerStyleAnswerChipRequest(1, "변경1", "변경프롬프트1", 1L),
+                new AdminBannerStyleAnswerChipRequest(2, "변경2", "변경프롬프트2", 2L)
+        ), existing);
+
+        assertThat(updated).extracting(BannerStyleAnswerChip::id).containsExactly(11L, 22L);
+    }
+
+    @Test
     @DisplayName("create()는 배너를 생성한다")
     void create_success() {
         CurationRawProduct chipRawProduct = rawProduct(1L, 101L, "책상 A");
@@ -117,7 +149,7 @@ class AdminBannerServiceImplTest {
         );
 
         when(adminBannerSupport.normalizeStyleAnswerChips(request.styleAnswerChips()))
-                .thenReturn(List.of(new BannerStyleAnswerChip(1, "칩", "선택 프롬프트", 1L)));
+                .thenReturn(List.of(new BannerStyleAnswerChip(1L, 1, "칩", "선택 프롬프트", 1L)));
         when(adminBannerSupport.extractAllRawProductIds(any(), eq(List.of(1L)))).thenReturn(List.of(1L));
         when(adminBannerSupport.loadRequiredRawProducts(List.of(1L))).thenReturn(Map.of(1L, chipRawProduct));
         when(adminBannerSupport.normalizeRequired("https://image")).thenReturn("https://image");
@@ -130,7 +162,7 @@ class AdminBannerServiceImplTest {
                 .thenReturn(List.of());
         when(bannerRepository.saveAndFlush(any(Banner.class))).thenReturn(banner);
         when(adminBannerSupport.parseStyleAnswerChipsJson(any()))
-                .thenReturn(List.of(new BannerStyleAnswerChip(1, "칩", "선택 프롬프트", 1L)));
+                .thenReturn(List.of(new BannerStyleAnswerChip(1L, 1, "칩", "선택 프롬프트", 1L)));
         when(adminBannerSupport.toMappedRawProductResponses(eq(banner), eq(Map.of(1L, chipRawProduct)))).thenReturn(List.of());
 
         AdminBannerResponse response = adminBannerService.create(request);
@@ -170,8 +202,8 @@ class AdminBannerServiceImplTest {
 
         when(bannerRepository.findByIdWithRawProducts(11L, BannerType.BANNER, true)).thenReturn(Optional.of(banner));
         when(adminBannerSupport.parseStyleAnswerChipsJson(any())).thenReturn(List.of());
-        when(adminBannerSupport.normalizeStyleAnswerChips(request.styleAnswerChips()))
-                .thenReturn(List.of(new BannerStyleAnswerChip(1, "새 칩", "새 선택 프롬프트", 3L)));
+        when(adminBannerSupport.normalizeStyleAnswerChips(eq(request.styleAnswerChips()), any()))
+                .thenReturn(List.of(new BannerStyleAnswerChip(1L, 1, "새 칩", "새 선택 프롬프트", 3L)));
         when(adminBannerSupport.extractMappedRawProductIds(banner)).thenReturn(List.of());
         when(adminBannerSupport.extractAllRawProductIds(any(), eq(List.of(3L)))).thenReturn(List.of(3L));
         when(adminBannerSupport.loadRequiredRawProducts(List.of(3L))).thenReturn(Map.of(3L, rawProduct));
