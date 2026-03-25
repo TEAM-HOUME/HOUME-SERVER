@@ -128,6 +128,7 @@ public class AdminBannerSupport {
                     return new BannerStyleAnswerChip(
                             request.order(),
                             normalizeRequired(request.label()),
+                            normalizeRequired(request.selectedPrompt()),
                             request.curationRawProductId()
                     );
                 })

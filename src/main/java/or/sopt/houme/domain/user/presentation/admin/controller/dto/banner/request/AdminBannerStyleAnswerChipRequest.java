@@ -11,6 +11,7 @@ public record AdminBannerStyleAnswerChipRequest(
         @Max(4)
         @NotNull Integer order,
         @NotBlank String label,
+        @NotBlank String selectedPrompt,
         @NotNull @Positive Long curationRawProductId
 ) {
 }

@@ -136,6 +136,7 @@ public class AdminBannerServiceImpl implements AdminBannerService {
                     return new AdminBannerStyleAnswerChipResponse(
                             chip.order(),
                             chip.label(),
+                            chip.selectedPrompt(),
                             chip.curationRawProductId(),
                             rawProduct != null ? rawProduct.getProductName() : null,
                             rawProduct != null ? rawProduct.getProductImageUrl() : null
