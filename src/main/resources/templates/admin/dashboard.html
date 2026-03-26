@@ -1526,10 +1526,6 @@
                             <label for="floorPlanEditId" class="form-label">수정 대상 도면 ID</label>
                             <input type="text" class="form-control" id="floorPlanEditId" placeholder="목록에서 수정 선택 시 자동 입력" readonly>
                         </div>
-                        <div>
-                            <label for="floorPlanName" class="form-label">도면 이름</label>
-                            <input type="text" class="form-control" id="floorPlanName" placeholder="예: 복층 오피스텔 A타입" required>
-                        </div>
                         <div class="full-span">
                             <label for="floorPlanImageFile" class="form-label">도면 이미지 업로드</label>
                             <div class="banner-image-upload-panel">
@@ -2520,15 +2516,6 @@
                     <div class="floor-plan-image-card-meta">원본 파일명: ${escapeHtml(image.originalFilename || '-')}</div>
                     <div class="floor-plan-image-card-meta">저장 파일명: ${escapeHtml(image.filename || '-')}</div>
                     <div class="floor-plan-image-card-meta">확장자: ${escapeHtml(image.fileExtension || '-')} · 순서: ${image.sortOrder}</div>
-                    <div class="mt-2">
-                        <label class="form-label form-label-sm mb-1">이미지 view</label>
-                        <input
-                            type="text"
-                            class="form-control form-control-sm"
-                            value="${escapeHtml(image.view || '')}"
-                            placeholder="예: 거실 / 주방 / 침실"
-                            data-floor-plan-view="${index}">
-                    </div>
                 </div>
                 <div class="floor-plan-image-card-actions">
                     <button type="button" class="btn btn-sm btn-outline-secondary" ${index === 0 ? 'disabled' : ''} data-floor-plan-move-up="${index}">위로</button>
@@ -2564,13 +2551,6 @@
                     floorPlanAdminState.images[index] = next;
                     normalizeFloorPlanImageOrders();
                     renderFloorPlanImages();
-                });
-            }
-
-            const viewInput = card.querySelector('[data-floor-plan-view]');
-            if (viewInput) {
-                viewInput.addEventListener('input', function() {
-                    floorPlanAdminState.images[index].view = this.value;
                 });
             }
 
@@ -2646,8 +2626,7 @@
                 filename: extractFilenameFromUrl(publicUrl),
                 originalFilename: imageFile.name,
                 fileExtension: extension,
-                sortOrder: floorPlanAdminState.images.length + 1,
-                view: ''
+                sortOrder: floorPlanAdminState.images.length + 1
             });
             normalizeFloorPlanImageOrders();
             renderFloorPlanImages();
@@ -3456,19 +3435,14 @@
             const card = document.createElement('div');
             card.className = 'banner-card';
             const imageCount = Array.isArray(floorPlan.images) ? floorPlan.images.length : 0;
-            const representativeView = imageCount > 0 ? floorPlan.images[0]?.view : null;
             card.innerHTML = `
                 <img class="banner-card-image" src="${escapeHtml(floorPlan.representativeImageUrl || '')}" alt="도면 #${floorPlan.id}">
                 <div class="banner-card-body">
                     <div class="banner-card-title-row">
-                        <span class="banner-card-title">${escapeHtml(floorPlan.name || `도면 #${floorPlan.id}`)}</span>
+                        <span class="banner-card-title">도면 #${floorPlan.id}</span>
                         <span class="text-muted small">이미지 ${imageCount}장</span>
                     </div>
                     <div class="floor-plan-summary-grid">
-                        <div class="floor-plan-summary-item">
-                            <span class="floor-plan-summary-item-label">도면 이름</span>
-                            <span>${escapeHtml(floorPlan.name || '-')}</span>
-                        </div>
                         <div class="floor-plan-summary-item">
                             <span class="floor-plan-summary-item-label">주거형태</span>
                             <span>${escapeHtml(FLOOR_PLAN_FORM_LABELS[floorPlan.form] || floorPlan.form || '-')}</span>
@@ -3480,10 +3454,6 @@
                         <div class="floor-plan-summary-item">
                             <span class="floor-plan-summary-item-label">평형</span>
                             <span>${escapeHtml(FLOOR_PLAN_EQUILIBRIUM_LABELS[floorPlan.equilibrium] || floorPlan.equilibrium || '-')}</span>
-                        </div>
-                        <div class="floor-plan-summary-item">
-                            <span class="floor-plan-summary-item-label">대표 이미지 view</span>
-                            <span>${escapeHtml(representativeView || '-')}</span>
                         </div>
                         <div class="floor-plan-summary-item" style="grid-column: 1 / -1;">
                             <span class="floor-plan-summary-item-label">도면 프롬프트</span>
@@ -3518,14 +3488,12 @@
                 filename: image.filename,
                 originalFilename: image.originalFilename,
                 fileExtension: image.fileExtension,
-                sortOrder: image.sortOrder,
-                view: image.view || ''
+                sortOrder: image.sortOrder
             })).sort((a, b) => a.sortOrder - b.sortOrder)
             : [];
         normalizeFloorPlanImageOrders();
 
         document.getElementById('floorPlanEditId').value = floorPlan.id;
-        document.getElementById('floorPlanName').value = floorPlan.name || floorPlan.floorPlanName || '';
         document.getElementById('floorPlanForm').value = floorPlan.form || '';
         document.getElementById('floorPlanStructure').value = floorPlan.structure || '';
         document.getElementById('floorPlanEquilibrium').value = floorPlan.equilibrium || '';
@@ -3553,15 +3521,13 @@
         const form = parseStringValue(document.getElementById('floorPlanForm').value);
         const structure = parseStringValue(document.getElementById('floorPlanStructure').value);
         const equilibrium = parseStringValue(document.getElementById('floorPlanEquilibrium').value);
-        const name = parseStringValue(document.getElementById('floorPlanName').value);
         const floorPlanPrompt = parseStringValue(document.getElementById('floorPlanPrompt').value);
 
-        if (!name || !form || !structure || !equilibrium || !floorPlanPrompt) {
-            throw new Error('도면 이름, 주거형태, 구조, 평형, 도면 프롬프트를 모두 입력해주세요.');
+        if (!form || !structure || !equilibrium || !floorPlanPrompt) {
+            throw new Error('주거형태, 구조, 평형, 도면 프롬프트를 모두 입력해주세요.');
         }
 
         return {
-            name,
             form,
             structure,
             equilibrium,
@@ -3571,8 +3537,7 @@
                 filename: image.filename,
                 originalFilename: image.originalFilename,
                 fileExtension: image.fileExtension,
-                sortOrder: index + 1,
-                view: parseStringValue(image.view)
+                sortOrder: index + 1
             }))
         };
     }
