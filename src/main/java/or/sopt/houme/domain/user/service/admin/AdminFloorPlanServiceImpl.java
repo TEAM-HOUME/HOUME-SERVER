@@ -45,7 +45,7 @@ public class AdminFloorPlanServiceImpl implements AdminFloorPlanService {
         FloorPlanImages images = toFloorPlanImages(request.images());
 
         FloorPlan floorPlan = FloorPlan.create(
-                normalizeRequired(request.name()),
+                normalizeRequired(request.floorPlanName()),
                 request.form(),
                 request.structure(),
                 request.equilibrium(),
@@ -83,7 +83,7 @@ public class AdminFloorPlanServiceImpl implements AdminFloorPlanService {
                 : resolveImages(floorPlan);
 
         floorPlan.update(
-                request.name() != null ? normalizeRequired(request.name()) : floorPlan.getFloorPlanName(),
+                request.floorPlanName() != null ? normalizeRequired(request.floorPlanName()) : floorPlan.getFloorPlanName(),
                 request.form() != null ? request.form() : floorPlan.getForm(),
                 request.structure() != null ? request.structure() : floorPlan.getStructure(),
                 request.equilibrium() != null ? request.equilibrium() : floorPlan.getEquilibrium(),
