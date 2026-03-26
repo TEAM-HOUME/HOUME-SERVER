@@ -84,7 +84,7 @@ class AdminFloorPlanServiceImplTest {
         AdminFloorPlanResponse response = adminFloorPlanService.create(request);
 
         assertThat(response.id()).isEqualTo(1L);
-        assertThat(response.name()).isEqualTo("테스트 도면");
+        assertThat(response.floorPlanName()).isEqualTo("테스트 도면");
         assertThat(response.form()).isEqualTo(Form.OFFICETEL);
         assertThat(response.structure()).isEqualTo(Structure.OPEN_ONE_ROOM);
         assertThat(response.equilibrium()).isEqualTo(Equilibrium.UNDER_5);
@@ -133,7 +133,7 @@ class AdminFloorPlanServiceImplTest {
 
         AdminFloorPlanResponse response = adminFloorPlanService.update(2L, request);
 
-        assertThat(response.name()).isEqualTo("수정 도면");
+        assertThat(response.floorPlanName()).isEqualTo("수정 도면");
         assertThat(response.form()).isEqualTo(Form.APARTMENT);
         assertThat(response.structure()).isEqualTo(Structure.TWO_ROOM);
         assertThat(response.equilibrium()).isEqualTo(Equilibrium.BETWEEN_11_15);
