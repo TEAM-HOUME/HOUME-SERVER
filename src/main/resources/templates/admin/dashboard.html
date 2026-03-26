@@ -1534,9 +1534,10 @@
                             <label for="floorPlanImageFile" class="form-label">도면 이미지 업로드</label>
                             <div class="banner-image-upload-panel">
                                 <input type="file" class="form-control" id="floorPlanImageFile" accept="image/*">
+                                <input type="text" class="form-control" id="floorPlanImageView" placeholder="이미지 view 예: 거실 / 주방 / 침실">
                                 <div class="banner-image-upload-actions">
                                     <button type="button" id="upload-floor-plan-image-button" class="btn btn-outline-primary">S3 업로드 후 목록 추가</button>
-                                    <span id="floorPlanImageUploadStatus" class="text-muted small">이미지를 하나씩 업로드해 도면 이미지 목록을 구성하세요.</span>
+                                    <span id="floorPlanImageUploadStatus" class="text-muted small">이미지를 하나씩 업로드하고, 필요하면 view도 함께 입력하세요.</span>
                                 </div>
                             </div>
                         </div>
@@ -2581,9 +2582,11 @@
     async function uploadFloorPlanImage() {
         const accessToken = localStorage.getItem('accessToken');
         const fileInput = document.getElementById('floorPlanImageFile');
+        const viewInput = document.getElementById('floorPlanImageView');
         const statusElement = document.getElementById('floorPlanImageUploadStatus');
         const uploadButton = document.getElementById('upload-floor-plan-image-button');
         const imageFile = fileInput.files && fileInput.files[0];
+        const imageView = parseStringValue(viewInput?.value);
 
         if (!accessToken) {
             statusElement.textContent = '액세스 토큰이 없습니다.';
@@ -2647,11 +2650,14 @@
                 originalFilename: imageFile.name,
                 fileExtension: extension,
                 sortOrder: floorPlanAdminState.images.length + 1,
-                view: ''
+                view: imageView || ''
             });
             normalizeFloorPlanImageOrders();
             renderFloorPlanImages();
             fileInput.value = '';
+            if (viewInput) {
+                viewInput.value = '';
+            }
             statusElement.textContent = `${imageFile.name} 업로드가 완료되어 도면 이미지 목록에 추가되었습니다.`;
         } catch (error) {
             statusElement.textContent = error.message || '도면 이미지 업로드 중 오류가 발생했습니다.';
@@ -3531,6 +3537,7 @@
         document.getElementById('floorPlanEquilibrium').value = floorPlan.equilibrium || '';
         document.getElementById('floorPlanPrompt').value = floorPlan.floorPlanPrompt || '';
         document.getElementById('floorPlanImageFile').value = '';
+        document.getElementById('floorPlanImageView').value = '';
         document.getElementById('floorPlanImageUploadStatus').textContent = '기존 도면 이미지가 로드되었습니다. 새 이미지를 업로드하면 목록에 추가됩니다.';
         document.getElementById('floor-plan-form-result').innerHTML = '<div class="alert alert-info">도면 수정 모드로 전환했습니다.</div>';
         renderFloorPlanImages();
@@ -3540,7 +3547,8 @@
         floorPlanAdminState = createInitialFloorPlanAdminState();
         document.getElementById('floor-plan-form').reset();
         document.getElementById('floorPlanEditId').value = '';
-        document.getElementById('floorPlanImageUploadStatus').textContent = '이미지를 하나씩 업로드해 도면 이미지 목록을 구성하세요.';
+        document.getElementById('floorPlanImageView').value = '';
+        document.getElementById('floorPlanImageUploadStatus').textContent = '이미지를 하나씩 업로드하고, 필요하면 view도 함께 입력하세요.';
         document.getElementById('floor-plan-form-result').innerHTML = '';
         renderFloorPlanImages();
     }
