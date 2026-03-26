@@ -7,6 +7,8 @@ import or.sopt.houme.domain.house.model.entity.enums.Form;
 import or.sopt.houme.domain.house.model.entity.enums.Structure;
 import or.sopt.houme.domain.house.model.floorPlan.vo.FloorPlanImageItem;
 import or.sopt.houme.domain.house.model.floorPlan.vo.FloorPlanImages;
+import or.sopt.houme.global.api.ErrorCode;
+import or.sopt.houme.global.api.handler.HouseException;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
@@ -33,6 +35,9 @@ public class FloorPlan {
     @Column(name = "file_extension", nullable = false)
     private String fileExtension;
 
+    @Column(name = "floor_plan_name", nullable = false)
+    private String floorPlanName;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "form", nullable = false)
     private Form form;                      // 구조
@@ -53,6 +58,7 @@ public class FloorPlan {
     private String imagesJson;
 
     public static FloorPlan create(
+            String floorPlanName,
             Form form,
             Structure structure,
             Equilibrium equilibrium,
@@ -60,7 +66,10 @@ public class FloorPlan {
             FloorPlanImages images,
             String imagesJson
     ) {
+        validateFloorPlanName(floorPlanName);
+
         FloorPlan floorPlan = FloorPlan.builder()
+                .floorPlanName(floorPlanName)
                 .form(form)
                 .structure(structure)
                 .equilibrium(equilibrium)
@@ -71,6 +80,7 @@ public class FloorPlan {
     }
 
     public void update(
+            String floorPlanName,
             Form form,
             Structure structure,
             Equilibrium equilibrium,
@@ -78,6 +88,9 @@ public class FloorPlan {
             FloorPlanImages images,
             String imagesJson
     ) {
+        validateFloorPlanName(floorPlanName);
+
+        this.floorPlanName = floorPlanName;
         this.form = form;
         this.structure = structure;
         this.equilibrium = equilibrium;
@@ -93,5 +106,10 @@ public class FloorPlan {
         this.fileExtension = representativeImage.fileExtension();
         this.imagesJson = imagesJson;
     }
-}
 
+    private static void validateFloorPlanName(String floorPlanName) {
+        if (floorPlanName == null || floorPlanName.isBlank()) {
+            throw new HouseException(ErrorCode.INVALID_FLOOR_PLAN_NAME);
+        }
+    }
+}

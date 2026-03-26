@@ -49,3 +49,6 @@ src/main/generated
 ### .DS 무시 ###
 .DS_Store
 src/main/resources/application-prod.yml
+
+### 로컬 DB 쿼리 무시 ###
+seed_local_houme.sql

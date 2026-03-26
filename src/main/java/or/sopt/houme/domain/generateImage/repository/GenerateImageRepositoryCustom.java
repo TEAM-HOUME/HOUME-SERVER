@@ -12,6 +12,8 @@ public interface GenerateImageRepositoryCustom {
     // 가장 최근 생성된 GenerateImage 1개 가져오기
     Optional<GenerateImage> findLastGenerateImage(Long houseId);
 
+    Optional<GenerateImage> findMostRecentByUserId(Long userId);
+
     List<GenerateImage> findGenerateImagesByHouseId(Long houseId);
 
     List<GenerateImage> findAllByUserIdWithHouseAndBanner(Long userId);
