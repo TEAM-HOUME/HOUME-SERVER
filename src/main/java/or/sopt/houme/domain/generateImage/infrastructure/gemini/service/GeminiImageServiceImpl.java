@@ -33,8 +33,6 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @Slf4j
 public class GeminiImageServiceImpl implements GeminiImageService {
-    private static final String NANO_BANANA_MODEL = "gemini-2.5-flash-image-preview";
-
     private final GeminiImageClient geminiImageClient;
     private final GeminiImageConfig geminiImageConfig;
     private final S3Util s3Util;
@@ -58,7 +56,7 @@ public class GeminiImageServiceImpl implements GeminiImageService {
         String promptWithSize = applySizeHint(prompt, geminiImageConfig.getSize());
         List<GeminiImageRequest.Part> referenceParts = toReferenceImageParts(referenceImageUrls);
         GeminiImageRequest request = GeminiImageRequest.of(promptWithSize, referenceParts);
-        return executeGeminiRequest(promptWithSize, request, NANO_BANANA_MODEL);
+        return executeGeminiRequest(promptWithSize, request, defaultModel(geminiImageConfig.getModel()));
     }
 
     private ImageUploadResponseDTO executeGeminiRequest(
@@ -84,11 +82,19 @@ public class GeminiImageServiceImpl implements GeminiImageService {
         if (referenceImageUrls == null || referenceImageUrls.isEmpty()) {
             return List.of();
         }
-        return referenceImageUrls.stream()
-                .filter(url -> url != null && !url.isBlank())
-                .map(this::downloadImage)
-                .map(imageData -> GeminiImageRequest.Part.inlineData(imageData.mimeType(), imageData.base64Data()))
-                .collect(Collectors.toList());
+        List<GeminiImageRequest.Part> referenceParts = new java.util.ArrayList<>();
+        for (String url : referenceImageUrls) {
+            if (url == null || url.isBlank()) {
+                continue;
+            }
+            try {
+                DownloadedImageData imageData = downloadImage(url);
+                referenceParts.add(GeminiImageRequest.Part.inlineData(imageData.mimeType(), imageData.base64Data()));
+            } catch (ChatGptException e) {
+                log.warn("참조 이미지 다운로드 실패. 해당 URL은 건너뜁니다. url={}", url);
+            }
+        }
+        return referenceParts.stream().collect(Collectors.toList());
     }
 
     private DownloadedImageData downloadImage(String url) {

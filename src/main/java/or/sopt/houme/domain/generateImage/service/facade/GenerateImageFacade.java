@@ -346,6 +346,8 @@ public class GenerateImageFacade {
         Credit lockedCredit = null;
 
         try {
+            log.info("배너 템플릿 기반 인테리어 이미지 생성 시작 userId={}, bannerId={}, answerId={}, floorPlanId={}, view={}, isMirror={}",
+                    user.getId(), request.bannerId(), request.answerId(), request.floorPlanId(), request.floorPlanView(), request.isMirror());
             lockedCredit = creditService.tryLockAndGetCredit(user);
 
             Banner banner = bannerRepository.findByIdWithRawProducts(request.bannerId(), BannerType.BANNER, false)
@@ -361,12 +363,21 @@ public class GenerateImageFacade {
             String floorPlanImageUrl = resolveFloorPlanImageUrl(floorPlan, request.floorPlanView());
             List<String> referenceImageUrls = buildReferenceImageUrls(banner, selectedChip, floorPlanImageUrl);
             String prompt = buildBannerPrompt(banner, selectedChip, floorPlan, request.floorPlanView(), request.isMirror());
+            log.info(
+                    "배너 템플릿 이미지 생성 프롬프트/참고이미지 bannerId={}, answerId={}, prompt={}, referenceImageUrls={}",
+                    banner.getId(),
+                    selectedChip.id(),
+                    prompt,
+                    referenceImageUrls
+            );
+            log.info("AI 호출 준비 완료 bannerId={}, answerId={}, referenceImageCount={}", banner.getId(), selectedChip.id(), referenceImageUrls.size());
 
             ImageUploadResponseDTO imageUploadResponseDTO =
                     geminiImageService.createImageWithReferences(prompt, referenceImageUrls);
+            log.info("AI 호출 완료 bannerId={}, generatedUrl={}", banner.getId(), imageUploadResponseDTO.getImageLink());
 
             if (imageUploadResponseDTO.getImageLink().equals(S3Constant.FALL_BACK_IMAGE)) {
-                log.error("배너 이미지 생성 중 폴백 이미지가 생성되었습니다. bannerId={}", banner.getId());
+                log.error("배너 템플릿 기반 인테리어 이미지 생성 중 폴백 이미지가 생성되었습니다. bannerId={}", banner.getId());
                 throw new ImageFallbackException(ErrorCode.GENERATED_IMAGE_EXCEPTION, null);
             }
 
@@ -376,19 +387,20 @@ public class GenerateImageFacade {
                     banner,
                     imageUploadResponseDTO
             );
+            log.info("배너 템플릿 기반 인테리어 이미지 생성 저장 완료 imageId={}", response.imageId());
             return response;
         } catch (ValidException validException) {
             if (lockedCredit != null && lockedCredit.getStatus() == CreditStatus.PENDING) {
                 creditService.rollbackCreditPending(lockedCredit);
             }
             throw validException;
-        } catch (GenerateImageException | ImageFallbackException | CreditException | BannerException | HouseException e) {
+        } catch (GeneralException e) {
             if (lockedCredit != null && lockedCredit.getStatus() == CreditStatus.PENDING) {
                 creditService.rollbackCreditPending(lockedCredit);
             }
             throw e;
         } catch (Exception e) {
-            log.error("배너 기반 이미지 생성 중 오류 발생: {}", e.getMessage(), e);
+            log.error("배너 템플릿 기반 인테리어 이미지 생성 중 오류 발생: {}", e.getMessage(), e);
             if (lockedCredit != null && lockedCredit.getStatus() == CreditStatus.PENDING) {
                 creditService.rollbackCreditPending(lockedCredit);
             }

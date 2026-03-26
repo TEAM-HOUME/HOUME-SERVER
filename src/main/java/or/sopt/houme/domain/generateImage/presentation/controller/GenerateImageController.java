@@ -105,8 +105,8 @@ public class GenerateImageController {
         return ResponseEntity.ok(ApiResponse.ok(imageInfoListResponse));
     }
 
-    @Operation(summary = "배너 기반 Gemini 이미지 생성 API",
-            description = "선택한 배너/답변칩/도면 정보를 기반으로 Gemini 나노바나나 모델로 이미지를 생성합니다.")
+    @Operation(summary = "배너 템플릿 기반 인테리어 이미지 생성 API",
+            description = "선택한 배너 템플릿/답변칩/도면 정보를 기반으로 Gemini 나노바나나 모델로 인테리어 이미지를 생성합니다.")
     @PostMapping("/v1/generated-images/generate/banner")
     public ResponseEntity<ApiResponse<BannerGenerateImageResponse>> generateBannerImageByGemini(
             @AuthenticationPrincipal CustomUserDetails userDetails,
