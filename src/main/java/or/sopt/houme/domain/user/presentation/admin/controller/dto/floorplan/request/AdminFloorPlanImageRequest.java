@@ -17,7 +17,7 @@ public record AdminFloorPlanImageRequest(
         @NotNull
         @Min(1)
         Integer sortOrder,
-        @JsonAlias("veiw")
+        @JsonAlias({"viewName", "veiw"})
         String view
 ) {
 }
