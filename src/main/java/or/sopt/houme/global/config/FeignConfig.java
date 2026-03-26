@@ -12,10 +12,9 @@ public class FeignConfig {
     @Bean
     public Request.Options feignRequestOptions() {
 
-        // 1분(60초) 문제를 해결하기 위해 130초(130,000ms)로 설정합니다.
-        // (Resilience4j의 TimeLimiter(120초)보다 길게 설정)
+        // Gemini 이미지 생성은 2분 이상 걸릴 수 있어 여유 있게 설정합니다.
         long connectTimeout = 5_000; // 5초
-        long readTimeout = 130_000;  // 130초
+        long readTimeout = 300_000;  // 300초
 
         return new Request.Options(
                 connectTimeout, TimeUnit.MILLISECONDS,
