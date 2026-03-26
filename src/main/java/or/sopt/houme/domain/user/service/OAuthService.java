@@ -58,6 +58,7 @@ public class OAuthService {
     private final RefreshTokenRepository refreshTokenRepository;
     private final BlacklistTokenRepository blacklistTokenRepository;
     private final SignupSessionRepository signupSessionRepository;
+    private final NicknameService nicknameService;
 
     private final KaKaoConfig kaKaoConfig;
     private final CookieConfig cookieConfig;
@@ -187,18 +188,20 @@ public class OAuthService {
 
     @Transactional
     public String signUpWithToken(String signupToken, String name, Gender gender, LocalDate birthday, HttpServletResponse response) {
-        return signUpWithTokenInternal(signupToken, name, null, gender, birthday, response);
+        return signUpWithTokenInternal(signupToken, name, null, null, gender, birthday, response);
     }
 
     @Transactional
     public String signUpWithTokenV2(String signupToken, String nickname, Gender gender, LocalDate birthday, HttpServletResponse response) {
-        return signUpWithTokenInternal(signupToken, nickname, nickname, gender, birthday, response);
+        String nicknameTag = nicknameService.generateNicknameTag(nickname);
+        return signUpWithTokenInternal(signupToken, nickname, nickname, nicknameTag, gender, birthday, response);
     }
 
     private String signUpWithTokenInternal(
             String signupToken,
             String name,
             String nickname,
+            String nicknameTag,
             Gender gender,
             LocalDate birthday,
             HttpServletResponse response
@@ -219,6 +222,7 @@ public class OAuthService {
                         .email(signupSession.email())
                         .name(name)
                         .nickname(nickname)
+                        .nicknameTag(nicknameTag)
                         .birthday(birthday)
                         .gender(gender)
                         .role(Role.ROLE_USER)

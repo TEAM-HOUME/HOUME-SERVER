@@ -82,6 +82,7 @@ public class UserServiceImpl implements UserService {
     private final RecommendFurnitureRepository recommendFurnitureRepository;
     private final JjymRepository jjymRepository;
     private final CurationRawProductColorRepository curationRawProductColorRepository;
+    private final NicknameService nicknameService;
 
     @Override
     @Transactional(readOnly = true)
@@ -284,7 +285,8 @@ public class UserServiceImpl implements UserService {
     @Override
     public String updateUserV2(User user, String nickname, Gender gender, LocalDate birthday) {
         User findUser = findUser(user);
-        findUser.updateUserFromSignUpV2(nickname, birthday, gender);
+        String nicknameTag = nicknameService.generateNicknameTag(nickname);
+        findUser.updateUserFromSignUpV2(nickname, nicknameTag, birthday, gender);
 
         return createSignUpCreditAndGetDisplayName(findUser);
     }
