@@ -362,7 +362,7 @@ public class GenerateImageFacade {
 
             String floorPlanImageUrl = resolveFloorPlanImageUrl(floorPlan, request.floorPlanView());
             List<String> referenceImageUrls = buildReferenceImageUrls(banner, selectedChip, floorPlanImageUrl);
-            String prompt = buildBannerPrompt(banner, selectedChip, floorPlan, request.floorPlanView(), request.isMirror());
+            String prompt = buildBannerPrompt(banner, selectedChip, floorPlan);
             log.info(
                     "배너 템플릿 이미지 생성 프롬프트/참고이미지 bannerId={}, answerId={}, prompt={}, referenceImageUrls={}",
                     banner.getId(),
@@ -679,9 +679,7 @@ public class GenerateImageFacade {
     private String buildBannerPrompt(
             Banner banner,
             BannerStyleAnswerChip selectedChip,
-            FloorPlan floorPlan,
-            String floorPlanView,
-            boolean isMirror
+            FloorPlan floorPlan
     ) {
         List<String> parts = new ArrayList<>();
         if (banner.getStylePrompt() != null && !banner.getStylePrompt().isBlank()) {
@@ -693,10 +691,6 @@ public class GenerateImageFacade {
         if (floorPlan.getFloorPlanPrompt() != null && !floorPlan.getFloorPlanPrompt().isBlank()) {
             parts.add(floorPlan.getFloorPlanPrompt());
         }
-        if (floorPlanView != null && !floorPlanView.isBlank()) {
-            parts.add("선택한 도면 뷰: " + floorPlanView.trim());
-        }
-        parts.add("도면 좌우 반전 여부: " + (isMirror ? "반전" : "원본"));
         return String.join("\n\n", parts);
     }
 
