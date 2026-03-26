@@ -11,12 +11,14 @@ import or.sopt.houme.domain.user.presentation.controller.dto.KakaoLoginResponse;
 import or.sopt.houme.domain.user.presentation.controller.dto.KaKaoOAuthTokenDTO;
 import or.sopt.houme.domain.user.presentation.controller.dto.KaKaoUserInfoResponse;
 import or.sopt.houme.domain.credit.repository.CreditRepository;
+import or.sopt.houme.domain.user.model.entity.Gender;
 import or.sopt.houme.domain.user.model.entity.Role;
 import or.sopt.houme.domain.user.model.entity.User;
 import or.sopt.houme.domain.user.repository.BlacklistTokenRepository;
 import or.sopt.houme.domain.user.repository.RefreshTokenRepository;
 import or.sopt.houme.domain.user.repository.SignupSessionRepository;
 import or.sopt.houme.domain.user.repository.UserRepository;
+import or.sopt.houme.domain.user.model.entity.record.SignupSession;
 import or.sopt.houme.global.api.handler.UserException;
 import or.sopt.houme.global.config.CookieConfig;
 import or.sopt.houme.global.config.JWTConfig;
@@ -64,9 +66,47 @@ class OAuthServiceTest {
     private KaKaoConfig kaKaoConfig;
     @Mock
     private CookieConfig cookieConfig;
+    @Mock
+    private NicknameService nicknameService;
 
     @Mock
     private HttpServletResponse response;
+
+    @Test
+    @DisplayName("signUpWithTokenV2는 닉네임 태그를 분리 저장하고 닉네임만 반환한다")
+    void signUpWithTokenV2_success() {
+        SignupSession signupSession = SignupSession.of(1L, "test@houme.kr", "카카오닉네임");
+
+        when(signupSessionRepository.consume("signup-token")).thenReturn(Optional.of(signupSession));
+        when(userRepository.existsByEmail("test@houme.kr")).thenReturn(false);
+        when(nicknameService.generateNicknameTag("느긋한펭귄")).thenReturn("#4821");
+        when(userRepository.save(any(User.class))).thenAnswer(invocation -> {
+            User user = invocation.getArgument(0);
+            ReflectionTestUtils.setField(user, "id", 1L);
+            return user;
+        });
+        when(jwtConfig.getAccessTokenValidityInSeconds()).thenReturn(3600L);
+        when(jwtConfig.getRefreshTokenValidityInSeconds()).thenReturn(86400L);
+        when(jwtUtil.createJwt(eq("access"), eq(1L), eq("ROLE_USER"), anyLong())).thenReturn("accessToken");
+        when(jwtUtil.createJwt(eq("refresh"), eq(1L), eq("ROLE_USER"), anyLong())).thenReturn("refreshToken");
+        when(cookieConfig.getDomain()).thenReturn("domain");
+        when(cookieConfig.getSameSite()).thenReturn("true");
+
+        String result = oAuthService.signUpWithTokenV2(
+                "signup-token",
+                "느긋한펭귄",
+                Gender.MALE,
+                java.time.LocalDate.of(2000, 1, 1),
+                response
+        );
+
+        assertEquals("느긋한펭귄", result);
+        verify(userRepository).save(argThat(savedUser ->
+                "느긋한펭귄".equals(savedUser.getNickname()) &&
+                "느긋한펭귄".equals(savedUser.getName()) &&
+                "#4821".equals(savedUser.getNicknameTag())
+        ));
+    }
 
 
     @Test

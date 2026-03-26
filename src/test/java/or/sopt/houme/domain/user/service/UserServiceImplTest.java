@@ -72,6 +72,7 @@ class UserServiceImplTest {
     private final RecommendFurnitureRepository recommendFurnitureRepository = mock(RecommendFurnitureRepository.class);
     private final JjymRepository jjymRepository = mock(JjymRepository.class);
     private final CurationRawProductColorRepository curationRawProductColorRepository = mock(CurationRawProductColorRepository.class);
+    private final NicknameService nicknameService = mock(NicknameService.class);
 
     private final UserServiceImpl userService = new UserServiceImpl(
             userRepository,
@@ -87,7 +88,8 @@ class UserServiceImplTest {
             generateImageUsedProductRepository,
             recommendFurnitureRepository,
             jjymRepository,
-            curationRawProductColorRepository
+            curationRawProductColorRepository,
+            nicknameService
             );
 
     private User user;
@@ -587,13 +589,15 @@ class UserServiceImplTest {
                 .build();
 
         given(userRepository.findById(1L)).willReturn(Optional.of(dbUser));
+        given(nicknameService.generateNicknameTag("새닉네임")).willReturn("#1234");
 
         // when
-        userService.updateUserV2(inputUser, "새닉네임1234", Gender.MALE, LocalDate.of(2000, 5, 15));
+        userService.updateUserV2(inputUser, "새닉네임", Gender.MALE, LocalDate.of(2000, 5, 15));
 
         // then
-        assertEquals("새닉네임1234", dbUser.getName());
-        assertEquals("새닉네임1234", dbUser.getNickname());
+        assertEquals("새닉네임", dbUser.getName());
+        assertEquals("새닉네임", dbUser.getNickname());
+        assertEquals("#1234", dbUser.getNicknameTag());
         assertEquals(Gender.MALE, dbUser.getGender());
         assertEquals(LocalDate.of(2000, 5, 15), dbUser.getBirthday());
     }

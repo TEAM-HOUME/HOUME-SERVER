@@ -92,14 +92,14 @@ class UserV2ControllerTest {
                 any(String.class),
                 any(Gender.class),
                 any(LocalDate.class)
-        )).willReturn("느긋한펭귄0042");
+        )).willReturn("느긋한펭귄");
 
         mockMvc.perform(patch("/api/v2/sign-up")
                         .with(authentication(requestAuthentication))
                         .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
                         .content("""
                                 {
-                                  "nickname": "느긋한펭귄0042",
+                                  "nickname": "느긋한펭귄",
                                   "gender": "MALE",
                                   "birthday": "2000-01-01"
                                 }
@@ -107,7 +107,7 @@ class UserV2ControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.code").value(200))
                 .andExpect(jsonPath("$.msg").value("응답 성공"))
-                .andExpect(jsonPath("$.data").value("느긋한펭귄0042"));
+                .andExpect(jsonPath("$.data").value("느긋한펭귄"));
     }
 
     @Test
@@ -140,12 +140,12 @@ class UserV2ControllerTest {
     @Test
     @DisplayName("GET /api/v2/nickname/rotate 요청 시 랜덤 닉네임을 반환한다")
     void rotateNickname_success() throws Exception {
-        given(nicknameService.rotateNickname()).willReturn("느긋한펭귄0042");
+        given(nicknameService.rotateNickname()).willReturn("느긋한펭귄");
 
         mockMvc.perform(get("/api/v2/nickname/rotate"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.code").value(200))
                 .andExpect(jsonPath("$.msg").value("응답 성공"))
-                .andExpect(jsonPath("$.data").value("느긋한펭귄0042"));
+                .andExpect(jsonPath("$.data").value("느긋한펭귄"));
     }
 }
