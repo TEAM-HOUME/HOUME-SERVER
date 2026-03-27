@@ -136,6 +136,9 @@
             font-weight: 700;
             color: #1f2937;
         }
+        .banner-chip-editor textarea.form-control {
+            min-height: 108px;
+        }
         .banner-search-results {
             display: flex;
             flex-direction: column;
@@ -171,6 +174,24 @@
             color: #0f4c81;
             font-size: 0.87rem;
             font-weight: 600;
+        }
+        .banner-card-chip-list {
+            display: grid;
+            gap: 10px;
+        }
+        .banner-card-chip-summary {
+            display: grid;
+            gap: 8px;
+            padding: 12px;
+            border: 1px solid #dbe5f0;
+            border-radius: 14px;
+            background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+        }
+        .banner-card-chip-prompt {
+            font-size: 0.88rem;
+            line-height: 1.5;
+            color: #475569;
+            white-space: pre-wrap;
         }
         .banner-card-chip button,
         .banner-selected-product-chip button,
@@ -2688,7 +2709,11 @@
                         <label class="form-label" for="bannerChipLabel-${index}">칩 문구</label>
                         <input type="text" class="form-control" id="bannerChipLabel-${index}" placeholder="예: 모니터 받침대가 결합된 책상">
                     </div>
-                    <div class="col-md-4">
+                    <div class="col-md-6">
+                        <label class="form-label" for="bannerChipSelectedPrompt-${index}">selected prompt</label>
+                        <textarea class="form-control" id="bannerChipSelectedPrompt-${index}" placeholder="선택된 답변 칩이 이미지 생성 프롬프트에 추가할 문구를 입력하세요."></textarea>
+                    </div>
+                    <div class="col-md-10">
                         <label class="form-label" for="bannerChipRawKeyword-${index}">연결 RAW 상품 검색</label>
                         <input type="text" class="form-control" id="bannerChipRawKeyword-${index}" placeholder="상품명, 브랜드, source, productId">
                     </div>
@@ -2949,7 +2974,12 @@
             const mappedRawProducts = Array.isArray(banner.mappedRawProducts) ? banner.mappedRawProducts : [];
             const styleAnswerChips = Array.isArray(banner.styleAnswerChips) ? banner.styleAnswerChips : [];
             const chipHtml = styleAnswerChips.length > 0
-                ? styleAnswerChips.map(chip => `<span class="banner-card-chip">${escapeHtml(chip.label)} · #${chip.curationRawProductId}</span>`).join('')
+                ? styleAnswerChips.map(chip => `
+                    <div class="banner-card-chip-summary">
+                        <span class="banner-card-chip">${escapeHtml(chip.label)} · #${chip.curationRawProductId}</span>
+                        <span class="banner-card-chip-prompt">${escapeHtml(chip.selectedPrompt || '-')}</span>
+                    </div>
+                `).join('')
                 : '<span class="text-muted small">등록된 스타일 답변이 없습니다.</span>';
             const mappedHtml = mappedRawProducts.length > 0
                 ? mappedRawProducts.map(product => `<span class="banner-card-chip">${escapeHtml(product.productName)} · #${product.id}</span>`).join('')
@@ -2977,7 +3007,7 @@
                         </div>
                         <div class="banner-card-block">
                             <span class="banner-card-label">스타일 답변 칩</span>
-                            <div class="d-flex flex-wrap gap-2">${chipHtml}</div>
+                            <div class="banner-card-chip-list">${chipHtml}</div>
                         </div>
                         <div class="banner-card-block">
                             <span class="banner-card-label">배너에 매핑된 가구</span>
@@ -3038,6 +3068,7 @@
         styleAnswerChips.slice(0, BANNER_CHIP_MAX_COUNT).forEach((chip, index) => {
             document.getElementById(`bannerChipOrder-${index}`).value = chip.order ?? index + 1;
             document.getElementById(`bannerChipLabel-${index}`).value = chip.label ?? '';
+            document.getElementById(`bannerChipSelectedPrompt-${index}`).value = chip.selectedPrompt ?? '';
         });
 
         bannerAdminState.selectedMappedRawProducts = (Array.isArray(banner.mappedRawProducts) ? banner.mappedRawProducts : []).map(product => ({
@@ -3071,14 +3102,15 @@
         for (let index = 0; index < BANNER_CHIP_MAX_COUNT; index += 1) {
             const order = parseNumberValue(document.getElementById(`bannerChipOrder-${index}`).value);
             const label = parseStringValue(document.getElementById(`bannerChipLabel-${index}`).value);
+            const selectedPrompt = parseStringValue(document.getElementById(`bannerChipSelectedPrompt-${index}`).value);
             const rawProduct = bannerAdminState.chipSelections[index].rawProduct;
 
-            if (!label && !rawProduct) {
+            if (!label && !selectedPrompt && !rawProduct) {
                 continue;
             }
 
-            if (!label || !rawProduct || order == null || !Number.isInteger(order)) {
-                throw new Error(`스타일 답변 칩 ${index + 1}의 문구, 순서, RAW 상품을 모두 입력해주세요.`);
+            if (!label || !selectedPrompt || !rawProduct || order == null || !Number.isInteger(order)) {
+                throw new Error(`스타일 답변 칩 ${index + 1}의 문구, selected prompt, 순서, RAW 상품을 모두 입력해주세요.`);
             }
             if (order < 1 || order > BANNER_CHIP_MAX_COUNT) {
                 throw new Error(`스타일 답변 칩 ${index + 1}의 순서는 1부터 ${BANNER_CHIP_MAX_COUNT} 사이여야 합니다.`);
@@ -3087,6 +3119,7 @@
             styleAnswerChips.push({
                 order,
                 label,
+                selectedPrompt,
                 curationRawProductId: rawProduct.id
             });
         }
