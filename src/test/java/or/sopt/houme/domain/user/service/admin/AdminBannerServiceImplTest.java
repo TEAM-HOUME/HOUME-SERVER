@@ -22,6 +22,7 @@ import or.sopt.houme.domain.user.presentation.admin.controller.dto.banner.respon
 import or.sopt.houme.domain.user.presentation.admin.controller.dto.banner.response.AdminBannerMappedRawProductResponse;
 import or.sopt.houme.domain.user.presentation.admin.controller.dto.banner.response.AdminBannerRawProductSearchResponse;
 import or.sopt.houme.domain.user.presentation.admin.controller.dto.banner.response.AdminBannerResponse;
+import or.sopt.houme.domain.user.presentation.admin.controller.dto.banner.response.AdminBannerStyleAnswerChipResponse;
 import or.sopt.houme.global.api.ErrorCode;
 import or.sopt.houme.global.api.GeneralException;
 
@@ -96,7 +97,6 @@ class AdminBannerServiceImplTest {
         Banner banner = Banner.create(
                 BannerType.BANNER,
                 "https://image",
-                "https://landing-image",
                 "배너 제목",
                 "설명",
                 "질문",
@@ -109,7 +109,6 @@ class AdminBannerServiceImplTest {
 
         AdminBannerCreateRequest request = new AdminBannerCreateRequest(
                 "https://image",
-                "https://landing-image",
                 "배너 제목",
                 "설명",
                 "질문",
@@ -123,7 +122,6 @@ class AdminBannerServiceImplTest {
         when(adminBannerSupport.extractAllRawProductIds(any(), eq(List.of(1L)))).thenReturn(List.of(1L));
         when(adminBannerSupport.loadRequiredRawProducts(List.of(1L))).thenReturn(Map.of(1L, chipRawProduct));
         when(adminBannerSupport.normalizeRequired("https://image")).thenReturn("https://image");
-        when(adminBannerSupport.normalizeRequired("https://landing-image")).thenReturn("https://landing-image");
         when(adminBannerSupport.normalizeRequired("배너 제목")).thenReturn("배너 제목");
         when(adminBannerSupport.normalizeRequired("설명")).thenReturn("설명");
         when(adminBannerSupport.normalizeRequired("질문")).thenReturn("질문");
@@ -139,7 +137,6 @@ class AdminBannerServiceImplTest {
 
         assertThat(response.id()).isEqualTo(10L);
         assertThat(response.bannerTitle()).isEqualTo("배너 제목");
-        assertThat(response.landingImageUrl()).isEqualTo("https://landing-image");
         assertThat(response.styleDescription()).isEqualTo("설명");
         verify(bannerRepository).saveAndFlush(any(Banner.class));
     }
@@ -151,7 +148,6 @@ class AdminBannerServiceImplTest {
         Banner banner = Banner.create(
                 BannerType.BANNER,
                 "https://old-image",
-                "https://old-landing-image",
                 "기존 제목",
                 "기존 설명",
                 "기존 질문",
@@ -164,7 +160,6 @@ class AdminBannerServiceImplTest {
 
         AdminBannerUpdateRequest request = new AdminBannerUpdateRequest(
                 "https://new-image",
-                "https://new-landing-image",
                 "새 제목",
                 "새 설명",
                 "새 질문",
@@ -190,7 +185,6 @@ class AdminBannerServiceImplTest {
         AdminBannerResponse response = adminBannerService.update(11L, request);
 
         assertThat(response.bannerTitle()).isEqualTo("새 제목");
-        assertThat(response.landingImageUrl()).isEqualTo("https://new-landing-image");
         assertThat(response.styleDescription()).isEqualTo("새 설명");
     }
 

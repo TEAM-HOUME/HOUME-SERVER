@@ -30,46 +30,24 @@ class BannerServiceImplTest {
     private ObjectMapper objectMapper;
 
     @Test
-    @DisplayName("getLandings()는 랜딩 이미지를 우선 반환한다")
-    void getLandings_returnsLandingImageUrl() {
-        Banner banner = Banner.create(
-                BannerType.BANNER,
-                "https://banner-image",
+    @DisplayName("getLandings()는 LANDING 타입 이미지만 반환한다")
+    void getLandings_returnsLandingTypeBanners() {
+        Banner landing = Banner.create(
+                BannerType.LANDING,
                 "https://landing-image",
-                "배너 제목",
-                "설명",
-                "질문",
-                "prompt",
-                "[]"
-        );
-
-        when(bannerRepository.findAllWithRawProducts(BannerType.BANNER, false)).thenReturn(List.of(banner));
-
-        LandingListResponse response = bannerService.getLandings();
-
-        assertThat(response.landings()).hasSize(1);
-        assertThat(response.landings().getFirst().imageUrl()).isEqualTo("https://landing-image");
-    }
-
-    @Test
-    @DisplayName("getLandings()는 랜딩 이미지가 없으면 기존 배너 이미지를 반환한다")
-    void getLandings_fallbacksToBannerImageUrl() {
-        Banner banner = Banner.create(
-                BannerType.BANNER,
-                "https://banner-image",
+                "랜딩 제목",
                 null,
-                "배너 제목",
-                "설명",
-                "질문",
-                "prompt",
-                "[]"
+                null,
+                null,
+                null
         );
 
-        when(bannerRepository.findAllWithRawProducts(BannerType.BANNER, false)).thenReturn(List.of(banner));
+        when(bannerRepository.findAllWithRawProducts(BannerType.LANDING, false)).thenReturn(List.of(landing));
 
         LandingListResponse response = bannerService.getLandings();
 
         assertThat(response.landings()).hasSize(1);
-        assertThat(response.landings().getFirst().imageUrl()).isEqualTo("https://banner-image");
+        assertThat(response.landings().getFirst().name()).isEqualTo("랜딩 제목");
+        assertThat(response.landings().getFirst().imageUrl()).isEqualTo("https://landing-image");
     }
 }
