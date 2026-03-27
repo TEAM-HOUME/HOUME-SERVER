@@ -15,7 +15,13 @@ import java.util.List;
 @AllArgsConstructor
 @Getter
 @Builder
-@Table(name = "users")
+@Table(
+        name = "users",
+        uniqueConstraints = @UniqueConstraint(
+                name = "uk_user_nickname_nickname_tag",
+                columnNames = {"nickname", "nickname_tag"}
+        )
+)
 public class User extends BaseEntity {
 
     @Id
@@ -27,6 +33,9 @@ public class User extends BaseEntity {
 
     @Column(name = "nickname", nullable = true)
     private String nickname;
+
+    @Column(name = "nickname_tag", nullable = true, length = 5)
+    private String nicknameTag;
 
     @Column(name = "birthday", nullable = true)
     private LocalDate birthday;
@@ -64,8 +73,9 @@ public class User extends BaseEntity {
     }
 
     // v2 자체 회원가입시 사용되는 유저 업데이트 메서드
-    public void updateUserFromSignUpV2(String nickname, LocalDate birthday, Gender gender) {
+    public void updateUserFromSignUpV2(String nickname, String nicknameTag, LocalDate birthday, Gender gender) {
         this.nickname = nickname;
+        this.nicknameTag = nicknameTag;
         this.name = nickname;
         this.birthday = birthday;
         this.gender = gender;
