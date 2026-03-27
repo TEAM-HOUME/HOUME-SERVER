@@ -74,6 +74,36 @@
             grid-template-columns: repeat(2, minmax(0, 1fr));
             gap: 16px;
         }
+        .banner-form-shell .banner-editor-grid > div {
+            display: grid;
+            gap: 10px;
+            align-content: start;
+            padding: 16px;
+            border: 1px solid #e5e7eb;
+            border-radius: 18px;
+            background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+            box-shadow: 0 8px 20px rgba(15, 23, 42, 0.04);
+        }
+        .banner-form-shell .banner-editor-grid > div.full-span {
+            padding: 18px;
+        }
+        .banner-form-shell .form-label {
+            margin-bottom: 0;
+            font-size: 0.78rem;
+            font-weight: 800;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            color: #64748b;
+        }
+        .banner-form-shell .form-control,
+        .banner-form-shell .form-select {
+            border-radius: 12px;
+            border-color: #d7deea;
+            box-shadow: none;
+        }
+        .banner-form-shell textarea.form-control {
+            min-height: 140px;
+        }
         .banner-editor-grid .full-span {
             grid-column: 1 / -1;
         }
@@ -81,15 +111,17 @@
             border: 1px solid #e5e7eb;
             border-radius: 14px;
             padding: 16px;
-            background: #fafbfc;
+            background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+            box-shadow: 0 8px 18px rgba(15, 23, 42, 0.04);
         }
         .banner-image-upload-panel {
             display: grid;
             gap: 12px;
             padding: 14px;
+            min-height: 214px;
             border: 1px dashed #cbd5e1;
-            border-radius: 14px;
-            background: #f8fafc;
+            border-radius: 16px;
+            background: linear-gradient(180deg, #f8fbff 0%, #f1f5f9 100%);
         }
         .banner-image-upload-actions {
             display: flex;
@@ -122,8 +154,22 @@
             min-width: 0;
         }
         .banner-image-preview-meta a {
-            word-break: break-all;
-            font-size: 0.85rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: fit-content;
+            padding: 4px 10px;
+            border-radius: 999px;
+            background: #eaf3ff;
+            color: #0f4c81;
+            text-decoration: none;
+            font-size: 0.82rem;
+            font-weight: 700;
+        }
+        .banner-form-shell .banner-form-lead {
+            margin: 0 0 16px;
+            color: #64748b;
+            font-size: 0.95rem;
         }
         .banner-chip-editor-header {
             display: flex;
@@ -187,19 +233,72 @@
         }
         .banner-card {
             display: grid;
-            grid-template-columns: 180px minmax(0, 1fr) auto;
+            grid-template-columns: minmax(0, 320px) minmax(0, 1fr) auto;
             gap: 20px;
             padding: 20px;
             border: 1px solid #e5e7eb;
             border-radius: 18px;
             background: #fff;
+            align-items: start;
+        }
+        .banner-card-media {
+            display: grid;
+            gap: 12px;
+        }
+        .banner-card-image-stack {
+            display: grid;
+            gap: 12px;
+        }
+        .banner-card-image-tile {
+            display: grid;
+            gap: 10px;
+            padding: 12px;
+            border: 1px solid #e5e7eb;
+            border-radius: 16px;
+            background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+        }
+        .banner-card-image-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+        }
+        .banner-card-image-caption {
+            font-size: 0.78rem;
+            font-weight: 800;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            color: #64748b;
         }
         .banner-card-image {
-            width: 180px;
-            height: 120px;
+            width: 100%;
+            height: 164px;
             border-radius: 14px;
             object-fit: cover;
             background: #e5e7eb;
+        }
+        .banner-card-image-empty {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #94a3b8;
+            font-size: 0.9rem;
+            font-weight: 700;
+            border: 1px dashed #cbd5e1;
+            background: linear-gradient(180deg, #f8fafc 0%, #eef2f7 100%);
+        }
+        .banner-card-link {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: fit-content;
+            padding: 4px 10px;
+            border-radius: 999px;
+            background: #eef2ff;
+            color: #3730a3;
+            text-decoration: none;
+            font-size: 0.8rem;
+            font-weight: 700;
         }
         .banner-card-body {
             display: grid;
@@ -1344,7 +1443,8 @@
         <div class="card">
             <div class="card-header">배너 등록 / 수정</div>
             <div class="card-body">
-                <form id="banner-form">
+                <form id="banner-form" class="banner-form-shell">
+                    <p class="banner-form-lead">랜딩 이미지와 배너 이미지를 분리해서 관리하고, 스타일 문구와 매핑 상품을 한 화면에서 정리합니다.</p>
                     <div class="banner-editor-grid">
                         <div>
                             <label for="bannerEditId" class="form-label">수정 대상 배너 ID</label>
@@ -2359,6 +2459,7 @@
             previewContainer.classList.remove('visible');
             previewImage.removeAttribute('src');
             previewLink.href = '#';
+            previewLink.removeAttribute('title');
             previewLink.textContent = '';
             previewName.textContent = config.defaultLabel;
             return;
@@ -2367,8 +2468,28 @@
         previewContainer.classList.add('visible');
         previewImage.src = config.imageUrl;
         previewLink.href = config.imageUrl;
-        previewLink.textContent = config.imageUrl;
+        previewLink.title = config.imageUrl;
+        previewLink.textContent = '원본 보기';
         previewName.textContent = config.label || config.defaultLabel;
+    }
+
+    function buildBannerImageTileHtml(label, imageUrl, altText) {
+        const imageContent = imageUrl
+            ? `<img class="banner-card-image" src="${escapeHtml(imageUrl)}" alt="${escapeHtml(altText)}">`
+            : `<div class="banner-card-image banner-card-image-empty">이미지 없음</div>`;
+        const linkContent = imageUrl
+            ? `<a class="banner-card-link" href="${escapeHtml(imageUrl)}" target="_blank" rel="noopener noreferrer">원본 보기</a>`
+            : '<span class="text-muted small">업로드 필요</span>';
+
+        return `
+            <div class="banner-card-image-tile">
+                <div class="banner-card-image-header">
+                    <span class="banner-card-image-caption">${escapeHtml(label)}</span>
+                    ${linkContent}
+                </div>
+                ${imageContent}
+            </div>
+        `;
     }
 
     function renderBannerImagePreview(imageUrl, label = '업로드된 배너 이미지') {
@@ -2984,9 +3105,11 @@
             const bannerImageUrl = banner.bannerImageUrl || '';
 
             card.innerHTML = `
-                <div class="d-flex gap-2">
-                    <img class="banner-card-image" src="${escapeHtml(landingImageUrl)}" alt="${escapeHtml(`${banner.bannerTitle} 랜딩`)}">
-                    <img class="banner-card-image" src="${escapeHtml(bannerImageUrl)}" alt="${escapeHtml(`${banner.bannerTitle} 배너`)}">
+                <div class="banner-card-media">
+                    <div class="banner-card-image-stack">
+                        ${buildBannerImageTileHtml('랜딩 이미지', landingImageUrl, `${banner.bannerTitle} 랜딩`)}
+                        ${buildBannerImageTileHtml('배너 이미지', bannerImageUrl, `${banner.bannerTitle} 배너`)}
+                    </div>
                 </div>
                 <div class="banner-card-body">
                     <div class="banner-card-title-row">
@@ -2994,14 +3117,6 @@
                         <span class="text-muted small">#${banner.id}</span>
                     </div>
                     <div class="banner-card-meta">
-                        <div class="banner-card-block">
-                            <span class="banner-card-label">랜딩 이미지</span>
-                            <span>${escapeHtml(landingImageUrl || '-')}</span>
-                        </div>
-                        <div class="banner-card-block">
-                            <span class="banner-card-label">배너 이미지</span>
-                            <span>${escapeHtml(bannerImageUrl || '-')}</span>
-                        </div>
                         <div class="banner-card-block">
                             <span class="banner-card-label">스타일 설명</span>
                             <span>${escapeHtml(banner.styleDescription)}</span>
