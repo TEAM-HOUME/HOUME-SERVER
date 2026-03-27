@@ -27,7 +27,10 @@ import or.sopt.houme.global.config.JWTConfig;
 import or.sopt.houme.global.config.KaKaoConfig;
 import or.sopt.houme.global.jwt.JWTUtil;
 import or.sopt.houme.global.util.CookieUtil;
+import org.hibernate.exception.ConstraintViolationException;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
@@ -47,6 +50,7 @@ import java.util.stream.IntStream;
 public class OAuthService {
 
     private static final int SIGN_UP_CREDIT_COUNT = 1;
+    private static final String USER_NICKNAME_TAG_UNIQUE_CONSTRAINT = "uk_user_nickname_nickname_tag";
 
     private final KaKaoOAuthClient kaKaoOAuthClient;
     private final KaKaoUserInfoClient kaKaoUserInfoClient;
@@ -59,6 +63,7 @@ public class OAuthService {
     private final BlacklistTokenRepository blacklistTokenRepository;
     private final SignupSessionRepository signupSessionRepository;
     private final NicknameService nicknameService;
+    private final UserNicknameTagTransactionService userNicknameTagTransactionService;
 
     private final KaKaoConfig kaKaoConfig;
     private final CookieConfig cookieConfig;
@@ -191,10 +196,21 @@ public class OAuthService {
         return signUpWithTokenInternal(signupToken, name, null, null, gender, birthday, response);
     }
 
-    @Transactional
+    @Transactional(propagation = Propagation.NOT_SUPPORTED)
     public String signUpWithTokenV2(String signupToken, String nickname, Gender gender, LocalDate birthday, HttpServletResponse response) {
-        String nicknameTag = nicknameService.generateNicknameTag(nickname);
-        return signUpWithTokenInternal(signupToken, nickname, nickname, nicknameTag, gender, birthday, response);
+        SignupSession signupSession = signupSessionRepository.consume(signupToken)
+                .orElseThrow(() -> new UserException(ErrorCode.SIGNUP_TOKEN_INVALID));
+
+        if (!StringUtils.hasText(signupSession.email())) {
+            throw new UserException(ErrorCode.NOT_VALID_EXCEPTION);
+        }
+        if (userRepository.existsByEmail(signupSession.email())) {
+            throw new UserException(ErrorCode.EMAIL_ALREADY_EXISTS);
+        }
+
+        User savedUser = createUserWithNicknameTagRetry(signupSession, nickname, gender, birthday);
+        issueTokens(savedUser, response);
+        return savedUser.getDisplayName();
     }
 
     private String signUpWithTokenInternal(
@@ -244,6 +260,41 @@ public class OAuthService {
             throw new CreditException(ErrorCode.CREDIT_CREATE_EXCEPTION);
         }
 
+        issueTokens(savedUser, response);
+
+        if (StringUtils.hasText(nickname)) {
+            return savedUser.getDisplayName();
+        }
+        return savedUser.getName();
+    }
+
+    private User createUserWithNicknameTagRetry(
+            SignupSession signupSession,
+            String nickname,
+            Gender gender,
+            LocalDate birthday
+    ) {
+        for (int attempt = 0; attempt < NicknameService.NICKNAME_TAG_RETRY_COUNT; attempt++) {
+            String nicknameTag = nicknameService.generateNicknameTag(nickname);
+            try {
+                return userNicknameTagTransactionService.createSocialUserWithNicknameTag(
+                        signupSession,
+                        nickname,
+                        nickname,
+                        nicknameTag,
+                        gender,
+                        birthday
+                );
+            } catch (DataIntegrityViolationException exception) {
+                if (!isNicknameTagConstraintViolation(exception)) {
+                    throw exception;
+                }
+            }
+        }
+        throw new UserException(ErrorCode.NICKNAME_TAG_GENERATION_FAILED);
+    }
+
+    private void issueTokens(User savedUser, HttpServletResponse response) {
         String access = jwtUtil.createJwt("access", savedUser.getId(), savedUser.getRole().toString(), jwtConfig.getAccessTokenValidityInSeconds());
         String refresh = jwtUtil.createJwt("refresh", savedUser.getId(), savedUser.getRole().toString(), jwtConfig.getRefreshTokenValidityInSeconds());
 
@@ -260,11 +311,17 @@ public class OAuthService {
                 cookieConfig.isSecure(),
                 cookieConfig.getSameSite()
         );
+    }
 
-        if (StringUtils.hasText(nickname)) {
-            return savedUser.getDisplayName();
+    private boolean isNicknameTagConstraintViolation(DataIntegrityViolationException exception) {
+        Throwable current = exception;
+        while (current != null) {
+            if (current instanceof ConstraintViolationException constraintViolationException) {
+                return USER_NICKNAME_TAG_UNIQUE_CONSTRAINT.equals(constraintViolationException.getConstraintName());
+            }
+            current = current.getCause();
         }
-        return savedUser.getName();
+        return exception.getMessage() != null && exception.getMessage().contains(USER_NICKNAME_TAG_UNIQUE_CONSTRAINT);
     }
 
 

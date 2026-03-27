@@ -17,7 +17,7 @@ import java.util.concurrent.ThreadLocalRandom;
 @Service
 @RequiredArgsConstructor
 public class NicknameService {
-    private static final int NICKNAME_TAG_RETRY_COUNT = 20;
+    static final int NICKNAME_TAG_RETRY_COUNT = 20;
 
     private final NicknameWordRepository nicknameWordRepository;
     private final UserRepository userRepository;

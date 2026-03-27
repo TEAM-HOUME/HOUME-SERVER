@@ -15,7 +15,13 @@ import java.util.List;
 @AllArgsConstructor
 @Getter
 @Builder
-@Table(name = "users")
+@Table(
+        name = "users",
+        uniqueConstraints = @UniqueConstraint(
+                name = "uk_user_nickname_nickname_tag",
+                columnNames = {"nickname", "nickname_tag"}
+        )
+)
 public class User extends BaseEntity {
 
     @Id
