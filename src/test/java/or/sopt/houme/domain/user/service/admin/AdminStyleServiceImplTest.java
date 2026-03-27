@@ -52,6 +52,7 @@ class AdminStyleServiceImplTest {
         Banner style = Banner.create(
                 BannerType.STYLE,
                 "https://image",
+                null,
                 "스타일 제목",
                 "스타일 설명",
                 null,
@@ -92,6 +93,7 @@ class AdminStyleServiceImplTest {
         Banner style = Banner.create(
                 BannerType.STYLE,
                 "https://old-image",
+                null,
                 "기존 스타일",
                 "기존 설명",
                 null,
@@ -158,6 +160,7 @@ class AdminStyleServiceImplTest {
         Banner banner = Banner.create(
                 BannerType.BANNER,
                 "https://image",
+                null,
                 "배너",
                 "설명",
                 "질문",
@@ -177,6 +180,7 @@ class AdminStyleServiceImplTest {
         Banner style = Banner.create(
                 BannerType.STYLE,
                 "https://style-image",
+                null,
                 "스타일",
                 "설명",
                 null,
@@ -190,6 +194,7 @@ class AdminStyleServiceImplTest {
         Banner banner = Banner.create(
                 BannerType.BANNER,
                 "https://banner-image",
+                null,
                 "배너",
                 "배너 설명",
                 "질문",
@@ -213,6 +218,7 @@ class AdminStyleServiceImplTest {
         Banner banner = Banner.create(
                 BannerType.BANNER,
                 "https://image",
+                null,
                 "배너",
                 "설명",
                 "질문",
