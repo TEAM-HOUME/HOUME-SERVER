@@ -1350,7 +1350,25 @@
                             <label for="bannerEditId" class="form-label">수정 대상 배너 ID</label>
                             <input type="text" class="form-control" id="bannerEditId" placeholder="목록에서 수정 선택 시 자동 입력" readonly>
                         </div>
-                        <div class="full-span">
+                        <div>
+                            <label for="landingImageFile" class="form-label">랜딩 이미지 업로드</label>
+                            <div class="banner-image-upload-panel">
+                                <input type="file" class="form-control" id="landingImageFile" accept="image/*">
+                                <input type="hidden" id="landingImageUrl">
+                                <div class="banner-image-upload-actions">
+                                    <button type="button" id="upload-landing-image-button" class="btn btn-outline-primary">S3 업로드</button>
+                                    <span id="landingImageUploadStatus" class="text-muted small">이미지를 선택하고 업로드하세요.</span>
+                                </div>
+                                <div id="landingImagePreview" class="banner-image-preview">
+                                    <img id="landingImagePreviewImg" alt="랜딩 미리보기">
+                                    <div class="banner-image-preview-meta">
+                                        <strong id="landingImagePreviewName">업로드된 랜딩 이미지</strong>
+                                        <a id="landingImagePreviewLink" href="#" target="_blank" rel="noopener noreferrer"></a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div>
                             <label for="bannerImageFile" class="form-label">배너 이미지 업로드</label>
                             <div class="banner-image-upload-panel">
                                 <input type="file" class="form-control" id="bannerImageFile" accept="image/*">
@@ -2177,6 +2195,16 @@
         document.getElementById('reset-banner-form-button').addEventListener('click', function() {
             resetBannerForm();
         });
+        document.getElementById('upload-landing-image-button').addEventListener('click', function() {
+            uploadLandingImage();
+        });
+        document.getElementById('landingImageFile').addEventListener('change', function() {
+            if (this.files && this.files.length > 0) {
+                document.getElementById('landingImageUploadStatus').textContent = `${this.files[0].name} 선택됨. 업로드를 진행하세요.`;
+            } else {
+                document.getElementById('landingImageUploadStatus').textContent = '이미지를 선택하고 업로드하세요.';
+            }
+        });
         document.getElementById('upload-banner-image-button').addEventListener('click', function() {
             uploadBannerImage();
         });
@@ -2302,6 +2330,7 @@
     function initializeBannerManagement() {
         renderBannerChipEditors();
         renderBannerMappedRawProducts();
+        renderLandingImagePreview('');
         renderBannerImagePreview('');
         loadBanners();
     }
@@ -2351,6 +2380,18 @@
             imageUrl,
             label,
             defaultLabel: '업로드된 배너 이미지'
+        });
+    }
+
+    function renderLandingImagePreview(imageUrl, label = '업로드된 랜딩 이미지') {
+        renderManagedImagePreview({
+            containerId: 'landingImagePreview',
+            imageId: 'landingImagePreviewImg',
+            linkId: 'landingImagePreviewLink',
+            nameId: 'landingImagePreviewName',
+            imageUrl,
+            label,
+            defaultLabel: '업로드된 랜딩 이미지'
         });
     }
 
@@ -2461,6 +2502,18 @@
             entityName: '배너',
             buttonId: 'upload-banner-image-button',
             renderPreview: renderBannerImagePreview
+        });
+    }
+
+    async function uploadLandingImage() {
+        await uploadManagedImage({
+            fileInputId: 'landingImageFile',
+            statusId: 'landingImageUploadStatus',
+            hiddenUrlInputId: 'landingImageUrl',
+            uploadUrl: '/api/v1/admin/banners/image-upload-url',
+            entityName: '랜딩',
+            buttonId: 'upload-landing-image-button',
+            renderPreview: renderLandingImagePreview
         });
     }
 
@@ -2927,15 +2980,28 @@
             const mappedHtml = mappedRawProducts.length > 0
                 ? mappedRawProducts.map(product => `<span class="banner-card-chip">${escapeHtml(product.productName)} · #${product.id}</span>`).join('')
                 : '<span class="text-muted small">매핑된 가구가 없습니다.</span>';
+            const landingImageUrl = banner.landingImageUrl || banner.bannerImageUrl || '';
+            const bannerImageUrl = banner.bannerImageUrl || '';
 
             card.innerHTML = `
-                <img class="banner-card-image" src="${escapeHtml(banner.bannerImageUrl)}" alt="${escapeHtml(banner.bannerTitle)}">
+                <div class="d-flex gap-2">
+                    <img class="banner-card-image" src="${escapeHtml(landingImageUrl)}" alt="${escapeHtml(`${banner.bannerTitle} 랜딩`)}">
+                    <img class="banner-card-image" src="${escapeHtml(bannerImageUrl)}" alt="${escapeHtml(`${banner.bannerTitle} 배너`)}">
+                </div>
                 <div class="banner-card-body">
                     <div class="banner-card-title-row">
                         <span class="banner-card-title">${escapeHtml(banner.bannerTitle)}</span>
                         <span class="text-muted small">#${banner.id}</span>
                     </div>
                     <div class="banner-card-meta">
+                        <div class="banner-card-block">
+                            <span class="banner-card-label">랜딩 이미지</span>
+                            <span>${escapeHtml(landingImageUrl || '-')}</span>
+                        </div>
+                        <div class="banner-card-block">
+                            <span class="banner-card-label">배너 이미지</span>
+                            <span>${escapeHtml(bannerImageUrl || '-')}</span>
+                        </div>
                         <div class="banner-card-block">
                             <span class="banner-card-label">스타일 설명</span>
                             <span>${escapeHtml(banner.styleDescription)}</span>
@@ -2981,6 +3047,8 @@
         bannerAdminState.editingBannerId = banner.id;
 
         document.getElementById('bannerEditId').value = banner.id;
+        document.getElementById('landingImageUrl').value = banner.landingImageUrl ?? '';
+        document.getElementById('landingImageFile').value = '';
         document.getElementById('bannerImageUrl').value = banner.bannerImageUrl ?? '';
         document.getElementById('bannerImageFile').value = '';
         document.getElementById('bannerTitle').value = banner.bannerTitle ?? '';
@@ -2989,7 +3057,9 @@
         document.getElementById('bannerStylePrompt').value = banner.stylePrompt ?? '';
         document.getElementById('bannerMappedRawProductKeyword').value = '';
         document.getElementById('bannerMappedRawProductSearchResult').innerHTML = '';
+        document.getElementById('landingImageUploadStatus').textContent = banner.landingImageUrl ? '기존 랜딩 이미지가 연결되어 있습니다. 새 파일을 업로드하면 교체됩니다.' : '이미지를 선택하고 업로드하세요.';
         document.getElementById('bannerImageUploadStatus').textContent = banner.bannerImageUrl ? '기존 배너 이미지가 연결되어 있습니다. 새 파일을 업로드하면 교체됩니다.' : '이미지를 선택하고 업로드하세요.';
+        renderLandingImagePreview(banner.landingImageUrl ?? '');
         renderBannerImagePreview(banner.bannerImageUrl ?? '');
 
         const styleAnswerChips = Array.isArray(banner.styleAnswerChips) ? banner.styleAnswerChips : [];
@@ -3030,10 +3100,13 @@
         bannerAdminState = createInitialBannerAdminState();
         document.getElementById('banner-form').reset();
         document.getElementById('bannerEditId').value = '';
+        document.getElementById('landingImageUrl').value = '';
+        document.getElementById('landingImageUploadStatus').textContent = '이미지를 선택하고 업로드하세요.';
         document.getElementById('bannerImageUrl').value = '';
         document.getElementById('bannerImageUploadStatus').textContent = '이미지를 선택하고 업로드하세요.';
         document.getElementById('bannerMappedRawProductSearchResult').innerHTML = '';
         document.getElementById('banner-form-result').innerHTML = '';
+        renderLandingImagePreview('');
         renderBannerImagePreview('');
         renderBannerChipEditors();
         renderBannerMappedRawProducts();
@@ -3064,12 +3137,18 @@
             });
         }
 
+        const landingImageUrl = parseStringValue(document.getElementById('landingImageUrl').value);
+        if (!landingImageUrl) {
+            throw new Error('랜딩 이미지를 업로드해주세요.');
+        }
+
         const bannerImageUrl = parseStringValue(document.getElementById('bannerImageUrl').value);
         if (!bannerImageUrl) {
             throw new Error('배너 이미지를 업로드해주세요.');
         }
 
         return {
+            landingImageUrl,
             bannerImageUrl,
             bannerTitle: parseStringValue(document.getElementById('bannerTitle').value),
             styleDescription: parseStringValue(document.getElementById('bannerStyleDescription').value),
