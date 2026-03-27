@@ -68,8 +68,10 @@ class AdminFloorPlanControllerTest {
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.id").value(1L))
+                .andExpect(jsonPath("$.data.name").value("테스트 도면"))
                 .andExpect(jsonPath("$.data.form").value("OFFICETEL"))
-                .andExpect(jsonPath("$.data.images[0].url").value("https://image/1"));
+                .andExpect(jsonPath("$.data.images[0].url").value("https://image/1"))
+                .andExpect(jsonPath("$.data.images[0].view").value("창가 뷰"));
     }
 
     @Test
@@ -80,7 +82,9 @@ class AdminFloorPlanControllerTest {
         mockMvc.perform(get("/api/v1/admin/floor-plans"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.floorPlans[0].id").value(1L))
-                .andExpect(jsonPath("$.data.floorPlans[0].equilibrium").value("UNDER_5"));
+                .andExpect(jsonPath("$.data.floorPlans[0].equilibrium").value("UNDER_5"))
+                .andExpect(jsonPath("$.data.floorPlans[0].name").value("테스트 도면"))
+                .andExpect(jsonPath("$.data.floorPlans[0].images[0].view").value("창가 뷰"));
     }
 
     @Test
@@ -111,8 +115,10 @@ class AdminFloorPlanControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.name").value("수정 도면"))
                 .andExpect(jsonPath("$.data.structure").value("TWO_ROOM"))
-                .andExpect(jsonPath("$.data.representativeImageUrl").value("https://image/2"));
+                .andExpect(jsonPath("$.data.representativeImageUrl").value("https://image/2"))
+                .andExpect(jsonPath("$.data.images[0].view").value("강변 뷰"));
     }
 
     @Test
