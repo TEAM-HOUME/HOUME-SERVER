@@ -6,6 +6,7 @@ import java.util.List;
 public record AdminBannerResponse(
         Long id,
         String bannerImageUrl,
+        String landingImageUrl,
         String bannerTitle,
         String styleDescription,
         String styleQuestion,

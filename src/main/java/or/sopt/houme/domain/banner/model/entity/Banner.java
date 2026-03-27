@@ -52,6 +52,10 @@ public class Banner extends BaseEntity {
     @Comment("배너 대표 이미지 URL")
     private String bannerImageUrl;
 
+    @Column(name = "landing_image_url", length = 2048)
+    @Comment("랜딩 대표 이미지 URL")
+    private String landingImageUrl;
+
     @Column(name = "banner_title", nullable = false)
     @Comment("배너 타이틀")
     private String bannerTitle;
@@ -80,6 +84,7 @@ public class Banner extends BaseEntity {
     public static Banner create(
             BannerType bannerType,
             String bannerImageUrl,
+            String landingImageUrl,
             String bannerTitle,
             String styleDescription,
             String styleQuestion,
@@ -89,6 +94,7 @@ public class Banner extends BaseEntity {
         return Banner.builder()
                 .bannerType(bannerType)
                 .bannerImageUrl(bannerImageUrl)
+                .landingImageUrl(landingImageUrl)
                 .bannerTitle(bannerTitle)
                 .styleDescription(styleDescription)
                 .styleQuestion(styleQuestion)
@@ -100,6 +106,7 @@ public class Banner extends BaseEntity {
     public void update(
             BannerType bannerType,
             String bannerImageUrl,
+            String landingImageUrl,
             String bannerTitle,
             String styleDescription,
             String styleQuestion,
@@ -108,11 +115,19 @@ public class Banner extends BaseEntity {
     ) {
         this.bannerType = bannerType;
         this.bannerImageUrl = bannerImageUrl;
+        this.landingImageUrl = landingImageUrl;
         this.bannerTitle = bannerTitle;
         this.styleDescription = styleDescription;
         this.styleQuestion = styleQuestion;
         this.stylePrompt = stylePrompt;
         this.styleAnswerChipsJson = styleAnswerChipsJson;
+    }
+
+    public String getResolvedLandingImageUrl() {
+        if (landingImageUrl == null || landingImageUrl.isBlank()) {
+            return bannerImageUrl;
+        }
+        return landingImageUrl;
     }
 
     public void replaceRawProducts(List<BannerCurationRawProduct> mappings) {

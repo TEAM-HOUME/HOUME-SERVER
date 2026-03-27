@@ -10,6 +10,7 @@ import java.util.List;
 
 public record AdminBannerCreateRequest(
         @NotBlank String bannerImageUrl,
+        @NotBlank String landingImageUrl,
         @NotBlank String bannerTitle,
         @NotBlank String styleDescription,
         @NotBlank String styleQuestion,

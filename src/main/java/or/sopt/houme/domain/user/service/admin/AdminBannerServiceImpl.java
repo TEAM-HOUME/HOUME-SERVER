@@ -48,6 +48,7 @@ public class AdminBannerServiceImpl implements AdminBannerService {
         Banner banner = Banner.create(
                 BannerType.BANNER,
                 adminBannerSupport.normalizeRequired(request.bannerImageUrl()),
+                adminBannerSupport.normalizeRequired(request.landingImageUrl()),
                 adminBannerSupport.normalizeRequired(request.bannerTitle()),
                 adminBannerSupport.normalizeRequired(request.styleDescription()),
                 adminBannerSupport.normalizeRequired(request.styleQuestion()),
@@ -95,6 +96,7 @@ public class AdminBannerServiceImpl implements AdminBannerService {
         banner.update(
                 BannerType.BANNER,
                 request.bannerImageUrl() != null ? adminBannerSupport.normalizeRequired(request.bannerImageUrl()) : banner.getBannerImageUrl(),
+                request.landingImageUrl() != null ? adminBannerSupport.normalizeRequired(request.landingImageUrl()) : banner.getLandingImageUrl(),
                 request.bannerTitle() != null ? adminBannerSupport.normalizeRequired(request.bannerTitle()) : banner.getBannerTitle(),
                 request.styleDescription() != null ? adminBannerSupport.normalizeRequired(request.styleDescription()) : banner.getStyleDescription(),
                 request.styleQuestion() != null ? adminBannerSupport.normalizeRequired(request.styleQuestion()) : banner.getStyleQuestion(),
@@ -146,6 +148,7 @@ public class AdminBannerServiceImpl implements AdminBannerService {
         return new AdminBannerResponse(
                 banner.getId(),
                 banner.getBannerImageUrl(),
+                banner.getResolvedLandingImageUrl(),
                 banner.getBannerTitle(),
                 banner.getStyleDescription(),
                 banner.getStyleQuestion(),
