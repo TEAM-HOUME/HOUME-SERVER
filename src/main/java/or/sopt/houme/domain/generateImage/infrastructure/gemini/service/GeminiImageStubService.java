@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -48,6 +49,11 @@ public class GeminiImageStubService implements GeminiImageService {
                 .build();
         responseDTO.setPullPrompt(prompt);
         return responseDTO;
+    }
+
+    @Override
+    public ImageUploadResponseDTO createImageWithReferences(String prompt, List<String> referenceImageUrls) {
+        return createImage(prompt);
     }
 
     private long resolveDelay() {

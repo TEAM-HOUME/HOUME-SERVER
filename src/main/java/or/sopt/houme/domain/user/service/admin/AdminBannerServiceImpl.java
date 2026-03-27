@@ -80,7 +80,7 @@ public class AdminBannerServiceImpl implements AdminBannerService {
 
         List<BannerStyleAnswerChip> currentChips = adminBannerSupport.parseStyleAnswerChipsJson(banner.getStyleAnswerChipsJson());
         List<BannerStyleAnswerChip> targetChips = request.styleAnswerChips() != null
-                ? adminBannerSupport.normalizeStyleAnswerChips(request.styleAnswerChips())
+                ? adminBannerSupport.normalizeStyleAnswerChips(request.styleAnswerChips(), currentChips)
                 : currentChips;
 
         List<Long> currentMappedRawProductIds = adminBannerSupport.extractMappedRawProductIds(banner);
@@ -134,8 +134,10 @@ public class AdminBannerServiceImpl implements AdminBannerService {
                 .map(chip -> {
                     CurationRawProduct rawProduct = rawProductMap.get(chip.curationRawProductId());
                     return new AdminBannerStyleAnswerChipResponse(
+                            chip.id(),
                             chip.order(),
                             chip.label(),
+                            chip.selectedPrompt(),
                             chip.curationRawProductId(),
                             rawProduct != null ? rawProduct.getProductName() : null,
                             rawProduct != null ? rawProduct.getProductImageUrl() : null
