@@ -43,7 +43,6 @@ public class AdminStyleServiceImpl implements AdminStyleService {
         Banner style = Banner.create(
                 BannerType.STYLE,
                 adminBannerSupport.normalizeRequired(request.bannerImageUrl()),
-                null,
                 adminBannerSupport.normalizeRequired(request.bannerTitle()),
                 adminBannerSupport.normalizeRequired(request.styleDescription()),
                 null,
@@ -89,7 +88,6 @@ public class AdminStyleServiceImpl implements AdminStyleService {
         style.update(
                 BannerType.STYLE,
                 request.bannerImageUrl() != null ? adminBannerSupport.normalizeRequired(request.bannerImageUrl()) : style.getBannerImageUrl(),
-                style.getLandingImageUrl(),
                 request.bannerTitle() != null ? adminBannerSupport.normalizeRequired(request.bannerTitle()) : style.getBannerTitle(),
                 request.styleDescription() != null ? adminBannerSupport.normalizeRequired(request.styleDescription()) : style.getStyleDescription(),
                 null,

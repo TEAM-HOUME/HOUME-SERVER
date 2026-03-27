@@ -9,7 +9,6 @@ import java.util.List;
 
 public record AdminBannerUpdateRequest(
         String bannerImageUrl,
-        String landingImageUrl,
         String bannerTitle,
         String styleDescription,
         String styleQuestion,

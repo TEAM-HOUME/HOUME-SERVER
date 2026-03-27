@@ -12,7 +12,7 @@ public record LandingResponse(
         return new LandingResponse(
                 banner.getId(),
                 banner.getBannerTitle(),
-                banner.getResolvedLandingImageUrl()
+                banner.getBannerImageUrl()
         );
     }
 }
