@@ -17,17 +17,28 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.time.Duration;
 import java.util.Base64;
+import java.util.List;
+import java.util.Locale;
+import java.util.stream.Collectors;
 
 @Service
 @Profile("!load_test")
 @RequiredArgsConstructor
 @Slf4j
 public class GeminiImageServiceImpl implements GeminiImageService {
-
     private final GeminiImageClient geminiImageClient;
     private final GeminiImageConfig geminiImageConfig;
     private final S3Util s3Util;
+    private final HttpClient httpClient = HttpClient.newBuilder()
+            .connectTimeout(Duration.ofSeconds(10))
+            .build();
 
     @Value("${gemini.api-key:}")
     private String apiKey;
@@ -37,18 +48,27 @@ public class GeminiImageServiceImpl implements GeminiImageService {
         // Gemini는 해상도 파라미터를 받지 않으므로 프롬프트 힌트로만 전달합니다.
         String promptWithSize = applySizeHint(prompt, geminiImageConfig.getSize());
         GeminiImageRequest request = GeminiImageRequest.of(promptWithSize);
+        return executeGeminiRequest(promptWithSize, request, defaultModel(geminiImageConfig.getModel()));
+    }
 
+    @Override
+    public ImageUploadResponseDTO createImageWithReferences(String prompt, List<String> referenceImageUrls) {
+        String promptWithSize = applySizeHint(prompt, geminiImageConfig.getSize());
+        List<GeminiImageRequest.Part> referenceParts = toReferenceImageParts(referenceImageUrls);
+        GeminiImageRequest request = GeminiImageRequest.of(promptWithSize, referenceParts);
+        return executeGeminiRequest(promptWithSize, request, defaultModel(geminiImageConfig.getModel()));
+    }
+
+    private ImageUploadResponseDTO executeGeminiRequest(
+            String prompt,
+            GeminiImageRequest request,
+            String model
+    ) {
         try {
-            GeminiImageResponse response = geminiImageClient.generateImage(
-                    defaultModel(geminiImageConfig.getModel()),
-                    apiKey,
-                    request
-            );
-
-            // Gemini는 inlineData에 base64 문자열로 이미지를 반환합니다.
+            GeminiImageResponse response = geminiImageClient.generateImage(model, apiKey, request);
             byte[] image = decodeBase64(extractBase64(response));
             ImageUploadResponseDTO responseDTO = s3Util.uploadByByte(S3Constant.CHAT_GPT_DIRNAME, image);
-            responseDTO.setPullPrompt(promptWithSize);
+            responseDTO.setPullPrompt(prompt);
             return responseDTO;
         } catch (FeignException e) {
             log.info(e.getMessage());
@@ -56,6 +76,65 @@ public class GeminiImageServiceImpl implements GeminiImageService {
         } catch (IllegalArgumentException e) {
             throw new S3Exception(ErrorCode.INCODING_EXCEPTION);
         }
+    }
+
+    private List<GeminiImageRequest.Part> toReferenceImageParts(List<String> referenceImageUrls) {
+        if (referenceImageUrls == null || referenceImageUrls.isEmpty()) {
+            return List.of();
+        }
+        List<GeminiImageRequest.Part> referenceParts = new java.util.ArrayList<>();
+        for (String url : referenceImageUrls) {
+            if (url == null || url.isBlank()) {
+                continue;
+            }
+            try {
+                DownloadedImageData imageData = downloadImage(url);
+                referenceParts.add(GeminiImageRequest.Part.inlineData(imageData.mimeType(), imageData.base64Data()));
+            } catch (ChatGptException e) {
+                log.warn("참조 이미지 다운로드 실패. 해당 URL은 건너뜁니다. url={}", url);
+            }
+        }
+        return referenceParts.stream().collect(Collectors.toList());
+    }
+
+    private DownloadedImageData downloadImage(String url) {
+        try {
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(url))
+                    .timeout(Duration.ofSeconds(15))
+                    .header("User-Agent", "Houme-Gemini/1.0")
+                    .GET()
+                    .build();
+
+            HttpResponse<byte[]> response = httpClient.send(request, HttpResponse.BodyHandlers.ofByteArray());
+            if (response.statusCode() < 200 || response.statusCode() >= 300) {
+                throw new ChatGptException(ErrorCode.CHAT_GPT_CALL_EXCEPTION);
+            }
+
+            String mimeType = response.headers()
+                    .firstValue("content-type")
+                    .map(this::normalizeMimeType)
+                    .orElse("image/jpeg");
+            String base64 = Base64.getEncoder().encodeToString(response.body());
+            return new DownloadedImageData(mimeType, base64);
+        } catch (IOException | InterruptedException e) {
+            if (e instanceof InterruptedException) {
+                Thread.currentThread().interrupt();
+            }
+            throw new ChatGptException(ErrorCode.CHAT_GPT_CALL_EXCEPTION);
+        } catch (IllegalArgumentException e) {
+            throw new ChatGptException(ErrorCode.CHAT_GPT_CALL_EXCEPTION);
+        }
+    }
+
+    private String normalizeMimeType(String contentType) {
+        String lowered = contentType.toLowerCase(Locale.ROOT);
+        int separator = lowered.indexOf(';');
+        String mimeType = separator >= 0 ? lowered.substring(0, separator).trim() : lowered.trim();
+        if (!mimeType.startsWith("image/")) {
+            return "image/jpeg";
+        }
+        return mimeType;
     }
 
     private String extractBase64(GeminiImageResponse response) {
@@ -113,5 +192,8 @@ public class GeminiImageServiceImpl implements GeminiImageService {
             return trimmed;
         }
         return null;
+    }
+
+    private record DownloadedImageData(String mimeType, String base64Data) {
     }
 }

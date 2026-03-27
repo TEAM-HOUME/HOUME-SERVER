@@ -58,7 +58,7 @@ class AdminBannerControllerTest {
                 "배너 설명",
                 "질문",
                 "prompt",
-                List.of(new AdminBannerStyleAnswerChipRequest(1, "칩", 1L)),
+                List.of(new AdminBannerStyleAnswerChipRequest(1, "칩", "선택 프롬프트", 1L)),
                 List.of(1L)
         );
         when(adminBannerService.create(any(AdminBannerCreateRequest.class))).thenReturn(sampleResponse());
@@ -93,7 +93,7 @@ class AdminBannerControllerTest {
                 "수정 설명",
                 null,
                 null,
-                List.of(new AdminBannerStyleAnswerChipRequest(1, "새 칩", 2L)),
+                List.of(new AdminBannerStyleAnswerChipRequest(1, "새 칩", "새 선택 프롬프트", 2L)),
                 List.of(2L)
         );
         AdminBannerResponse response = new AdminBannerResponse(
@@ -103,7 +103,7 @@ class AdminBannerControllerTest {
                 "수정 설명",
                 "질문",
                 "prompt",
-                List.of(new AdminBannerStyleAnswerChipResponse(1, "새 칩", 2L, "책상 B", "https://image/2")),
+                List.of(new AdminBannerStyleAnswerChipResponse(2L, 1, "새 칩", "새 선택 프롬프트", 2L, "책상 B", "https://image/2")),
                 List.of(new AdminBannerMappedRawProductResponse(2L, "soozip", null, 22L, "책상 B", "https://image/2", "브랜드")),
                 LocalDateTime.of(2026, 3, 13, 12, 0),
                 LocalDateTime.of(2026, 3, 13, 12, 5)
@@ -179,7 +179,7 @@ class AdminBannerControllerTest {
                 "배너 설명",
                 "질문",
                 "prompt",
-                List.of(new AdminBannerStyleAnswerChipResponse(1, "칩", 1L, "책상 A", "https://image/1")),
+                List.of(new AdminBannerStyleAnswerChipResponse(1L, 1, "칩", "선택 프롬프트", 1L, "책상 A", "https://image/1")),
                 List.of(new AdminBannerMappedRawProductResponse(1L, "soozip", null, 10L, "책상 A", "https://image/1", "브랜드")),
                 LocalDateTime.of(2026, 3, 13, 12, 0),
                 LocalDateTime.of(2026, 3, 13, 12, 5)

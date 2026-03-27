@@ -1,6 +1,7 @@
 package or.sopt.houme.global.util;
 
 import com.amazonaws.AmazonServiceException;
+import com.amazonaws.SdkClientException;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
@@ -60,8 +61,34 @@ public class S3UtilImpl implements S3Util {
             amazonS3.putObject(new PutObjectRequest(bucket, fileName, file.getInputStream(), metadata));
 
         } catch (AmazonServiceException e) {
+            log.error(
+                    "S3 upload failed (service). bucket={}, key={}, statusCode={}, errorCode={}, requestId={}, message={}",
+                    bucket,
+                    fileName,
+                    e.getStatusCode(),
+                    e.getErrorCode(),
+                    e.getRequestId(),
+                    e.getErrorMessage(),
+                    e
+            );
+            throw new S3Exception(ErrorCode.IMAGE_UPLOAD_AMAZON_EXCEPTION);
+        } catch (SdkClientException e) {
+            log.error(
+                    "S3 upload failed (client). bucket={}, key={}, message={}",
+                    bucket,
+                    fileName,
+                    e.getMessage(),
+                    e
+            );
             throw new S3Exception(ErrorCode.IMAGE_UPLOAD_AMAZON_EXCEPTION);
         } catch (IOException e) {
+            log.error(
+                    "S3 upload failed (io). bucket={}, key={}, message={}",
+                    bucket,
+                    fileName,
+                    e.getMessage(),
+                    e
+            );
             throw new S3Exception(ErrorCode.IMAGE_UPLOAD_IO_EXCEPTION);
         }
 
@@ -92,8 +119,34 @@ public class S3UtilImpl implements S3Util {
             ByteArrayInputStream inputStream = new ByteArrayInputStream(imageBytes);
             amazonS3.putObject(new PutObjectRequest(bucket, fileName, inputStream, metadata));
         } catch (AmazonServiceException e) {
+            log.error(
+                    "S3 uploadByByte failed (service). bucket={}, key={}, statusCode={}, errorCode={}, requestId={}, message={}",
+                    bucket,
+                    fileName,
+                    e.getStatusCode(),
+                    e.getErrorCode(),
+                    e.getRequestId(),
+                    e.getErrorMessage(),
+                    e
+            );
+            throw new S3Exception(ErrorCode.IMAGE_UPLOAD_AMAZON_EXCEPTION);
+        } catch (SdkClientException e) {
+            log.error(
+                    "S3 uploadByByte failed (client). bucket={}, key={}, message={}",
+                    bucket,
+                    fileName,
+                    e.getMessage(),
+                    e
+            );
             throw new S3Exception(ErrorCode.IMAGE_UPLOAD_AMAZON_EXCEPTION);
         } catch (Exception e) {
+            log.error(
+                    "S3 uploadByByte failed (other). bucket={}, key={}, message={}",
+                    bucket,
+                    fileName,
+                    e.getMessage(),
+                    e
+            );
             throw new S3Exception(ErrorCode.IMAGE_UPLOAD_IO_EXCEPTION);
         }
 
@@ -123,6 +176,16 @@ public class S3UtilImpl implements S3Util {
             }
 
         } catch (AmazonServiceException e) {
+            log.error(
+                    "S3 delete failed. bucket={}, key={}, statusCode={}, errorCode={}, requestId={}, message={}",
+                    bucket,
+                    filename,
+                    e.getStatusCode(),
+                    e.getErrorCode(),
+                    e.getRequestId(),
+                    e.getErrorMessage(),
+                    e
+            );
             throw new S3Exception(ErrorCode.IMAGE_DELETE_EXCEPTION);
         }
     }
