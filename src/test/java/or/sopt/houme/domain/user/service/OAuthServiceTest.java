@@ -30,6 +30,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.Optional;
@@ -68,6 +69,8 @@ class OAuthServiceTest {
     private CookieConfig cookieConfig;
     @Mock
     private NicknameService nicknameService;
+    @Mock
+    private UserNicknameTagTransactionService userNicknameTagTransactionService;
 
     @Mock
     private HttpServletResponse response;
@@ -76,15 +79,25 @@ class OAuthServiceTest {
     @DisplayName("signUpWithTokenV2는 닉네임 태그를 분리 저장하고 닉네임만 반환한다")
     void signUpWithTokenV2_success() {
         SignupSession signupSession = SignupSession.of(1L, "test@houme.kr", "카카오닉네임");
+        User savedUser = User.builder()
+                .id(1L)
+                .name("느긋한펭귄")
+                .nickname("느긋한펭귄")
+                .nicknameTag("#4821")
+                .role(Role.ROLE_USER)
+                .build();
 
         when(signupSessionRepository.consume("signup-token")).thenReturn(Optional.of(signupSession));
         when(userRepository.existsByEmail("test@houme.kr")).thenReturn(false);
         when(nicknameService.generateNicknameTag("느긋한펭귄")).thenReturn("#4821");
-        when(userRepository.save(any(User.class))).thenAnswer(invocation -> {
-            User user = invocation.getArgument(0);
-            ReflectionTestUtils.setField(user, "id", 1L);
-            return user;
-        });
+        when(userNicknameTagTransactionService.createSocialUserWithNicknameTag(
+                signupSession,
+                "느긋한펭귄",
+                "느긋한펭귄",
+                "#4821",
+                Gender.MALE,
+                java.time.LocalDate.of(2000, 1, 1)
+        )).thenReturn(savedUser);
         when(jwtConfig.getAccessTokenValidityInSeconds()).thenReturn(3600L);
         when(jwtConfig.getRefreshTokenValidityInSeconds()).thenReturn(86400L);
         when(jwtUtil.createJwt(eq("access"), eq(1L), eq("ROLE_USER"), anyLong())).thenReturn("accessToken");
@@ -101,11 +114,64 @@ class OAuthServiceTest {
         );
 
         assertEquals("느긋한펭귄", result);
-        verify(userRepository).save(argThat(savedUser ->
-                "느긋한펭귄".equals(savedUser.getNickname()) &&
-                "느긋한펭귄".equals(savedUser.getName()) &&
-                "#4821".equals(savedUser.getNicknameTag())
-        ));
+        verify(userNicknameTagTransactionService).createSocialUserWithNicknameTag(
+                signupSession,
+                "느긋한펭귄",
+                "느긋한펭귄",
+                "#4821",
+                Gender.MALE,
+                java.time.LocalDate.of(2000, 1, 1)
+        );
+    }
+
+    @Test
+    @DisplayName("signUpWithTokenV2는 닉네임 태그 유니크 충돌이 나면 재시도한다")
+    void signUpWithTokenV2_retryOnNicknameTagConstraintViolation() {
+        SignupSession signupSession = SignupSession.of(1L, "test@houme.kr", "카카오닉네임");
+        User savedUser = User.builder()
+                .id(1L)
+                .name("느긋한펭귄")
+                .nickname("느긋한펭귄")
+                .nicknameTag("#5678")
+                .role(Role.ROLE_USER)
+                .build();
+
+        when(signupSessionRepository.consume("signup-token")).thenReturn(Optional.of(signupSession));
+        when(userRepository.existsByEmail("test@houme.kr")).thenReturn(false);
+        when(nicknameService.generateNicknameTag("느긋한펭귄")).thenReturn("#1234", "#5678");
+        when(userNicknameTagTransactionService.createSocialUserWithNicknameTag(
+                signupSession,
+                "느긋한펭귄",
+                "느긋한펭귄",
+                "#1234",
+                Gender.MALE,
+                java.time.LocalDate.of(2000, 1, 1)
+        )).thenThrow(new DataIntegrityViolationException("uk_user_nickname_nickname_tag"));
+        when(userNicknameTagTransactionService.createSocialUserWithNicknameTag(
+                signupSession,
+                "느긋한펭귄",
+                "느긋한펭귄",
+                "#5678",
+                Gender.MALE,
+                java.time.LocalDate.of(2000, 1, 1)
+        )).thenReturn(savedUser);
+        when(jwtConfig.getAccessTokenValidityInSeconds()).thenReturn(3600L);
+        when(jwtConfig.getRefreshTokenValidityInSeconds()).thenReturn(86400L);
+        when(jwtUtil.createJwt(eq("access"), eq(1L), eq("ROLE_USER"), anyLong())).thenReturn("accessToken");
+        when(jwtUtil.createJwt(eq("refresh"), eq(1L), eq("ROLE_USER"), anyLong())).thenReturn("refreshToken");
+        when(cookieConfig.getDomain()).thenReturn("domain");
+        when(cookieConfig.getSameSite()).thenReturn("true");
+
+        String result = oAuthService.signUpWithTokenV2(
+                "signup-token",
+                "느긋한펭귄",
+                Gender.MALE,
+                java.time.LocalDate.of(2000, 1, 1),
+                response
+        );
+
+        assertEquals("느긋한펭귄", result);
+        verify(nicknameService, times(2)).generateNicknameTag("느긋한펭귄");
     }
 
 

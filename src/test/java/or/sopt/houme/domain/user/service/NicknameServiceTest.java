@@ -88,6 +88,15 @@ class NicknameServiceTest {
     }
 
     @Test
+    @DisplayName("닉네임이 비어 있으면 유효성 예외가 발생한다")
+    void generateNicknameTag_whenNicknameBlank_throwException() {
+        UserException exception = assertThrows(UserException.class,
+                () -> nicknameService.generateNicknameTag("   "));
+
+        assertEquals(ErrorCode.NOT_VALID_EXCEPTION, exception.getErrorCode());
+    }
+
+    @Test
     @DisplayName("활성화된 닉네임 리소스가 없으면 정해진 예외가 발생한다")
     void rotateNickname_whenWordsMissing_throwException() {
         given(nicknameWordRepository.findAllByTypeAndIsActiveTrue(NicknameWordType.ADJECTIVE))

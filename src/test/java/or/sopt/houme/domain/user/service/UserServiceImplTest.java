@@ -41,6 +41,7 @@ import or.sopt.houme.global.api.handler.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.time.LocalDateTime;
@@ -73,6 +74,7 @@ class UserServiceImplTest {
     private final JjymRepository jjymRepository = mock(JjymRepository.class);
     private final CurationRawProductColorRepository curationRawProductColorRepository = mock(CurationRawProductColorRepository.class);
     private final NicknameService nicknameService = mock(NicknameService.class);
+    private final UserNicknameTagTransactionService userNicknameTagTransactionService = mock(UserNicknameTagTransactionService.class);
 
     private final UserServiceImpl userService = new UserServiceImpl(
             userRepository,
@@ -89,7 +91,8 @@ class UserServiceImplTest {
             recommendFurnitureRepository,
             jjymRepository,
             curationRawProductColorRepository,
-            nicknameService
+            nicknameService,
+            userNicknameTagTransactionService
             );
 
     private User user;
@@ -590,6 +593,16 @@ class UserServiceImplTest {
 
         given(userRepository.findById(1L)).willReturn(Optional.of(dbUser));
         given(nicknameService.generateNicknameTag("새닉네임")).willReturn("#1234");
+        given(userNicknameTagTransactionService.completeUserSignUpV2(
+                1L,
+                "새닉네임",
+                "#1234",
+                Gender.MALE,
+                LocalDate.of(2000, 5, 15)
+        )).willAnswer(invocation -> {
+            dbUser.updateUserFromSignUpV2("새닉네임", "#1234", LocalDate.of(2000, 5, 15), Gender.MALE);
+            return dbUser.getDisplayName();
+        });
 
         // when
         userService.updateUserV2(inputUser, "새닉네임", Gender.MALE, LocalDate.of(2000, 5, 15));
@@ -600,6 +613,36 @@ class UserServiceImplTest {
         assertEquals("#1234", dbUser.getNicknameTag());
         assertEquals(Gender.MALE, dbUser.getGender());
         assertEquals(LocalDate.of(2000, 5, 15), dbUser.getBirthday());
+    }
+
+    @Test
+    @DisplayName("updateUserV2는 닉네임 태그 유니크 충돌이 나면 재시도한다")
+    void updateUserV2_retryOnNicknameTagConstraintViolation() {
+        User inputUser = User.builder().id(1L).build();
+        User dbUser = User.builder().id(1L).build();
+
+        given(userRepository.findById(1L)).willReturn(Optional.of(dbUser));
+        given(nicknameService.generateNicknameTag("새닉네임"))
+                .willReturn("#1234", "#5678");
+        given(userNicknameTagTransactionService.completeUserSignUpV2(
+                1L,
+                "새닉네임",
+                "#1234",
+                Gender.MALE,
+                LocalDate.of(2000, 5, 15)
+        )).willThrow(new DataIntegrityViolationException("uk_user_nickname_nickname_tag"));
+        given(userNicknameTagTransactionService.completeUserSignUpV2(
+                1L,
+                "새닉네임",
+                "#5678",
+                Gender.MALE,
+                LocalDate.of(2000, 5, 15)
+        )).willReturn("새닉네임");
+
+        String result = userService.updateUserV2(inputUser, "새닉네임", Gender.MALE, LocalDate.of(2000, 5, 15));
+
+        assertEquals("새닉네임", result);
+        then(nicknameService).should(times(2)).generateNicknameTag("새닉네임");
     }
 
 }
