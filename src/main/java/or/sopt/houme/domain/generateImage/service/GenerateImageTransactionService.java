@@ -1,9 +1,11 @@
 package or.sopt.houme.domain.generateImage.service;
 
 import lombok.RequiredArgsConstructor;
+import or.sopt.houme.domain.banner.model.entity.Banner;
 import or.sopt.houme.domain.credit.model.entity.Credit;
 import or.sopt.houme.domain.credit.service.CreditService;
 import or.sopt.houme.domain.generateImage.presentation.dto.request.GenerateImageRequest;
+import or.sopt.houme.domain.generateImage.presentation.dto.response.BannerGenerateImageResponse;
 import or.sopt.houme.domain.generateImage.presentation.dto.response.ImageInfoResponse;
 import or.sopt.houme.domain.generateImage.model.entity.GenerateImage;
 import or.sopt.houme.domain.generateImage.model.entity.GenerateImageType;
@@ -115,5 +117,24 @@ public class GenerateImageTransactionService {
                 priorityTag.getTagNameKr(),
                 user.getName()
         );
+    }
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public BannerGenerateImageResponse saveBannerImageAndConfirmCredit(
+            User user,
+            Credit lockedCredit,
+            Banner banner,
+            ImageUploadResponseDTO imageResponse
+    ) {
+        GenerateImage generateImage = generateImageService.createGenerateImage(
+                imageResponse,
+                null,
+                GenerateImageType.LIST,
+                banner
+        );
+
+        creditService.commitCreditDeletion(lockedCredit);
+        userService.updateHasGeneratedImage(user);
+        return BannerGenerateImageResponse.of(generateImage.getId());
     }
 }

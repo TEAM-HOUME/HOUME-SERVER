@@ -3,6 +3,7 @@ package or.sopt.houme.domain.user.service;
 import or.sopt.houme.domain.user.model.entity.NicknameWord;
 import or.sopt.houme.domain.user.model.entity.NicknameWordType;
 import or.sopt.houme.domain.user.repository.NicknameWordRepository;
+import or.sopt.houme.domain.user.repository.UserRepository;
 import or.sopt.houme.global.api.ErrorCode;
 import or.sopt.houme.global.api.handler.UserException;
 import org.junit.jupiter.api.DisplayName;
@@ -29,8 +30,11 @@ class NicknameServiceTest {
     @Mock
     private NicknameWordRepository nicknameWordRepository;
 
+    @Mock
+    private UserRepository userRepository;
+
     @Test
-    @DisplayName("닉네임 rotate 결과는 등록된 단어 조합과 숫자 4자리 형식을 유지한다")
+    @DisplayName("닉네임 rotate 결과는 등록된 단어 조합 형식을 유지한다")
     void rotateNickname_format() {
         List<NicknameWord> adjectives = List.of(
                 NicknameWord.of(NicknameWordType.ADJECTIVE, "느긋한"),
@@ -56,9 +60,40 @@ class NicknameServiceTest {
         for (int i = 0; i < 50; i++) {
             String nickname = nicknameService.rotateNickname();
 
-            assertThat(nickname).matches("^[가-힣]+[가-힣]+\\d{4}$");
-            assertThat(allowedWords).contains(nickname.substring(0, nickname.length() - 4));
+            assertThat(nickname).matches("^[가-힣]+[가-힣]+$");
+            assertThat(allowedWords).contains(nickname);
         }
+    }
+
+    @Test
+    @DisplayName("닉네임 태그 생성 결과는 #과 숫자 4자리 형식을 유지한다")
+    void generateNicknameTag_format() {
+        given(userRepository.existsByNicknameAndNicknameTag(org.mockito.ArgumentMatchers.eq("느긋한펭귄"), org.mockito.ArgumentMatchers.anyString()))
+                .willReturn(false);
+
+        String nicknameTag = nicknameService.generateNicknameTag("느긋한펭귄");
+
+        assertThat(nicknameTag).matches("^#\\d{4}$");
+    }
+
+    @Test
+    @DisplayName("닉네임 태그 생성이 반복 충돌하면 예외가 발생한다")
+    void generateNicknameTag_whenCollisionsRepeat_throwException() {
+        given(userRepository.existsByNicknameAndNicknameTag(org.mockito.ArgumentMatchers.eq("느긋한펭귄"), org.mockito.ArgumentMatchers.anyString()))
+                .willReturn(true);
+
+        UserException exception = assertThrows(UserException.class, () -> nicknameService.generateNicknameTag("느긋한펭귄"));
+
+        assertEquals(ErrorCode.NICKNAME_TAG_GENERATION_FAILED, exception.getErrorCode());
+    }
+
+    @Test
+    @DisplayName("닉네임이 비어 있으면 유효성 예외가 발생한다")
+    void generateNicknameTag_whenNicknameBlank_throwException() {
+        UserException exception = assertThrows(UserException.class,
+                () -> nicknameService.generateNicknameTag("   "));
+
+        assertEquals(ErrorCode.NOT_VALID_EXCEPTION, exception.getErrorCode());
     }
 
     @Test

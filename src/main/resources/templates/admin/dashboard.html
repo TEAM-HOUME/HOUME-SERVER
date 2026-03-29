@@ -182,6 +182,9 @@
             font-weight: 700;
             color: #1f2937;
         }
+        .banner-chip-editor textarea.form-control {
+            min-height: 108px;
+        }
         .banner-search-results {
             display: flex;
             flex-direction: column;
@@ -217,6 +220,24 @@
             color: #0f4c81;
             font-size: 0.87rem;
             font-weight: 600;
+        }
+        .banner-card-chip-list {
+            display: grid;
+            gap: 10px;
+        }
+        .banner-card-chip-summary {
+            display: grid;
+            gap: 8px;
+            padding: 12px;
+            border: 1px solid #dbe5f0;
+            border-radius: 14px;
+            background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+        }
+        .banner-card-chip-prompt {
+            font-size: 0.88rem;
+            line-height: 1.5;
+            color: #475569;
+            white-space: pre-wrap;
         }
         .banner-card-chip button,
         .banner-selected-product-chip button,
@@ -1688,13 +1709,18 @@
                             <label for="floorPlanEditId" class="form-label">수정 대상 도면 ID</label>
                             <input type="text" class="form-control" id="floorPlanEditId" placeholder="목록에서 수정 선택 시 자동 입력" readonly>
                         </div>
+                        <div>
+                            <label for="floorPlanName" class="form-label">도면 이름</label>
+                            <input type="text" class="form-control" id="floorPlanName" placeholder="예: 복층 오피스텔 A타입" required>
+                        </div>
                         <div class="full-span">
                             <label for="floorPlanImageFile" class="form-label">도면 이미지 업로드</label>
                             <div class="banner-image-upload-panel">
                                 <input type="file" class="form-control" id="floorPlanImageFile" accept="image/*">
+                                <input type="text" class="form-control" id="floorPlanImageView" placeholder="이미지 view 예: 거실 / 주방 / 침실">
                                 <div class="banner-image-upload-actions">
                                     <button type="button" id="upload-floor-plan-image-button" class="btn btn-outline-primary">S3 업로드 후 목록 추가</button>
-                                    <span id="floorPlanImageUploadStatus" class="text-muted small">이미지를 하나씩 업로드해 도면 이미지 목록을 구성하세요.</span>
+                                    <span id="floorPlanImageUploadStatus" class="text-muted small">이미지를 하나씩 업로드하고, 필요하면 view도 함께 입력하세요.</span>
                                 </div>
                             </div>
                         </div>
@@ -2769,6 +2795,15 @@
                     <div class="floor-plan-image-card-meta">원본 파일명: ${escapeHtml(image.originalFilename || '-')}</div>
                     <div class="floor-plan-image-card-meta">저장 파일명: ${escapeHtml(image.filename || '-')}</div>
                     <div class="floor-plan-image-card-meta">확장자: ${escapeHtml(image.fileExtension || '-')} · 순서: ${image.sortOrder}</div>
+                    <div class="mt-2">
+                        <label class="form-label form-label-sm mb-1">이미지 view</label>
+                        <input
+                            type="text"
+                            class="form-control form-control-sm"
+                            value="${escapeHtml(image.view || '')}"
+                            placeholder="예: 거실 / 주방 / 침실"
+                            data-floor-plan-view="${index}">
+                    </div>
                 </div>
                 <div class="floor-plan-image-card-actions">
                     <button type="button" class="btn btn-sm btn-outline-secondary" ${index === 0 ? 'disabled' : ''} data-floor-plan-move-up="${index}">위로</button>
@@ -2807,6 +2842,13 @@
                 });
             }
 
+            const viewInput = card.querySelector('[data-floor-plan-view]');
+            if (viewInput) {
+                viewInput.addEventListener('input', function() {
+                    floorPlanAdminState.images[index].view = this.value;
+                });
+            }
+
             container.appendChild(card);
         });
     }
@@ -2814,9 +2856,11 @@
     async function uploadFloorPlanImage() {
         const accessToken = localStorage.getItem('accessToken');
         const fileInput = document.getElementById('floorPlanImageFile');
+        const viewInput = document.getElementById('floorPlanImageView');
         const statusElement = document.getElementById('floorPlanImageUploadStatus');
         const uploadButton = document.getElementById('upload-floor-plan-image-button');
         const imageFile = fileInput.files && fileInput.files[0];
+        const imageView = parseStringValue(viewInput?.value);
 
         if (!accessToken) {
             statusElement.textContent = '액세스 토큰이 없습니다.';
@@ -2879,11 +2923,15 @@
                 filename: extractFilenameFromUrl(publicUrl),
                 originalFilename: imageFile.name,
                 fileExtension: extension,
-                sortOrder: floorPlanAdminState.images.length + 1
+                sortOrder: floorPlanAdminState.images.length + 1,
+                view: imageView || ''
             });
             normalizeFloorPlanImageOrders();
             renderFloorPlanImages();
             fileInput.value = '';
+            if (viewInput) {
+                viewInput.value = '';
+            }
             statusElement.textContent = `${imageFile.name} 업로드가 완료되어 도면 이미지 목록에 추가되었습니다.`;
         } catch (error) {
             statusElement.textContent = error.message || '도면 이미지 업로드 중 오류가 발생했습니다.';
@@ -2914,7 +2962,11 @@
                         <label class="form-label" for="bannerChipLabel-${index}">칩 문구</label>
                         <input type="text" class="form-control" id="bannerChipLabel-${index}" placeholder="예: 모니터 받침대가 결합된 책상">
                     </div>
-                    <div class="col-md-4">
+                    <div class="col-md-6">
+                        <label class="form-label" for="bannerChipSelectedPrompt-${index}">selected prompt</label>
+                        <textarea class="form-control" id="bannerChipSelectedPrompt-${index}" placeholder="선택된 답변 칩이 이미지 생성 프롬프트에 추가할 문구를 입력하세요."></textarea>
+                    </div>
+                    <div class="col-md-10">
                         <label class="form-label" for="bannerChipRawKeyword-${index}">연결 RAW 상품 검색</label>
                         <input type="text" class="form-control" id="bannerChipRawKeyword-${index}" placeholder="상품명, 브랜드, source, productId">
                     </div>
@@ -3225,7 +3277,12 @@
             const mappedRawProducts = Array.isArray(banner.mappedRawProducts) ? banner.mappedRawProducts : [];
             const styleAnswerChips = Array.isArray(banner.styleAnswerChips) ? banner.styleAnswerChips : [];
             const chipHtml = styleAnswerChips.length > 0
-                ? styleAnswerChips.map(chip => `<span class="banner-card-chip">${escapeHtml(chip.label)} · #${chip.curationRawProductId}</span>`).join('')
+                ? styleAnswerChips.map(chip => `
+                    <div class="banner-card-chip-summary">
+                        <span class="banner-card-chip">${escapeHtml(chip.label)} · #${chip.curationRawProductId}</span>
+                        <span class="banner-card-chip-prompt">${escapeHtml(chip.selectedPrompt || '-')}</span>
+                    </div>
+                `).join('')
                 : '<span class="text-muted small">등록된 스타일 답변이 없습니다.</span>';
             const mappedHtml = mappedRawProducts.length > 0
                 ? mappedRawProducts.map(product => `<span class="banner-card-chip">${escapeHtml(product.productName)} · #${product.id}</span>`).join('')
@@ -3258,7 +3315,7 @@
                         </div>
                         <div class="banner-card-block">
                             <span class="banner-card-label">스타일 답변 칩</span>
-                            <div class="d-flex flex-wrap gap-2">${chipHtml}</div>
+                            <div class="banner-card-chip-list">${chipHtml}</div>
                         </div>
                         <div class="banner-card-block">
                             <span class="banner-card-label">배너에 매핑된 가구</span>
@@ -3332,6 +3389,7 @@
         styleAnswerChips.slice(0, BANNER_CHIP_MAX_COUNT).forEach((chip, index) => {
             document.getElementById(`bannerChipOrder-${index}`).value = chip.order ?? index + 1;
             document.getElementById(`bannerChipLabel-${index}`).value = chip.label ?? '';
+            document.getElementById(`bannerChipSelectedPrompt-${index}`).value = chip.selectedPrompt ?? '';
         });
 
         bannerAdminState.selectedMappedRawProducts = (Array.isArray(banner.mappedRawProducts) ? banner.mappedRawProducts : []).map(product => ({
@@ -3387,14 +3445,15 @@
         for (let index = 0; index < BANNER_CHIP_MAX_COUNT; index += 1) {
             const order = parseNumberValue(document.getElementById(`bannerChipOrder-${index}`).value);
             const label = parseStringValue(document.getElementById(`bannerChipLabel-${index}`).value);
+            const selectedPrompt = parseStringValue(document.getElementById(`bannerChipSelectedPrompt-${index}`).value);
             const rawProduct = bannerAdminState.chipSelections[index].rawProduct;
 
-            if (!label && !rawProduct) {
+            if (!label && !selectedPrompt && !rawProduct) {
                 continue;
             }
 
-            if (!label || !rawProduct || order == null || !Number.isInteger(order)) {
-                throw new Error(`스타일 답변 칩 ${index + 1}의 문구, 순서, RAW 상품을 모두 입력해주세요.`);
+            if (!label || !selectedPrompt || !rawProduct || order == null || !Number.isInteger(order)) {
+                throw new Error(`스타일 답변 칩 ${index + 1}의 문구, selected prompt, 순서, RAW 상품을 모두 입력해주세요.`);
             }
             if (order < 1 || order > BANNER_CHIP_MAX_COUNT) {
                 throw new Error(`스타일 답변 칩 ${index + 1}의 순서는 1부터 ${BANNER_CHIP_MAX_COUNT} 사이여야 합니다.`);
@@ -3403,6 +3462,7 @@
             styleAnswerChips.push({
                 order,
                 label,
+                selectedPrompt,
                 curationRawProductId: rawProduct.id
             });
         }
@@ -3840,14 +3900,19 @@
             const card = document.createElement('div');
             card.className = 'banner-card';
             const imageCount = Array.isArray(floorPlan.images) ? floorPlan.images.length : 0;
+            const representativeView = imageCount > 0 ? floorPlan.images[0]?.view : null;
             card.innerHTML = `
                 <img class="banner-card-image" src="${escapeHtml(floorPlan.representativeImageUrl || '')}" alt="도면 #${floorPlan.id}">
                 <div class="banner-card-body">
                     <div class="banner-card-title-row">
-                        <span class="banner-card-title">도면 #${floorPlan.id}</span>
+                        <span class="banner-card-title">${escapeHtml(floorPlan.name || `도면 #${floorPlan.id}`)}</span>
                         <span class="text-muted small">이미지 ${imageCount}장</span>
                     </div>
                     <div class="floor-plan-summary-grid">
+                        <div class="floor-plan-summary-item">
+                            <span class="floor-plan-summary-item-label">도면 이름</span>
+                            <span>${escapeHtml(floorPlan.name || '-')}</span>
+                        </div>
                         <div class="floor-plan-summary-item">
                             <span class="floor-plan-summary-item-label">주거형태</span>
                             <span>${escapeHtml(FLOOR_PLAN_FORM_LABELS[floorPlan.form] || floorPlan.form || '-')}</span>
@@ -3859,6 +3924,10 @@
                         <div class="floor-plan-summary-item">
                             <span class="floor-plan-summary-item-label">평형</span>
                             <span>${escapeHtml(FLOOR_PLAN_EQUILIBRIUM_LABELS[floorPlan.equilibrium] || floorPlan.equilibrium || '-')}</span>
+                        </div>
+                        <div class="floor-plan-summary-item">
+                            <span class="floor-plan-summary-item-label">대표 이미지 view</span>
+                            <span>${escapeHtml(representativeView || '-')}</span>
                         </div>
                         <div class="floor-plan-summary-item" style="grid-column: 1 / -1;">
                             <span class="floor-plan-summary-item-label">도면 프롬프트</span>
@@ -3893,17 +3962,20 @@
                 filename: image.filename,
                 originalFilename: image.originalFilename,
                 fileExtension: image.fileExtension,
-                sortOrder: image.sortOrder
+                sortOrder: image.sortOrder,
+                view: image.view || ''
             })).sort((a, b) => a.sortOrder - b.sortOrder)
             : [];
         normalizeFloorPlanImageOrders();
 
         document.getElementById('floorPlanEditId').value = floorPlan.id;
+        document.getElementById('floorPlanName').value = floorPlan.name || floorPlan.floorPlanName || '';
         document.getElementById('floorPlanForm').value = floorPlan.form || '';
         document.getElementById('floorPlanStructure').value = floorPlan.structure || '';
         document.getElementById('floorPlanEquilibrium').value = floorPlan.equilibrium || '';
         document.getElementById('floorPlanPrompt').value = floorPlan.floorPlanPrompt || '';
         document.getElementById('floorPlanImageFile').value = '';
+        document.getElementById('floorPlanImageView').value = '';
         document.getElementById('floorPlanImageUploadStatus').textContent = '기존 도면 이미지가 로드되었습니다. 새 이미지를 업로드하면 목록에 추가됩니다.';
         document.getElementById('floor-plan-form-result').innerHTML = '<div class="alert alert-info">도면 수정 모드로 전환했습니다.</div>';
         renderFloorPlanImages();
@@ -3913,7 +3985,8 @@
         floorPlanAdminState = createInitialFloorPlanAdminState();
         document.getElementById('floor-plan-form').reset();
         document.getElementById('floorPlanEditId').value = '';
-        document.getElementById('floorPlanImageUploadStatus').textContent = '이미지를 하나씩 업로드해 도면 이미지 목록을 구성하세요.';
+        document.getElementById('floorPlanImageView').value = '';
+        document.getElementById('floorPlanImageUploadStatus').textContent = '이미지를 하나씩 업로드하고, 필요하면 view도 함께 입력하세요.';
         document.getElementById('floor-plan-form-result').innerHTML = '';
         renderFloorPlanImages();
     }
@@ -3926,13 +3999,15 @@
         const form = parseStringValue(document.getElementById('floorPlanForm').value);
         const structure = parseStringValue(document.getElementById('floorPlanStructure').value);
         const equilibrium = parseStringValue(document.getElementById('floorPlanEquilibrium').value);
+        const name = parseStringValue(document.getElementById('floorPlanName').value);
         const floorPlanPrompt = parseStringValue(document.getElementById('floorPlanPrompt').value);
 
-        if (!form || !structure || !equilibrium || !floorPlanPrompt) {
-            throw new Error('주거형태, 구조, 평형, 도면 프롬프트를 모두 입력해주세요.');
+        if (!name || !form || !structure || !equilibrium || !floorPlanPrompt) {
+            throw new Error('도면 이름, 주거형태, 구조, 평형, 도면 프롬프트를 모두 입력해주세요.');
         }
 
         return {
+            name,
             form,
             structure,
             equilibrium,
@@ -3942,7 +4017,8 @@
                 filename: image.filename,
                 originalFilename: image.originalFilename,
                 fileExtension: image.fileExtension,
-                sortOrder: index + 1
+                sortOrder: index + 1,
+                view: parseStringValue(image.view)
             }))
         };
     }

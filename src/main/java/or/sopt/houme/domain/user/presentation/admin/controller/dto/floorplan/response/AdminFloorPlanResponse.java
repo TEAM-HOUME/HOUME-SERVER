@@ -8,7 +8,7 @@ import java.util.List;
 
 public record AdminFloorPlanResponse(
         Long id,
-        String floorPlanName,
+        String name,
         Form form,
         Structure structure,
         Equilibrium equilibrium,
