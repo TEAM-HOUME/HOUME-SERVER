@@ -68,6 +68,7 @@ class AdminBannerControllerTest {
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.code").value(200))
+                .andExpect(jsonPath("$.data.bannerImageUrl").value("https://image"))
                 .andExpect(jsonPath("$.data.bannerTitle").value("배너 제목"))
                 .andExpect(jsonPath("$.data.styleDescription").value("배너 설명"))
                 .andExpect(jsonPath("$.data.styleAnswerChips[0].label").value("칩"));
@@ -81,6 +82,7 @@ class AdminBannerControllerTest {
         mockMvc.perform(get("/api/v1/admin/banners"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.banners[0].id").value(1L))
+                .andExpect(jsonPath("$.data.banners[0].bannerImageUrl").value("https://image"))
                 .andExpect(jsonPath("$.data.banners[0].mappedRawProducts[0].productName").value("책상 A"));
     }
 
@@ -114,6 +116,7 @@ class AdminBannerControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.bannerImageUrl").value("https://image"))
                 .andExpect(jsonPath("$.data.bannerTitle").value("수정 제목"))
                 .andExpect(jsonPath("$.data.styleDescription").value("수정 설명"));
     }
