@@ -20,7 +20,10 @@ import or.sopt.houme.domain.house.repository.floorPlan.FloorPlanRepository;
 import or.sopt.houme.domain.house.model.entity.enums.Form;
 import or.sopt.houme.domain.house.model.entity.enums.Structure;
 import or.sopt.houme.domain.user.model.entity.User;
+import or.sopt.houme.domain.user.util.floorplan.FloorPlanEquilibriumJsonCodec;
+import or.sopt.houme.domain.user.util.floorplan.FloorPlanFormJsonCodec;
 import or.sopt.houme.domain.user.util.floorplan.FloorPlanImageJsonCodec;
+import or.sopt.houme.domain.user.util.floorplan.FloorPlanStructureJsonCodec;
 import or.sopt.houme.global.api.ErrorCode;
 import or.sopt.houme.global.api.handler.HouseException;
 import or.sopt.houme.global.api.handler.ValidException;
@@ -43,6 +46,9 @@ public class FloorPlanServiceImpl implements FloorPlanService {
     private final FloorPlanRepository floorPlanRepository;
     private final GenerateImageRepository generateImageRepository;
     private final FloorPlanImageJsonCodec floorPlanImageJsonCodec;
+    private final FloorPlanFormJsonCodec floorPlanFormJsonCodec;
+    private final FloorPlanStructureJsonCodec floorPlanStructureJsonCodec;
+    private final FloorPlanEquilibriumJsonCodec floorPlanEquilibriumJsonCodec;
 
     // 집 구조 도면 제공 서비스 (조건에 받아서)
     @Cacheable(
@@ -52,8 +58,9 @@ public class FloorPlanServiceImpl implements FloorPlanService {
     @Override
     public FloorPlanListResponse getHousingPlan(Form form, Structure structure) {
 
-        List<FloorPlan> allByStructureAndType =
-                floorPlanRepository.findAllByStructure(structure);
+        List<FloorPlan> allByStructureAndType = floorPlanRepository.findAll().stream()
+                .filter(floorPlan -> containsForm(floorPlan, form) && containsStructure(floorPlan, structure))
+                .toList();
 
         List<FloorPlanResponse> list = allByStructureAndType.stream()
                 .map(FloorPlanResponse::of)
@@ -206,13 +213,13 @@ public class FloorPlanServiceImpl implements FloorPlanService {
             Structure layoutType,
             Equilibrium equilibrium
     ) {
-        if (residenceType != null && floorPlan.getForm() != residenceType) {
+        if (residenceType != null && !containsForm(floorPlan, residenceType)) {
             return false;
         }
-        if (layoutType != null && floorPlan.getStructure() != layoutType) {
+        if (layoutType != null && !containsStructure(floorPlan, layoutType)) {
             return false;
         }
-        if (equilibrium != null && floorPlan.getEquilibrium() != equilibrium) {
+        if (equilibrium != null && !containsEquilibrium(floorPlan, equilibrium)) {
             return false;
         }
         return true;
@@ -229,8 +236,8 @@ public class FloorPlanServiceImpl implements FloorPlanService {
 
         List<FloorPlan> similar = allFloorPlans.stream()
                 .filter(floorPlan ->
-                        (residenceType != null && floorPlan.getForm() == residenceType)
-                                || (layoutType != null && floorPlan.getStructure() == layoutType))
+                        (residenceType != null && containsForm(floorPlan, residenceType))
+                                || (layoutType != null && containsStructure(floorPlan, layoutType)))
                 .toList();
 
         if (!similar.isEmpty()) {
@@ -257,9 +264,46 @@ public class FloorPlanServiceImpl implements FloorPlanService {
                         .sorted((left, right) -> Long.compare(safeHouseFloorPlanId(left), safeHouseFloorPlanId(right)))
                         .map(HouseFloorPlan::getFloorPlan)
                         .filter(java.util.Objects::nonNull)
-                        .map(FloorPlan::getId)
-                        .findFirst())
+                .map(FloorPlan::getId)
+                .findFirst())
                 .orElse(null);
+    }
+
+    private boolean containsForm(FloorPlan floorPlan, Form form) {
+        return form == null || resolveForms(floorPlan).contains(form);
+    }
+
+    private boolean containsStructure(FloorPlan floorPlan, Structure structure) {
+        return structure == null || resolveStructures(floorPlan).contains(structure);
+    }
+
+    private boolean containsEquilibrium(FloorPlan floorPlan, Equilibrium equilibrium) {
+        return equilibrium == null || resolveEquilibriums(floorPlan).contains(equilibrium);
+    }
+
+    // 기존 단일 컬럼 데이터도 계속 조회되도록 JSON 값이 없으면 대표 enum 컬럼으로 fallback 한다.
+    private List<Form> resolveForms(FloorPlan floorPlan) {
+        List<Form> forms = floorPlanFormJsonCodec.read(floorPlan.getFormsJson());
+        if (!forms.isEmpty()) {
+            return forms;
+        }
+        return floorPlan.getForm() == null ? List.of() : List.of(floorPlan.getForm());
+    }
+
+    private List<Structure> resolveStructures(FloorPlan floorPlan) {
+        List<Structure> structures = floorPlanStructureJsonCodec.read(floorPlan.getStructuresJson());
+        if (!structures.isEmpty()) {
+            return structures;
+        }
+        return floorPlan.getStructure() == null ? List.of() : List.of(floorPlan.getStructure());
+    }
+
+    private List<Equilibrium> resolveEquilibriums(FloorPlan floorPlan) {
+        List<Equilibrium> equilibriums = floorPlanEquilibriumJsonCodec.read(floorPlan.getEquilibriumsJson());
+        if (!equilibriums.isEmpty()) {
+            return equilibriums;
+        }
+        return floorPlan.getEquilibrium() == null ? List.of() : List.of(floorPlan.getEquilibrium());
     }
 
     private List<FloorPlan> deduplicateById(List<FloorPlan> floorPlans) {
