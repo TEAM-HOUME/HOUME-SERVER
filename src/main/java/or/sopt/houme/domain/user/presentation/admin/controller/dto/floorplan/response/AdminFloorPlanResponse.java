@@ -9,9 +9,9 @@ import java.util.List;
 public record AdminFloorPlanResponse(
         Long id,
         String name,
-        Form form,
-        Structure structure,
-        Equilibrium equilibrium,
+        List<Form> forms,
+        List<Structure> structures,
+        List<Equilibrium> equilibriums,
         String floorPlanPrompt,
         String representativeImageUrl,
         List<AdminFloorPlanImageResponse> images

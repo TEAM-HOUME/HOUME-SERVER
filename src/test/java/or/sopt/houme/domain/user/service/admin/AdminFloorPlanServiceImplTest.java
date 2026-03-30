@@ -19,8 +19,11 @@ import or.sopt.houme.domain.user.presentation.admin.controller.dto.floorplan.req
 import or.sopt.houme.domain.user.presentation.admin.controller.dto.floorplan.request.AdminFloorPlanUpdateRequest;
 import or.sopt.houme.domain.user.presentation.admin.controller.dto.floorplan.response.AdminFloorPlanImageUploadResponse;
 import or.sopt.houme.domain.user.presentation.admin.controller.dto.floorplan.response.AdminFloorPlanResponse;
+import or.sopt.houme.domain.user.util.floorplan.FloorPlanEquilibriumJsonCodec;
+import or.sopt.houme.domain.user.util.floorplan.FloorPlanFormJsonCodec;
 import or.sopt.houme.domain.user.util.floorplan.FloorPlanImageJsonCodec;
 import or.sopt.houme.domain.user.util.floorplan.FloorPlanImagePresignedUrlGenerator;
+import or.sopt.houme.domain.user.util.floorplan.FloorPlanStructureJsonCodec;
 
 import java.util.List;
 import java.util.Optional;
@@ -48,14 +51,23 @@ class AdminFloorPlanServiceImplTest {
     @Mock
     private FloorPlanImageJsonCodec floorPlanImageJsonCodec;
 
+    @Mock
+    private FloorPlanFormJsonCodec floorPlanFormJsonCodec;
+
+    @Mock
+    private FloorPlanStructureJsonCodec floorPlanStructureJsonCodec;
+
+    @Mock
+    private FloorPlanEquilibriumJsonCodec floorPlanEquilibriumJsonCodec;
+
     @Test
     @DisplayName("create()는 다중 이미지 기반 도면을 생성한다")
     void create_success() {
         AdminFloorPlanCreateRequest request = new AdminFloorPlanCreateRequest(
                 "테스트 도면",
-                Form.OFFICETEL,
-                Structure.OPEN_ONE_ROOM,
-                Equilibrium.UNDER_5,
+                List.of(Form.OFFICETEL, Form.APARTMENT),
+                List.of(Structure.OPEN_ONE_ROOM, Structure.TWO_ROOM),
+                List.of(Equilibrium.UNDER_5, Equilibrium.BETWEEN_6_10),
                 "도면 프롬프트",
                 List.of(
                         new AdminFloorPlanImageRequest("https://image/1", "fp-1.png", "room-1.png", "png", 1, "창가 뷰"),
@@ -68,26 +80,35 @@ class AdminFloorPlanServiceImplTest {
         );
         FloorPlan floorPlan = FloorPlan.create(
                 "테스트 도면",
-                Form.OFFICETEL,
-                Structure.OPEN_ONE_ROOM,
-                Equilibrium.UNDER_5,
+                List.of(Form.OFFICETEL, Form.APARTMENT),
+                List.of(Structure.OPEN_ONE_ROOM, Structure.TWO_ROOM),
+                List.of(Equilibrium.UNDER_5, Equilibrium.BETWEEN_6_10),
                 "도면 프롬프트",
                 or.sopt.houme.domain.house.model.floorPlan.vo.FloorPlanImages.from(images),
-                "[{\"url\":\"https://image/1\"}]"
+                "[{\"url\":\"https://image/1\"}]",
+                "[\"OFFICETEL\",\"APARTMENT\"]",
+                "[\"OPEN_ONE_ROOM\",\"TWO_ROOM\"]",
+                "[\"UNDER_5\",\"BETWEEN_6_10\"]"
         );
         ReflectionTestUtils.setField(floorPlan, "id", 1L);
 
         when(floorPlanImageJsonCodec.write(anyList())).thenReturn("[{\"url\":\"https://image/1\"}]");
+        when(floorPlanFormJsonCodec.write(anyList())).thenReturn("[\"OFFICETEL\",\"APARTMENT\"]");
+        when(floorPlanStructureJsonCodec.write(anyList())).thenReturn("[\"OPEN_ONE_ROOM\",\"TWO_ROOM\"]");
+        when(floorPlanEquilibriumJsonCodec.write(anyList())).thenReturn("[\"UNDER_5\",\"BETWEEN_6_10\"]");
         when(floorPlanRepository.saveAndFlush(any(FloorPlan.class))).thenReturn(floorPlan);
         when(floorPlanImageJsonCodec.read(anyString())).thenReturn(images);
+        when(floorPlanFormJsonCodec.read(anyString())).thenReturn(List.of(Form.OFFICETEL, Form.APARTMENT));
+        when(floorPlanStructureJsonCodec.read(anyString())).thenReturn(List.of(Structure.OPEN_ONE_ROOM, Structure.TWO_ROOM));
+        when(floorPlanEquilibriumJsonCodec.read(anyString())).thenReturn(List.of(Equilibrium.UNDER_5, Equilibrium.BETWEEN_6_10));
 
         AdminFloorPlanResponse response = adminFloorPlanService.create(request);
 
         assertThat(response.id()).isEqualTo(1L);
         assertThat(response.name()).isEqualTo("테스트 도면");
-        assertThat(response.form()).isEqualTo(Form.OFFICETEL);
-        assertThat(response.structure()).isEqualTo(Structure.OPEN_ONE_ROOM);
-        assertThat(response.equilibrium()).isEqualTo(Equilibrium.UNDER_5);
+        assertThat(response.forms()).containsExactly(Form.OFFICETEL, Form.APARTMENT);
+        assertThat(response.structures()).containsExactly(Structure.OPEN_ONE_ROOM, Structure.TWO_ROOM);
+        assertThat(response.equilibriums()).containsExactly(Equilibrium.UNDER_5, Equilibrium.BETWEEN_6_10);
         assertThat(response.images().getFirst().view()).isEqualTo("창가 뷰");
         assertThat(response.images()).hasSize(2);
         assertThat(response.representativeImageUrl()).isEqualTo("https://image/1");
@@ -99,22 +120,25 @@ class AdminFloorPlanServiceImplTest {
     void update_success() {
         FloorPlan floorPlan = FloorPlan.create(
                 "기존 도면",
-                Form.VILLA,
-                Structure.SEPARATED_ONE_ROOM,
-                Equilibrium.BETWEEN_6_10,
+                List.of(Form.VILLA),
+                List.of(Structure.SEPARATED_ONE_ROOM),
+                List.of(Equilibrium.BETWEEN_6_10),
                 "기존 프롬프트",
                 or.sopt.houme.domain.house.model.floorPlan.vo.FloorPlanImages.from(List.of(
                         new FloorPlanImageItem("https://old-image", "old.png", "old-original.png", "png", 1, "기존 뷰")
                 )),
-                "[{\"url\":\"https://old-image\"}]"
+                "[{\"url\":\"https://old-image\"}]",
+                "[\"VILLA\"]",
+                "[\"SEPARATED_ONE_ROOM\"]",
+                "[\"BETWEEN_6_10\"]"
         );
         ReflectionTestUtils.setField(floorPlan, "id", 2L);
 
         AdminFloorPlanUpdateRequest request = new AdminFloorPlanUpdateRequest(
                 "수정 도면",
-                Form.APARTMENT,
-                Structure.TWO_ROOM,
-                Equilibrium.BETWEEN_11_15,
+                List.of(Form.APARTMENT, Form.OFFICETEL),
+                List.of(Structure.TWO_ROOM),
+                List.of(Equilibrium.BETWEEN_11_15, Equilibrium.OVER_16),
                 "수정 프롬프트",
                 List.of(
                         new AdminFloorPlanImageRequest("https://new-image/1", "new-1.png", "new-room-1.png", "png", 1, "한강 뷰"),
@@ -128,15 +152,21 @@ class AdminFloorPlanServiceImplTest {
 
         when(floorPlanRepository.findById(2L)).thenReturn(Optional.of(floorPlan));
         when(floorPlanImageJsonCodec.write(anyList())).thenReturn("[{\"url\":\"https://new-image/1\"}]");
+        when(floorPlanFormJsonCodec.write(anyList())).thenReturn("[\"APARTMENT\",\"OFFICETEL\"]");
+        when(floorPlanStructureJsonCodec.write(anyList())).thenReturn("[\"TWO_ROOM\"]");
+        when(floorPlanEquilibriumJsonCodec.write(anyList())).thenReturn("[\"BETWEEN_11_15\",\"OVER_16\"]");
         when(floorPlanRepository.saveAndFlush(floorPlan)).thenReturn(floorPlan);
         when(floorPlanImageJsonCodec.read(anyString())).thenReturn(updatedImages);
+        when(floorPlanFormJsonCodec.read(anyString())).thenReturn(List.of(Form.APARTMENT, Form.OFFICETEL));
+        when(floorPlanStructureJsonCodec.read(anyString())).thenReturn(List.of(Structure.TWO_ROOM));
+        when(floorPlanEquilibriumJsonCodec.read(anyString())).thenReturn(List.of(Equilibrium.BETWEEN_11_15, Equilibrium.OVER_16));
 
         AdminFloorPlanResponse response = adminFloorPlanService.update(2L, request);
 
         assertThat(response.name()).isEqualTo("수정 도면");
-        assertThat(response.form()).isEqualTo(Form.APARTMENT);
-        assertThat(response.structure()).isEqualTo(Structure.TWO_ROOM);
-        assertThat(response.equilibrium()).isEqualTo(Equilibrium.BETWEEN_11_15);
+        assertThat(response.forms()).containsExactly(Form.APARTMENT, Form.OFFICETEL);
+        assertThat(response.structures()).containsExactly(Structure.TWO_ROOM);
+        assertThat(response.equilibriums()).containsExactly(Equilibrium.BETWEEN_11_15, Equilibrium.OVER_16);
         assertThat(response.images().getFirst().view()).isEqualTo("한강 뷰");
         assertThat(response.representativeImageUrl()).isEqualTo("https://new-image/1");
         assertThat(response.images()).hasSize(2);
@@ -144,6 +174,8 @@ class AdminFloorPlanServiceImplTest {
         assertThat(floorPlan.getFilename()).isEqualTo("new-1.png");
         assertThat(floorPlan.getOriginalFilename()).isEqualTo("new-room-1.png");
         assertThat(floorPlan.getFileExtension()).isEqualTo("png");
+        assertThat(floorPlan.getForm()).isEqualTo(Form.APARTMENT);
+        assertThat(floorPlan.getEquilibrium()).isEqualTo(Equilibrium.BETWEEN_11_15);
     }
 
     @Test
