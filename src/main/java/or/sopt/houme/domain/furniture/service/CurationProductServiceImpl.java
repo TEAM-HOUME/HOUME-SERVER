@@ -48,7 +48,7 @@ public class CurationProductServiceImpl implements CurationProductService {
                 new FurnitureTypeFilterResponse(-1L, "의자/스툴", "CHAIR"),
                 new FurnitureTypeFilterResponse(-1L, "화장대/협탁", "DRESSER"),
                 new FurnitureTypeFilterResponse(-1L, "조명", "LIGHTING"),
-                findType(types, "SELECTIVE", "그 외")
+                findType(types, "ETC", "기타")
         );
     }
 
@@ -86,7 +86,7 @@ public class CurationProductServiceImpl implements CurationProductService {
         java.util.Map<String, String> standardFilters = ColorHexMapper.getStandardColorFilters();
         java.util.List<ColorFilterResponse> responses = new java.util.ArrayList<>();
 
-        long id = 10L;
+        long id = 1L;
         for (java.util.Map.Entry<String, String> entry : standardFilters.entrySet()) {
             responses.add(new ColorFilterResponse(id++, entry.getKey(), entry.getValue()));
         }
