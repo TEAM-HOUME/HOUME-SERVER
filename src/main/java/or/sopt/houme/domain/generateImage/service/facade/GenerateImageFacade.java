@@ -19,9 +19,11 @@ import or.sopt.houme.domain.generateImage.presentation.dto.SelectedTagInfo;
 import or.sopt.houme.domain.generateImage.model.entity.GenerateImageType;
 import or.sopt.houme.domain.generateImage.presentation.dto.request.BannerGenerateImageRequest;
 import or.sopt.houme.domain.generateImage.presentation.dto.request.GenerateImageRequest;
+import or.sopt.houme.domain.generateImage.presentation.dto.request.OtherStyleGenerateImageRequest;
 import or.sopt.houme.domain.generateImage.presentation.dto.response.BannerGenerateImageResponse;
 import or.sopt.houme.domain.generateImage.presentation.dto.response.ImageInfoListResponse;
 import or.sopt.houme.domain.generateImage.presentation.dto.response.ImageInfoResponse;
+import or.sopt.houme.domain.generateImage.presentation.dto.response.OtherStyleGenerateImageResponse;
 import or.sopt.houme.domain.generateImage.model.entity.GenerateImage;
 import or.sopt.houme.domain.generateImage.model.entity.SelectionStrategy;
 import or.sopt.houme.domain.generateImage.service.AsyncGenerateImageService;
@@ -412,6 +414,70 @@ public class GenerateImageFacade {
         }
     }
 
+    public OtherStyleGenerateImageResponse generateOtherStyleImageByGemini(User user, OtherStyleGenerateImageRequest request) {
+        Credit lockedCredit = null;
+
+        try {
+            log.info("스타일 템플릿 기반 인테리어 이미지 생성 시작 userId={}, bannerId={}, floorPlanId={}, view={}, isMirror={}",
+                    user.getId(), request.bannerId(), request.floorPlanId(), request.floorPlanView(), request.isMirror());
+            lockedCredit = creditService.tryLockAndGetCredit(user);
+
+            Banner style = bannerRepository.findByIdWithRawProducts(request.bannerId(), BannerType.STYLE, false)
+                    .orElseThrow(() -> new BannerException(ErrorCode.NOT_FOUND_STYLE));
+            FloorPlan floorPlan = floorPlanRepository.findById(request.floorPlanId())
+                    .orElseThrow(() -> new HouseException(ErrorCode.NOT_FOUND_FLOOR_PLAN));
+
+            String floorPlanImageUrl = resolveFloorPlanImageUrl(floorPlan, request.floorPlanView());
+            List<String> referenceImageUrls = buildStyleReferenceImageUrls(style, floorPlanImageUrl);
+            String prompt = buildStylePrompt(style, floorPlan);
+            log.info(
+                    "스타일 템플릿 이미지 생성 프롬프트/참고이미지 bannerId={}, prompt={}, referenceImageUrls={}",
+                    style.getId(),
+                    prompt,
+                    referenceImageUrls
+            );
+            log.info("AI 호출 준비 완료 bannerId={}, referenceImageCount={}", style.getId(), referenceImageUrls.size());
+
+            ImageUploadResponseDTO imageUploadResponseDTO =
+                    geminiImageService.createImageWithReferences(prompt, referenceImageUrls);
+            log.info("AI 호출 완료 bannerId={}, generatedUrl={}", style.getId(), imageUploadResponseDTO.getImageLink());
+
+            if (imageUploadResponseDTO.getImageLink().equals(S3Constant.FALL_BACK_IMAGE)) {
+                log.error("스타일 템플릿 기반 인테리어 이미지 생성 중 폴백 이미지가 생성되었습니다. bannerId={}", style.getId());
+                throw new ImageFallbackException(ErrorCode.GENERATED_IMAGE_EXCEPTION, null);
+            }
+
+            BannerGenerateImageResponse response = generateImageTransactionService.saveBannerImageAndConfirmCredit(
+                    user,
+                    lockedCredit,
+                    style,
+                    imageUploadResponseDTO
+            );
+            log.info("스타일 템플릿 기반 인테리어 이미지 생성 저장 완료 imageId={}", response.imageId());
+            return OtherStyleGenerateImageResponse.of(response.imageId());
+        } catch (ValidException validException) {
+            if (lockedCredit != null && lockedCredit.getStatus() == CreditStatus.PENDING) {
+                creditService.rollbackCreditPending(lockedCredit);
+            }
+            throw validException;
+        } catch (GeneralException e) {
+            if (lockedCredit != null && lockedCredit.getStatus() == CreditStatus.PENDING) {
+                creditService.rollbackCreditPending(lockedCredit);
+            }
+            throw e;
+        } catch (Exception e) {
+            log.error("스타일 템플릿 기반 인테리어 이미지 생성 중 오류 발생: {}", e.getMessage(), e);
+            if (lockedCredit != null && lockedCredit.getStatus() == CreditStatus.PENDING) {
+                creditService.rollbackCreditPending(lockedCredit);
+            }
+            throw new GenerateImageException(ErrorCode.GENERATED_IMAGE_EXCEPTION);
+        } finally {
+            if (lockedCredit != null) {
+                creditService.releaseLock(user);
+            }
+        }
+    }
+
     private ImageInfoListResponse generateImageBy2eaInternal(User user, GenerateImageRequest generateImageRequest, boolean useGemini) {
 
         // finally 블록에서 사용하기 위해 선언
@@ -676,6 +742,25 @@ public class GenerateImageFacade {
         return List.copyOf(urls);
     }
 
+    private List<String> buildStyleReferenceImageUrls(Banner style, String floorPlanImageUrl) {
+        LinkedHashSet<String> urls = new LinkedHashSet<>();
+        if (floorPlanImageUrl != null && !floorPlanImageUrl.isBlank()) {
+            urls.add(floorPlanImageUrl);
+        }
+        if (style.getBannerImageUrl() != null && !style.getBannerImageUrl().isBlank()) {
+            urls.add(style.getBannerImageUrl());
+        }
+
+        style.getBannerRawProducts().stream()
+                .map(mapping -> mapping != null ? mapping.getCurationRawProduct() : null)
+                .filter(Objects::nonNull)
+                .map(CurationRawProduct::getProductImageUrl)
+                .filter(url -> url != null && !url.isBlank())
+                .forEach(urls::add);
+
+        return List.copyOf(urls);
+    }
+
     private String buildBannerPrompt(
             Banner banner,
             BannerStyleAnswerChip selectedChip,
@@ -687,6 +772,17 @@ public class GenerateImageFacade {
         }
         if (selectedChip.selectedPrompt() != null && !selectedChip.selectedPrompt().isBlank()) {
             parts.add(selectedChip.selectedPrompt());
+        }
+        if (floorPlan.getFloorPlanPrompt() != null && !floorPlan.getFloorPlanPrompt().isBlank()) {
+            parts.add(floorPlan.getFloorPlanPrompt());
+        }
+        return String.join("\n\n", parts);
+    }
+
+    private String buildStylePrompt(Banner style, FloorPlan floorPlan) {
+        List<String> parts = new ArrayList<>();
+        if (style.getStylePrompt() != null && !style.getStylePrompt().isBlank()) {
+            parts.add(style.getStylePrompt());
         }
         if (floorPlan.getFloorPlanPrompt() != null && !floorPlan.getFloorPlanPrompt().isBlank()) {
             parts.add(floorPlan.getFloorPlanPrompt());
