@@ -781,6 +781,62 @@
             font-weight: 700;
             color: #64748b;
         }
+        .floor-plan-checkbox-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 10px;
+        }
+        .floor-plan-checkbox-card {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 12px;
+            border: 1px solid #d7deea;
+            border-radius: 12px;
+            background: #fff;
+        }
+        .floor-plan-checkbox-card label {
+            margin: 0;
+            font-size: 0.92rem;
+            font-weight: 600;
+            color: #334155;
+        }
+        .floor-plan-gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(156px, 1fr));
+            gap: 12px;
+        }
+        .floor-plan-gallery-item {
+            display: grid;
+            gap: 8px;
+            padding: 10px;
+            border: 1px solid #e2e8f0;
+            border-radius: 14px;
+            background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+        }
+        .floor-plan-gallery-item img {
+            width: 100%;
+            height: 110px;
+            object-fit: cover;
+            border-radius: 10px;
+            background: #e2e8f0;
+        }
+        .floor-plan-gallery-view {
+            display: inline-flex;
+            width: fit-content;
+            align-items: center;
+            padding: 4px 10px;
+            border-radius: 999px;
+            background: #eef2ff;
+            color: #4338ca;
+            font-size: 0.8rem;
+            font-weight: 700;
+        }
+        .floor-plan-list-toolbar {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
     </style>
 </head>
 <body>
@@ -1693,9 +1749,12 @@
         <div class="card">
             <div class="card-header d-flex justify-content-between align-items-center">
                 <span>도면 목록</span>
-                <button id="get-floor-plans-button" class="btn btn-secondary btn-sm">도면 목록 새로고침</button>
+                <div class="floor-plan-list-toolbar">
+                    <button id="toggle-floor-plans-button" class="btn btn-outline-secondary btn-sm">도면 목록 숨기기</button>
+                    <button id="get-floor-plans-button" class="btn btn-secondary btn-sm">도면 목록 새로고침</button>
+                </div>
             </div>
-            <div class="card-body">
+            <div class="card-body" id="floor-plan-list-panel">
                 <div id="floor-plan-list-result" class="api-result"></div>
             </div>
         </div>
@@ -1703,7 +1762,8 @@
         <div class="card">
             <div class="card-header">도면 등록 / 수정</div>
             <div class="card-body">
-                <form id="floor-plan-form">
+                <form id="floor-plan-form" class="banner-form-shell">
+                    <p class="banner-form-lead">도면의 다중 매핑 조건과 모든 view를 함께 관리합니다.</p>
                     <div class="banner-editor-grid">
                         <div>
                             <label for="floorPlanEditId" class="form-label">수정 대상 도면 ID</label>
@@ -1724,36 +1784,72 @@
                                 </div>
                             </div>
                         </div>
-                        <div>
-                            <label for="floorPlanForm" class="form-label">주거형태</label>
-                            <select class="form-select" id="floorPlanForm" required>
-                                <option value="">주거형태를 선택하세요.</option>
-                                <option value="OFFICETEL">오피스텔</option>
-                                <option value="VILLA">빌라/다세대</option>
-                                <option value="APARTMENT">아파트</option>
-                                <option value="ETC">그 외</option>
-                            </select>
+                        <div class="full-span">
+                            <label class="form-label">주거형태</label>
+                            <div class="floor-plan-checkbox-grid">
+                                <div class="floor-plan-checkbox-card">
+                                    <input type="checkbox" class="form-check-input" id="floorPlanFormOfficetel" data-floor-plan-group="forms" value="OFFICETEL">
+                                    <label for="floorPlanFormOfficetel">오피스텔</label>
+                                </div>
+                                <div class="floor-plan-checkbox-card">
+                                    <input type="checkbox" class="form-check-input" id="floorPlanFormVilla" data-floor-plan-group="forms" value="VILLA">
+                                    <label for="floorPlanFormVilla">빌라/다세대</label>
+                                </div>
+                                <div class="floor-plan-checkbox-card">
+                                    <input type="checkbox" class="form-check-input" id="floorPlanFormApartment" data-floor-plan-group="forms" value="APARTMENT">
+                                    <label for="floorPlanFormApartment">아파트</label>
+                                </div>
+                                <div class="floor-plan-checkbox-card">
+                                    <input type="checkbox" class="form-check-input" id="floorPlanFormEtc" data-floor-plan-group="forms" value="ETC">
+                                    <label for="floorPlanFormEtc">그 외</label>
+                                </div>
+                            </div>
                         </div>
-                        <div>
-                            <label for="floorPlanStructure" class="form-label">구조</label>
-                            <select class="form-select" id="floorPlanStructure" required>
-                                <option value="">구조를 선택하세요.</option>
-                                <option value="OPEN_ONE_ROOM">오픈형 원룸</option>
-                                <option value="SEPARATED_ONE_ROOM">분리형 원룸</option>
-                                <option value="DUPLEX">복층형</option>
-                                <option value="TWO_ROOM">투룸</option>
-                                <option value="THREE_ROOM_OVER">쓰리룸+</option>
-                            </select>
+                        <div class="full-span">
+                            <label class="form-label">구조</label>
+                            <div class="floor-plan-checkbox-grid">
+                                <div class="floor-plan-checkbox-card">
+                                    <input type="checkbox" class="form-check-input" id="floorPlanStructureOpenOneRoom" data-floor-plan-group="structures" value="OPEN_ONE_ROOM">
+                                    <label for="floorPlanStructureOpenOneRoom">오픈형 원룸</label>
+                                </div>
+                                <div class="floor-plan-checkbox-card">
+                                    <input type="checkbox" class="form-check-input" id="floorPlanStructureSeparatedOneRoom" data-floor-plan-group="structures" value="SEPARATED_ONE_ROOM">
+                                    <label for="floorPlanStructureSeparatedOneRoom">분리형 원룸</label>
+                                </div>
+                                <div class="floor-plan-checkbox-card">
+                                    <input type="checkbox" class="form-check-input" id="floorPlanStructureDuplex" data-floor-plan-group="structures" value="DUPLEX">
+                                    <label for="floorPlanStructureDuplex">복층형</label>
+                                </div>
+                                <div class="floor-plan-checkbox-card">
+                                    <input type="checkbox" class="form-check-input" id="floorPlanStructureTwoRoom" data-floor-plan-group="structures" value="TWO_ROOM">
+                                    <label for="floorPlanStructureTwoRoom">투룸</label>
+                                </div>
+                                <div class="floor-plan-checkbox-card">
+                                    <input type="checkbox" class="form-check-input" id="floorPlanStructureThreeRoomOver" data-floor-plan-group="structures" value="THREE_ROOM_OVER">
+                                    <label for="floorPlanStructureThreeRoomOver">쓰리룸+</label>
+                                </div>
+                            </div>
                         </div>
-                        <div>
-                            <label for="floorPlanEquilibrium" class="form-label">평형</label>
-                            <select class="form-select" id="floorPlanEquilibrium" required>
-                                <option value="">평형을 선택하세요.</option>
-                                <option value="UNDER_5">5평 이하</option>
-                                <option value="BETWEEN_6_10">6~10평</option>
-                                <option value="BETWEEN_11_15">11~15평</option>
-                                <option value="OVER_16">16평 이상</option>
-                            </select>
+                        <div class="full-span">
+                            <label class="form-label">평형</label>
+                            <div class="floor-plan-checkbox-grid">
+                                <div class="floor-plan-checkbox-card">
+                                    <input type="checkbox" class="form-check-input" id="floorPlanEquilibriumUnder5" data-floor-plan-group="equilibriums" value="UNDER_5">
+                                    <label for="floorPlanEquilibriumUnder5">5평 이하</label>
+                                </div>
+                                <div class="floor-plan-checkbox-card">
+                                    <input type="checkbox" class="form-check-input" id="floorPlanEquilibriumBetween6_10" data-floor-plan-group="equilibriums" value="BETWEEN_6_10">
+                                    <label for="floorPlanEquilibriumBetween6_10">6~10평</label>
+                                </div>
+                                <div class="floor-plan-checkbox-card">
+                                    <input type="checkbox" class="form-check-input" id="floorPlanEquilibriumBetween11_15" data-floor-plan-group="equilibriums" value="BETWEEN_11_15">
+                                    <label for="floorPlanEquilibriumBetween11_15">11~15평</label>
+                                </div>
+                                <div class="floor-plan-checkbox-card">
+                                    <input type="checkbox" class="form-check-input" id="floorPlanEquilibriumOver16" data-floor-plan-group="equilibriums" value="OVER_16">
+                                    <label for="floorPlanEquilibriumOver16">16평 이상</label>
+                                </div>
+                            </div>
                         </div>
                         <div class="full-span">
                             <label for="floorPlanPrompt" class="form-label">도면 프롬프트</label>
@@ -2470,6 +2566,10 @@
             loadFloorPlans();
         });
 
+        document.getElementById('toggle-floor-plans-button').addEventListener('click', function() {
+            toggleFloorPlanListVisibility();
+        });
+
         document.getElementById('floor-plan-form').addEventListener('submit', function(event) {
             event.preventDefault();
             createFloorPlan();
@@ -2492,7 +2592,7 @@
             if (this.files && this.files.length > 0) {
                 statusElement.textContent = `${this.files[0].name} 선택됨. 업로드 후 목록에 추가하세요.`;
             } else {
-                statusElement.textContent = '이미지를 하나씩 업로드해 도면 이미지 목록을 구성하세요.';
+                statusElement.textContent = '이미지를 하나씩 업로드하고, 필요하면 view도 함께 입력하세요.';
             }
         });
     };
@@ -2547,8 +2647,78 @@
     }
 
     function initializeFloorPlanManagement() {
+        toggleFloorPlanListVisibility(true);
         renderFloorPlanImages();
         loadFloorPlans();
+    }
+
+    function getCheckedFloorPlanValues(groupName) {
+        return Array.from(document.querySelectorAll(`[data-floor-plan-group="${groupName}"]:checked`))
+            .map(input => parseStringValue(input.value))
+            .filter(value => value);
+    }
+
+    function setCheckedFloorPlanValues(groupName, values) {
+        const selectedValues = new Set((Array.isArray(values) ? values : []).filter(Boolean));
+        document.querySelectorAll(`[data-floor-plan-group="${groupName}"]`).forEach(input => {
+            input.checked = selectedValues.has(input.value);
+        });
+    }
+
+    // 배열 응답이 없으면 기존 단일 필드 값을 fallback 해서 수정 폼과 목록을 같이 유지한다.
+    function resolveFloorPlanSelectionValues(floorPlan, listKey, singleKey) {
+        const selectionValues = Array.isArray(floorPlan[listKey]) ? floorPlan[listKey].filter(Boolean) : [];
+        if (selectionValues.length > 0) {
+            return selectionValues;
+        }
+        return floorPlan[singleKey] ? [floorPlan[singleKey]] : [];
+    }
+
+    function formatFloorPlanSelectionLabels(values, labelMap) {
+        if (!Array.isArray(values) || values.length === 0) {
+            return '-';
+        }
+        return values
+            .map(value => escapeHtml(labelMap[value] || value))
+            .join(', ');
+    }
+
+    function buildFloorPlanGallery(images, representativeImageUrl) {
+        const galleryImages = Array.isArray(images) && images.length > 0
+            ? images
+            : representativeImageUrl
+                ? [{ url: representativeImageUrl, view: null }]
+                : [];
+
+        if (galleryImages.length === 0) {
+            return '<div class="text-muted small">등록된 도면 이미지가 없습니다.</div>';
+        }
+
+        return `
+            <div class="floor-plan-gallery">
+                ${galleryImages.map((image, index) => `
+                    <div class="floor-plan-gallery-item">
+                        <img src="${escapeHtml(image.url || '')}" alt="도면 view ${index + 1}">
+                        <span class="floor-plan-gallery-view">${escapeHtml(image.view || `view ${index + 1}`)}</span>
+                    </div>
+                `).join('')}
+            </div>
+        `;
+    }
+
+    function toggleFloorPlanListVisibility(forceVisible) {
+        const panel = document.getElementById('floor-plan-list-panel');
+        const button = document.getElementById('toggle-floor-plans-button');
+        if (!panel || !button) {
+            return;
+        }
+
+        const shouldShow = typeof forceVisible === 'boolean'
+            ? forceVisible
+            : panel.classList.contains('d-none');
+
+        panel.classList.toggle('d-none', !shouldShow);
+        button.textContent = shouldShow ? '도면 목록 숨기기' : '도면 목록 보기';
     }
 
     function renderManagedImagePreview(config) {
@@ -3900,9 +4070,13 @@
             const card = document.createElement('div');
             card.className = 'banner-card';
             const imageCount = Array.isArray(floorPlan.images) ? floorPlan.images.length : 0;
-            const representativeView = imageCount > 0 ? floorPlan.images[0]?.view : null;
+            const forms = resolveFloorPlanSelectionValues(floorPlan, 'forms', 'form');
+            const structures = resolveFloorPlanSelectionValues(floorPlan, 'structures', 'structure');
+            const equilibriums = resolveFloorPlanSelectionValues(floorPlan, 'equilibriums', 'equilibrium');
             card.innerHTML = `
-                <img class="banner-card-image" src="${escapeHtml(floorPlan.representativeImageUrl || '')}" alt="도면 #${floorPlan.id}">
+                <div class="banner-card-media">
+                    ${buildFloorPlanGallery(floorPlan.images, floorPlan.representativeImageUrl)}
+                </div>
                 <div class="banner-card-body">
                     <div class="banner-card-title-row">
                         <span class="banner-card-title">${escapeHtml(floorPlan.name || `도면 #${floorPlan.id}`)}</span>
@@ -3915,19 +4089,15 @@
                         </div>
                         <div class="floor-plan-summary-item">
                             <span class="floor-plan-summary-item-label">주거형태</span>
-                            <span>${escapeHtml(FLOOR_PLAN_FORM_LABELS[floorPlan.form] || floorPlan.form || '-')}</span>
+                            <span>${formatFloorPlanSelectionLabels(forms, FLOOR_PLAN_FORM_LABELS)}</span>
                         </div>
                         <div class="floor-plan-summary-item">
                             <span class="floor-plan-summary-item-label">구조</span>
-                            <span>${escapeHtml(FLOOR_PLAN_STRUCTURE_LABELS[floorPlan.structure] || floorPlan.structure || '-')}</span>
+                            <span>${formatFloorPlanSelectionLabels(structures, FLOOR_PLAN_STRUCTURE_LABELS)}</span>
                         </div>
                         <div class="floor-plan-summary-item">
                             <span class="floor-plan-summary-item-label">평형</span>
-                            <span>${escapeHtml(FLOOR_PLAN_EQUILIBRIUM_LABELS[floorPlan.equilibrium] || floorPlan.equilibrium || '-')}</span>
-                        </div>
-                        <div class="floor-plan-summary-item">
-                            <span class="floor-plan-summary-item-label">대표 이미지 view</span>
-                            <span>${escapeHtml(representativeView || '-')}</span>
+                            <span>${formatFloorPlanSelectionLabels(equilibriums, FLOOR_PLAN_EQUILIBRIUM_LABELS)}</span>
                         </div>
                         <div class="floor-plan-summary-item" style="grid-column: 1 / -1;">
                             <span class="floor-plan-summary-item-label">도면 프롬프트</span>
@@ -3970,9 +4140,9 @@
 
         document.getElementById('floorPlanEditId').value = floorPlan.id;
         document.getElementById('floorPlanName').value = floorPlan.name || floorPlan.floorPlanName || '';
-        document.getElementById('floorPlanForm').value = floorPlan.form || '';
-        document.getElementById('floorPlanStructure').value = floorPlan.structure || '';
-        document.getElementById('floorPlanEquilibrium').value = floorPlan.equilibrium || '';
+        setCheckedFloorPlanValues('forms', resolveFloorPlanSelectionValues(floorPlan, 'forms', 'form'));
+        setCheckedFloorPlanValues('structures', resolveFloorPlanSelectionValues(floorPlan, 'structures', 'structure'));
+        setCheckedFloorPlanValues('equilibriums', resolveFloorPlanSelectionValues(floorPlan, 'equilibriums', 'equilibrium'));
         document.getElementById('floorPlanPrompt').value = floorPlan.floorPlanPrompt || '';
         document.getElementById('floorPlanImageFile').value = '';
         document.getElementById('floorPlanImageView').value = '';
@@ -3986,6 +4156,9 @@
         document.getElementById('floor-plan-form').reset();
         document.getElementById('floorPlanEditId').value = '';
         document.getElementById('floorPlanImageView').value = '';
+        setCheckedFloorPlanValues('forms', []);
+        setCheckedFloorPlanValues('structures', []);
+        setCheckedFloorPlanValues('equilibriums', []);
         document.getElementById('floorPlanImageUploadStatus').textContent = '이미지를 하나씩 업로드하고, 필요하면 view도 함께 입력하세요.';
         document.getElementById('floor-plan-form-result').innerHTML = '';
         renderFloorPlanImages();
@@ -3996,21 +4169,21 @@
             throw new Error('최소 1개의 도면 이미지를 등록해주세요.');
         }
 
-        const form = parseStringValue(document.getElementById('floorPlanForm').value);
-        const structure = parseStringValue(document.getElementById('floorPlanStructure').value);
-        const equilibrium = parseStringValue(document.getElementById('floorPlanEquilibrium').value);
+        const forms = getCheckedFloorPlanValues('forms');
+        const structures = getCheckedFloorPlanValues('structures');
+        const equilibriums = getCheckedFloorPlanValues('equilibriums');
         const name = parseStringValue(document.getElementById('floorPlanName').value);
         const floorPlanPrompt = parseStringValue(document.getElementById('floorPlanPrompt').value);
 
-        if (!name || !form || !structure || !equilibrium || !floorPlanPrompt) {
+        if (!name || forms.length === 0 || structures.length === 0 || equilibriums.length === 0 || !floorPlanPrompt) {
             throw new Error('도면 이름, 주거형태, 구조, 평형, 도면 프롬프트를 모두 입력해주세요.');
         }
 
         return {
             name,
-            form,
-            structure,
-            equilibrium,
+            forms,
+            structures,
+            equilibriums,
             floorPlanPrompt,
             images: floorPlanAdminState.images.map((image, index) => ({
                 url: image.url,
