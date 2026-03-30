@@ -113,6 +113,13 @@ public class AdminBannerSupport {
     }
 
     public List<BannerStyleAnswerChip> normalizeStyleAnswerChips(List<AdminBannerStyleAnswerChipRequest> requests) {
+        return normalizeStyleAnswerChips(requests, List.of());
+    }
+
+    public List<BannerStyleAnswerChip> normalizeStyleAnswerChips(
+            List<AdminBannerStyleAnswerChipRequest> requests,
+            List<BannerStyleAnswerChip> existingChips
+    ) {
         if (requests == null) {
             return List.of();
         }
@@ -120,22 +127,33 @@ public class AdminBannerSupport {
             throw new GeneralException(ErrorCode.NOT_VALID_EXCEPTION);
         }
 
-        List<BannerStyleAnswerChip> chips = requests.stream()
+        List<BannerStyleAnswerChip> normalizedWithoutId = requests.stream()
                 .map(request -> {
                     if (request == null || request.order() == null || request.curationRawProductId() == null) {
                         throw new GeneralException(ErrorCode.NOT_VALID_EXCEPTION);
                     }
                     return new BannerStyleAnswerChip(
+                            null,
                             request.order(),
                             normalizeRequired(request.label()),
+                            normalizeRequired(request.selectedPrompt()),
                             request.curationRawProductId()
                     );
                 })
                 .sorted(Comparator.comparing(BannerStyleAnswerChip::order))
                 .toList();
 
+        List<BannerStyleAnswerChip> chips = assignStyleAnswerChipIds(normalizedWithoutId, existingChips);
+
         Set<Integer> orders = new LinkedHashSet<>();
+        Set<Long> ids = new LinkedHashSet<>();
         for (BannerStyleAnswerChip chip : chips) {
+            if (chip.id() == null || chip.id() < 1) {
+                throw new GeneralException(ErrorCode.NOT_VALID_EXCEPTION);
+            }
+            if (!ids.add(chip.id())) {
+                throw new GeneralException(ErrorCode.NOT_VALID_EXCEPTION);
+            }
             if (chip.order() == null || chip.order() < 1) {
                 throw new GeneralException(ErrorCode.NOT_VALID_EXCEPTION);
             }
@@ -147,6 +165,42 @@ public class AdminBannerSupport {
             }
         }
         return chips;
+    }
+
+    private List<BannerStyleAnswerChip> assignStyleAnswerChipIds(
+            List<BannerStyleAnswerChip> chips,
+            List<BannerStyleAnswerChip> existingChips
+    ) {
+        Map<Integer, Long> existingIdByOrder = (existingChips == null ? List.<BannerStyleAnswerChip>of() : existingChips).stream()
+                .filter(Objects::nonNull)
+                .filter(chip -> chip.order() != null && chip.id() != null && chip.id() > 0)
+                .collect(Collectors.toMap(
+                        BannerStyleAnswerChip::order,
+                        BannerStyleAnswerChip::id,
+                        (left, right) -> left,
+                        LinkedHashMap::new
+                ));
+
+        long nextId = existingIdByOrder.values().stream()
+                .mapToLong(Long::longValue)
+                .max()
+                .orElse(0L) + 1L;
+
+        List<BannerStyleAnswerChip> result = new ArrayList<>(chips.size());
+        for (BannerStyleAnswerChip chip : chips) {
+            Long resolvedId = existingIdByOrder.get(chip.order());
+            if (resolvedId == null) {
+                resolvedId = nextId++;
+            }
+            result.add(new BannerStyleAnswerChip(
+                    resolvedId,
+                    chip.order(),
+                    chip.label(),
+                    chip.selectedPrompt(),
+                    chip.curationRawProductId()
+            ));
+        }
+        return result;
     }
 
     public String toStyleAnswerChipsJson(List<BannerStyleAnswerChip> chips) {

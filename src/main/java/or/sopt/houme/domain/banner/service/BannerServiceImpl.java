@@ -42,7 +42,7 @@ public class BannerServiceImpl implements BannerService {
     @Override
     public LandingListResponse getLandings() {
         return LandingListResponse.of(
-                bannerRepository.findAllWithRawProducts(BannerType.BANNER, false).stream()
+                bannerRepository.findAllWithRawProducts(BannerType.LANDING, false).stream()
                         .sorted((left, right) -> Long.compare(left.getId(), right.getId()))
                         .map(LandingResponse::from)
                         .toList()
@@ -74,7 +74,12 @@ public class BannerServiceImpl implements BannerService {
                 banner.getBannerImageUrl(),
                 banner.getStyleQuestion(),
                 parseStyleAnswerChips(banner.getStyleAnswerChipsJson()).stream()
-                        .map(chip -> BannerDetailAnswerResponse.of(chip.label()))
+                        .map(chip -> {
+                            if (chip.id() == null) {
+                                throw new ValidException(ErrorCode.NOT_VALID_EXCEPTION);
+                            }
+                            return BannerDetailAnswerResponse.of(chip.id(), chip.label());
+                        })
                         .toList()
         );
     }

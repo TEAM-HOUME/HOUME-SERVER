@@ -46,8 +46,11 @@ import or.sopt.houme.global.api.handler.GenerateImageException;
 import or.sopt.houme.global.api.handler.HouseException;
 import or.sopt.houme.global.api.handler.TagException;
 import or.sopt.houme.global.api.handler.UserException;
+import org.hibernate.exception.ConstraintViolationException;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.annotation.Propagation;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -67,6 +70,7 @@ import java.util.stream.IntStream;
 public class UserServiceImpl implements UserService {
 
     private static final int SIGN_UP_CREDIT_COUNT = 1;
+    private static final String USER_NICKNAME_TAG_UNIQUE_CONSTRAINT = "uk_user_nickname_nickname_tag";
 
     private final UserRepository userRepository;
     private final HouseRepository houseRepository;
@@ -82,6 +86,8 @@ public class UserServiceImpl implements UserService {
     private final RecommendFurnitureRepository recommendFurnitureRepository;
     private final JjymRepository jjymRepository;
     private final CurationRawProductColorRepository curationRawProductColorRepository;
+    private final NicknameService nicknameService;
+    private final UserNicknameTagTransactionService userNicknameTagTransactionService;
 
     @Override
     @Transactional(readOnly = true)
@@ -282,11 +288,29 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional(propagation = Propagation.NOT_SUPPORTED)
     public String updateUserV2(User user, String nickname, Gender gender, LocalDate birthday) {
-        User findUser = findUser(user);
-        findUser.updateUserFromSignUpV2(nickname, birthday, gender);
+        Long userId = user.getId();
+        findUser(user);
 
-        return createSignUpCreditAndGetDisplayName(findUser);
+        for (int attempt = 0; attempt < NicknameService.NICKNAME_TAG_RETRY_COUNT; attempt++) {
+            String nicknameTag = nicknameService.generateNicknameTag(nickname);
+            try {
+                return userNicknameTagTransactionService.completeUserSignUpV2(
+                        userId,
+                        nickname,
+                        nicknameTag,
+                        gender,
+                        birthday
+                );
+            } catch (DataIntegrityViolationException exception) {
+                if (!isNicknameTagConstraintViolation(exception)) {
+                    throw exception;
+                }
+            }
+        }
+
+        throw new UserException(ErrorCode.NICKNAME_TAG_GENERATION_FAILED);
     }
 
     private String createSignUpCreditAndGetDisplayName(User findUser) {
@@ -313,6 +337,17 @@ public class UserServiceImpl implements UserService {
         user.updateHasGeneratedImage();
 
         userRepository.save(user);
+    }
+
+    private boolean isNicknameTagConstraintViolation(DataIntegrityViolationException exception) {
+        Throwable current = exception;
+        while (current != null) {
+            if (current instanceof ConstraintViolationException constraintViolationException) {
+                return USER_NICKNAME_TAG_UNIQUE_CONSTRAINT.equals(constraintViolationException.getConstraintName());
+            }
+            current = current.getCause();
+        }
+        return exception.getMessage() != null && exception.getMessage().contains(USER_NICKNAME_TAG_UNIQUE_CONSTRAINT);
     }
 
     /**

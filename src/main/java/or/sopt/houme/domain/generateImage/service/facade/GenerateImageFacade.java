@@ -1,14 +1,25 @@
 package or.sopt.houme.domain.generateImage.service.facade;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import or.sopt.houme.domain.banner.model.entity.Banner;
+import or.sopt.houme.domain.banner.model.entity.BannerType;
+import or.sopt.houme.domain.banner.model.vo.BannerStyleAnswerChip;
+import or.sopt.houme.domain.banner.repository.BannerRepository;
 import or.sopt.houme.domain.credit.model.entity.Credit;
 import or.sopt.houme.domain.credit.model.entity.CreditStatus;
 import or.sopt.houme.domain.credit.service.CreditService;
+import or.sopt.houme.domain.furniture.model.entity.CurationRawProduct;
+import or.sopt.houme.domain.furniture.repository.CurationRawProductRepository;
 import or.sopt.houme.domain.furniture.service.FurnitureService;
 import or.sopt.houme.domain.generateImage.presentation.dto.SelectedTagInfo;
 import or.sopt.houme.domain.generateImage.model.entity.GenerateImageType;
+import or.sopt.houme.domain.generateImage.presentation.dto.request.BannerGenerateImageRequest;
 import or.sopt.houme.domain.generateImage.presentation.dto.request.GenerateImageRequest;
+import or.sopt.houme.domain.generateImage.presentation.dto.response.BannerGenerateImageResponse;
 import or.sopt.houme.domain.generateImage.presentation.dto.response.ImageInfoListResponse;
 import or.sopt.houme.domain.generateImage.presentation.dto.response.ImageInfoResponse;
 import or.sopt.houme.domain.generateImage.model.entity.GenerateImage;
@@ -22,6 +33,9 @@ import or.sopt.houme.domain.house.model.entity.House;
 import or.sopt.houme.domain.house.model.entity.enums.Activity;
 import or.sopt.houme.domain.house.model.entity.enums.Equilibrium;
 import or.sopt.houme.domain.house.model.entity.enums.Structure;
+import or.sopt.houme.domain.house.model.floorPlan.entity.FloorPlan;
+import or.sopt.houme.domain.house.model.floorPlan.vo.FloorPlanImageItem;
+import or.sopt.houme.domain.house.repository.floorPlan.FloorPlanRepository;
 import or.sopt.houme.domain.house.service.HouseService;
 import or.sopt.houme.domain.generateImage.service.openai.facade.OpenAiFacade;
 import or.sopt.houme.domain.generateImage.service.prompt.dto.PromptFurnitureListDTO;
@@ -35,6 +49,7 @@ import or.sopt.houme.domain.house.service.taste.TasteService;
 import or.sopt.houme.domain.house.service.taste.TasteTagService;
 import or.sopt.houme.domain.user.model.entity.User;
 import or.sopt.houme.domain.user.service.UserService;
+import or.sopt.houme.domain.user.util.floorplan.FloorPlanImageJsonCodec;
 import or.sopt.houme.global.api.ErrorCode;
 import or.sopt.houme.global.api.GeneralException;
 import or.sopt.houme.global.api.handler.*;
@@ -51,17 +66,23 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @Slf4j
 public class GenerateImageFacade {
+    private static final TypeReference<List<BannerStyleAnswerChip>> STYLE_ANSWER_CHIP_TYPE = new TypeReference<>() {};
 
     private final GenerateImageService generateImageService;
     private final OpenAiFacade openAiFacade;
     private final PromptService promptService;
     private final GeminiImageService geminiImageService;
+    private final BannerRepository bannerRepository;
+    private final FloorPlanRepository floorPlanRepository;
     private final HouseService houseService;
     private final CreditService creditService;
     private final TasteTagService tasteTagService;
     private final UserService userService;
     private final TagService tagService;
     private final FurnitureService furnitureService;
+    private final CurationRawProductRepository curationRawProductRepository;
+    private final FloorPlanImageJsonCodec floorPlanImageJsonCodec;
+    private final ObjectMapper objectMapper;
 
     // 비동기 서비스
     private final AsyncGenerateImageService asyncGenerateImageService;
@@ -321,6 +342,76 @@ public class GenerateImageFacade {
         return generateImageBy2eaInternal(user, generateImageRequest, true);
     }
 
+    public BannerGenerateImageResponse generateBannerImageByGemini(User user, BannerGenerateImageRequest request) {
+        Credit lockedCredit = null;
+
+        try {
+            log.info("배너 템플릿 기반 인테리어 이미지 생성 시작 userId={}, bannerId={}, answerId={}, floorPlanId={}, view={}, isMirror={}",
+                    user.getId(), request.bannerId(), request.answerId(), request.floorPlanId(), request.floorPlanView(), request.isMirror());
+            lockedCredit = creditService.tryLockAndGetCredit(user);
+
+            Banner banner = bannerRepository.findByIdWithRawProducts(request.bannerId(), BannerType.BANNER, false)
+                    .orElseThrow(() -> new BannerException(ErrorCode.NOT_FOUND_BANNER));
+            FloorPlan floorPlan = floorPlanRepository.findById(request.floorPlanId())
+                    .orElseThrow(() -> new HouseException(ErrorCode.NOT_FOUND_FLOOR_PLAN));
+
+            BannerStyleAnswerChip selectedChip = parseStyleAnswerChips(banner.getStyleAnswerChipsJson()).stream()
+                    .filter(chip -> chip.id() != null && chip.id().equals(request.answerId()))
+                    .findFirst()
+                    .orElseThrow(() -> new ValidException(ErrorCode.NOT_VALID_EXCEPTION));
+
+            String floorPlanImageUrl = resolveFloorPlanImageUrl(floorPlan, request.floorPlanView());
+            List<String> referenceImageUrls = buildReferenceImageUrls(banner, selectedChip, floorPlanImageUrl);
+            String prompt = buildBannerPrompt(banner, selectedChip, floorPlan);
+            log.info(
+                    "배너 템플릿 이미지 생성 프롬프트/참고이미지 bannerId={}, answerId={}, prompt={}, referenceImageUrls={}",
+                    banner.getId(),
+                    selectedChip.id(),
+                    prompt,
+                    referenceImageUrls
+            );
+            log.info("AI 호출 준비 완료 bannerId={}, answerId={}, referenceImageCount={}", banner.getId(), selectedChip.id(), referenceImageUrls.size());
+
+            ImageUploadResponseDTO imageUploadResponseDTO =
+                    geminiImageService.createImageWithReferences(prompt, referenceImageUrls);
+            log.info("AI 호출 완료 bannerId={}, generatedUrl={}", banner.getId(), imageUploadResponseDTO.getImageLink());
+
+            if (imageUploadResponseDTO.getImageLink().equals(S3Constant.FALL_BACK_IMAGE)) {
+                log.error("배너 템플릿 기반 인테리어 이미지 생성 중 폴백 이미지가 생성되었습니다. bannerId={}", banner.getId());
+                throw new ImageFallbackException(ErrorCode.GENERATED_IMAGE_EXCEPTION, null);
+            }
+
+            BannerGenerateImageResponse response = generateImageTransactionService.saveBannerImageAndConfirmCredit(
+                    user,
+                    lockedCredit,
+                    banner,
+                    imageUploadResponseDTO
+            );
+            log.info("배너 템플릿 기반 인테리어 이미지 생성 저장 완료 imageId={}", response.imageId());
+            return response;
+        } catch (ValidException validException) {
+            if (lockedCredit != null && lockedCredit.getStatus() == CreditStatus.PENDING) {
+                creditService.rollbackCreditPending(lockedCredit);
+            }
+            throw validException;
+        } catch (GeneralException e) {
+            if (lockedCredit != null && lockedCredit.getStatus() == CreditStatus.PENDING) {
+                creditService.rollbackCreditPending(lockedCredit);
+            }
+            throw e;
+        } catch (Exception e) {
+            log.error("배너 템플릿 기반 인테리어 이미지 생성 중 오류 발생: {}", e.getMessage(), e);
+            if (lockedCredit != null && lockedCredit.getStatus() == CreditStatus.PENDING) {
+                creditService.rollbackCreditPending(lockedCredit);
+            }
+            throw new GenerateImageException(ErrorCode.GENERATED_IMAGE_EXCEPTION);
+        } finally {
+            if (lockedCredit != null) {
+                creditService.releaseLock(user);
+            }
+        }
+    }
+
     private ImageInfoListResponse generateImageBy2eaInternal(User user, GenerateImageRequest generateImageRequest, boolean useGemini) {
 
         // finally 블록에서 사용하기 위해 선언
@@ -502,6 +593,105 @@ public class GenerateImageFacade {
         return futures.stream()
                 .map(CompletableFuture::join)
                 .collect(Collectors.toList());
+    }
+
+    private List<BannerStyleAnswerChip> parseStyleAnswerChips(String styleAnswerChipsJson) {
+        if (styleAnswerChipsJson == null || styleAnswerChipsJson.isBlank()) {
+            return List.of();
+        }
+        try {
+            List<BannerStyleAnswerChip> chips = objectMapper.readValue(styleAnswerChipsJson, STYLE_ANSWER_CHIP_TYPE);
+            if (chips == null) {
+                return List.of();
+            }
+            return chips.stream().filter(Objects::nonNull).toList();
+        } catch (JsonProcessingException e) {
+            throw new GeneralException(ErrorCode.OBJECTMAPPER_EXCEPTION);
+        }
+    }
+
+    private String resolveFloorPlanImageUrl(FloorPlan floorPlan, String floorPlanView) {
+        List<FloorPlanImageItem> images = floorPlanImageJsonCodec.read(floorPlan.getImagesJson());
+        if (images.isEmpty()) {
+            return floorPlan.getUrl();
+        }
+
+        String normalizedView = floorPlanView == null ? "" : floorPlanView.trim();
+        if (!normalizedView.isEmpty()) {
+            Optional<String> matchedUrl = images.stream()
+                    .filter(Objects::nonNull)
+                    .filter(item -> item.url() != null && !item.url().isBlank())
+                    .filter(item -> item.view() != null && item.view().trim().equalsIgnoreCase(normalizedView))
+                    .map(FloorPlanImageItem::url)
+                    .findFirst();
+            if (matchedUrl.isPresent()) {
+                return matchedUrl.get();
+            }
+        }
+
+        return images.stream()
+                .filter(Objects::nonNull)
+                .map(FloorPlanImageItem::url)
+                .filter(url -> url != null && !url.isBlank())
+                .findFirst()
+                .orElse(floorPlan.getUrl());
+    }
+
+    private List<String> buildReferenceImageUrls(
+            Banner banner,
+            BannerStyleAnswerChip selectedChip,
+            String floorPlanImageUrl
+    ) {
+        LinkedHashSet<String> urls = new LinkedHashSet<>();
+        if (floorPlanImageUrl != null && !floorPlanImageUrl.isBlank()) {
+            urls.add(floorPlanImageUrl);
+        }
+        if (banner.getBannerImageUrl() != null && !banner.getBannerImageUrl().isBlank()) {
+            urls.add(banner.getBannerImageUrl());
+        }
+
+        Map<Long, CurationRawProduct> bannerRawProductsById = new LinkedHashMap<>();
+        banner.getBannerRawProducts().stream()
+                .map(mapping -> mapping != null ? mapping.getCurationRawProduct() : null)
+                .filter(Objects::nonNull)
+                .forEach(rawProduct -> {
+                    bannerRawProductsById.put(rawProduct.getId(), rawProduct);
+                    if (rawProduct.getProductImageUrl() != null && !rawProduct.getProductImageUrl().isBlank()) {
+                        urls.add(rawProduct.getProductImageUrl());
+                    }
+                });
+
+        if (selectedChip.curationRawProductId() != null) {
+            CurationRawProduct selectedChipRawProduct = bannerRawProductsById.get(selectedChip.curationRawProductId());
+            if (selectedChipRawProduct == null) {
+                selectedChipRawProduct = curationRawProductRepository.findById(selectedChip.curationRawProductId())
+                        .orElseThrow(() -> new GeneralException(ErrorCode.NOT_FOUND_CURATION_RAW_PRODUCT));
+            }
+            if (selectedChipRawProduct != null
+                    && selectedChipRawProduct.getProductImageUrl() != null
+                    && !selectedChipRawProduct.getProductImageUrl().isBlank()) {
+                urls.add(selectedChipRawProduct.getProductImageUrl());
+            }
+        }
+        return List.copyOf(urls);
+    }
+
+    private String buildBannerPrompt(
+            Banner banner,
+            BannerStyleAnswerChip selectedChip,
+            FloorPlan floorPlan
+    ) {
+        List<String> parts = new ArrayList<>();
+        if (banner.getStylePrompt() != null && !banner.getStylePrompt().isBlank()) {
+            parts.add(banner.getStylePrompt());
+        }
+        if (selectedChip.selectedPrompt() != null && !selectedChip.selectedPrompt().isBlank()) {
+            parts.add(selectedChip.selectedPrompt());
+        }
+        if (floorPlan.getFloorPlanPrompt() != null && !floorPlan.getFloorPlanPrompt().isBlank()) {
+            parts.add(floorPlan.getFloorPlanPrompt());
+        }
+        return String.join("\n\n", parts);
     }
 
     // houseId로 결과 이미지 찾아오기
