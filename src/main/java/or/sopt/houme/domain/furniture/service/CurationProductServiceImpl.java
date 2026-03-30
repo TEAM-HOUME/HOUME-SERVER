@@ -54,7 +54,7 @@ public class CurationProductServiceImpl implements CurationProductService {
 
     private FurnitureTypeFilterResponse findType(List<FurnitureType> types, String nameEng, String labelKr) {
         return types.stream()
-                .filter(t -> t.getNameEng() != null && t.getNameEng().trim().toUpperCase().contains(nameEng.toUpperCase()))
+                .filter(t -> t.getNameEng() != null && t.getNameEng().trim().equalsIgnoreCase(nameEng))
                 .findFirst()
                 .map(t -> new FurnitureTypeFilterResponse(t.getId(), labelKr, t.getNameEng().trim()))
                 .orElse(new FurnitureTypeFilterResponse(-1L, labelKr, nameEng));
@@ -62,7 +62,7 @@ public class CurationProductServiceImpl implements CurationProductService {
 
     private FurnitureTypeFilterResponse findFurniture(List<Furniture> furnitures, String nameEng, String labelKr) {
         return furnitures.stream()
-                .filter(f -> f.getFurnitureNameEng() != null && f.getFurnitureNameEng().trim().toUpperCase().contains(nameEng.toUpperCase()))
+                .filter(f -> f.getFurnitureNameEng() != null && f.getFurnitureNameEng().trim().equalsIgnoreCase(nameEng))
                 .findFirst()
                 .map(f -> new FurnitureTypeFilterResponse(f.getId(), labelKr, f.getFurnitureNameEng().trim()))
                 .orElse(new FurnitureTypeFilterResponse(-1L, labelKr, nameEng));
