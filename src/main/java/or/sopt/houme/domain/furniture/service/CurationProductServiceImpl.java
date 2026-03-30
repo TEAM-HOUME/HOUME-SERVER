@@ -38,17 +38,17 @@ public class CurationProductServiceImpl implements CurationProductService {
 
         return List.of(
                 new FurnitureTypeFilterResponse(0L, "전체", "ALL"),
-                findType(types, "BED", "침대/프레임"),          // 대분류
-                findFurniture(furnitures, "OFFICE_DESK", "업무용 책상"), // 중분류
-                findFurniture(furnitures, "DINING_TABLE", "식탁"),     // 중분류
-                findFurniture(furnitures, "SITTING_TABLE", "좌식 테이블"), // 중분류
-                findFurniture(furnitures, "CLOSET", "옷장"),           // 중분류
-                findType(types, "STORAGE", "수납/장식장"),      // 대분류
-                findType(types, "SOFA", "소파"),                // 대분류
-                findFurniture(furnitures, "CHAIR", "의자/스툴"),       // 중분류 (임시 매핑 제거)
-                findFurniture(furnitures, "DRESSER", "화장대/협탁"),     // 중분류 (임시 매핑 제거)
-                findType(types, "LIGHTING", "조명"),            // 대분류
-                findType(types, "SELECTIVE", "그 외")           // 대분류
+                findType(types, "BED", "침대/프레임"),
+                findFurniture(furnitures, "OFFICE_DESK", "업무용 책상"),
+                findFurniture(furnitures, "DINING_TABLE", "식탁"),
+                findFurniture(furnitures, "SITTING_TABLE", "좌식 테이블"),
+                findFurniture(furnitures, "CLOSET", "옷장"),
+                findType(types, "STORAGE", "수납/장식장"),
+                findType(types, "SOFA", "소파"),
+                new FurnitureTypeFilterResponse(-1L, "의자/스툴", "CHAIR"),
+                new FurnitureTypeFilterResponse(-1L, "화장대/협탁", "DRESSER"),
+                new FurnitureTypeFilterResponse(-1L, "조명", "LIGHTING"),
+                findType(types, "SELECTIVE", "그 외")
         );
     }
 
@@ -73,26 +73,24 @@ public class CurationProductServiceImpl implements CurationProductService {
         return List.of(
                 new PriceRangeFilterResponse("P0", "전체", null, null),
                 new PriceRangeFilterResponse("P1", "5만원 이하", 0L, 50000L),
-                new PriceRangeFilterResponse("P2", "5-10만원", 50000L, 100000L),
-                new PriceRangeFilterResponse("P3", "10만원대", 100000L, 200000L),
-                new PriceRangeFilterResponse("P4", "20만원대", 200000L, 300000L),
-                new PriceRangeFilterResponse("P5", "30만원대", 300000L, 400000L),
-                new PriceRangeFilterResponse("P6", "40만원대", 400000L, 500000L),
-                new PriceRangeFilterResponse("P7", "50만원 이상", 500000L, null)
+                new PriceRangeFilterResponse("P2", "5-10만원", 50001L, 100000L),
+                new PriceRangeFilterResponse("P3", "10만원대", 100001L, 200000L),
+                new PriceRangeFilterResponse("P4", "20만원대", 200001L, 300000L),
+                new PriceRangeFilterResponse("P5", "30만원대", 300001L, 400000L),
+                new PriceRangeFilterResponse("P6", "40만원대", 400001L, 500000L),
+                new PriceRangeFilterResponse("P7", "50만원 이상", 500001L, null)
         );
     }
 
     private List<ColorFilterResponse> getColorFilters() {
-        return List.of(
-                new ColorFilterResponse(10L, "블랙", "#000000"),
-                new ColorFilterResponse(11L, "화이트", "#FFFFFF"),
-                new ColorFilterResponse(12L, "브라운", "#8B4513"),
-                new ColorFilterResponse(13L, "베이지", "#F5F5DC"),
-                new ColorFilterResponse(14L, "그레이", "#808080"),
-                new ColorFilterResponse(15L, "실버", "#C0C0C0"),
-                new ColorFilterResponse(16L, "옐로우", "#FFFF00"),
-                new ColorFilterResponse(17L, "블루", "#0000FF"),
-                new ColorFilterResponse(18L, "그린", "#008000")
-        );
+        java.util.Map<String, String> standardFilters = ColorHexMapper.getStandardColorFilters();
+        java.util.List<ColorFilterResponse> responses = new java.util.ArrayList<>();
+
+        long id = 10L;
+        for (java.util.Map.Entry<String, String> entry : standardFilters.entrySet()) {
+            responses.add(new ColorFilterResponse(id++, entry.getKey(), entry.getValue()));
+        }
+
+        return responses;
     }
 }
