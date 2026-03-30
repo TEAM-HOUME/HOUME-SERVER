@@ -9,6 +9,11 @@ import or.sopt.houme.domain.furniture.presentation.dto.response.FurnitureTypeFil
 import or.sopt.houme.domain.furniture.presentation.dto.response.PriceRangeFilterResponse;
 import or.sopt.houme.domain.furniture.repository.FurnitureRepository;
 import or.sopt.houme.domain.furniture.repository.FurnitureTypeRepository;
+import or.sopt.houme.domain.furniture.model.entity.CurationRawProduct;
+import or.sopt.houme.domain.furniture.presentation.dto.response.CurationProductDetailResponse;
+import or.sopt.houme.domain.furniture.repository.CurationRawProductRepository;
+import or.sopt.houme.global.api.ErrorCode;
+import or.sopt.houme.global.api.handler.FurnitureException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,6 +26,7 @@ public class CurationProductServiceImpl implements CurationProductService {
 
     private final FurnitureTypeRepository furnitureTypeRepository;
     private final FurnitureRepository furnitureRepository;
+    private final CurationRawProductRepository curationRawProductRepository;
 
     @Override
     public CurationProductFilterResponse getFilterMetadata() {
@@ -29,6 +35,68 @@ public class CurationProductServiceImpl implements CurationProductService {
                 getPriceRangeFilters(),
                 getColorFilters()
         );
+    }
+
+    @Override
+    public CurationProductDetailResponse getProductDetail(Long id) {
+        CurationRawProduct product = curationRawProductRepository.findById(id)
+                .orElseThrow(() -> new FurnitureException(ErrorCode.NOT_FOUND_CURATION_RAW_PRODUCT));
+
+        String categoryName = extractCategoryName(product);
+
+        return new CurationProductDetailResponse(
+                new CurationProductDetailResponse.ProductDetail(
+                        product.getProductId(),
+                        categoryName,
+                        product.getSource(),
+                        product.getBrand(),
+                        product.getProductName(),
+                        product.getProductImageUrl(),
+                        product.getListPrice(),
+                        product.getDiscountRate(),
+                        product.getDiscountPrice(),
+                        product.getProductMallName(),
+                        product.getProductSiteUrl()
+                )
+        );
+    }
+
+    private String extractCategoryName(CurationRawProduct product) {
+        // 상품에 매핑된 첫 번째 가구 태그 정보를 바탕으로 카테고리명 추출
+        return product.getFurnitureTagMappings().stream()
+                .findFirst()
+                .map(mapping -> {
+                    Furniture furniture = mapping.getFurnitureTag().getFurniture();
+                    FurnitureType type = furniture.getFurnitureType();
+
+                    // 필터 API에서 정의한 사용자 친화적 레이블 매핑 로직 재사용
+                    return mapToFriendlyLabel(type, furniture);
+                })
+                .orElse("기타"); // 매핑 정보가 없으면 기본값 '기타'
+    }
+
+    private String mapToFriendlyLabel(FurnitureType type, Furniture furniture) {
+        String typeEng = type.getNameEng();
+        String furnitureEng = furniture.getFurnitureNameEng();
+
+        // 1. 중분류(Furniture) 우선 매핑
+        if ("OFFICE_DESK".equalsIgnoreCase(furnitureEng)) return "업무용 책상";
+        if ("DINING_TABLE".equalsIgnoreCase(furnitureEng)) return "식탁";
+        if ("SITTING_TABLE".equalsIgnoreCase(furnitureEng)) return "좌식 테이블";
+        if ("CLOSET".equalsIgnoreCase(furnitureEng)) return "옷장";
+        if ("SINGLE_SOFA".equalsIgnoreCase(furnitureEng)) return "의자/스툴";
+        if ("CHAIR".equalsIgnoreCase(furnitureEng)) return "의자/스툴";
+        if ("DRESSER".equalsIgnoreCase(furnitureEng)) return "화장대/협탁";
+
+        // 2. 대분류(FurnitureType) 매핑
+        if ("BED".equalsIgnoreCase(typeEng)) return "침대/프레임";
+        if ("STORAGE".equalsIgnoreCase(typeEng)) return "수납/장식장";
+        if ("SOFA".equalsIgnoreCase(typeEng)) return "소파";
+        if ("LIGHTING".equalsIgnoreCase(typeEng)) return "조명";
+        if ("SELECTIVE".equalsIgnoreCase(typeEng)) return "그 외";
+        if ("ETC".equalsIgnoreCase(typeEng)) return "기타";
+
+        return "기타";
     }
 
     private List<FurnitureTypeFilterResponse> getFurnitureTypeFilters() {
