@@ -31,31 +31,36 @@ class CurationProductServiceImplTest {
     private FurnitureRepository furnitureRepository;
 
     @Test
-    @DisplayName("getFilterMetadata()는 DB 데이터를 기반으로 하이브리드 필터 목록을 생성한다")
-    void getFilterMetadataSuccess() {
+    @DisplayName("getFilterMetadata()는 DB 데이터와 정적 필터를 조합하여 반환한다")
+    void getFilterMetadata() {
         // given
-        FurnitureType bedType = FurnitureType.builder().id(1L).nameEng("BED").nameKr("침대").build();
-        Furniture officeDesk = Furniture.builder().id(5L).furnitureNameEng("OFFICE_DESK").furnitureNameKr("업무용 책상").build();
+        FurnitureType bedType = FurnitureType.builder().id(1L).nameKr("침대").nameEng("BED").build();
+        Furniture furniture = Furniture.builder().id(5L).furnitureNameKr("업무용 책상").furnitureNameEng("OFFICE_DESK").build();
 
         given(furnitureTypeRepository.findAll()).willReturn(List.of(bedType));
-        given(furnitureRepository.findAll()).willReturn(List.of(officeDesk));
+        given(furnitureRepository.findAll()).willReturn(List.of(furniture));
 
         // when
         CurationProductFilterResponse response = curationProductService.getFilterMetadata();
 
         // then
-        assertThat(response.furnitureTypes()).hasSize(12); // 기획된 12개 항목 확인
+        assertThat(response).isNotNull();
         
-        // 하이브리드 매핑 검증 (대분류)
-        assertThat(response.furnitureTypes().get(1).id()).isEqualTo(1L);
+        // 1. 가구 유형 검증
+        assertThat(response.furnitureTypes()).hasSize(12);
+        assertThat(response.furnitureTypes().get(1).id()).isEqualTo(1L); // 침대/프레임
         assertThat(response.furnitureTypes().get(1).nameKr()).isEqualTo("침대/프레임");
-
-        // 하이브리드 매핑 검증 (중분류)
-        assertThat(response.furnitureTypes().get(2).id()).isEqualTo(5L);
-        assertThat(response.furnitureTypes().get(2).nameKr()).isEqualTo("업무용 책상");
-
-        // 가격대(8종) 및 색상(9종) 검증
+        assertThat(response.furnitureTypes().get(2).id()).isEqualTo(5L); // 업무용 책상
+        
+        // 2. 가격대 검증 (경계값 중복 제거 확인)
         assertThat(response.priceRanges()).hasSize(8);
-        assertThat(response.colors()).hasSize(9);
+        assertThat(response.priceRanges().get(1).min()).isEqualTo(0L);
+        assertThat(response.priceRanges().get(1).max()).isEqualTo(50000L);
+        assertThat(response.priceRanges().get(2).min()).isEqualTo(50001L); // 50001부터 시작하는지 확인
+        
+        // 3. 색상 검증 (15종 확인)
+        assertThat(response.colors()).hasSize(15);
+        assertThat(response.colors().get(0).label()).isEqualTo("화이트");
+        assertThat(response.colors().get(0).id()).isEqualTo(1L);
     }
 }
