@@ -15,12 +15,12 @@ public record AdminFloorPlanCreateRequest(
         @JsonAlias("floorPlanName")
         @NotBlank
         String name,
-        @NotNull
-        Form form,
-        @NotNull
-        Structure structure,
-        @NotNull
-        Equilibrium equilibrium,
+        @NotEmpty
+        List<@NotNull Form> forms,
+        @NotEmpty
+        List<@NotNull Structure> structures,
+        @NotEmpty
+        List<@NotNull Equilibrium> equilibriums,
         @NotBlank
         String floorPlanPrompt,
         @Valid
