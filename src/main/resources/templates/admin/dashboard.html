@@ -5480,6 +5480,10 @@
         return null;
     }
 
+    function getOptionalInputValue(id) {
+        return document.getElementById(id)?.value ?? null;
+    }
+
     function buildRawProductCreatePayload() {
         return {
             source: parseStringValue(document.getElementById('rawCreateSource').value),
@@ -5494,9 +5498,9 @@
             discountRate: parseNumberValue(document.getElementById('rawCreateDiscountRate').value),
             discountPrice: parseNumberValue(document.getElementById('rawCreateDiscountPrice').value),
             baseShippingFee: parseNumberValue(document.getElementById('rawCreateBaseShippingFee').value),
-            freeShippingCondition: parseNumberValue(document.getElementById('rawCreateFreeShippingCondition').value),
+            freeShippingCondition: parseNumberValue(getOptionalInputValue('rawCreateFreeShippingCondition')),
             isExposed: parseBooleanValue(document.getElementById('rawCreateIsExposed').value),
-            fetchedAt: parseStringValue(document.getElementById('rawCreateFetchedAt').value)
+            fetchedAt: parseStringValue(getOptionalInputValue('rawCreateFetchedAt'))
         };
     }
 
