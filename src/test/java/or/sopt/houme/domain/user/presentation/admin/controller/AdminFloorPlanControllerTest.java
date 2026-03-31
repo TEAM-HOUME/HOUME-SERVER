@@ -54,9 +54,9 @@ class AdminFloorPlanControllerTest {
     void createFloorPlan_success() throws Exception {
         AdminFloorPlanCreateRequest request = new AdminFloorPlanCreateRequest(
                 "테스트 도면",
-                Form.OFFICETEL,
-                Structure.OPEN_ONE_ROOM,
-                Equilibrium.UNDER_5,
+                List.of(Form.OFFICETEL, Form.APARTMENT),
+                List.of(Structure.OPEN_ONE_ROOM, Structure.TWO_ROOM),
+                List.of(Equilibrium.UNDER_5, Equilibrium.BETWEEN_6_10),
                 "도면 프롬프트",
                 List.of(new AdminFloorPlanImageRequest("https://image/1", "fp-1.png", "room-1.png", "png", 1, "창가 뷰"))
         );
@@ -69,7 +69,7 @@ class AdminFloorPlanControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.id").value(1L))
                 .andExpect(jsonPath("$.data.name").value("테스트 도면"))
-                .andExpect(jsonPath("$.data.form").value("OFFICETEL"))
+                .andExpect(jsonPath("$.data.forms[0]").value("OFFICETEL"))
                 .andExpect(jsonPath("$.data.images[0].url").value("https://image/1"))
                 .andExpect(jsonPath("$.data.images[0].view").value("창가 뷰"));
     }
@@ -82,7 +82,7 @@ class AdminFloorPlanControllerTest {
         mockMvc.perform(get("/api/v1/admin/floor-plans"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.floorPlans[0].id").value(1L))
-                .andExpect(jsonPath("$.data.floorPlans[0].equilibrium").value("UNDER_5"))
+                .andExpect(jsonPath("$.data.floorPlans[0].equilibriums[0]").value("UNDER_5"))
                 .andExpect(jsonPath("$.data.floorPlans[0].name").value("테스트 도면"))
                 .andExpect(jsonPath("$.data.floorPlans[0].images[0].view").value("창가 뷰"));
     }
@@ -92,18 +92,18 @@ class AdminFloorPlanControllerTest {
     void updateFloorPlan_success() throws Exception {
         AdminFloorPlanUpdateRequest request = new AdminFloorPlanUpdateRequest(
                 "수정 도면",
-                Form.APARTMENT,
-                Structure.TWO_ROOM,
-                Equilibrium.OVER_16,
+                List.of(Form.APARTMENT),
+                List.of(Structure.TWO_ROOM, Structure.OPEN_ONE_ROOM),
+                List.of(Equilibrium.OVER_16),
                 "수정 프롬프트",
                 List.of(new AdminFloorPlanImageRequest("https://image/2", "fp-2.png", "room-2.png", "png", 1, "강변 뷰"))
         );
         AdminFloorPlanResponse response = new AdminFloorPlanResponse(
                 1L,
                 "수정 도면",
-                Form.APARTMENT,
-                Structure.TWO_ROOM,
-                Equilibrium.OVER_16,
+                List.of(Form.APARTMENT),
+                List.of(Structure.TWO_ROOM, Structure.OPEN_ONE_ROOM),
+                List.of(Equilibrium.OVER_16),
                 "수정 프롬프트",
                 "https://image/2",
                 List.of(new AdminFloorPlanImageResponse("https://image/2", "fp-2.png", "room-2.png", "png", 1, "강변 뷰"))
@@ -113,10 +113,10 @@ class AdminFloorPlanControllerTest {
 
         mockMvc.perform(patch("/api/v1/admin/floor-plans/1")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
+                .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.name").value("수정 도면"))
-                .andExpect(jsonPath("$.data.structure").value("TWO_ROOM"))
+                .andExpect(jsonPath("$.data.structures[0]").value("TWO_ROOM"))
                 .andExpect(jsonPath("$.data.representativeImageUrl").value("https://image/2"))
                 .andExpect(jsonPath("$.data.images[0].view").value("강변 뷰"));
     }
@@ -150,9 +150,9 @@ class AdminFloorPlanControllerTest {
         return new AdminFloorPlanResponse(
                 1L,
                 "테스트 도면",
-                Form.OFFICETEL,
-                Structure.OPEN_ONE_ROOM,
-                Equilibrium.UNDER_5,
+                List.of(Form.OFFICETEL),
+                List.of(Structure.OPEN_ONE_ROOM),
+                List.of(Equilibrium.UNDER_5),
                 "도면 프롬프트",
                 "https://image/1",
                 List.of(new AdminFloorPlanImageResponse("https://image/1", "fp-1.png", "room-1.png", "png", 1, "창가 뷰"))

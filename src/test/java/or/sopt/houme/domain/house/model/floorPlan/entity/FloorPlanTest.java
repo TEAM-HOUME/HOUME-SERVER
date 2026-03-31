@@ -22,12 +22,15 @@ class FloorPlanTest {
     void create_throwsWhenFloorPlanNameIsNull() {
         assertThatThrownBy(() -> FloorPlan.create(
                 null,
-                Form.OFFICETEL,
-                Structure.OPEN_ONE_ROOM,
-                Equilibrium.BETWEEN_6_10,
+                List.of(Form.OFFICETEL),
+                List.of(Structure.OPEN_ONE_ROOM),
+                List.of(Equilibrium.BETWEEN_6_10),
                 "prompt",
                 sampleImages(),
-                sampleImagesJson()
+                sampleImagesJson(),
+                "[\"OFFICETEL\"]",
+                "[\"OPEN_ONE_ROOM\"]",
+                "[\"BETWEEN_6_10\"]"
         ))
                 .isInstanceOf(HouseException.class)
                 .extracting("errorCode")
@@ -39,22 +42,28 @@ class FloorPlanTest {
     void update_throwsWhenFloorPlanNameIsBlank() {
         FloorPlan floorPlan = FloorPlan.create(
                 "유효한 이름",
-                Form.OFFICETEL,
-                Structure.OPEN_ONE_ROOM,
-                Equilibrium.BETWEEN_6_10,
+                List.of(Form.OFFICETEL),
+                List.of(Structure.OPEN_ONE_ROOM),
+                List.of(Equilibrium.BETWEEN_6_10),
                 "prompt",
                 sampleImages(),
-                sampleImagesJson()
+                sampleImagesJson(),
+                "[\"OFFICETEL\"]",
+                "[\"OPEN_ONE_ROOM\"]",
+                "[\"BETWEEN_6_10\"]"
         );
 
         assertThatThrownBy(() -> floorPlan.update(
                 "   ",
-                Form.OFFICETEL,
-                Structure.OPEN_ONE_ROOM,
-                Equilibrium.BETWEEN_6_10,
+                List.of(Form.OFFICETEL),
+                List.of(Structure.OPEN_ONE_ROOM),
+                List.of(Equilibrium.BETWEEN_6_10),
                 "updated prompt",
                 sampleImages(),
-                sampleImagesJson()
+                sampleImagesJson(),
+                "[\"OFFICETEL\"]",
+                "[\"OPEN_ONE_ROOM\"]",
+                "[\"BETWEEN_6_10\"]"
         ))
                 .isInstanceOf(HouseException.class)
                 .extracting("errorCode")
@@ -66,15 +75,20 @@ class FloorPlanTest {
     void create_succeedsWhenFloorPlanNameIsValid() {
         FloorPlan floorPlan = FloorPlan.create(
                 "다용도실이 있는 원룸",
-                Form.OFFICETEL,
-                Structure.OPEN_ONE_ROOM,
-                Equilibrium.BETWEEN_6_10,
+                List.of(Form.OFFICETEL),
+                List.of(Structure.OPEN_ONE_ROOM),
+                List.of(Equilibrium.BETWEEN_6_10),
                 "prompt",
                 sampleImages(),
-                sampleImagesJson()
+                sampleImagesJson(),
+                "[\"OFFICETEL\"]",
+                "[\"OPEN_ONE_ROOM\"]",
+                "[\"BETWEEN_6_10\"]"
         );
 
         assertThat(floorPlan.getFloorPlanName()).isEqualTo("다용도실이 있는 원룸");
+        assertThat(floorPlan.getForm()).isEqualTo(Form.OFFICETEL);
+        assertThat(floorPlan.getFormsJson()).isEqualTo("[\"OFFICETEL\"]");
     }
 
     private FloorPlanImages sampleImages() {
