@@ -6,6 +6,7 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import or.sopt.houme.domain.banner.model.entity.QBannerCurationRawProduct;
 import or.sopt.houme.domain.generateImage.model.entity.GenerateImage;
+import or.sopt.houme.domain.generateImage.model.entity.GenerateImageType;
 import or.sopt.houme.domain.generateImage.model.entity.QGenerateImage;
 import or.sopt.houme.domain.generateImage.model.entity.QGenerateImageUsedProduct;
 import or.sopt.houme.domain.banner.model.entity.QBanner;
@@ -97,7 +98,12 @@ public class GenerateImageRepositoryImpl implements GenerateImageRepositoryCusto
     }
 
     @Override
-    public List<GenerateImage> findRelatedImagesByRawProductIds(List<Long> rawProductIds, Long excludeImageId, int limit) {
+    public List<GenerateImage> findRelatedImagesByRawProductIds(
+            List<Long> rawProductIds,
+            Long excludeImageId,
+            int limit,
+            GenerateImageType generationType
+    ) {
         if (rawProductIds == null || rawProductIds.isEmpty() || limit < 1) {
             return List.of();
         }
@@ -111,6 +117,7 @@ public class GenerateImageRepositoryImpl implements GenerateImageRepositoryCusto
                 .from(generateImage)
                 .where(
                         generateImage.id.ne(excludeImageId),
+                        resolvedGenerationTypeCondition(generateImage, generationType),
                         hasBannerMappedRawProducts(generateImage, bannerRawMapping, rawProductIds)
                                 .or(hasUsedRawProducts(generateImage, usedProductMapping, rawProductIds))
                 )
@@ -134,6 +141,21 @@ public class GenerateImageRepositoryImpl implements GenerateImageRepositoryCusto
                 .map(byId::get)
                 .filter(image -> image != null)
                 .toList();
+    }
+
+    private BooleanExpression resolvedGenerationTypeCondition(
+            QGenerateImage generateImage,
+            GenerateImageType generationType
+    ) {
+        if (generationType == null) {
+            return null;
+        }
+        if (generationType == GenerateImageType.LIST) {
+            return generateImage.generationType.eq(GenerateImageType.LIST)
+                    .or(generateImage.generationType.isNull().and(generateImage.banner.isNotNull()));
+        }
+        return generateImage.generationType.eq(GenerateImageType.RECOMMEND)
+                .or(generateImage.generationType.isNull().and(generateImage.banner.isNull()));
     }
 
     private BooleanExpression hasBannerMappedRawProducts(

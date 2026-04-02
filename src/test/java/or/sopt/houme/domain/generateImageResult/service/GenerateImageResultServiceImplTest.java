@@ -221,8 +221,8 @@ class GenerateImageResultServiceImplTest {
 
         when(generateImageService.findGenerateImage(1L)).thenReturn(current);
         when(bannerRepository.findAllByIdInWithRawProducts(List.of(10L))).thenReturn(List.of(bannerWithRawProducts));
-        when(generateImageRepository.findRelatedImagesByRawProductIds(List.of(101L), 1L, 10))
-                .thenReturn(List.of(related1, related2));
+        when(generateImageRepository.findRelatedImagesByRawProductIds(List.of(101L), 1L, 10, GenerateImageType.LIST))
+                .thenReturn(List.of(related1));
 
         User user = mock(User.class);
         when(user.getDisplayName()).thenReturn("최윤하");

@@ -1,6 +1,7 @@
 package or.sopt.houme.domain.generateImage.repository;
 
 import or.sopt.houme.domain.generateImage.model.entity.GenerateImage;
+import or.sopt.houme.domain.generateImage.model.entity.GenerateImageType;
 
 import java.util.List;
 import java.util.Optional;
@@ -18,5 +19,10 @@ public interface GenerateImageRepositoryCustom {
 
     List<GenerateImage> findAllByUserIdWithHouseAndBanner(Long userId);
 
-    List<GenerateImage> findRelatedImagesByRawProductIds(List<Long> rawProductIds, Long excludeImageId, int limit);
+    List<GenerateImage> findRelatedImagesByRawProductIds(
+            List<Long> rawProductIds,
+            Long excludeImageId,
+            int limit,
+            GenerateImageType generationType
+    );
 }

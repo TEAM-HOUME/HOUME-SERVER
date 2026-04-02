@@ -194,11 +194,12 @@ class GenerateImageRepositoryImplTest {
         List<GenerateImage> result = generateImageRepositoryImpl.findRelatedImagesByRawProductIds(
                 List.of(targetRawProduct.getId()),
                 current.getId(),
-                10
+                10,
+                GenerateImageType.LIST
         );
 
         assertThat(result).extracting(GenerateImage::getId).doesNotContain(current.getId());
         assertThat(result).extracting(GenerateImage::getId).doesNotHaveDuplicates();
-        assertThat(result).extracting(GenerateImage::getId).containsExactly(related2.getId(), related1.getId());
+        assertThat(result).extracting(GenerateImage::getId).containsExactly(related1.getId());
     }
 }
