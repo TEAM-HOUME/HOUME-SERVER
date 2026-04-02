@@ -39,9 +39,13 @@ public class CarouselController {
             description = "실제 상품을 응답합니다. 한 번 조회 시, 다섯개의 캐러셀을 반환합니다. <br><br>" +
                     "**page는 0부터** 넣어주세요 (null일시 0이 기본)")
     public ResponseEntity<ApiResponse<GetCarouselListResponseDTO>> getCarouselsV2(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
             @RequestParam(value = "page", required = false, defaultValue = "0") Integer page) {
 
-        GetCarouselListResponseDTO carousels = carouselService.getCarouselV2(page);
+        GetCarouselListResponseDTO carousels = carouselService.getCarouselV2(
+                page,
+                userDetails != null ? userDetails.getUser() : null
+        );
 
         return ResponseEntity.ok(ApiResponse.ok(carousels));
     }
@@ -59,7 +63,7 @@ public class CarouselController {
             throw new CarouselException(ErrorCode.CAROUSEL_INTERRUPT_EXCEPTION);
         }
 
-        return ResponseEntity.ok(ApiResponse.ok("캐러셀 좋아요가 정상적으로 저장되었습니다"));
+        return ResponseEntity.ok(ApiResponse.ok("상품 찜이 정상적으로 저장되었습니다"));
     }
 
 
@@ -75,6 +79,6 @@ public class CarouselController {
             throw new CarouselException(ErrorCode.CAROUSEL_INTERRUPT_EXCEPTION);
         }
 
-        return ResponseEntity.ok(ApiResponse.ok("캐러셀 싫어요가 정상적으로 저장되었습니다"));
+        return ResponseEntity.ok(ApiResponse.ok("캐러셀 싫어요가 정상적으로 반영되었습니다"));
     }
 }

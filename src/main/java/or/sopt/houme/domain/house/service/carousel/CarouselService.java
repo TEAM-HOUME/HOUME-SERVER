@@ -6,7 +6,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 public interface CarouselService {
     GetCarouselListResponseDTO getCarousel(int page);
-    GetCarouselListResponseDTO getCarouselV2(int page);
+    GetCarouselListResponseDTO getCarouselV2(int page, User user);
 
     @Transactional
     void likeCarousel(User user, Long carouselId);
