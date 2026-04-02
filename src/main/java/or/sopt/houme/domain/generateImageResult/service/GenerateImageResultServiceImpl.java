@@ -242,9 +242,11 @@ public class GenerateImageResultServiceImpl implements GenerateImageResultServic
         if (tagIds.isEmpty() || orderedDistinct.size() >= 4) {
             return;
         }
+        int remainingLimit = Math.max(1, 4 - orderedDistinct.size());
         List<CurationRawProduct> candidates = curationRawProductRepository.findAllSimilarByTagIds(
                 List.copyOf(tagIds),
-                List.copyOf(excludeIds)
+                List.copyOf(excludeIds),
+                PageRequest.of(0, remainingLimit)
         );
         addCandidates(candidates, excludeIds, orderedDistinct);
     }
@@ -257,9 +259,11 @@ public class GenerateImageResultServiceImpl implements GenerateImageResultServic
         if (brands.isEmpty() || orderedDistinct.size() >= 4) {
             return;
         }
+        int remainingLimit = Math.max(1, 4 - orderedDistinct.size());
         List<CurationRawProduct> candidates = curationRawProductRepository.findAllSimilarByBrands(
                 List.copyOf(brands),
-                List.copyOf(excludeIds)
+                List.copyOf(excludeIds),
+                PageRequest.of(0, remainingLimit)
         );
         addCandidates(candidates, excludeIds, orderedDistinct);
     }

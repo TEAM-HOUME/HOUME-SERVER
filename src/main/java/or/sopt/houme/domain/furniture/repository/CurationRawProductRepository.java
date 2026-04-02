@@ -97,7 +97,8 @@ public interface CurationRawProductRepository extends JpaRepository<CurationRawP
             """)
     List<CurationRawProduct> findAllSimilarByTagIds(
             @Param("tagIds") List<Long> tagIds,
-            @Param("excludeRawProductIds") List<Long> excludeRawProductIds
+            @Param("excludeRawProductIds") List<Long> excludeRawProductIds,
+            Pageable pageable
     );
 
     @Query("""
@@ -110,6 +111,7 @@ public interface CurationRawProductRepository extends JpaRepository<CurationRawP
             """)
     List<CurationRawProduct> findAllSimilarByBrands(
             @Param("brands") List<String> brands,
-            @Param("excludeRawProductIds") List<Long> excludeRawProductIds
+            @Param("excludeRawProductIds") List<Long> excludeRawProductIds,
+            Pageable pageable
     );
 }
