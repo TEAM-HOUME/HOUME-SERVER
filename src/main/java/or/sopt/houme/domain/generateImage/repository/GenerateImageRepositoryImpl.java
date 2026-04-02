@@ -2,13 +2,17 @@ package or.sopt.houme.domain.generateImage.repository;
 
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
+import or.sopt.houme.domain.banner.model.entity.QBannerCurationRawProduct;
 import or.sopt.houme.domain.generateImage.model.entity.GenerateImage;
 import or.sopt.houme.domain.generateImage.model.entity.QGenerateImage;
+import or.sopt.houme.domain.generateImage.model.entity.QGenerateImageUsedProduct;
 import or.sopt.houme.domain.banner.model.entity.QBanner;
 import or.sopt.houme.domain.house.model.entity.QHouse;
 import org.springframework.stereotype.Repository;
 
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Repository
@@ -87,5 +91,42 @@ public class GenerateImageRepositoryImpl implements GenerateImageRepositoryCusto
                 )
                 .orderBy(generateImage.createdAt.desc(), generateImage.id.desc())
                 .fetch();
+    }
+
+    @Override
+    public List<GenerateImage> findRelatedImagesByRawProductIds(List<Long> rawProductIds, Long excludeImageId, int limit) {
+        if (rawProductIds == null || rawProductIds.isEmpty() || limit < 1) {
+            return List.of();
+        }
+
+        QGenerateImage generateImage = QGenerateImage.generateImage;
+        QBanner banner = QBanner.banner;
+        QBannerCurationRawProduct bannerRawMapping = QBannerCurationRawProduct.bannerCurationRawProduct;
+        QGenerateImageUsedProduct usedProductMapping = QGenerateImageUsedProduct.generateImageUsedProduct;
+
+        List<GenerateImage> rows = queryFactory
+                .selectFrom(generateImage)
+                .leftJoin(generateImage.banner, banner).fetchJoin()
+                .leftJoin(banner.bannerRawProducts, bannerRawMapping)
+                .leftJoin(usedProductMapping).on(usedProductMapping.generateImage.id.eq(generateImage.id))
+                .where(
+                        generateImage.id.ne(excludeImageId),
+                        bannerRawMapping.curationRawProduct.id.in(rawProductIds)
+                                .or(usedProductMapping.curationRawProduct.id.in(rawProductIds))
+                )
+                .orderBy(generateImage.createdAt.desc(), generateImage.id.desc())
+                .fetch();
+
+        Map<Long, GenerateImage> distinctById = new LinkedHashMap<>();
+        for (GenerateImage row : rows) {
+            if (row == null || row.getId() == null) {
+                continue;
+            }
+            distinctById.putIfAbsent(row.getId(), row);
+            if (distinctById.size() >= limit) {
+                break;
+            }
+        }
+        return List.copyOf(distinctById.values());
     }
 }

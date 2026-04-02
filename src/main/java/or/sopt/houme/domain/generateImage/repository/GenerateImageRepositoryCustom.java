@@ -17,4 +17,6 @@ public interface GenerateImageRepositoryCustom {
     List<GenerateImage> findGenerateImagesByHouseId(Long houseId);
 
     List<GenerateImage> findAllByUserIdWithHouseAndBanner(Long userId);
+
+    List<GenerateImage> findRelatedImagesByRawProductIds(List<Long> rawProductIds, Long excludeImageId, int limit);
 }

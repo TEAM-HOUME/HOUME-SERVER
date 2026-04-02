@@ -18,9 +18,11 @@ import or.sopt.houme.domain.furniture.repository.CurationRawProductFurnitureTagR
 import or.sopt.houme.domain.furniture.repository.CurationRawProductRepository;
 import or.sopt.houme.domain.generateImage.model.entity.GenerateImage;
 import or.sopt.houme.domain.generateImage.model.entity.GenerateImageType;
+import or.sopt.houme.domain.generateImage.repository.GenerateImageRepository;
 import or.sopt.houme.domain.generateImage.repository.GenerateImageUsedProductRepository;
 import or.sopt.houme.domain.generateImage.service.GenerateImageService;
 import or.sopt.houme.domain.generateImageResult.presentation.dto.response.GenerateImageResultResponse;
+import or.sopt.houme.domain.generateImageResult.presentation.dto.response.RelatedImagesResponse;
 import or.sopt.houme.domain.generateImageResult.presentation.dto.response.SimilarItemsResponse;
 import or.sopt.houme.domain.house.model.taste.entity.Tag;
 import or.sopt.houme.domain.house.service.HouseService;
@@ -42,6 +44,9 @@ class GenerateImageResultServiceImplTest {
 
     @Mock
     private GenerateImageService generateImageService;
+
+    @Mock
+    private GenerateImageRepository generateImageRepository;
 
     @Mock
     private BannerRepository bannerRepository;
@@ -176,5 +181,57 @@ class GenerateImageResultServiceImplTest {
         assertThat(response.products()).hasSize(4);
         assertThat(response.products().get(0).id()).isEqualTo(201L);
         assertThat(response.products().get(3).id()).isEqualTo(204L);
+    }
+
+    @Test
+    @DisplayName("related-images는 LIST 타입 기준으로 현재 이미지를 제외하고 최신순/중복제거 결과를 반환한다")
+    void getRelatedImages_returnsLatestDistinctImagesExcludingCurrent() {
+        Banner bannerRef = Banner.builder().id(10L).build();
+        GenerateImage current = GenerateImage.builder()
+                .id(1L)
+                .generationType(GenerateImageType.LIST)
+                .banner(bannerRef)
+                .build();
+
+        CurationRawProduct selected = CurationRawProduct.builder()
+                .id(101L)
+                .productName("선택 상품")
+                .build();
+        BannerCurationRawProduct mapping = BannerCurationRawProduct.builder()
+                .id(1L)
+                .curationRawProduct(selected)
+                .build();
+        Banner bannerWithRawProducts = Banner.builder()
+                .id(10L)
+                .bannerRawProducts(List.of(mapping))
+                .build();
+
+        GenerateImage related1 = GenerateImage.builder()
+                .id(200L)
+                .url("https://image-200")
+                .generationType(GenerateImageType.LIST)
+                .build();
+        GenerateImage related2 = GenerateImage.builder()
+                .id(199L)
+                .url("https://image-199")
+                .generationType(GenerateImageType.RECOMMEND)
+                .build();
+
+        when(generateImageService.findGenerateImage(1L)).thenReturn(current);
+        when(bannerRepository.findAllByIdInWithRawProducts(List.of(10L))).thenReturn(List.of(bannerWithRawProducts));
+        when(generateImageRepository.findRelatedImagesByRawProductIds(List.of(101L), 1L, 10))
+                .thenReturn(List.of(related1, related2));
+
+        User user = mock(User.class);
+        when(user.getDisplayName()).thenReturn("최윤하");
+
+        RelatedImagesResponse response = generateImageResultService.getRelatedImages(user, 1L);
+
+        assertThat(response.name()).isEqualTo("최윤하");
+        assertThat(response.images()).hasSize(2);
+        assertThat(response.images().get(0).id()).isEqualTo(200L);
+        assertThat(response.images().get(0).resultType()).isEqualTo("LIST");
+        assertThat(response.images().get(1).id()).isEqualTo(199L);
+        assertThat(response.images().get(1).resultType()).isEqualTo("RECOMMEND");
     }
 }

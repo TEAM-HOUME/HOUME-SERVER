@@ -11,10 +11,13 @@ import or.sopt.houme.domain.furniture.repository.CurationRawProductRepository;
 import or.sopt.houme.domain.generateImage.model.entity.GenerateImage;
 import or.sopt.houme.domain.generateImage.model.entity.GenerateImageType;
 import or.sopt.houme.domain.generateImage.model.entity.GenerateImageUsedProduct;
+import or.sopt.houme.domain.generateImage.repository.GenerateImageRepository;
 import or.sopt.houme.domain.generateImage.repository.GenerateImageUsedProductRepository;
 import or.sopt.houme.domain.generateImage.service.GenerateImageService;
 import or.sopt.houme.domain.generateImageResult.presentation.dto.response.GenerateImageResultProductResponse;
 import or.sopt.houme.domain.generateImageResult.presentation.dto.response.GenerateImageResultResponse;
+import or.sopt.houme.domain.generateImageResult.presentation.dto.response.RelatedImageResponse;
+import or.sopt.houme.domain.generateImageResult.presentation.dto.response.RelatedImagesResponse;
 import or.sopt.houme.domain.generateImageResult.presentation.dto.response.SimilarItemResponse;
 import or.sopt.houme.domain.generateImageResult.presentation.dto.response.SimilarItemsResponse;
 import or.sopt.houme.domain.house.service.HouseService;
@@ -38,11 +41,14 @@ import java.util.Set;
 public class GenerateImageResultServiceImpl implements GenerateImageResultService {
 
     private final GenerateImageService generateImageService;
+    private final GenerateImageRepository generateImageRepository;
     private final BannerRepository bannerRepository;
     private final GenerateImageUsedProductRepository generateImageUsedProductRepository;
     private final CurationRawProductRepository curationRawProductRepository;
     private final CurationRawProductFurnitureTagRepository curationRawProductFurnitureTagRepository;
     private final HouseService houseService;
+
+    private static final int RELATED_IMAGE_LIMIT = 10;
 
     @Override
     public GenerateImageResultResponse getListResultItems(User user, Long imageId) {
@@ -130,6 +136,38 @@ public class GenerateImageResultServiceImpl implements GenerateImageResultServic
         return SimilarItemsResponse.of(recommendedProducts.stream()
                 .map(SimilarItemResponse::from)
                 .toList());
+    }
+
+    @Override
+    public RelatedImagesResponse getRelatedImages(User user, Long imageId) {
+        if (user == null) {
+            throw new ValidException(ErrorCode.NOT_VALID_EXCEPTION);
+        }
+
+        GenerateImage generateImage = generateImageService.findGenerateImage(imageId);
+        if (generateImage.getResolvedGenerationType() != GenerateImageType.LIST) {
+            throw new ValidException(ErrorCode.NOT_VALID_EXCEPTION);
+        }
+
+        List<Long> selectedRawProductIds = resolveSelectedRawProducts(generateImage).stream()
+                .map(CurationRawProduct::getId)
+                .filter(Objects::nonNull)
+                .toList();
+        if (selectedRawProductIds.isEmpty()) {
+            return RelatedImagesResponse.of(user.getDisplayName(), List.of());
+        }
+
+        List<RelatedImageResponse> images = generateImageRepository
+                .findRelatedImagesByRawProductIds(selectedRawProductIds, generateImage.getId(), RELATED_IMAGE_LIMIT)
+                .stream()
+                .map(related -> RelatedImageResponse.of(
+                        related.getId(),
+                        related.getUrl(),
+                        related.getResolvedGenerationType().name()
+                ))
+                .toList();
+
+        return RelatedImagesResponse.of(user.getDisplayName(), images);
     }
 
     private boolean resolveIsMirror(GenerateImage generateImage) {

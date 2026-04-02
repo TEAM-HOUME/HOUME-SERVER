@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import or.sopt.houme.domain.generateImageResult.presentation.dto.response.GenerateImageResultResponse;
+import or.sopt.houme.domain.generateImageResult.presentation.dto.response.RelatedImagesResponse;
 import or.sopt.houme.domain.generateImageResult.presentation.dto.response.SimilarItemsResponse;
 import or.sopt.houme.domain.generateImageResult.service.GenerateImageResultService;
 import or.sopt.houme.domain.user.presentation.controller.dto.CustomUserDetails;
@@ -44,6 +45,18 @@ public class GenerateImageResultController {
     ) {
         SimilarItemsResponse response =
                 generateImageResultService.getSimilarItems(userDetails.getUser(), imageId);
+        return ResponseEntity.ok(ApiResponse.ok(response));
+    }
+
+    @Operation(summary = "00님이 고른 아이템이 포함된 이미지 조회 API",
+            description = "요청 이미지의 선택 상품과 동일 상품이 포함된 다른 생성 이미지를 최신순으로 최대 10개 조회합니다.")
+    @GetMapping("/list-result/{imageId}/related-images")
+    public ResponseEntity<ApiResponse<RelatedImagesResponse>> getRelatedImages(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @PathVariable Long imageId
+    ) {
+        RelatedImagesResponse response =
+                generateImageResultService.getRelatedImages(userDetails.getUser(), imageId);
         return ResponseEntity.ok(ApiResponse.ok(response));
     }
 }
