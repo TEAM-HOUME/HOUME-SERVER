@@ -16,14 +16,13 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v1")
 @Tag(name = "캐러셀 관련 API")
 public class CarouselController {
 
     private final CarouselService carouselService;
     private final CarouselOptimisticLockFacade carouselOptimisticLockFacade;
 
-    @GetMapping("/carousels")
+    @GetMapping("/api/v1/carousels")
     @Operation(summary = "캐러셀 조회 API",
     description = "한 번 조회 시, 다섯개의 캐러셀을 반환합니다. <br><br>" +
             "**page는 0부터** 넣어주세요 (null일시 0이 기본)")
@@ -35,8 +34,20 @@ public class CarouselController {
         return ResponseEntity.ok(ApiResponse.ok(carousels));
     }
 
+    @GetMapping("/api/v2/carousels")
+    @Operation(summary = "캐러셀 조회 API v2",
+            description = "실제 상품을 응답합니다. 한 번 조회 시, 다섯개의 캐러셀을 반환합니다. <br><br>" +
+                    "**page는 0부터** 넣어주세요 (null일시 0이 기본)")
+    public ResponseEntity<ApiResponse<GetCarouselListResponseDTO>> getCarouselsV2(
+            @RequestParam(value = "page", required = false, defaultValue = "0") Integer page) {
 
-    @PostMapping("/carousels/like")
+        GetCarouselListResponseDTO carousels = carouselService.getCarouselV2(page);
+
+        return ResponseEntity.ok(ApiResponse.ok(carousels));
+    }
+
+
+    @PostMapping("/api/v1/carousels/like")
     @Operation(summary = "캐러셀 좋아요 API")
     public ResponseEntity<ApiResponse<String>> likeCarousel(
             @AuthenticationPrincipal CustomUserDetails userDetails,
@@ -52,7 +63,7 @@ public class CarouselController {
     }
 
 
-    @PostMapping("/carousels/hate")
+    @PostMapping("/api/v1/carousels/hate")
     @Operation(summary = "캐러셀 싫어요 API")
     public ResponseEntity<ApiResponse<String>> hateCarousel(
             @AuthenticationPrincipal CustomUserDetails userDetails,

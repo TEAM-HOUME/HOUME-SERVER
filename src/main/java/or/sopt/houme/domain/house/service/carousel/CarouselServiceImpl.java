@@ -1,6 +1,7 @@
 package or.sopt.houme.domain.house.service.carousel;
 
 import lombok.RequiredArgsConstructor;
+import or.sopt.houme.domain.furniture.repository.CurationRawProductRepository;
 import or.sopt.houme.domain.house.presentation.carousel.controller.dto.GetCarouselListResponseDTO;
 import or.sopt.houme.domain.house.presentation.carousel.controller.dto.GetCarouselResponseDTO;
 import or.sopt.houme.domain.house.model.carousel.entity.Carousel;
@@ -12,6 +13,7 @@ import or.sopt.houme.domain.preference.repository.PreferenceRepository;
 import or.sopt.houme.domain.user.model.entity.User;
 import or.sopt.houme.global.api.ErrorCode;
 import or.sopt.houme.global.api.handler.CarouselException;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,6 +29,7 @@ public class CarouselServiceImpl implements CarouselService {
     private final PreferenceRepository preferenceRepository;
     private final CarouselPreferenceRepository carouselPreferenceRepository;
     private final CarouselCacheService carouselCacheService;
+    private final CurationRawProductRepository curationRawProductRepository;
 
     @Override
     public GetCarouselListResponseDTO getCarousel(int page) {
@@ -40,6 +43,18 @@ public class CarouselServiceImpl implements CarouselService {
         }
 
         List<GetCarouselResponseDTO> result = shuffled.subList(fromIndex, toIndex).stream()
+                .toList();
+
+        return GetCarouselListResponseDTO.of(result);
+    }
+
+    @Override
+    public GetCarouselListResponseDTO getCarouselV2(int page) {
+        int pageSize = 5;
+        List<GetCarouselResponseDTO> result = curationRawProductRepository
+                .findAllByIsExposedTrueOrderByIdDesc(PageRequest.of(page, pageSize))
+                .stream()
+                .map(rawProduct -> GetCarouselResponseDTO.of(rawProduct.getId(), rawProduct.getProductImageUrl()))
                 .toList();
 
         return GetCarouselListResponseDTO.of(result);
