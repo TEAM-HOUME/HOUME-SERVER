@@ -160,6 +160,7 @@ public class GenerateImageResultServiceImpl implements GenerateImageResultServic
         List<RelatedImageResponse> images = generateImageRepository
                 .findRelatedImagesByRawProductIds(selectedRawProductIds, generateImage.getId(), RELATED_IMAGE_LIMIT)
                 .stream()
+                .filter(related -> related.getResolvedGenerationType() == GenerateImageType.LIST)
                 .map(related -> RelatedImageResponse.of(
                         related.getId(),
                         related.getUrl(),

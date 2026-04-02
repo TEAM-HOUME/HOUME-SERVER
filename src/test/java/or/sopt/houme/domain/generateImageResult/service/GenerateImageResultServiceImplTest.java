@@ -228,10 +228,8 @@ class GenerateImageResultServiceImplTest {
         RelatedImagesResponse response = generateImageResultService.getRelatedImages(user, 1L);
 
         assertThat(response.name()).isEqualTo("최윤하");
-        assertThat(response.images()).hasSize(2);
+        assertThat(response.images()).hasSize(1);
         assertThat(response.images().get(0).id()).isEqualTo(200L);
         assertThat(response.images().get(0).resultType()).isEqualTo("LIST");
-        assertThat(response.images().get(1).id()).isEqualTo(199L);
-        assertThat(response.images().get(1).resultType()).isEqualTo("RECOMMEND");
     }
 }
