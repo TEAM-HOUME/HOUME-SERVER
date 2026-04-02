@@ -1,7 +1,11 @@
 package or.sopt.houme.domain.generateImage.repository;
 
 import jakarta.persistence.EntityManager;
+import or.sopt.houme.domain.furniture.model.entity.CurationRawProduct;
+import or.sopt.houme.domain.furniture.model.entity.SoozipCategory;
 import or.sopt.houme.domain.generateImage.model.entity.GenerateImage;
+import or.sopt.houme.domain.generateImage.model.entity.GenerateImageType;
+import or.sopt.houme.domain.generateImage.model.entity.GenerateImageUsedProduct;
 import or.sopt.houme.domain.house.model.entity.House;
 import or.sopt.houme.domain.house.model.entity.enums.Activity;
 import or.sopt.houme.domain.house.model.entity.enums.Equilibrium;
@@ -18,9 +22,12 @@ import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 @DataJpaTest
 @Import({GenerateImageRepositoryImpl.class, QuerydslConfig.class})
@@ -40,7 +47,7 @@ class GenerateImageRepositoryImplTest {
     void setUp() {
         user = User.builder()
                 .name("테스트유저")
-                .email("test@email.com")
+                .email("test+" + UUID.randomUUID() + "@email.com")
                 .password("1234")
                 .birthday(LocalDate.of(1995, 5, 5))
                 .gender(Gender.FEMALE)
@@ -71,6 +78,16 @@ class GenerateImageRepositoryImplTest {
 
         em.flush();
         em.clear();
+
+        // H2 + PostgreSQLDialect 조합에서 jsonb 컬럼을 가진 일부 테이블이 자동 생성되지 않는 경우를 보완
+        em.createNativeQuery("create table if not exists banners (id bigint primary key)").executeUpdate();
+        em.createNativeQuery("""
+                create table if not exists banner_curation_raw_products (
+                    id bigint auto_increment primary key,
+                    banner_id bigint not null,
+                    curation_raw_product_id bigint not null
+                )
+                """).executeUpdate();
     }
 
     @Test
@@ -80,5 +97,108 @@ class GenerateImageRepositoryImplTest {
 
         assertThat(result).isPresent();
         assertThat(result.get().getId()).isEqualTo(generateImage.getId());
+    }
+
+    @Test
+    @DisplayName("findRelatedImagesByRawProductIds는 현재 이미지 제외, 중복 제거, 최신순 정렬을 보장한다")
+    void findRelatedImagesByRawProductIds_excludesCurrent_deduplicates_ordersLatest() {
+        CurationRawProduct targetRawProduct = CurationRawProduct.builder()
+                .source("repo_test")
+                .category(SoozipCategory.FURNITURE)
+                .productId(101L)
+                .productImageUrl("https://cdn.com/raw-101.png")
+                .productSiteUrl("https://shop.com/raw-101")
+                .productName("타겟 상품")
+                .productMallName("몰")
+                .fetchedAt(LocalDateTime.now())
+                .isExposed(true)
+                .build();
+        em.persist(targetRawProduct);
+
+        CurationRawProduct otherRawProduct = CurationRawProduct.builder()
+                .source("repo_test")
+                .category(SoozipCategory.FURNITURE)
+                .productId(202L)
+                .productImageUrl("https://cdn.com/raw-202.png")
+                .productSiteUrl("https://shop.com/raw-202")
+                .productName("비대상 상품")
+                .productMallName("몰")
+                .fetchedAt(LocalDateTime.now())
+                .isExposed(true)
+                .build();
+        em.persist(otherRawProduct);
+
+        GenerateImage current = GenerateImage.builder()
+                .url("https://cdn.com/current.png")
+                .filename("current.png")
+                .originalFilename("current-origin.png")
+                .fileExtension("png")
+                .house(house)
+                .generationType(GenerateImageType.LIST)
+                .build();
+        em.persist(current);
+
+        GenerateImage related1 = GenerateImage.builder()
+                .url("https://cdn.com/related1.png")
+                .filename("related1.png")
+                .originalFilename("related1-origin.png")
+                .fileExtension("png")
+                .house(house)
+                .generationType(GenerateImageType.LIST)
+                .build();
+        em.persist(related1);
+
+        GenerateImage related2 = GenerateImage.builder()
+                .url("https://cdn.com/related2.png")
+                .filename("related2.png")
+                .originalFilename("related2-origin.png")
+                .fileExtension("png")
+                .house(house)
+                .generationType(GenerateImageType.RECOMMEND)
+                .build();
+        em.persist(related2);
+
+        GenerateImage nonMatched = GenerateImage.builder()
+                .url("https://cdn.com/non-matched.png")
+                .filename("non-matched.png")
+                .originalFilename("non-matched-origin.png")
+                .fileExtension("png")
+                .house(house)
+                .generationType(GenerateImageType.LIST)
+                .build();
+        em.persist(nonMatched);
+
+        // 배너 + 배너 매핑(native) : current/related1이 동일 배너를 바라보도록 구성
+        em.createNativeQuery("insert into banners(id) values (100)").executeUpdate();
+        em.createNativeQuery("update generate_images set banner_id = 100 where id in (:currentId, :related1Id)")
+                .setParameter("currentId", current.getId())
+                .setParameter("related1Id", related1.getId())
+                .executeUpdate();
+        em.createNativeQuery("""
+                insert into banner_curation_raw_products(banner_id, curation_raw_product_id)
+                values (100, :rawProductId)
+                """)
+                .setParameter("rawProductId", targetRawProduct.getId())
+                .executeUpdate();
+
+        // related1 은 used product로도 동일 상품을 한번 더 연결(중복 후보 시나리오)
+        em.persist(GenerateImageUsedProduct.of(related1, targetRawProduct, 1));
+        // related2 는 used product로 targetRawProduct와 연결
+        em.persist(GenerateImageUsedProduct.of(related2, targetRawProduct, 1));
+        // nonMatched 는 다른 상품 연결
+        em.persist(GenerateImageUsedProduct.of(nonMatched, otherRawProduct, 1));
+
+        em.flush();
+        em.clear();
+
+        List<GenerateImage> result = generateImageRepositoryImpl.findRelatedImagesByRawProductIds(
+                List.of(targetRawProduct.getId()),
+                current.getId(),
+                10
+        );
+
+        assertThat(result).extracting(GenerateImage::getId).doesNotContain(current.getId());
+        assertThat(result).extracting(GenerateImage::getId).doesNotHaveDuplicates();
+        assertThat(result).extracting(GenerateImage::getId).containsExactly(related2.getId(), related1.getId());
     }
 }
