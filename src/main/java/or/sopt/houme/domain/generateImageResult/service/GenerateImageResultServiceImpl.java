@@ -24,6 +24,7 @@ import or.sopt.houme.domain.house.service.HouseService;
 import or.sopt.houme.domain.user.model.entity.User;
 import or.sopt.houme.global.api.ErrorCode;
 import or.sopt.houme.global.api.handler.ValidException;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -224,9 +225,11 @@ public class GenerateImageResultServiceImpl implements GenerateImageResultServic
         if (furnitureTypeIds.isEmpty() || orderedDistinct.size() >= 4) {
             return;
         }
+        int remainingLimit = Math.max(1, 4 - orderedDistinct.size());
         List<CurationRawProduct> candidates = curationRawProductRepository.findAllSimilarByFurnitureTypeIds(
                 List.copyOf(furnitureTypeIds),
-                List.copyOf(excludeIds)
+                List.copyOf(excludeIds),
+                PageRequest.of(0, remainingLimit)
         );
         addCandidates(candidates, excludeIds, orderedDistinct);
     }

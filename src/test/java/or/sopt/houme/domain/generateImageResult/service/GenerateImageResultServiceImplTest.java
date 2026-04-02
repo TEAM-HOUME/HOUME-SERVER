@@ -33,6 +33,8 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -172,7 +174,7 @@ class GenerateImageResultServiceImplTest {
         when(bannerRepository.findAllByIdInWithRawProducts(List.of(10L))).thenReturn(List.of(bannerWithRawProducts));
         when(curationRawProductFurnitureTagRepository.findAllByCurationRawProductIdInWithFurnitureTag(List.of(101L)))
                 .thenReturn(List.of(selectedProductMapping));
-        when(curationRawProductRepository.findAllSimilarByFurnitureTypeIds(List.of(1L), List.of(101L)))
+        when(curationRawProductRepository.findAllSimilarByFurnitureTypeIds(eq(List.of(1L)), eq(List.of(101L)), any()))
                 .thenReturn(List.of(c1, c2, c3, c4));
 
         User user = mock(User.class);

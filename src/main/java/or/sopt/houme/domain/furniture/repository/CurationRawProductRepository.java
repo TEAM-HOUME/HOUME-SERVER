@@ -80,7 +80,8 @@ public interface CurationRawProductRepository extends JpaRepository<CurationRawP
             """)
     List<CurationRawProduct> findAllSimilarByFurnitureTypeIds(
             @Param("furnitureTypeIds") List<Long> furnitureTypeIds,
-            @Param("excludeRawProductIds") List<Long> excludeRawProductIds
+            @Param("excludeRawProductIds") List<Long> excludeRawProductIds,
+            Pageable pageable
     );
 
     @Query("""
