@@ -5,6 +5,9 @@ import or.sopt.houme.domain.banner.model.entity.Banner;
 import or.sopt.houme.domain.banner.model.entity.BannerCurationRawProduct;
 import or.sopt.houme.domain.banner.repository.BannerRepository;
 import or.sopt.houme.domain.furniture.model.entity.CurationRawProduct;
+import or.sopt.houme.domain.furniture.model.entity.CurationRawProductFurnitureTag;
+import or.sopt.houme.domain.furniture.repository.CurationRawProductFurnitureTagRepository;
+import or.sopt.houme.domain.furniture.repository.CurationRawProductRepository;
 import or.sopt.houme.domain.generateImage.model.entity.GenerateImage;
 import or.sopt.houme.domain.generateImage.model.entity.GenerateImageType;
 import or.sopt.houme.domain.generateImage.model.entity.GenerateImageUsedProduct;
@@ -12,6 +15,8 @@ import or.sopt.houme.domain.generateImage.repository.GenerateImageUsedProductRep
 import or.sopt.houme.domain.generateImage.service.GenerateImageService;
 import or.sopt.houme.domain.generateImageResult.presentation.dto.response.GenerateImageResultProductResponse;
 import or.sopt.houme.domain.generateImageResult.presentation.dto.response.GenerateImageResultResponse;
+import or.sopt.houme.domain.generateImageResult.presentation.dto.response.SimilarItemResponse;
+import or.sopt.houme.domain.generateImageResult.presentation.dto.response.SimilarItemsResponse;
 import or.sopt.houme.domain.house.service.HouseService;
 import or.sopt.houme.domain.user.model.entity.User;
 import or.sopt.houme.global.api.ErrorCode;
@@ -19,8 +24,13 @@ import or.sopt.houme.global.api.handler.ValidException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -30,6 +40,8 @@ public class GenerateImageResultServiceImpl implements GenerateImageResultServic
     private final GenerateImageService generateImageService;
     private final BannerRepository bannerRepository;
     private final GenerateImageUsedProductRepository generateImageUsedProductRepository;
+    private final CurationRawProductRepository curationRawProductRepository;
+    private final CurationRawProductFurnitureTagRepository curationRawProductFurnitureTagRepository;
     private final HouseService houseService;
 
     @Override
@@ -44,7 +56,9 @@ public class GenerateImageResultServiceImpl implements GenerateImageResultServic
         }
 
         boolean isMirror = resolveIsMirror(generateImage);
-        List<GenerateImageResultProductResponse> products = resolveProducts(generateImage);
+        List<GenerateImageResultProductResponse> products = resolveSelectedRawProducts(generateImage).stream()
+                .map(GenerateImageResultProductResponse::from)
+                .toList();
 
         return GenerateImageResultResponse.of(
                 generateImage.getId(),
@@ -54,6 +68,70 @@ public class GenerateImageResultServiceImpl implements GenerateImageResultServic
         );
     }
 
+    @Override
+    public SimilarItemsResponse getSimilarItems(User user, Long imageId) {
+        if (user == null) {
+            throw new ValidException(ErrorCode.NOT_VALID_EXCEPTION);
+        }
+
+        GenerateImage generateImage = generateImageService.findGenerateImage(imageId);
+        if (generateImage.getResolvedGenerationType() != GenerateImageType.LIST) {
+            throw new ValidException(ErrorCode.NOT_VALID_EXCEPTION);
+        }
+
+        List<CurationRawProduct> selectedProducts = resolveSelectedRawProducts(generateImage);
+        if (selectedProducts.isEmpty()) {
+            return SimilarItemsResponse.of(List.of());
+        }
+
+        Set<Long> selectedRawProductIds = selectedProducts.stream()
+                .map(CurationRawProduct::getId)
+                .filter(Objects::nonNull)
+                .collect(LinkedHashSet::new, LinkedHashSet::add, LinkedHashSet::addAll);
+        if (selectedRawProductIds.isEmpty()) {
+            return SimilarItemsResponse.of(List.of());
+        }
+
+        List<CurationRawProductFurnitureTag> selectedMappings =
+                curationRawProductFurnitureTagRepository.findAllByCurationRawProductIdInWithFurnitureTag(List.copyOf(selectedRawProductIds));
+
+        Set<Long> furnitureTypeIds = selectedMappings.stream()
+                .map(CurationRawProductFurnitureTag::getFurnitureTag)
+                .filter(Objects::nonNull)
+                .map(furnitureTag -> furnitureTag.getFurniture())
+                .filter(Objects::nonNull)
+                .map(furniture -> furniture.getFurnitureType())
+                .filter(Objects::nonNull)
+                .map(furnitureType -> furnitureType.getId())
+                .filter(Objects::nonNull)
+                .collect(LinkedHashSet::new, LinkedHashSet::add, LinkedHashSet::addAll);
+
+        Set<Long> tagIds = selectedMappings.stream()
+                .map(CurationRawProductFurnitureTag::getFurnitureTag)
+                .filter(Objects::nonNull)
+                .map(furnitureTag -> furnitureTag.getTag())
+                .filter(Objects::nonNull)
+                .map(tag -> tag.getId())
+                .filter(Objects::nonNull)
+                .collect(LinkedHashSet::new, LinkedHashSet::add, LinkedHashSet::addAll);
+
+        Set<String> brands = selectedProducts.stream()
+                .map(CurationRawProduct::getBrand)
+                .filter(brand -> brand != null && !brand.isBlank())
+                .collect(LinkedHashSet::new, LinkedHashSet::add, LinkedHashSet::addAll);
+
+        List<CurationRawProduct> recommendedProducts = recommendSimilarProducts(
+                furnitureTypeIds,
+                tagIds,
+                brands,
+                selectedRawProductIds
+        );
+
+        return SimilarItemsResponse.of(recommendedProducts.stream()
+                .map(SimilarItemResponse::from)
+                .toList());
+    }
+
     private boolean resolveIsMirror(GenerateImage generateImage) {
         if (generateImage.getHouse() == null) {
             return false;
@@ -61,7 +139,7 @@ public class GenerateImageResultServiceImpl implements GenerateImageResultServic
         return houseService.getIsMirrorByHouseId(generateImage.getHouse().getId());
     }
 
-    private List<GenerateImageResultProductResponse> resolveProducts(GenerateImage generateImage) {
+    private List<CurationRawProduct> resolveSelectedRawProducts(GenerateImage generateImage) {
         Banner banner = generateImage.getBanner();
         if (banner != null) {
             Banner bannerWithRawProducts = bannerRepository.findAllByIdInWithRawProducts(List.of(banner.getId())).stream()
@@ -72,15 +150,96 @@ public class GenerateImageResultServiceImpl implements GenerateImageResultServic
                     .sorted((left, right) -> Long.compare(safeMappingId(left), safeMappingId(right)))
                     .map(BannerCurationRawProduct::getCurationRawProduct)
                     .filter(Objects::nonNull)
-                    .map(GenerateImageResultProductResponse::from)
                     .toList();
         }
 
         return generateImageUsedProductRepository.findAllByGenerateImageIdInWithRawProduct(List.of(generateImage.getId())).stream()
                 .map(GenerateImageUsedProduct::getCurationRawProduct)
                 .filter(Objects::nonNull)
-                .map(GenerateImageResultProductResponse::from)
                 .toList();
+    }
+
+    private List<CurationRawProduct> recommendSimilarProducts(
+            Set<Long> furnitureTypeIds,
+            Set<Long> tagIds,
+            Set<String> brands,
+            Set<Long> selectedRawProductIds
+    ) {
+        Map<Long, CurationRawProduct> orderedDistinct = new LinkedHashMap<>();
+        List<Long> excludeIds = new ArrayList<>(selectedRawProductIds);
+
+        appendCandidatesByFurnitureType(furnitureTypeIds, excludeIds, orderedDistinct);
+        appendCandidatesByTag(tagIds, excludeIds, orderedDistinct);
+        appendCandidatesByBrand(brands, excludeIds, orderedDistinct);
+
+        return orderedDistinct.values().stream()
+                .limit(4)
+                .toList();
+    }
+
+    private void appendCandidatesByFurnitureType(
+            Set<Long> furnitureTypeIds,
+            List<Long> excludeIds,
+            Map<Long, CurationRawProduct> orderedDistinct
+    ) {
+        if (furnitureTypeIds.isEmpty() || orderedDistinct.size() >= 4) {
+            return;
+        }
+        List<CurationRawProduct> candidates = curationRawProductRepository.findAllSimilarByFurnitureTypeIds(
+                List.copyOf(furnitureTypeIds),
+                List.copyOf(excludeIds)
+        );
+        addCandidates(candidates, excludeIds, orderedDistinct);
+    }
+
+    private void appendCandidatesByTag(
+            Set<Long> tagIds,
+            List<Long> excludeIds,
+            Map<Long, CurationRawProduct> orderedDistinct
+    ) {
+        if (tagIds.isEmpty() || orderedDistinct.size() >= 4) {
+            return;
+        }
+        List<CurationRawProduct> candidates = curationRawProductRepository.findAllSimilarByTagIds(
+                List.copyOf(tagIds),
+                List.copyOf(excludeIds)
+        );
+        addCandidates(candidates, excludeIds, orderedDistinct);
+    }
+
+    private void appendCandidatesByBrand(
+            Set<String> brands,
+            List<Long> excludeIds,
+            Map<Long, CurationRawProduct> orderedDistinct
+    ) {
+        if (brands.isEmpty() || orderedDistinct.size() >= 4) {
+            return;
+        }
+        List<CurationRawProduct> candidates = curationRawProductRepository.findAllSimilarByBrands(
+                List.copyOf(brands),
+                List.copyOf(excludeIds)
+        );
+        addCandidates(candidates, excludeIds, orderedDistinct);
+    }
+
+    private void addCandidates(
+            List<CurationRawProduct> candidates,
+            List<Long> excludeIds,
+            Map<Long, CurationRawProduct> orderedDistinct
+    ) {
+        for (CurationRawProduct candidate : candidates) {
+            if (candidate == null || candidate.getId() == null) {
+                continue;
+            }
+            if (orderedDistinct.containsKey(candidate.getId())) {
+                continue;
+            }
+            orderedDistinct.put(candidate.getId(), candidate);
+            excludeIds.add(candidate.getId());
+            if (orderedDistinct.size() >= 4) {
+                return;
+            }
+        }
     }
 
     private long safeMappingId(BannerCurationRawProduct mapping) {

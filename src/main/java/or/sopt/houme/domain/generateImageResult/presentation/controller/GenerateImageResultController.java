@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import or.sopt.houme.domain.generateImageResult.presentation.dto.response.GenerateImageResultResponse;
+import or.sopt.houme.domain.generateImageResult.presentation.dto.response.SimilarItemsResponse;
 import or.sopt.houme.domain.generateImageResult.service.GenerateImageResultService;
 import or.sopt.houme.domain.user.presentation.controller.dto.CustomUserDetails;
 import or.sopt.houme.global.api.ApiResponse;
@@ -31,6 +32,18 @@ public class GenerateImageResultController {
     ) {
         GenerateImageResultResponse response =
                 generateImageResultService.getListResultItems(userDetails.getUser(), imageId);
+        return ResponseEntity.ok(ApiResponse.ok(response));
+    }
+
+    @Operation(summary = "방금 담은 스타일과 비슷한 상품 조회 API",
+            description = "generation_type이 LIST인 생성 이미지의 선택 상품을 기반으로 유사 상품을 최대 4개 조회합니다.")
+    @GetMapping("/list-result/{imageId}/similar-items")
+    public ResponseEntity<ApiResponse<SimilarItemsResponse>> getSimilarItems(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @PathVariable Long imageId
+    ) {
+        SimilarItemsResponse response =
+                generateImageResultService.getSimilarItems(userDetails.getUser(), imageId);
         return ResponseEntity.ok(ApiResponse.ok(response));
     }
 }

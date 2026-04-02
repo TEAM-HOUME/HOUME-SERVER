@@ -65,4 +65,50 @@ public interface CurationRawProductRepository extends JpaRepository<CurationRawP
             @Param("furnitureTag") FurnitureTag furnitureTag,
             @Param("productIds") List<Long> productIds
     );
+
+    @Query("""
+            select distinct rawProduct
+            from CurationRawProduct rawProduct
+            join rawProduct.furnitureTagMappings mapping
+            join mapping.furnitureTag furnitureTag
+            join furnitureTag.furniture furniture
+            join furniture.furnitureType furnitureType
+            where furnitureType.id in :furnitureTypeIds
+              and rawProduct.id not in :excludeRawProductIds
+              and rawProduct.isExposed = true
+            order by rawProduct.id desc
+            """)
+    List<CurationRawProduct> findAllSimilarByFurnitureTypeIds(
+            @Param("furnitureTypeIds") List<Long> furnitureTypeIds,
+            @Param("excludeRawProductIds") List<Long> excludeRawProductIds
+    );
+
+    @Query("""
+            select distinct rawProduct
+            from CurationRawProduct rawProduct
+            join rawProduct.furnitureTagMappings mapping
+            join mapping.furnitureTag furnitureTag
+            join furnitureTag.tag tag
+            where tag.id in :tagIds
+              and rawProduct.id not in :excludeRawProductIds
+              and rawProduct.isExposed = true
+            order by rawProduct.id desc
+            """)
+    List<CurationRawProduct> findAllSimilarByTagIds(
+            @Param("tagIds") List<Long> tagIds,
+            @Param("excludeRawProductIds") List<Long> excludeRawProductIds
+    );
+
+    @Query("""
+            select rawProduct
+            from CurationRawProduct rawProduct
+            where rawProduct.brand in :brands
+              and rawProduct.id not in :excludeRawProductIds
+              and rawProduct.isExposed = true
+            order by rawProduct.id desc
+            """)
+    List<CurationRawProduct> findAllSimilarByBrands(
+            @Param("brands") List<String> brands,
+            @Param("excludeRawProductIds") List<Long> excludeRawProductIds
+    );
 }

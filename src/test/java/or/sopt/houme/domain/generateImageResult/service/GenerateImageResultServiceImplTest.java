@@ -10,11 +10,19 @@ import or.sopt.houme.domain.banner.model.entity.Banner;
 import or.sopt.houme.domain.banner.model.entity.BannerCurationRawProduct;
 import or.sopt.houme.domain.banner.repository.BannerRepository;
 import or.sopt.houme.domain.furniture.model.entity.CurationRawProduct;
+import or.sopt.houme.domain.furniture.model.entity.CurationRawProductFurnitureTag;
+import or.sopt.houme.domain.furniture.model.entity.Furniture;
+import or.sopt.houme.domain.furniture.model.entity.FurnitureTag;
+import or.sopt.houme.domain.furniture.model.entity.FurnitureType;
+import or.sopt.houme.domain.furniture.repository.CurationRawProductFurnitureTagRepository;
+import or.sopt.houme.domain.furniture.repository.CurationRawProductRepository;
 import or.sopt.houme.domain.generateImage.model.entity.GenerateImage;
 import or.sopt.houme.domain.generateImage.model.entity.GenerateImageType;
 import or.sopt.houme.domain.generateImage.repository.GenerateImageUsedProductRepository;
 import or.sopt.houme.domain.generateImage.service.GenerateImageService;
 import or.sopt.houme.domain.generateImageResult.presentation.dto.response.GenerateImageResultResponse;
+import or.sopt.houme.domain.generateImageResult.presentation.dto.response.SimilarItemsResponse;
+import or.sopt.houme.domain.house.model.taste.entity.Tag;
 import or.sopt.houme.domain.house.service.HouseService;
 import or.sopt.houme.domain.user.model.entity.User;
 import or.sopt.houme.global.api.handler.ValidException;
@@ -40,6 +48,12 @@ class GenerateImageResultServiceImplTest {
 
     @Mock
     private GenerateImageUsedProductRepository generateImageUsedProductRepository;
+
+    @Mock
+    private CurationRawProductRepository curationRawProductRepository;
+
+    @Mock
+    private CurationRawProductFurnitureTagRepository curationRawProductFurnitureTagRepository;
 
     @Mock
     private HouseService houseService;
@@ -108,5 +122,59 @@ class GenerateImageResultServiceImplTest {
         assertThat(response.products()).hasSize(1);
         assertThat(response.products().getFirst().id()).isEqualTo(101L);
         assertThat(response.products().getFirst().name()).isEqualTo("테스트 상품");
+    }
+
+    @Test
+    @DisplayName("유사 상품 조회는 가구타입 우선 후보를 먼저 채우고 최대 4개를 반환한다")
+    void getSimilarItems_prioritizesFurnitureTypeAndLimitsToFour() {
+        Banner bannerRef = Banner.builder().id(10L).build();
+        GenerateImage listImage = GenerateImage.builder()
+                .id(1L)
+                .generationType(GenerateImageType.LIST)
+                .banner(bannerRef)
+                .build();
+
+        CurationRawProduct selected = CurationRawProduct.builder()
+                .id(101L)
+                .brand("선택브랜드")
+                .productName("선택 상품")
+                .build();
+
+        BannerCurationRawProduct mapping = BannerCurationRawProduct.builder()
+                .id(1L)
+                .curationRawProduct(selected)
+                .build();
+        Banner bannerWithRawProducts = Banner.builder()
+                .id(10L)
+                .bannerRawProducts(List.of(mapping))
+                .build();
+
+        FurnitureType furnitureType = FurnitureType.builder().id(1L).build();
+        Furniture furniture = Furniture.builder().id(1L).furnitureType(furnitureType).build();
+        Tag tag = Tag.builder().id(1L).build();
+        FurnitureTag furnitureTag = FurnitureTag.builder().id(1L).furniture(furniture).tag(tag).build();
+        CurationRawProductFurnitureTag selectedProductMapping = CurationRawProductFurnitureTag.builder()
+                .id(1L)
+                .furnitureTag(furnitureTag)
+                .build();
+
+        CurationRawProduct c1 = CurationRawProduct.builder().id(201L).productName("furniture-type-1").build();
+        CurationRawProduct c2 = CurationRawProduct.builder().id(202L).productName("furniture-type-2").build();
+        CurationRawProduct c3 = CurationRawProduct.builder().id(203L).productName("furniture-type-3").build();
+        CurationRawProduct c4 = CurationRawProduct.builder().id(204L).productName("furniture-type-4").build();
+
+        when(generateImageService.findGenerateImage(1L)).thenReturn(listImage);
+        when(bannerRepository.findAllByIdInWithRawProducts(List.of(10L))).thenReturn(List.of(bannerWithRawProducts));
+        when(curationRawProductFurnitureTagRepository.findAllByCurationRawProductIdInWithFurnitureTag(List.of(101L)))
+                .thenReturn(List.of(selectedProductMapping));
+        when(curationRawProductRepository.findAllSimilarByFurnitureTypeIds(List.of(1L), List.of(101L)))
+                .thenReturn(List.of(c1, c2, c3, c4));
+
+        User user = mock(User.class);
+        SimilarItemsResponse response = generateImageResultService.getSimilarItems(user, 1L);
+
+        assertThat(response.products()).hasSize(4);
+        assertThat(response.products().get(0).id()).isEqualTo(201L);
+        assertThat(response.products().get(3).id()).isEqualTo(204L);
     }
 }
