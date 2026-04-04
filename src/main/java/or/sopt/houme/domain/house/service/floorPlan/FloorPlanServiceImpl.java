@@ -26,7 +26,6 @@ import or.sopt.houme.domain.user.util.floorplan.FloorPlanImageJsonCodec;
 import or.sopt.houme.domain.user.util.floorplan.FloorPlanStructureJsonCodec;
 import or.sopt.houme.global.api.ErrorCode;
 import or.sopt.houme.global.api.handler.HouseException;
-import or.sopt.houme.global.api.handler.ValidException;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -203,7 +202,7 @@ public class FloorPlanServiceImpl implements FloorPlanService {
 
     private void validateSize(Integer size) {
         if (size != null && size < 1) {
-            throw new ValidException(ErrorCode.NOT_VALID_EXCEPTION);
+            throw new HouseException(ErrorCode.INVALID_FLOOR_PLAN_SIZE);
         }
     }
 

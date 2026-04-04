@@ -23,7 +23,7 @@ import or.sopt.houme.domain.generateImageResult.presentation.dto.response.Simila
 import or.sopt.houme.domain.house.service.HouseService;
 import or.sopt.houme.domain.user.model.entity.User;
 import or.sopt.houme.global.api.ErrorCode;
-import or.sopt.houme.global.api.handler.ValidException;
+import or.sopt.houme.global.api.handler.GenerateImageException;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -54,12 +54,12 @@ public class GenerateImageResultServiceImpl implements GenerateImageResultServic
     @Override
     public GenerateImageResultResponse getListResultItems(User user, Long imageId) {
         if (user == null) {
-            throw new ValidException(ErrorCode.NOT_VALID_EXCEPTION);
+            throw new GenerateImageException(ErrorCode.INVALID_GENERATE_IMAGE_RESULT_REQUEST);
         }
 
         GenerateImage generateImage = generateImageService.findGenerateImage(imageId);
         if (generateImage.getResolvedGenerationType() != GenerateImageType.LIST) {
-            throw new ValidException(ErrorCode.NOT_VALID_EXCEPTION);
+            throw new GenerateImageException(ErrorCode.INVALID_GENERATE_IMAGE_TYPE);
         }
 
         boolean isMirror = resolveIsMirror(generateImage);
@@ -78,12 +78,12 @@ public class GenerateImageResultServiceImpl implements GenerateImageResultServic
     @Override
     public SimilarItemsResponse getSimilarItems(User user, Long imageId) {
         if (user == null) {
-            throw new ValidException(ErrorCode.NOT_VALID_EXCEPTION);
+            throw new GenerateImageException(ErrorCode.INVALID_GENERATE_IMAGE_RESULT_REQUEST);
         }
 
         GenerateImage generateImage = generateImageService.findGenerateImage(imageId);
         if (generateImage.getResolvedGenerationType() != GenerateImageType.LIST) {
-            throw new ValidException(ErrorCode.NOT_VALID_EXCEPTION);
+            throw new GenerateImageException(ErrorCode.INVALID_GENERATE_IMAGE_TYPE);
         }
 
         List<CurationRawProduct> selectedProducts = resolveSelectedRawProducts(generateImage);
@@ -142,12 +142,12 @@ public class GenerateImageResultServiceImpl implements GenerateImageResultServic
     @Override
     public RelatedImagesResponse getRelatedImages(User user, Long imageId) {
         if (user == null) {
-            throw new ValidException(ErrorCode.NOT_VALID_EXCEPTION);
+            throw new GenerateImageException(ErrorCode.INVALID_GENERATE_IMAGE_RESULT_REQUEST);
         }
 
         GenerateImage generateImage = generateImageService.findGenerateImage(imageId);
         if (generateImage.getResolvedGenerationType() != GenerateImageType.LIST) {
-            throw new ValidException(ErrorCode.NOT_VALID_EXCEPTION);
+            throw new GenerateImageException(ErrorCode.INVALID_GENERATE_IMAGE_TYPE);
         }
 
         List<Long> selectedRawProductIds = resolveSelectedRawProducts(generateImage).stream()

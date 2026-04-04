@@ -22,7 +22,6 @@ import or.sopt.houme.domain.banner.repository.BannerRepository;
 import or.sopt.houme.global.api.ErrorCode;
 import or.sopt.houme.global.api.GeneralException;
 import or.sopt.houme.global.api.handler.BannerException;
-import or.sopt.houme.global.api.handler.ValidException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -76,7 +75,7 @@ public class BannerServiceImpl implements BannerService {
                 parseStyleAnswerChips(banner.getStyleAnswerChipsJson()).stream()
                         .map(chip -> {
                             if (chip.id() == null) {
-                                throw new ValidException(ErrorCode.NOT_VALID_EXCEPTION);
+                                throw new BannerException(ErrorCode.INVALID_BANNER_ANSWER_CHIP);
                             }
                             return BannerDetailAnswerResponse.of(chip.id(), chip.label());
                         })
@@ -87,7 +86,7 @@ public class BannerServiceImpl implements BannerService {
     @Override
     public OtherStyleListResponse getOtherStyles(Integer size) {
         if (size != null && size < 1) {
-            throw new ValidException(ErrorCode.NOT_VALID_EXCEPTION);
+            throw new BannerException(ErrorCode.INVALID_BANNER_SIZE);
         }
 
         List<OtherStyleResponse> styles = bannerRepository.findAllWithRawProducts(BannerType.STYLE, false).stream()
