@@ -44,7 +44,7 @@ public class CarouselController {
 
         GetCarouselListResponseDTO carousels = carouselService.getCarouselV2(
                 page,
-                userDetails != null ? userDetails.getUser() : null
+                userDetails.getUser()
         );
 
         return ResponseEntity.ok(ApiResponse.ok(carousels));

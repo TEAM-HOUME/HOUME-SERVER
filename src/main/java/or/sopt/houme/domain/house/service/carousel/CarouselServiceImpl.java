@@ -43,9 +43,7 @@ public class CarouselServiceImpl implements CarouselService {
     @Override
     public GetCarouselListResponseDTO getCarouselV2(int page, User user) {
         int pageSize = 5;
-        List<GetCarouselResponseDTO> result = (user == null
-                ? curationRawProductRepository.findAllByIsExposedTrueOrderByIdDesc(PageRequest.of(page, pageSize))
-                : findExposedRawProductsExcludingJjym(user.getId(), page, pageSize))
+        List<GetCarouselResponseDTO> result = findExposedRawProductsExcludingJjym(user.getId(), page, pageSize)
                 .stream()
                 .map(rawProduct -> GetCarouselResponseDTO.of(rawProduct.getId(), rawProduct.getProductImageUrl()))
                 .toList();
