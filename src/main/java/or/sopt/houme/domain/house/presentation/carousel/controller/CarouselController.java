@@ -94,7 +94,7 @@ public class CarouselController {
     @Operation(summary = "캐러셀 좋아요 API v2")
     public ResponseEntity<ApiResponse<String>> likeCarouselV2(
             @AuthenticationPrincipal CustomUserDetails userDetails,
-            @RequestParam Long rawProductId) {
+            @RequestParam @Min(value = 1, message = "rawProductId는 1 이상이어야 합니다.") Long rawProductId) {
 
         carouselOptimisticLockFacade.likeCarouselV2(userDetails.getUser(), rawProductId);
 
