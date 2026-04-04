@@ -96,11 +96,7 @@ public class CarouselController {
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @RequestParam Long rawProductId) {
 
-        try {
-            carouselOptimisticLockFacade.likeCarouselV2(userDetails.getUser(), rawProductId);
-        } catch (InterruptedException e) {
-            throw new CarouselException(ErrorCode.CAROUSEL_INTERRUPT_EXCEPTION);
-        }
+        carouselOptimisticLockFacade.likeCarouselV2(userDetails.getUser(), rawProductId);
 
         return ResponseEntity.ok(ApiResponse.ok("상품 찜이 정상적으로 저장되었습니다"));
     }
