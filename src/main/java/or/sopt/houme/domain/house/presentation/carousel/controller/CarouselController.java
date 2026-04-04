@@ -70,7 +70,7 @@ public class CarouselController {
             throw new CarouselException(ErrorCode.CAROUSEL_INTERRUPT_EXCEPTION);
         }
 
-        return ResponseEntity.ok(ApiResponse.ok("상품 찜이 정상적으로 저장되었습니다"));
+        return ResponseEntity.ok(ApiResponse.ok("캐러셀 좋아요가 정상적으로 저장되었습니다"));
     }
 
 
@@ -83,6 +83,36 @@ public class CarouselController {
         try {
             carouselOptimisticLockFacade.hateCarousel(userDetails.getUser(), carouselId);
         }catch (InterruptedException e) {
+            throw new CarouselException(ErrorCode.CAROUSEL_INTERRUPT_EXCEPTION);
+        }
+
+        return ResponseEntity.ok(ApiResponse.ok("캐러셀 싫어요가 정상적으로 반영되었습니다"));
+    }
+
+    @PostMapping("/api/v2/carousels/like")
+    @Operation(summary = "캐러셀 좋아요 API v2")
+    public ResponseEntity<ApiResponse<String>> likeCarouselV2(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @RequestParam Long rawProductId) {
+
+        try {
+            carouselOptimisticLockFacade.likeCarouselV2(userDetails.getUser(), rawProductId);
+        } catch (InterruptedException e) {
+            throw new CarouselException(ErrorCode.CAROUSEL_INTERRUPT_EXCEPTION);
+        }
+
+        return ResponseEntity.ok(ApiResponse.ok("상품 찜이 정상적으로 저장되었습니다"));
+    }
+
+    @PostMapping("/api/v2/carousels/hate")
+    @Operation(summary = "캐러셀 싫어요 API v2")
+    public ResponseEntity<ApiResponse<String>> hateCarouselV2(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @RequestParam Long rawProductId) {
+
+        try {
+            carouselOptimisticLockFacade.hateCarouselV2(userDetails.getUser(), rawProductId);
+        } catch (InterruptedException e) {
             throw new CarouselException(ErrorCode.CAROUSEL_INTERRUPT_EXCEPTION);
         }
 
