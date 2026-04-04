@@ -107,18 +107,6 @@ public class JjymServiceImpl implements JjymService {
         existing.ifPresent(jjymRepository::delete);
     }
 
-    @Override
-    @Transactional(readOnly = true)
-    public List<Long> getLikedRawProductProductIds(Long userId) {
-        return jjymRepository.findAllByUserIdWithFurnitureOrderByCreatedAtDesc(userId).stream()
-                .map(Jjym::getRecommendFurniture)
-                .filter(recommendFurniture -> recommendFurniture.getSource() == CurationSource.RAW)
-                .map(RecommendFurniture::getFurnitureProductId)
-                .filter(productId -> productId != null)
-                .distinct()
-                .toList();
-    }
-
     @Transactional(readOnly = true)
     @Override
     public JjymListResponse getMyJjyms(Long userId) {

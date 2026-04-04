@@ -1,5 +1,8 @@
 package or.sopt.houme.domain.house.service.carousel;
 
+import or.sopt.houme.domain.furniture.model.entity.CurationRawProduct;
+import or.sopt.houme.domain.furniture.repository.CurationRawProductRepository;
+import or.sopt.houme.domain.furniture.service.JjymService;
 import or.sopt.houme.domain.house.presentation.carousel.controller.dto.GetCarouselListResponseDTO;
 import or.sopt.houme.domain.house.presentation.carousel.controller.dto.GetCarouselResponseDTO;
 import or.sopt.houme.domain.house.model.carousel.entity.Carousel;
@@ -19,8 +22,9 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -46,6 +50,12 @@ class CarouselServiceImplTest {
 
     @Mock
     private CarouselCacheService carouselCacheService;
+
+    @Mock
+    private CurationRawProductRepository curationRawProductRepository;
+
+    @Mock
+    private JjymService jjymService;
 
     private User user;
     private Carousel carousel;
@@ -89,6 +99,31 @@ class CarouselServiceImplTest {
         assertThat(result.carouselResponseDTOS())
                 .extracting("carouselId")
                 .containsExactlyInAnyOrder(1L, 2L);
+    }
+
+    @Test
+    @DisplayName("getCarouselV2()는 사용자 찜 제외를 DB 쿼리에서 처리한 결과를 반환한다")
+    void getCarouselV2_returnsExposedRawProductsExcludingLikedProducts() {
+        CurationRawProduct rawProduct1 = CurationRawProduct.builder()
+                .id(101L)
+                .productImageUrl("image-101")
+                .build();
+        CurationRawProduct rawProduct2 = CurationRawProduct.builder()
+                .id(102L)
+                .productImageUrl("image-102")
+                .build();
+
+        when(curationRawProductRepository.findExposedRawProductsExcludingLikedByUser(1L, PageRequest.of(0, 5)))
+                .thenReturn(new PageImpl<>(List.of(rawProduct1, rawProduct2), PageRequest.of(0, 5), 2));
+
+        GetCarouselListResponseDTO result = carouselService.getCarouselV2(0, user);
+
+        assertThat(result.carouselResponseDTOS()).hasSize(2);
+        assertThat(result.carouselResponseDTOS().get(0).carouselId()).isEqualTo(101L);
+        assertThat(result.carouselResponseDTOS().get(1).carouselId()).isEqualTo(102L);
+        verify(curationRawProductRepository, times(1))
+                .findExposedRawProductsExcludingLikedByUser(1L, PageRequest.of(0, 5));
+        verifyNoInteractions(jjymService);
     }
 
 

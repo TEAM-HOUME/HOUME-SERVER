@@ -85,12 +85,8 @@ public class CarouselServiceImpl implements CarouselService {
             int page,
             int pageSize
     ) {
-        List<Long> likedProductIds = jjymService.getLikedRawProductProductIds(userId);
-        if (likedProductIds.isEmpty()) {
-            return curationRawProductRepository.findAllByIsExposedTrueOrderByIdDesc(PageRequest.of(page, pageSize));
-        }
-        return curationRawProductRepository.findAllByIsExposedTrueAndProductIdNotInOrderByIdDesc(
-                likedProductIds,
+        return curationRawProductRepository.findExposedRawProductsExcludingLikedByUser(
+                userId,
                 PageRequest.of(page, pageSize)
         );
     }
