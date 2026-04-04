@@ -27,7 +27,7 @@ import or.sopt.houme.domain.generateImageResult.presentation.dto.response.Simila
 import or.sopt.houme.domain.house.model.taste.entity.Tag;
 import or.sopt.houme.domain.house.service.HouseService;
 import or.sopt.houme.domain.user.model.entity.User;
-import or.sopt.houme.global.api.handler.ValidException;
+import or.sopt.houme.global.api.handler.GenerateImageException;
 
 import java.util.List;
 
@@ -79,7 +79,7 @@ class GenerateImageResultServiceImplTest {
         User user = mock(User.class);
 
         assertThatThrownBy(() -> generateImageResultService.getListResultItems(user, 1L))
-                .isInstanceOf(ValidException.class);
+                .isInstanceOf(GenerateImageException.class);
     }
 
     @Test
