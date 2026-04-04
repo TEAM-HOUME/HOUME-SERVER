@@ -80,12 +80,6 @@ public class CarouselServiceImpl implements CarouselService {
         jjymService.likeRawProduct(user.getId(), rawProductId);
     }
 
-    @Override
-    @Transactional
-    public void hateCarouselV2(User user, Long rawProductId) {
-        // v2 hate 는 찜 해제와 분리한다.
-    }
-
     private Page<CurationRawProduct> findExposedRawProductsExcludingJjym(
             Long userId,
             int page,

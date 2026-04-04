@@ -16,7 +16,4 @@ public interface CarouselService {
 
     @Transactional
     void likeCarouselV2(User user, Long rawProductId);
-
-    @Transactional
-    void hateCarouselV2(User user, Long rawProductId);
 }
