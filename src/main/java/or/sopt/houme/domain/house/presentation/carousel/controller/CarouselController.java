@@ -2,6 +2,7 @@ package or.sopt.houme.domain.house.presentation.carousel.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import or.sopt.houme.domain.house.presentation.carousel.controller.dto.GetCarouselListResponseDTO;
 import or.sopt.houme.domain.house.service.carousel.facade.CarouselOptimisticLockFacade;
@@ -12,11 +13,13 @@ import or.sopt.houme.global.api.ErrorCode;
 import or.sopt.houme.global.api.handler.CarouselException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
 @Tag(name = "캐러셀 관련 API")
+@Validated
 public class CarouselController {
 
     private final CarouselService carouselService;
@@ -27,7 +30,9 @@ public class CarouselController {
     description = "한 번 조회 시, 다섯개의 캐러셀을 반환합니다. <br><br>" +
             "**page는 0부터** 넣어주세요 (null일시 0이 기본)")
     public ResponseEntity<ApiResponse<GetCarouselListResponseDTO>> getCarousels(
-            @RequestParam(value = "page", required = false, defaultValue = "0") Integer page) {
+            @RequestParam(value = "page", required = false, defaultValue = "0")
+            @Min(value = 0, message = "page는 0 이상이어야 합니다.")
+            Integer page) {
 
         GetCarouselListResponseDTO carousels = carouselService.getCarousel(page);
 
@@ -40,7 +45,9 @@ public class CarouselController {
                     "**page는 0부터** 넣어주세요 (null일시 0이 기본)")
     public ResponseEntity<ApiResponse<GetCarouselListResponseDTO>> getCarouselsV2(
             @AuthenticationPrincipal CustomUserDetails userDetails,
-            @RequestParam(value = "page", required = false, defaultValue = "0") Integer page) {
+            @RequestParam(value = "page", required = false, defaultValue = "0")
+            @Min(value = 0, message = "page는 0 이상이어야 합니다.")
+            Integer page) {
 
         GetCarouselListResponseDTO carousels = carouselService.getCarouselV2(
                 page,
