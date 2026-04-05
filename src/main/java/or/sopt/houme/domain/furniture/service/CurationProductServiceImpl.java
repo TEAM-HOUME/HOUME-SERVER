@@ -1,6 +1,7 @@
 package or.sopt.houme.domain.furniture.service;
 
 import lombok.RequiredArgsConstructor;
+import or.sopt.houme.domain.furniture.model.entity.CurationRawProductColor;
 import or.sopt.houme.domain.furniture.model.entity.Furniture;
 import or.sopt.houme.domain.furniture.model.entity.FurnitureType;
 import or.sopt.houme.domain.furniture.presentation.dto.response.ColorFilterResponse;
@@ -11,7 +12,12 @@ import or.sopt.houme.domain.furniture.repository.FurnitureRepository;
 import or.sopt.houme.domain.furniture.repository.FurnitureTypeRepository;
 import or.sopt.houme.domain.furniture.model.entity.CurationRawProduct;
 import or.sopt.houme.domain.furniture.presentation.dto.response.CurationProductDetailResponse;
+import or.sopt.houme.domain.furniture.model.entity.CurationSource;
+import or.sopt.houme.domain.furniture.repository.CurationRawProductColorRepository;
 import or.sopt.houme.domain.furniture.repository.CurationRawProductRepository;
+import or.sopt.houme.domain.furniture.repository.JjymRepository;
+import or.sopt.houme.domain.furniture.repository.RecommendFurnitureRepository;
+import or.sopt.houme.domain.user.model.entity.User;
 import or.sopt.houme.global.api.ErrorCode;
 import or.sopt.houme.global.api.handler.FurnitureException;
 import org.springframework.stereotype.Service;
@@ -27,6 +33,9 @@ public class CurationProductServiceImpl implements CurationProductService {
     private final FurnitureTypeRepository furnitureTypeRepository;
     private final FurnitureRepository furnitureRepository;
     private final CurationRawProductRepository curationRawProductRepository;
+    private final CurationRawProductColorRepository curationRawProductColorRepository;
+    private final RecommendFurnitureRepository recommendFurnitureRepository;
+    private final JjymRepository jjymRepository;
 
     @Override
     public CurationProductFilterResponse getFilterMetadata() {
@@ -38,11 +47,13 @@ public class CurationProductServiceImpl implements CurationProductService {
     }
 
     @Override
-    public CurationProductDetailResponse getProductDetail(Long id) {
+    public CurationProductDetailResponse getProductDetail(Long id, User user) {
         CurationRawProduct product = curationRawProductRepository.findById(id)
                 .orElseThrow(() -> new FurnitureException(ErrorCode.NOT_FOUND_CURATION_RAW_PRODUCT));
 
         String categoryName = extractCategoryName(product);
+        List<CurationProductDetailResponse.ProductColorDetail> colors = extractColorDetails(id);
+        boolean isLiked = checkIsLiked(product, user);
 
         return new CurationProductDetailResponse(
                 new CurationProductDetailResponse.ProductDetail(
@@ -56,9 +67,45 @@ public class CurationProductServiceImpl implements CurationProductService {
                         product.getDiscountRate(),
                         product.getDiscountPrice(),
                         product.getProductMallName(),
-                        product.getProductSiteUrl()
+                        product.getProductSiteUrl(),
+                        colors,
+                        isLiked
                 )
         );
+    }
+
+    private boolean checkIsLiked(CurationRawProduct product, User user) {
+        if (user == null) {
+            return false;
+        }
+
+        // curation_raw_products 데이터는 CurationSource.RAW로 관리됨
+        return recommendFurnitureRepository.findBySourceAndFurnitureProductId(CurationSource.RAW, product.getProductId())
+                .map(recommend -> jjymRepository.existsByUserIdAndRecommendFurnitureId(user.getId(), recommend.getId()))
+                .orElse(false);
+    }
+
+    private List<CurationProductDetailResponse.ProductColorDetail> extractColorDetails(Long productId) {
+        List<CurationRawProductColor> colorEntities = curationRawProductColorRepository.findAllByCurationRawProductId(productId);
+        List<CurationProductDetailResponse.ProductColorDetail> details = new java.util.ArrayList<>();
+
+        for (CurationRawProductColor color : colorEntities) {
+            String colorName = color.getClientColorName();
+            if (colorName == null || colorName.isBlank()) continue;
+
+            // "화이트, 실버" 처럼 콤마/슬래시 등으로 묶인 이름을 분리
+            String[] names = colorName.split("[,/|]");
+            for (String name : names) {
+                String trimmedName = name.trim();
+                if (trimmedName.isEmpty()) continue;
+
+                // 각 이름별로 Hex 코드 매핑
+                List<String> hexCodes = ColorHexMapper.toHexCodes(List.of(trimmedName));
+                String hexValue = hexCodes.isEmpty() ? null : hexCodes.get(0);
+                details.add(new CurationProductDetailResponse.ProductColorDetail(trimmedName, hexValue));
+            }
+        }
+        return details;
     }
 
     private String extractCategoryName(CurationRawProduct product) {

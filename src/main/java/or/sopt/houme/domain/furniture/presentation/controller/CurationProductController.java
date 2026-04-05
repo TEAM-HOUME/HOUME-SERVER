@@ -6,8 +6,10 @@ import lombok.RequiredArgsConstructor;
 import or.sopt.houme.domain.furniture.presentation.dto.response.CurationProductDetailResponse;
 import or.sopt.houme.domain.furniture.presentation.dto.response.CurationProductFilterResponse;
 import or.sopt.houme.domain.furniture.service.CurationProductService;
+import or.sopt.houme.domain.user.presentation.controller.dto.CustomUserDetails;
 import or.sopt.houme.global.api.ApiResponse;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -31,7 +33,10 @@ public class CurationProductController {
     @GetMapping("/{id}")
     @Operation(summary = "상품 상세 조회 API", 
                description = "상품의 상세 정보(이미지, 가격, 구매 링크 등)를 조회합니다.")
-    public ResponseEntity<ApiResponse<CurationProductDetailResponse>> getProductDetail(@PathVariable Long id) {
-        return ResponseEntity.ok(ApiResponse.ok(curationProductService.getProductDetail(id)));
+    public ResponseEntity<ApiResponse<CurationProductDetailResponse>> getProductDetail(
+            @PathVariable Long id,
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        return ResponseEntity.ok(ApiResponse.ok(curationProductService.getProductDetail(id, userDetails.getUser())));
     }
 }

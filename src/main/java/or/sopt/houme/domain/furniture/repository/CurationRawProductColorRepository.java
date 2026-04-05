@@ -11,5 +11,7 @@ import java.util.List;
 public interface CurationRawProductColorRepository extends JpaRepository<CurationRawProductColor, Long> {
     List<CurationRawProductColor> findAllByCurationRawProductIdIn(List<Long> curationRawProductIds);
 
+    List<CurationRawProductColor> findAllByCurationRawProductId(Long curationRawProductId);
+
     void deleteAllByCurationRawProduct(CurationRawProduct curationRawProduct);
 }

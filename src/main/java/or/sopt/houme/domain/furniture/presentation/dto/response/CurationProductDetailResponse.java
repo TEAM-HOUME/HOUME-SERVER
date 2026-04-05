@@ -1,5 +1,7 @@
 package or.sopt.houme.domain.furniture.presentation.dto.response;
 
+import java.util.List;
+
 public record CurationProductDetailResponse(ProductDetail product) {
     public record ProductDetail(
             Long productId,
@@ -12,6 +14,13 @@ public record CurationProductDetailResponse(ProductDetail product) {
             Integer discountRate,
             Long finalPrice,
             String mallName,
-            String linkUrl
+            String linkUrl,
+            List<ProductColorDetail> colors,
+            Boolean isLiked
+    ) {}
+
+    public record ProductColorDetail(
+            String name,
+            String value
     ) {}
 }
