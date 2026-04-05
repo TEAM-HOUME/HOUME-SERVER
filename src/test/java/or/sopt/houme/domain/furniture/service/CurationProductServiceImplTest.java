@@ -73,7 +73,7 @@ class CurationProductServiceImplTest {
     }
 
     @Test
-    @DisplayName("getProductDetail()은 상품 ID로 상세 정보를 조회하여 반환한다")
+    @DisplayName("getProductDetail()은 노출된 상품만 ID로 상세 정보를 조회하여 반환한다")
     void getProductDetail() {
         // given
         Long id = 1L;
@@ -86,16 +86,16 @@ class CurationProductServiceImplTest {
                 .productSiteUrl("http://site.com")
                 .source("naver")
                 .discountPrice(10000L)
+                .isExposed(true)
                 .build();
 
         CurationRawProductColor color = CurationRawProductColor.builder()
                 .curationRawProduct(product)
-                .clientColorName("블랙")
+                .clientColorName("블랙, 미매핑색상")
                 .build();
 
-        given(curationRawProductRepository.findById(id)).willReturn(Optional.of(product));
+        given(curationRawProductRepository.findByIdAndIsExposedTrue(id)).willReturn(Optional.of(product));
         given(curationRawProductColorRepository.findAllByCurationRawProductId(id)).willReturn(List.of(color));
-        // 찜 여부 관련 Mock 추가
         given(recommendFurnitureRepository.findBySourceAndFurnitureProductId(any(), eq(3003L))).willReturn(Optional.empty());
 
         // when
@@ -104,8 +104,16 @@ class CurationProductServiceImplTest {
         // then
         assertThat(response).isNotNull();
         assertThat(response.product().productId()).isEqualTo(3003L);
-        assertThat(response.product().colors()).hasSize(1);
+        assertThat(response.product().colors()).hasSize(2);
+        
+        // 블랙 매핑 확인
         assertThat(response.product().colors().get(0).name()).isEqualTo("블랙");
+        assertThat(response.product().colors().get(0).value()).isEqualTo("#000000");
+        
+        // 미매핑 색상 확인 (Hex 코드 형식이 아니므로 null 반환)
+        assertThat(response.product().colors().get(1).name()).isEqualTo("미매핑색상");
+        assertThat(response.product().colors().get(1).value()).isNull();
+        
         assertThat(response.product().isLiked()).isFalse();
     }
 }

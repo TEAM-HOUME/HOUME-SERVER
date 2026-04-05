@@ -48,7 +48,7 @@ public class CurationProductServiceImpl implements CurationProductService {
 
     @Override
     public CurationProductDetailResponse getProductDetail(Long id, User user) {
-        CurationRawProduct product = curationRawProductRepository.findById(id)
+        CurationRawProduct product = curationRawProductRepository.findByIdAndIsExposedTrue(id)
                 .orElseThrow(() -> new FurnitureException(ErrorCode.NOT_FOUND_CURATION_RAW_PRODUCT));
 
         String categoryName = extractCategoryName(product);
@@ -57,6 +57,7 @@ public class CurationProductServiceImpl implements CurationProductService {
 
         return new CurationProductDetailResponse(
                 new CurationProductDetailResponse.ProductDetail(
+                        product.getId(),
                         product.getProductId(),
                         categoryName,
                         product.getSource(),
@@ -84,29 +85,36 @@ public class CurationProductServiceImpl implements CurationProductService {
                 .map(recommend -> jjymRepository.existsByUserIdAndRecommendFurnitureId(user.getId(), recommend.getId()))
                 .orElse(false);
     }
+private List<CurationProductDetailResponse.ProductColorDetail> extractColorDetails(Long productId) {
+    List<CurationRawProductColor> colorEntities = curationRawProductColorRepository.findAllByCurationRawProductId(productId);
+    List<CurationProductDetailResponse.ProductColorDetail> details = new java.util.ArrayList<>();
 
-    private List<CurationProductDetailResponse.ProductColorDetail> extractColorDetails(Long productId) {
-        List<CurationRawProductColor> colorEntities = curationRawProductColorRepository.findAllByCurationRawProductId(productId);
-        List<CurationProductDetailResponse.ProductColorDetail> details = new java.util.ArrayList<>();
-
-        for (CurationRawProductColor color : colorEntities) {
-            String colorName = color.getClientColorName();
-            if (colorName == null || colorName.isBlank()) continue;
-
-            // "화이트, 실버" 처럼 콤마/슬래시 등으로 묶인 이름을 분리
-            String[] names = colorName.split("[,/|]");
-            for (String name : names) {
-                String trimmedName = name.trim();
-                if (trimmedName.isEmpty()) continue;
-
-                // 각 이름별로 Hex 코드 매핑
-                List<String> hexCodes = ColorHexMapper.toHexCodes(List.of(trimmedName));
-                String hexValue = hexCodes.isEmpty() ? null : hexCodes.get(0);
-                details.add(new CurationProductDetailResponse.ProductColorDetail(trimmedName, hexValue));
-            }
+    for (CurationRawProductColor colorEntity : colorEntities) {
+        String clientColorName = colorEntity.getClientColorName();
+        if (clientColorName == null || clientColorName.isBlank()) {
+            continue;
         }
-        return details;
+
+        // 콤마로 구분된 여러 색상 처리
+        String[] names = clientColorName.split("[,/]");
+        for (String name : names) {
+            String trimmedName = name.trim();
+            if (trimmedName.isEmpty()) continue;
+
+            // 각 이름별로 Hex 코드 매핑
+            List<String> hexCodes = ColorHexMapper.toHexCodes(List.of(trimmedName));
+            String hexValue = hexCodes.isEmpty() ? null : hexCodes.get(0);
+
+            // 리뷰 반영: hexValue가 실제 hex 포맷(#...)이 아닐 경우 null 처리하여 안정성 확보
+            if (hexValue != null && !hexValue.startsWith("#")) {
+                hexValue = null;
+            }
+
+            details.add(new CurationProductDetailResponse.ProductColorDetail(trimmedName, hexValue));
+        }
     }
+    return details;
+}
 
     private String extractCategoryName(CurationRawProduct product) {
         // 상품에 매핑된 첫 번째 가구 태그 정보를 바탕으로 카테고리명 추출

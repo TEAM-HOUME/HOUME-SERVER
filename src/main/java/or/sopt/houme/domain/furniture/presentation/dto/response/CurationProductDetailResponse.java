@@ -4,7 +4,8 @@ import java.util.List;
 
 public record CurationProductDetailResponse(ProductDetail product) {
     public record ProductDetail(
-            Long productId,
+            Long id,               // 우리 DB의 내부 PK (API 요청 및 찜 연동용)
+            Long productId,        // 외부 수집처의 원본 상품 식별자
             String categoryName,
             String source,
             String brand,
