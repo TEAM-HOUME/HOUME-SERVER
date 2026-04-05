@@ -72,4 +72,13 @@ class GenerateImageRepositoryImplTest {
         em.flush();
         em.clear();
     }
+
+    @Test
+    @DisplayName("findMostRecentByUserId는 유저 기준 최신 생성 이미지를 반환한다")
+    void findMostRecentByUserId_returnsLatestImage() {
+        Optional<GenerateImage> result = generateImageRepositoryImpl.findMostRecentByUserId(user.getId());
+
+        assertThat(result).isPresent();
+        assertThat(result.get().getId()).isEqualTo(generateImage.getId());
+    }
 }

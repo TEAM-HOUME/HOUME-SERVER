@@ -74,6 +74,36 @@
             grid-template-columns: repeat(2, minmax(0, 1fr));
             gap: 16px;
         }
+        .banner-form-shell .banner-editor-grid > div {
+            display: grid;
+            gap: 10px;
+            align-content: start;
+            padding: 16px;
+            border: 1px solid #e5e7eb;
+            border-radius: 18px;
+            background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+            box-shadow: 0 8px 20px rgba(15, 23, 42, 0.04);
+        }
+        .banner-form-shell .banner-editor-grid > div.full-span {
+            padding: 18px;
+        }
+        .banner-form-shell .form-label {
+            margin-bottom: 0;
+            font-size: 0.78rem;
+            font-weight: 800;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            color: #64748b;
+        }
+        .banner-form-shell .form-control,
+        .banner-form-shell .form-select {
+            border-radius: 12px;
+            border-color: #d7deea;
+            box-shadow: none;
+        }
+        .banner-form-shell textarea.form-control {
+            min-height: 140px;
+        }
         .banner-editor-grid .full-span {
             grid-column: 1 / -1;
         }
@@ -81,15 +111,17 @@
             border: 1px solid #e5e7eb;
             border-radius: 14px;
             padding: 16px;
-            background: #fafbfc;
+            background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+            box-shadow: 0 8px 18px rgba(15, 23, 42, 0.04);
         }
         .banner-image-upload-panel {
             display: grid;
             gap: 12px;
             padding: 14px;
+            min-height: 214px;
             border: 1px dashed #cbd5e1;
-            border-radius: 14px;
-            background: #f8fafc;
+            border-radius: 16px;
+            background: linear-gradient(180deg, #f8fbff 0%, #f1f5f9 100%);
         }
         .banner-image-upload-actions {
             display: flex;
@@ -122,8 +154,22 @@
             min-width: 0;
         }
         .banner-image-preview-meta a {
-            word-break: break-all;
-            font-size: 0.85rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: fit-content;
+            padding: 4px 10px;
+            border-radius: 999px;
+            background: #eaf3ff;
+            color: #0f4c81;
+            text-decoration: none;
+            font-size: 0.82rem;
+            font-weight: 700;
+        }
+        .banner-form-shell .banner-form-lead {
+            margin: 0 0 16px;
+            color: #64748b;
+            font-size: 0.95rem;
         }
         .banner-chip-editor-header {
             display: flex;
@@ -135,6 +181,9 @@
             font-size: 0.95rem;
             font-weight: 700;
             color: #1f2937;
+        }
+        .banner-chip-editor textarea.form-control {
+            min-height: 108px;
         }
         .banner-search-results {
             display: flex;
@@ -172,6 +221,24 @@
             font-size: 0.87rem;
             font-weight: 600;
         }
+        .banner-card-chip-list {
+            display: grid;
+            gap: 10px;
+        }
+        .banner-card-chip-summary {
+            display: grid;
+            gap: 8px;
+            padding: 12px;
+            border: 1px solid #dbe5f0;
+            border-radius: 14px;
+            background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+        }
+        .banner-card-chip-prompt {
+            font-size: 0.88rem;
+            line-height: 1.5;
+            color: #475569;
+            white-space: pre-wrap;
+        }
         .banner-card-chip button,
         .banner-selected-product-chip button,
         .banner-mapped-product-chip button {
@@ -187,19 +254,72 @@
         }
         .banner-card {
             display: grid;
-            grid-template-columns: 180px minmax(0, 1fr) auto;
+            grid-template-columns: minmax(0, 320px) minmax(0, 1fr) auto;
             gap: 20px;
             padding: 20px;
             border: 1px solid #e5e7eb;
             border-radius: 18px;
             background: #fff;
+            align-items: start;
+        }
+        .banner-card-media {
+            display: grid;
+            gap: 12px;
+        }
+        .banner-card-image-stack {
+            display: grid;
+            gap: 12px;
+        }
+        .banner-card-image-tile {
+            display: grid;
+            gap: 10px;
+            padding: 12px;
+            border: 1px solid #e5e7eb;
+            border-radius: 16px;
+            background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+        }
+        .banner-card-image-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+        }
+        .banner-card-image-caption {
+            font-size: 0.78rem;
+            font-weight: 800;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            color: #64748b;
         }
         .banner-card-image {
-            width: 180px;
-            height: 120px;
+            width: 100%;
+            height: 164px;
             border-radius: 14px;
             object-fit: cover;
             background: #e5e7eb;
+        }
+        .banner-card-image-empty {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #94a3b8;
+            font-size: 0.9rem;
+            font-weight: 700;
+            border: 1px dashed #cbd5e1;
+            background: linear-gradient(180deg, #f8fafc 0%, #eef2f7 100%);
+        }
+        .banner-card-link {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: fit-content;
+            padding: 4px 10px;
+            border-radius: 999px;
+            background: #eef2ff;
+            color: #3730a3;
+            text-decoration: none;
+            font-size: 0.8rem;
+            font-weight: 700;
         }
         .banner-card-body {
             display: grid;
@@ -661,6 +781,62 @@
             font-weight: 700;
             color: #64748b;
         }
+        .floor-plan-checkbox-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 10px;
+        }
+        .floor-plan-checkbox-card {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 12px;
+            border: 1px solid #d7deea;
+            border-radius: 12px;
+            background: #fff;
+        }
+        .floor-plan-checkbox-card label {
+            margin: 0;
+            font-size: 0.92rem;
+            font-weight: 600;
+            color: #334155;
+        }
+        .floor-plan-gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(156px, 1fr));
+            gap: 12px;
+        }
+        .floor-plan-gallery-item {
+            display: grid;
+            gap: 8px;
+            padding: 10px;
+            border: 1px solid #e2e8f0;
+            border-radius: 14px;
+            background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+        }
+        .floor-plan-gallery-item img {
+            width: 100%;
+            height: 110px;
+            object-fit: cover;
+            border-radius: 10px;
+            background: #e2e8f0;
+        }
+        .floor-plan-gallery-view {
+            display: inline-flex;
+            width: fit-content;
+            align-items: center;
+            padding: 4px 10px;
+            border-radius: 999px;
+            background: #eef2ff;
+            color: #4338ca;
+            font-size: 0.8rem;
+            font-weight: 700;
+        }
+        .floor-plan-list-toolbar {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
     </style>
 </head>
 <body>
@@ -691,6 +867,11 @@
         <li class="nav-item">
             <a class="nav-link" href="#" data-target="raw-product-management">
                 <i class="fas fa-box-open"></i>RAW 상품 관리
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="#" data-target="landing-management">
+                <i class="fas fa-flag"></i>랜딩 관리
             </a>
         </li>
         <li class="nav-item">
@@ -1329,6 +1510,63 @@
         </div>
     </div>
 
+    <div id="landing-management" class="content-section">
+        <h2>랜딩 관리</h2>
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span>랜딩 목록</span>
+                <button id="get-landings-button" class="btn btn-secondary btn-sm">랜딩 목록 새로고침</button>
+            </div>
+            <div class="card-body">
+                <div id="landing-list-result" class="api-result"></div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">랜딩 등록 / 수정</div>
+            <div class="card-body">
+                <form id="landing-form" class="banner-form-shell">
+                    <p class="banner-form-lead">랜딩은 이미지와 타이틀만 관리합니다.</p>
+                    <div class="banner-editor-grid">
+                        <div>
+                            <label for="landingEditId" class="form-label">수정 대상 랜딩 ID</label>
+                            <input type="text" class="form-control" id="landingEditId" placeholder="목록에서 수정 선택 시 자동 입력" readonly>
+                        </div>
+                        <div class="full-span">
+                            <label for="landingImageFile" class="form-label">랜딩 이미지 업로드</label>
+                            <div class="banner-image-upload-panel">
+                                <input type="file" class="form-control" id="landingImageFile" accept="image/*">
+                                <input type="hidden" id="landingImageUrl">
+                                <div class="banner-image-upload-actions">
+                                    <button type="button" id="upload-landing-image-button" class="btn btn-outline-primary">S3 업로드</button>
+                                    <span id="landingImageUploadStatus" class="text-muted small">이미지를 선택하고 업로드하세요.</span>
+                                </div>
+                                <div id="landingImagePreview" class="banner-image-preview">
+                                    <img id="landingImagePreviewImg" alt="랜딩 미리보기">
+                                    <div class="banner-image-preview-meta">
+                                        <strong id="landingImagePreviewName">업로드된 랜딩 이미지</strong>
+                                        <a id="landingImagePreviewLink" href="#" target="_blank" rel="noopener noreferrer"></a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <label for="landingTitle" class="form-label">랜딩 타이틀</label>
+                            <input type="text" class="form-control" id="landingTitle" required>
+                        </div>
+                    </div>
+
+                    <div class="d-flex flex-wrap gap-2 mt-4">
+                        <button type="submit" id="create-landing-button" class="btn btn-primary">랜딩 등록</button>
+                        <button type="button" id="update-landing-button" class="btn btn-warning">랜딩 수정</button>
+                        <button type="button" id="reset-landing-form-button" class="btn btn-outline-secondary">폼 초기화</button>
+                    </div>
+                </form>
+                <div id="landing-form-result" class="api-result"></div>
+            </div>
+        </div>
+    </div>
+
     <div id="banner-management" class="content-section">
         <h2>배너 관리</h2>
         <div class="card">
@@ -1344,7 +1582,8 @@
         <div class="card">
             <div class="card-header">배너 등록 / 수정</div>
             <div class="card-body">
-                <form id="banner-form">
+                <form id="banner-form" class="banner-form-shell">
+                    <p class="banner-form-lead">배너 이미지를 기준으로 스타일 설명과 답변 칩, 매핑 상품을 관리합니다.</p>
                     <div class="banner-editor-grid">
                         <div>
                             <label for="bannerEditId" class="form-label">수정 대상 배너 ID</label>
@@ -1510,9 +1749,12 @@
         <div class="card">
             <div class="card-header d-flex justify-content-between align-items-center">
                 <span>도면 목록</span>
-                <button id="get-floor-plans-button" class="btn btn-secondary btn-sm">도면 목록 새로고침</button>
+                <div class="floor-plan-list-toolbar">
+                    <button id="toggle-floor-plans-button" class="btn btn-outline-secondary btn-sm">도면 목록 숨기기</button>
+                    <button id="get-floor-plans-button" class="btn btn-secondary btn-sm">도면 목록 새로고침</button>
+                </div>
             </div>
-            <div class="card-body">
+            <div class="card-body" id="floor-plan-list-panel">
                 <div id="floor-plan-list-result" class="api-result"></div>
             </div>
         </div>
@@ -1520,52 +1762,94 @@
         <div class="card">
             <div class="card-header">도면 등록 / 수정</div>
             <div class="card-body">
-                <form id="floor-plan-form">
+                <form id="floor-plan-form" class="banner-form-shell">
+                    <p class="banner-form-lead">도면의 다중 매핑 조건과 모든 view를 함께 관리합니다.</p>
                     <div class="banner-editor-grid">
                         <div>
                             <label for="floorPlanEditId" class="form-label">수정 대상 도면 ID</label>
                             <input type="text" class="form-control" id="floorPlanEditId" placeholder="목록에서 수정 선택 시 자동 입력" readonly>
                         </div>
+                        <div>
+                            <label for="floorPlanName" class="form-label">도면 이름</label>
+                            <input type="text" class="form-control" id="floorPlanName" placeholder="예: 복층 오피스텔 A타입" required>
+                        </div>
                         <div class="full-span">
                             <label for="floorPlanImageFile" class="form-label">도면 이미지 업로드</label>
                             <div class="banner-image-upload-panel">
                                 <input type="file" class="form-control" id="floorPlanImageFile" accept="image/*">
+                                <input type="text" class="form-control" id="floorPlanImageView" placeholder="이미지 view 예: 거실 / 주방 / 침실">
                                 <div class="banner-image-upload-actions">
                                     <button type="button" id="upload-floor-plan-image-button" class="btn btn-outline-primary">S3 업로드 후 목록 추가</button>
-                                    <span id="floorPlanImageUploadStatus" class="text-muted small">이미지를 하나씩 업로드해 도면 이미지 목록을 구성하세요.</span>
+                                    <span id="floorPlanImageUploadStatus" class="text-muted small">이미지를 하나씩 업로드하고, 필요하면 view도 함께 입력하세요.</span>
                                 </div>
                             </div>
                         </div>
-                        <div>
-                            <label for="floorPlanForm" class="form-label">주거형태</label>
-                            <select class="form-select" id="floorPlanForm" required>
-                                <option value="">주거형태를 선택하세요.</option>
-                                <option value="OFFICETEL">오피스텔</option>
-                                <option value="VILLA">빌라/다세대</option>
-                                <option value="APARTMENT">아파트</option>
-                                <option value="ETC">그 외</option>
-                            </select>
+                        <div class="full-span">
+                            <label class="form-label">주거형태</label>
+                            <div class="floor-plan-checkbox-grid">
+                                <div class="floor-plan-checkbox-card">
+                                    <input type="checkbox" class="form-check-input" id="floorPlanFormOfficetel" data-floor-plan-group="forms" value="OFFICETEL">
+                                    <label for="floorPlanFormOfficetel">오피스텔</label>
+                                </div>
+                                <div class="floor-plan-checkbox-card">
+                                    <input type="checkbox" class="form-check-input" id="floorPlanFormVilla" data-floor-plan-group="forms" value="VILLA">
+                                    <label for="floorPlanFormVilla">빌라/다세대</label>
+                                </div>
+                                <div class="floor-plan-checkbox-card">
+                                    <input type="checkbox" class="form-check-input" id="floorPlanFormApartment" data-floor-plan-group="forms" value="APARTMENT">
+                                    <label for="floorPlanFormApartment">아파트</label>
+                                </div>
+                                <div class="floor-plan-checkbox-card">
+                                    <input type="checkbox" class="form-check-input" id="floorPlanFormEtc" data-floor-plan-group="forms" value="ETC">
+                                    <label for="floorPlanFormEtc">그 외</label>
+                                </div>
+                            </div>
                         </div>
-                        <div>
-                            <label for="floorPlanStructure" class="form-label">구조</label>
-                            <select class="form-select" id="floorPlanStructure" required>
-                                <option value="">구조를 선택하세요.</option>
-                                <option value="OPEN_ONE_ROOM">오픈형 원룸</option>
-                                <option value="SEPARATED_ONE_ROOM">분리형 원룸</option>
-                                <option value="DUPLEX">복층형</option>
-                                <option value="TWO_ROOM">투룸</option>
-                                <option value="THREE_ROOM_OVER">쓰리룸+</option>
-                            </select>
+                        <div class="full-span">
+                            <label class="form-label">구조</label>
+                            <div class="floor-plan-checkbox-grid">
+                                <div class="floor-plan-checkbox-card">
+                                    <input type="checkbox" class="form-check-input" id="floorPlanStructureOpenOneRoom" data-floor-plan-group="structures" value="OPEN_ONE_ROOM">
+                                    <label for="floorPlanStructureOpenOneRoom">오픈형 원룸</label>
+                                </div>
+                                <div class="floor-plan-checkbox-card">
+                                    <input type="checkbox" class="form-check-input" id="floorPlanStructureSeparatedOneRoom" data-floor-plan-group="structures" value="SEPARATED_ONE_ROOM">
+                                    <label for="floorPlanStructureSeparatedOneRoom">분리형 원룸</label>
+                                </div>
+                                <div class="floor-plan-checkbox-card">
+                                    <input type="checkbox" class="form-check-input" id="floorPlanStructureDuplex" data-floor-plan-group="structures" value="DUPLEX">
+                                    <label for="floorPlanStructureDuplex">복층형</label>
+                                </div>
+                                <div class="floor-plan-checkbox-card">
+                                    <input type="checkbox" class="form-check-input" id="floorPlanStructureTwoRoom" data-floor-plan-group="structures" value="TWO_ROOM">
+                                    <label for="floorPlanStructureTwoRoom">투룸</label>
+                                </div>
+                                <div class="floor-plan-checkbox-card">
+                                    <input type="checkbox" class="form-check-input" id="floorPlanStructureThreeRoomOver" data-floor-plan-group="structures" value="THREE_ROOM_OVER">
+                                    <label for="floorPlanStructureThreeRoomOver">쓰리룸+</label>
+                                </div>
+                            </div>
                         </div>
-                        <div>
-                            <label for="floorPlanEquilibrium" class="form-label">평형</label>
-                            <select class="form-select" id="floorPlanEquilibrium" required>
-                                <option value="">평형을 선택하세요.</option>
-                                <option value="UNDER_5">5평 이하</option>
-                                <option value="BETWEEN_6_10">6~10평</option>
-                                <option value="BETWEEN_11_15">11~15평</option>
-                                <option value="OVER_16">16평 이상</option>
-                            </select>
+                        <div class="full-span">
+                            <label class="form-label">평형</label>
+                            <div class="floor-plan-checkbox-grid">
+                                <div class="floor-plan-checkbox-card">
+                                    <input type="checkbox" class="form-check-input" id="floorPlanEquilibriumUnder5" data-floor-plan-group="equilibriums" value="UNDER_5">
+                                    <label for="floorPlanEquilibriumUnder5">5평 이하</label>
+                                </div>
+                                <div class="floor-plan-checkbox-card">
+                                    <input type="checkbox" class="form-check-input" id="floorPlanEquilibriumBetween6_10" data-floor-plan-group="equilibriums" value="BETWEEN_6_10">
+                                    <label for="floorPlanEquilibriumBetween6_10">6~10평</label>
+                                </div>
+                                <div class="floor-plan-checkbox-card">
+                                    <input type="checkbox" class="form-check-input" id="floorPlanEquilibriumBetween11_15" data-floor-plan-group="equilibriums" value="BETWEEN_11_15">
+                                    <label for="floorPlanEquilibriumBetween11_15">11~15평</label>
+                                </div>
+                                <div class="floor-plan-checkbox-card">
+                                    <input type="checkbox" class="form-check-input" id="floorPlanEquilibriumOver16" data-floor-plan-group="equilibriums" value="OVER_16">
+                                    <label for="floorPlanEquilibriumOver16">16평 이상</label>
+                                </div>
+                            </div>
                         </div>
                         <div class="full-span">
                             <label for="floorPlanPrompt" class="form-label">도면 프롬프트</label>
@@ -1620,6 +1904,7 @@
         webp: 'image/webp'
     };
     let selectedRawProductIds = new Set();
+    let landingAdminState = createInitialLandingAdminState();
     let bannerAdminState = createInitialBannerAdminState();
     let styleAdminState = createInitialStyleAdminState();
     let floorPlanAdminState = createInitialFloorPlanAdminState();
@@ -1655,6 +1940,7 @@
         populateTagDropdown();
         populateMoodboardTagDropdown();
         populateFurnitureTypeDropdown();
+        initializeLandingManagement();
         initializeBannerManagement();
         initializeStyleManagement();
         initializeFloorPlanManagement();
@@ -2157,6 +2443,39 @@
             resolveRawFurnitureTagSelection(event.target.value);
         });
 
+        document.getElementById('get-landings-button').addEventListener('click', function() {
+            loadLandings();
+        });
+
+        document.getElementById('landing-form').addEventListener('submit', function(event) {
+            event.preventDefault();
+            createLanding();
+        });
+
+        document.getElementById('update-landing-button').addEventListener('click', function() {
+            const form = document.getElementById('landing-form');
+            if (!form.reportValidity()) {
+                return;
+            }
+            updateLanding();
+        });
+
+        document.getElementById('reset-landing-form-button').addEventListener('click', function() {
+            resetLandingForm();
+        });
+
+        document.getElementById('upload-landing-image-button').addEventListener('click', function() {
+            uploadLandingImage();
+        });
+
+        document.getElementById('landingImageFile').addEventListener('change', function() {
+            if (this.files && this.files.length > 0) {
+                document.getElementById('landingImageUploadStatus').textContent = `${this.files[0].name} 선택됨. 업로드를 진행하세요.`;
+            } else {
+                document.getElementById('landingImageUploadStatus').textContent = '이미지를 선택하고 업로드하세요.';
+            }
+        });
+
         document.getElementById('get-banners-button').addEventListener('click', function() {
             loadBanners();
         });
@@ -2247,6 +2566,10 @@
             loadFloorPlans();
         });
 
+        document.getElementById('toggle-floor-plans-button').addEventListener('click', function() {
+            toggleFloorPlanListVisibility();
+        });
+
         document.getElementById('floor-plan-form').addEventListener('submit', function(event) {
             event.preventDefault();
             createFloorPlan();
@@ -2269,10 +2592,16 @@
             if (this.files && this.files.length > 0) {
                 statusElement.textContent = `${this.files[0].name} 선택됨. 업로드 후 목록에 추가하세요.`;
             } else {
-                statusElement.textContent = '이미지를 하나씩 업로드해 도면 이미지 목록을 구성하세요.';
+                statusElement.textContent = '이미지를 하나씩 업로드하고, 필요하면 view도 함께 입력하세요.';
             }
         });
     };
+
+    function createInitialLandingAdminState() {
+        return {
+            editingLandingId: null
+        };
+    }
 
     function createInitialBannerAdminState() {
         return {
@@ -2299,6 +2628,11 @@
         };
     }
 
+    function initializeLandingManagement() {
+        renderLandingImagePreview('');
+        loadLandings();
+    }
+
     function initializeBannerManagement() {
         renderBannerChipEditors();
         renderBannerMappedRawProducts();
@@ -2313,8 +2647,78 @@
     }
 
     function initializeFloorPlanManagement() {
+        toggleFloorPlanListVisibility(true);
         renderFloorPlanImages();
         loadFloorPlans();
+    }
+
+    function getCheckedFloorPlanValues(groupName) {
+        return Array.from(document.querySelectorAll(`[data-floor-plan-group="${groupName}"]:checked`))
+            .map(input => parseStringValue(input.value))
+            .filter(value => value);
+    }
+
+    function setCheckedFloorPlanValues(groupName, values) {
+        const selectedValues = new Set((Array.isArray(values) ? values : []).filter(Boolean));
+        document.querySelectorAll(`[data-floor-plan-group="${groupName}"]`).forEach(input => {
+            input.checked = selectedValues.has(input.value);
+        });
+    }
+
+    // 배열 응답이 없으면 기존 단일 필드 값을 fallback 해서 수정 폼과 목록을 같이 유지한다.
+    function resolveFloorPlanSelectionValues(floorPlan, listKey, singleKey) {
+        const selectionValues = Array.isArray(floorPlan[listKey]) ? floorPlan[listKey].filter(Boolean) : [];
+        if (selectionValues.length > 0) {
+            return selectionValues;
+        }
+        return floorPlan[singleKey] ? [floorPlan[singleKey]] : [];
+    }
+
+    function formatFloorPlanSelectionLabels(values, labelMap) {
+        if (!Array.isArray(values) || values.length === 0) {
+            return '-';
+        }
+        return values
+            .map(value => escapeHtml(labelMap[value] || value))
+            .join(', ');
+    }
+
+    function buildFloorPlanGallery(images, representativeImageUrl) {
+        const galleryImages = Array.isArray(images) && images.length > 0
+            ? images
+            : representativeImageUrl
+                ? [{ url: representativeImageUrl, view: null }]
+                : [];
+
+        if (galleryImages.length === 0) {
+            return '<div class="text-muted small">등록된 도면 이미지가 없습니다.</div>';
+        }
+
+        return `
+            <div class="floor-plan-gallery">
+                ${galleryImages.map((image, index) => `
+                    <div class="floor-plan-gallery-item">
+                        <img src="${escapeHtml(image.url || '')}" alt="도면 view ${index + 1}">
+                        <span class="floor-plan-gallery-view">${escapeHtml(image.view || `view ${index + 1}`)}</span>
+                    </div>
+                `).join('')}
+            </div>
+        `;
+    }
+
+    function toggleFloorPlanListVisibility(forceVisible) {
+        const panel = document.getElementById('floor-plan-list-panel');
+        const button = document.getElementById('toggle-floor-plans-button');
+        if (!panel || !button) {
+            return;
+        }
+
+        const shouldShow = typeof forceVisible === 'boolean'
+            ? forceVisible
+            : panel.classList.contains('d-none');
+
+        panel.classList.toggle('d-none', !shouldShow);
+        button.textContent = shouldShow ? '도면 목록 숨기기' : '도면 목록 보기';
     }
 
     function renderManagedImagePreview(config) {
@@ -2330,6 +2734,7 @@
             previewContainer.classList.remove('visible');
             previewImage.removeAttribute('src');
             previewLink.href = '#';
+            previewLink.removeAttribute('title');
             previewLink.textContent = '';
             previewName.textContent = config.defaultLabel;
             return;
@@ -2338,8 +2743,28 @@
         previewContainer.classList.add('visible');
         previewImage.src = config.imageUrl;
         previewLink.href = config.imageUrl;
-        previewLink.textContent = config.imageUrl;
+        previewLink.title = config.imageUrl;
+        previewLink.textContent = '원본 보기';
         previewName.textContent = config.label || config.defaultLabel;
+    }
+
+    function buildBannerImageTileHtml(label, imageUrl, altText) {
+        const imageContent = imageUrl
+            ? `<img class="banner-card-image" src="${escapeHtml(imageUrl)}" alt="${escapeHtml(altText)}">`
+            : `<div class="banner-card-image banner-card-image-empty">이미지 없음</div>`;
+        const linkContent = imageUrl
+            ? `<a class="banner-card-link" href="${escapeHtml(imageUrl)}" target="_blank" rel="noopener noreferrer">원본 보기</a>`
+            : '<span class="text-muted small">업로드 필요</span>';
+
+        return `
+            <div class="banner-card-image-tile">
+                <div class="banner-card-image-header">
+                    <span class="banner-card-image-caption">${escapeHtml(label)}</span>
+                    ${linkContent}
+                </div>
+                ${imageContent}
+            </div>
+        `;
     }
 
     function renderBannerImagePreview(imageUrl, label = '업로드된 배너 이미지') {
@@ -2351,6 +2776,18 @@
             imageUrl,
             label,
             defaultLabel: '업로드된 배너 이미지'
+        });
+    }
+
+    function renderLandingImagePreview(imageUrl, label = '업로드된 랜딩 이미지') {
+        renderManagedImagePreview({
+            containerId: 'landingImagePreview',
+            imageId: 'landingImagePreviewImg',
+            linkId: 'landingImagePreviewLink',
+            nameId: 'landingImagePreviewName',
+            imageUrl,
+            label,
+            defaultLabel: '업로드된 랜딩 이미지'
         });
     }
 
@@ -2464,6 +2901,18 @@
         });
     }
 
+    async function uploadLandingImage() {
+        await uploadManagedImage({
+            fileInputId: 'landingImageFile',
+            statusId: 'landingImageUploadStatus',
+            hiddenUrlInputId: 'landingImageUrl',
+            uploadUrl: '/api/v1/admin/landings/image-upload-url',
+            entityName: '랜딩',
+            buttonId: 'upload-landing-image-button',
+            renderPreview: renderLandingImagePreview
+        });
+    }
+
     async function uploadStyleImage() {
         await uploadManagedImage({
             fileInputId: 'styleImageFile',
@@ -2516,6 +2965,15 @@
                     <div class="floor-plan-image-card-meta">원본 파일명: ${escapeHtml(image.originalFilename || '-')}</div>
                     <div class="floor-plan-image-card-meta">저장 파일명: ${escapeHtml(image.filename || '-')}</div>
                     <div class="floor-plan-image-card-meta">확장자: ${escapeHtml(image.fileExtension || '-')} · 순서: ${image.sortOrder}</div>
+                    <div class="mt-2">
+                        <label class="form-label form-label-sm mb-1">이미지 view</label>
+                        <input
+                            type="text"
+                            class="form-control form-control-sm"
+                            value="${escapeHtml(image.view || '')}"
+                            placeholder="예: 거실 / 주방 / 침실"
+                            data-floor-plan-view="${index}">
+                    </div>
                 </div>
                 <div class="floor-plan-image-card-actions">
                     <button type="button" class="btn btn-sm btn-outline-secondary" ${index === 0 ? 'disabled' : ''} data-floor-plan-move-up="${index}">위로</button>
@@ -2554,6 +3012,13 @@
                 });
             }
 
+            const viewInput = card.querySelector('[data-floor-plan-view]');
+            if (viewInput) {
+                viewInput.addEventListener('input', function() {
+                    floorPlanAdminState.images[index].view = this.value;
+                });
+            }
+
             container.appendChild(card);
         });
     }
@@ -2561,9 +3026,11 @@
     async function uploadFloorPlanImage() {
         const accessToken = localStorage.getItem('accessToken');
         const fileInput = document.getElementById('floorPlanImageFile');
+        const viewInput = document.getElementById('floorPlanImageView');
         const statusElement = document.getElementById('floorPlanImageUploadStatus');
         const uploadButton = document.getElementById('upload-floor-plan-image-button');
         const imageFile = fileInput.files && fileInput.files[0];
+        const imageView = parseStringValue(viewInput?.value);
 
         if (!accessToken) {
             statusElement.textContent = '액세스 토큰이 없습니다.';
@@ -2626,11 +3093,15 @@
                 filename: extractFilenameFromUrl(publicUrl),
                 originalFilename: imageFile.name,
                 fileExtension: extension,
-                sortOrder: floorPlanAdminState.images.length + 1
+                sortOrder: floorPlanAdminState.images.length + 1,
+                view: imageView || ''
             });
             normalizeFloorPlanImageOrders();
             renderFloorPlanImages();
             fileInput.value = '';
+            if (viewInput) {
+                viewInput.value = '';
+            }
             statusElement.textContent = `${imageFile.name} 업로드가 완료되어 도면 이미지 목록에 추가되었습니다.`;
         } catch (error) {
             statusElement.textContent = error.message || '도면 이미지 업로드 중 오류가 발생했습니다.';
@@ -2661,7 +3132,11 @@
                         <label class="form-label" for="bannerChipLabel-${index}">칩 문구</label>
                         <input type="text" class="form-control" id="bannerChipLabel-${index}" placeholder="예: 모니터 받침대가 결합된 책상">
                     </div>
-                    <div class="col-md-4">
+                    <div class="col-md-6">
+                        <label class="form-label" for="bannerChipSelectedPrompt-${index}">selected prompt</label>
+                        <textarea class="form-control" id="bannerChipSelectedPrompt-${index}" placeholder="선택된 답변 칩이 이미지 생성 프롬프트에 추가할 문구를 입력하세요."></textarea>
+                    </div>
+                    <div class="col-md-10">
                         <label class="form-label" for="bannerChipRawKeyword-${index}">연결 RAW 상품 검색</label>
                         <input type="text" class="form-control" id="bannerChipRawKeyword-${index}" placeholder="상품명, 브랜드, source, productId">
                     </div>
@@ -2899,6 +3374,56 @@
         return fetchAdminRawProducts('/api/v1/admin/styles/raw-products/search', keyword, size);
     }
 
+    function loadLandings() {
+        const accessToken = localStorage.getItem('accessToken');
+        const resultDiv = document.getElementById('landing-list-result');
+        testApiCall(accessToken, resultDiv, '/api/v1/admin/landings', 'GET', null, displayLandings);
+    }
+
+    function displayLandings(data, resultDiv) {
+        const landings = data && data.data && Array.isArray(data.data.landings) ? data.data.landings : [];
+        if (landings.length === 0) {
+            resultDiv.innerHTML = '<div class="alert alert-info">등록된 랜딩이 없습니다.</div>';
+            return;
+        }
+
+        resultDiv.innerHTML = '';
+        const list = document.createElement('div');
+        list.className = 'banner-list';
+
+        landings.forEach(landing => {
+            const card = document.createElement('div');
+            card.className = 'banner-card';
+            card.innerHTML = `
+                <div class="banner-card-media">
+                    <div class="banner-card-image-stack">
+                        ${buildBannerImageTileHtml('랜딩 이미지', landing.bannerImageUrl || '', `${landing.bannerTitle} 랜딩`)}
+                    </div>
+                </div>
+                <div class="banner-card-body">
+                    <div class="banner-card-title-row">
+                        <span class="banner-card-title">${escapeHtml(landing.bannerTitle)}</span>
+                        <span class="text-muted small">#${landing.id}</span>
+                    </div>
+                </div>
+                <div class="banner-card-actions">
+                    <button type="button" class="btn btn-sm btn-info" data-landing-edit="${landing.id}">수정</button>
+                    <button type="button" class="btn btn-sm btn-danger" data-landing-delete="${landing.id}">삭제</button>
+                </div>
+            `;
+
+            card.querySelector('[data-landing-edit]').addEventListener('click', function() {
+                populateLandingForm(landing);
+            });
+            card.querySelector('[data-landing-delete]').addEventListener('click', function() {
+                deleteLanding(landing.id);
+            });
+            list.appendChild(card);
+        });
+
+        resultDiv.appendChild(list);
+    }
+
     function loadBanners() {
         const accessToken = localStorage.getItem('accessToken');
         const resultDiv = document.getElementById('banner-list-result');
@@ -2922,14 +3447,24 @@
             const mappedRawProducts = Array.isArray(banner.mappedRawProducts) ? banner.mappedRawProducts : [];
             const styleAnswerChips = Array.isArray(banner.styleAnswerChips) ? banner.styleAnswerChips : [];
             const chipHtml = styleAnswerChips.length > 0
-                ? styleAnswerChips.map(chip => `<span class="banner-card-chip">${escapeHtml(chip.label)} · #${chip.curationRawProductId}</span>`).join('')
+                ? styleAnswerChips.map(chip => `
+                    <div class="banner-card-chip-summary">
+                        <span class="banner-card-chip">${escapeHtml(chip.label)} · #${chip.curationRawProductId}</span>
+                        <span class="banner-card-chip-prompt">${escapeHtml(chip.selectedPrompt || '-')}</span>
+                    </div>
+                `).join('')
                 : '<span class="text-muted small">등록된 스타일 답변이 없습니다.</span>';
             const mappedHtml = mappedRawProducts.length > 0
                 ? mappedRawProducts.map(product => `<span class="banner-card-chip">${escapeHtml(product.productName)} · #${product.id}</span>`).join('')
                 : '<span class="text-muted small">매핑된 가구가 없습니다.</span>';
+            const bannerImageUrl = banner.bannerImageUrl || '';
 
             card.innerHTML = `
-                <img class="banner-card-image" src="${escapeHtml(banner.bannerImageUrl)}" alt="${escapeHtml(banner.bannerTitle)}">
+                <div class="banner-card-media">
+                    <div class="banner-card-image-stack">
+                        ${buildBannerImageTileHtml('배너 이미지', bannerImageUrl, `${banner.bannerTitle} 배너`)}
+                    </div>
+                </div>
                 <div class="banner-card-body">
                     <div class="banner-card-title-row">
                         <span class="banner-card-title">${escapeHtml(banner.bannerTitle)}</span>
@@ -2950,7 +3485,7 @@
                         </div>
                         <div class="banner-card-block">
                             <span class="banner-card-label">스타일 답변 칩</span>
-                            <div class="d-flex flex-wrap gap-2">${chipHtml}</div>
+                            <div class="banner-card-chip-list">${chipHtml}</div>
                         </div>
                         <div class="banner-card-block">
                             <span class="banner-card-label">배너에 매핑된 가구</span>
@@ -2974,6 +3509,19 @@
         });
 
         resultDiv.appendChild(list);
+    }
+
+    function populateLandingForm(landing) {
+        landingAdminState = createInitialLandingAdminState();
+        landingAdminState.editingLandingId = landing.id;
+
+        document.getElementById('landingEditId').value = landing.id;
+        document.getElementById('landingImageUrl').value = landing.bannerImageUrl ?? '';
+        document.getElementById('landingImageFile').value = '';
+        document.getElementById('landingTitle').value = landing.bannerTitle ?? '';
+        document.getElementById('landingImageUploadStatus').textContent = landing.bannerImageUrl ? '기존 랜딩 이미지가 연결되어 있습니다. 새 파일을 업로드하면 교체됩니다.' : '이미지를 선택하고 업로드하세요.';
+        renderLandingImagePreview(landing.bannerImageUrl ?? '');
+        document.getElementById('landing-form-result').innerHTML = '<div class="alert alert-info">랜딩 수정 모드로 전환했습니다.</div>';
     }
 
     function populateBannerForm(banner) {
@@ -3011,6 +3559,7 @@
         styleAnswerChips.slice(0, BANNER_CHIP_MAX_COUNT).forEach((chip, index) => {
             document.getElementById(`bannerChipOrder-${index}`).value = chip.order ?? index + 1;
             document.getElementById(`bannerChipLabel-${index}`).value = chip.label ?? '';
+            document.getElementById(`bannerChipSelectedPrompt-${index}`).value = chip.selectedPrompt ?? '';
         });
 
         bannerAdminState.selectedMappedRawProducts = (Array.isArray(banner.mappedRawProducts) ? banner.mappedRawProducts : []).map(product => ({
@@ -3026,6 +3575,16 @@
         document.getElementById('banner-form-result').innerHTML = '<div class="alert alert-info">배너 수정 모드로 전환했습니다.</div>';
     }
 
+    function resetLandingForm() {
+        landingAdminState = createInitialLandingAdminState();
+        document.getElementById('landing-form').reset();
+        document.getElementById('landingEditId').value = '';
+        document.getElementById('landingImageUrl').value = '';
+        document.getElementById('landingImageUploadStatus').textContent = '이미지를 선택하고 업로드하세요.';
+        document.getElementById('landing-form-result').innerHTML = '';
+        renderLandingImagePreview('');
+    }
+
     function resetBannerForm() {
         bannerAdminState = createInitialBannerAdminState();
         document.getElementById('banner-form').reset();
@@ -3039,19 +3598,32 @@
         renderBannerMappedRawProducts();
     }
 
+    function buildLandingPayload() {
+        const bannerImageUrl = parseStringValue(document.getElementById('landingImageUrl').value);
+        if (!bannerImageUrl) {
+            throw new Error('랜딩 이미지를 업로드해주세요.');
+        }
+
+        return {
+            bannerImageUrl,
+            bannerTitle: parseStringValue(document.getElementById('landingTitle').value)
+        };
+    }
+
     function buildBannerPayload() {
         const styleAnswerChips = [];
         for (let index = 0; index < BANNER_CHIP_MAX_COUNT; index += 1) {
             const order = parseNumberValue(document.getElementById(`bannerChipOrder-${index}`).value);
             const label = parseStringValue(document.getElementById(`bannerChipLabel-${index}`).value);
+            const selectedPrompt = parseStringValue(document.getElementById(`bannerChipSelectedPrompt-${index}`).value);
             const rawProduct = bannerAdminState.chipSelections[index].rawProduct;
 
-            if (!label && !rawProduct) {
+            if (!label && !selectedPrompt && !rawProduct) {
                 continue;
             }
 
-            if (!label || !rawProduct || order == null || !Number.isInteger(order)) {
-                throw new Error(`스타일 답변 칩 ${index + 1}의 문구, 순서, RAW 상품을 모두 입력해주세요.`);
+            if (!label || !selectedPrompt || !rawProduct || order == null || !Number.isInteger(order)) {
+                throw new Error(`스타일 답변 칩 ${index + 1}의 문구, selected prompt, 순서, RAW 상품을 모두 입력해주세요.`);
             }
             if (order < 1 || order > BANNER_CHIP_MAX_COUNT) {
                 throw new Error(`스타일 답변 칩 ${index + 1}의 순서는 1부터 ${BANNER_CHIP_MAX_COUNT} 사이여야 합니다.`);
@@ -3060,6 +3632,7 @@
             styleAnswerChips.push({
                 order,
                 label,
+                selectedPrompt,
                 curationRawProductId: rawProduct.id
             });
         }
@@ -3080,6 +3653,29 @@
         };
     }
 
+    async function createLanding() {
+        const accessToken = localStorage.getItem('accessToken');
+        const resultDiv = document.getElementById('landing-form-result');
+        const submitButton = document.getElementById('create-landing-button');
+        try {
+            const payload = buildLandingPayload();
+            if (submitButton) {
+                submitButton.disabled = true;
+            }
+            await testApiCall(accessToken, resultDiv, '/api/v1/admin/landings', 'POST', payload, function(data, target) {
+                target.innerHTML = '<div class="alert alert-success">랜딩이 등록되었습니다.</div>';
+                resetLandingForm();
+                loadLandings();
+            });
+        } catch (error) {
+            resultDiv.innerHTML = `<div class="alert alert-danger">오류: ${escapeHtml(error.message)}</div>`;
+        } finally {
+            if (submitButton) {
+                submitButton.disabled = false;
+            }
+        }
+    }
+
     async function createBanner() {
         const accessToken = localStorage.getItem('accessToken');
         const resultDiv = document.getElementById('banner-form-result');
@@ -3093,6 +3689,33 @@
                 target.innerHTML = '<div class="alert alert-success">배너가 등록되었습니다.</div>';
                 resetBannerForm();
                 loadBanners();
+            });
+        } catch (error) {
+            resultDiv.innerHTML = `<div class="alert alert-danger">오류: ${escapeHtml(error.message)}</div>`;
+        } finally {
+            if (submitButton) {
+                submitButton.disabled = false;
+            }
+        }
+    }
+
+    async function updateLanding() {
+        const accessToken = localStorage.getItem('accessToken');
+        const resultDiv = document.getElementById('landing-form-result');
+        const submitButton = document.getElementById('update-landing-button');
+        if (!landingAdminState.editingLandingId) {
+            resultDiv.innerHTML = '<div class="alert alert-danger">수정할 랜딩을 먼저 선택해주세요.</div>';
+            return;
+        }
+
+        try {
+            const payload = buildLandingPayload();
+            if (submitButton) {
+                submitButton.disabled = true;
+            }
+            await testApiCall(accessToken, resultDiv, `/api/v1/admin/landings/${landingAdminState.editingLandingId}`, 'PATCH', payload, function(data, target) {
+                target.innerHTML = '<div class="alert alert-success">랜딩이 수정되었습니다.</div>';
+                loadLandings();
             });
         } catch (error) {
             resultDiv.innerHTML = `<div class="alert alert-danger">오류: ${escapeHtml(error.message)}</div>`;
@@ -3128,6 +3751,18 @@
                 submitButton.disabled = false;
             }
         }
+    }
+
+    function deleteLanding(landingId) {
+        if (!confirm(`랜딩 ID ${landingId}를 정말로 삭제하시겠습니까?`)) return;
+        const accessToken = localStorage.getItem('accessToken');
+        const resultDiv = document.getElementById('landing-list-result');
+        testApiCall(accessToken, resultDiv, `/api/v1/admin/landings/${landingId}`, 'DELETE', null, function() {
+            if (landingAdminState.editingLandingId === landingId) {
+                resetLandingForm();
+            }
+            loadLandings();
+        });
     }
 
     function deleteBanner(bannerId) {
@@ -3435,25 +4070,34 @@
             const card = document.createElement('div');
             card.className = 'banner-card';
             const imageCount = Array.isArray(floorPlan.images) ? floorPlan.images.length : 0;
+            const forms = resolveFloorPlanSelectionValues(floorPlan, 'forms', 'form');
+            const structures = resolveFloorPlanSelectionValues(floorPlan, 'structures', 'structure');
+            const equilibriums = resolveFloorPlanSelectionValues(floorPlan, 'equilibriums', 'equilibrium');
             card.innerHTML = `
-                <img class="banner-card-image" src="${escapeHtml(floorPlan.representativeImageUrl || '')}" alt="도면 #${floorPlan.id}">
+                <div class="banner-card-media">
+                    ${buildFloorPlanGallery(floorPlan.images, floorPlan.representativeImageUrl)}
+                </div>
                 <div class="banner-card-body">
                     <div class="banner-card-title-row">
-                        <span class="banner-card-title">도면 #${floorPlan.id}</span>
+                        <span class="banner-card-title">${escapeHtml(floorPlan.name || `도면 #${floorPlan.id}`)}</span>
                         <span class="text-muted small">이미지 ${imageCount}장</span>
                     </div>
                     <div class="floor-plan-summary-grid">
                         <div class="floor-plan-summary-item">
+                            <span class="floor-plan-summary-item-label">도면 이름</span>
+                            <span>${escapeHtml(floorPlan.name || '-')}</span>
+                        </div>
+                        <div class="floor-plan-summary-item">
                             <span class="floor-plan-summary-item-label">주거형태</span>
-                            <span>${escapeHtml(FLOOR_PLAN_FORM_LABELS[floorPlan.form] || floorPlan.form || '-')}</span>
+                            <span>${formatFloorPlanSelectionLabels(forms, FLOOR_PLAN_FORM_LABELS)}</span>
                         </div>
                         <div class="floor-plan-summary-item">
                             <span class="floor-plan-summary-item-label">구조</span>
-                            <span>${escapeHtml(FLOOR_PLAN_STRUCTURE_LABELS[floorPlan.structure] || floorPlan.structure || '-')}</span>
+                            <span>${formatFloorPlanSelectionLabels(structures, FLOOR_PLAN_STRUCTURE_LABELS)}</span>
                         </div>
                         <div class="floor-plan-summary-item">
                             <span class="floor-plan-summary-item-label">평형</span>
-                            <span>${escapeHtml(FLOOR_PLAN_EQUILIBRIUM_LABELS[floorPlan.equilibrium] || floorPlan.equilibrium || '-')}</span>
+                            <span>${formatFloorPlanSelectionLabels(equilibriums, FLOOR_PLAN_EQUILIBRIUM_LABELS)}</span>
                         </div>
                         <div class="floor-plan-summary-item" style="grid-column: 1 / -1;">
                             <span class="floor-plan-summary-item-label">도면 프롬프트</span>
@@ -3488,17 +4132,20 @@
                 filename: image.filename,
                 originalFilename: image.originalFilename,
                 fileExtension: image.fileExtension,
-                sortOrder: image.sortOrder
+                sortOrder: image.sortOrder,
+                view: image.view || ''
             })).sort((a, b) => a.sortOrder - b.sortOrder)
             : [];
         normalizeFloorPlanImageOrders();
 
         document.getElementById('floorPlanEditId').value = floorPlan.id;
-        document.getElementById('floorPlanForm').value = floorPlan.form || '';
-        document.getElementById('floorPlanStructure').value = floorPlan.structure || '';
-        document.getElementById('floorPlanEquilibrium').value = floorPlan.equilibrium || '';
+        document.getElementById('floorPlanName').value = floorPlan.name || floorPlan.floorPlanName || '';
+        setCheckedFloorPlanValues('forms', resolveFloorPlanSelectionValues(floorPlan, 'forms', 'form'));
+        setCheckedFloorPlanValues('structures', resolveFloorPlanSelectionValues(floorPlan, 'structures', 'structure'));
+        setCheckedFloorPlanValues('equilibriums', resolveFloorPlanSelectionValues(floorPlan, 'equilibriums', 'equilibrium'));
         document.getElementById('floorPlanPrompt').value = floorPlan.floorPlanPrompt || '';
         document.getElementById('floorPlanImageFile').value = '';
+        document.getElementById('floorPlanImageView').value = '';
         document.getElementById('floorPlanImageUploadStatus').textContent = '기존 도면 이미지가 로드되었습니다. 새 이미지를 업로드하면 목록에 추가됩니다.';
         document.getElementById('floor-plan-form-result').innerHTML = '<div class="alert alert-info">도면 수정 모드로 전환했습니다.</div>';
         renderFloorPlanImages();
@@ -3508,7 +4155,11 @@
         floorPlanAdminState = createInitialFloorPlanAdminState();
         document.getElementById('floor-plan-form').reset();
         document.getElementById('floorPlanEditId').value = '';
-        document.getElementById('floorPlanImageUploadStatus').textContent = '이미지를 하나씩 업로드해 도면 이미지 목록을 구성하세요.';
+        document.getElementById('floorPlanImageView').value = '';
+        setCheckedFloorPlanValues('forms', []);
+        setCheckedFloorPlanValues('structures', []);
+        setCheckedFloorPlanValues('equilibriums', []);
+        document.getElementById('floorPlanImageUploadStatus').textContent = '이미지를 하나씩 업로드하고, 필요하면 view도 함께 입력하세요.';
         document.getElementById('floor-plan-form-result').innerHTML = '';
         renderFloorPlanImages();
     }
@@ -3518,26 +4169,29 @@
             throw new Error('최소 1개의 도면 이미지를 등록해주세요.');
         }
 
-        const form = parseStringValue(document.getElementById('floorPlanForm').value);
-        const structure = parseStringValue(document.getElementById('floorPlanStructure').value);
-        const equilibrium = parseStringValue(document.getElementById('floorPlanEquilibrium').value);
+        const forms = getCheckedFloorPlanValues('forms');
+        const structures = getCheckedFloorPlanValues('structures');
+        const equilibriums = getCheckedFloorPlanValues('equilibriums');
+        const name = parseStringValue(document.getElementById('floorPlanName').value);
         const floorPlanPrompt = parseStringValue(document.getElementById('floorPlanPrompt').value);
 
-        if (!form || !structure || !equilibrium || !floorPlanPrompt) {
-            throw new Error('주거형태, 구조, 평형, 도면 프롬프트를 모두 입력해주세요.');
+        if (!name || forms.length === 0 || structures.length === 0 || equilibriums.length === 0 || !floorPlanPrompt) {
+            throw new Error('도면 이름, 주거형태, 구조, 평형, 도면 프롬프트를 모두 입력해주세요.');
         }
 
         return {
-            form,
-            structure,
-            equilibrium,
+            name,
+            forms,
+            structures,
+            equilibriums,
             floorPlanPrompt,
             images: floorPlanAdminState.images.map((image, index) => ({
                 url: image.url,
                 filename: image.filename,
                 originalFilename: image.originalFilename,
                 fileExtension: image.fileExtension,
-                sortOrder: index + 1
+                sortOrder: index + 1,
+                view: parseStringValue(image.view)
             }))
         };
     }
@@ -4826,6 +5480,10 @@
         return null;
     }
 
+    function getOptionalInputValue(id) {
+        return document.getElementById(id)?.value ?? null;
+    }
+
     function buildRawProductCreatePayload() {
         return {
             source: parseStringValue(document.getElementById('rawCreateSource').value),
@@ -4840,9 +5498,9 @@
             discountRate: parseNumberValue(document.getElementById('rawCreateDiscountRate').value),
             discountPrice: parseNumberValue(document.getElementById('rawCreateDiscountPrice').value),
             baseShippingFee: parseNumberValue(document.getElementById('rawCreateBaseShippingFee').value),
-            freeShippingCondition: parseNumberValue(document.getElementById('rawCreateFreeShippingCondition').value),
+            freeShippingCondition: parseNumberValue(getOptionalInputValue('rawCreateFreeShippingCondition')),
             isExposed: parseBooleanValue(document.getElementById('rawCreateIsExposed').value),
-            fetchedAt: parseStringValue(document.getElementById('rawCreateFetchedAt').value)
+            fetchedAt: parseStringValue(getOptionalInputValue('rawCreateFetchedAt'))
         };
     }
 

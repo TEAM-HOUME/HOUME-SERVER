@@ -59,6 +59,7 @@ public enum ErrorCode {
     DUPLICATE_FURNITURE_TYPE_KR(HttpStatus.BAD_REQUEST, 40017, "중복된 가구타입 한글명입니다."),
     DUPLICATE_FURNITURE_TYPE_ENG(HttpStatus.BAD_REQUEST, 40018, "중복된 가구타입 영어명입니다."),
     CANNOT_DELETE_FURNITURE_TYPE_IN_USE(HttpStatus.BAD_REQUEST, 40019, "해당 가구 타입을 사용하는 가구들을 먼저 삭제해주세요."),
+    INVALID_FLOOR_PLAN_NAME(HttpStatus.BAD_REQUEST, 40024, "도면 이름은 비어 있을 수 없습니다."),
 
 
     /**
@@ -187,6 +188,7 @@ public enum ErrorCode {
     // 로그 저장시 objectMapper 에러
     OBJECTMAPPER_EXCEPTION(HttpStatus.INTERNAL_SERVER_ERROR, 50019, "생성 로그 JSON 변환에 실패, 서버 개발자에게 문의해주세요"),
     NICKNAME_RESOURCE_EMPTY(HttpStatus.INTERNAL_SERVER_ERROR, 50020, "닉네임 리소스가 비어 있습니다. 서버 관리자에게 문의해주세요"),
+    NICKNAME_TAG_GENERATION_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, 50021, "닉네임 태그 생성에 실패했습니다. 서버 관리자에게 문의해주세요"),
 
     /**
      * 502 BAD_GATEWAY

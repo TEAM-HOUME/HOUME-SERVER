@@ -42,6 +42,8 @@ public interface CurationRawProductRepository extends JpaRepository<CurationRawP
             List<Long> productIds
     );
 
+    List<CurationRawProduct> findAllByProductIdIn(List<Long> productIds);
+
     @Query("""
             select distinct rawProduct
             from CurationRawProduct rawProduct

@@ -4,9 +4,13 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import or.sopt.houme.domain.generateImage.presentation.dto.request.BannerGenerateImageRequest;
 import or.sopt.houme.domain.generateImage.presentation.dto.request.GenerateImageRequest;
+import or.sopt.houme.domain.generateImage.presentation.dto.request.OtherStyleGenerateImageRequest;
+import or.sopt.houme.domain.generateImage.presentation.dto.response.BannerGenerateImageResponse;
 import or.sopt.houme.domain.generateImage.presentation.dto.response.ImageInfoListResponse;
 import or.sopt.houme.domain.generateImage.presentation.dto.response.ImageInfoResponse;
+import or.sopt.houme.domain.generateImage.presentation.dto.response.OtherStyleGenerateImageResponse;
 import or.sopt.houme.domain.generateImage.service.facade.GenerateImageFacade;
 import or.sopt.houme.domain.generateImage.service.facade.GenerateImageLikeFacade;
 import or.sopt.houme.domain.house.presentation.dto.request.IsLikeRequest;
@@ -101,6 +105,30 @@ public class GenerateImageController {
         ImageInfoListResponse imageInfoListResponse = generateImageFacade.generateImageBy2eaGemini(userDetails.getUser(), request);
 
         return ResponseEntity.ok(ApiResponse.ok(imageInfoListResponse));
+    }
+
+    @Operation(summary = "배너 템플릿 기반 인테리어 이미지 생성 API",
+            description = "선택한 배너 템플릿/답변칩/도면 정보를 기반으로 Gemini 나노바나나 모델로 인테리어 이미지를 생성합니다.")
+    @PostMapping("/v1/generated-images/generate/banner")
+    public ResponseEntity<ApiResponse<BannerGenerateImageResponse>> generateBannerImageByGemini(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @RequestBody @Valid BannerGenerateImageRequest request
+    ) {
+        BannerGenerateImageResponse response =
+                generateImageFacade.generateBannerImageByGemini(userDetails.getUser(), request);
+        return ResponseEntity.ok(ApiResponse.ok(response));
+    }
+
+    @Operation(summary = "선택한 스타일 템플릿 기반 인테리어 이미지 생성 API",
+            description = "선택한 스타일 템플릿/도면 정보를 기반으로 Gemini 모델로 인테리어 이미지를 생성합니다.")
+    @PostMapping("/v1/generated-images/generate/other-style")
+    public ResponseEntity<ApiResponse<OtherStyleGenerateImageResponse>> generateOtherStyleImageByGemini(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @RequestBody @Valid OtherStyleGenerateImageRequest request
+    ) {
+        OtherStyleGenerateImageResponse response =
+                generateImageFacade.generateOtherStyleImageByGemini(userDetails.getUser(), request);
+        return ResponseEntity.ok(ApiResponse.ok(response));
     }
 
     @Operation(summary = "이미지 생성 폴백 로직",

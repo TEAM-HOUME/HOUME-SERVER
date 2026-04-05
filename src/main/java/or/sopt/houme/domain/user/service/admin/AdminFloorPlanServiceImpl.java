@@ -13,10 +13,16 @@ import or.sopt.houme.domain.user.presentation.admin.controller.dto.floorplan.res
 import or.sopt.houme.domain.user.presentation.admin.controller.dto.floorplan.response.AdminFloorPlanImageUploadResponse;
 import or.sopt.houme.domain.user.presentation.admin.controller.dto.floorplan.response.AdminFloorPlanListResponse;
 import or.sopt.houme.domain.user.presentation.admin.controller.dto.floorplan.response.AdminFloorPlanResponse;
+import or.sopt.houme.domain.user.util.floorplan.FloorPlanEquilibriumJsonCodec;
+import or.sopt.houme.domain.user.util.floorplan.FloorPlanFormJsonCodec;
 import or.sopt.houme.domain.user.util.floorplan.FloorPlanImageJsonCodec;
 import or.sopt.houme.domain.user.util.floorplan.FloorPlanImagePresignedUrlGenerator;
+import or.sopt.houme.domain.user.util.floorplan.FloorPlanStructureJsonCodec;
 import or.sopt.houme.global.api.ErrorCode;
 import or.sopt.houme.global.api.GeneralException;
+import or.sopt.houme.domain.house.model.entity.enums.Equilibrium;
+import or.sopt.houme.domain.house.model.entity.enums.Form;
+import or.sopt.houme.domain.house.model.entity.enums.Structure;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -32,6 +38,9 @@ public class AdminFloorPlanServiceImpl implements AdminFloorPlanService {
     private final FloorPlanRepository floorPlanRepository;
     private final FloorPlanImagePresignedUrlGenerator floorPlanImagePresignedUrlGenerator;
     private final FloorPlanImageJsonCodec floorPlanImageJsonCodec;
+    private final FloorPlanFormJsonCodec floorPlanFormJsonCodec;
+    private final FloorPlanStructureJsonCodec floorPlanStructureJsonCodec;
+    private final FloorPlanEquilibriumJsonCodec floorPlanEquilibriumJsonCodec;
 
     @Override
     @Transactional(propagation = Propagation.NOT_SUPPORTED)
@@ -43,14 +52,21 @@ public class AdminFloorPlanServiceImpl implements AdminFloorPlanService {
     @Transactional
     public AdminFloorPlanResponse create(AdminFloorPlanCreateRequest request) {
         FloorPlanImages images = toFloorPlanImages(request.images());
+        List<Form> forms = deduplicateRequired(request.forms());
+        List<Structure> structures = deduplicateRequired(request.structures());
+        List<Equilibrium> equilibriums = deduplicateRequired(request.equilibriums());
 
         FloorPlan floorPlan = FloorPlan.create(
-                request.form(),
-                request.structure(),
-                request.equilibrium(),
+                normalizeRequired(request.name()),
+                forms,
+                structures,
+                equilibriums,
                 normalizeRequired(request.floorPlanPrompt()),
                 images,
-                floorPlanImageJsonCodec.write(images.items())
+                floorPlanImageJsonCodec.write(images.items()),
+                floorPlanFormJsonCodec.write(forms),
+                floorPlanStructureJsonCodec.write(structures),
+                floorPlanEquilibriumJsonCodec.write(equilibriums)
         );
 
         return toResponse(floorPlanRepository.saveAndFlush(floorPlan));
@@ -80,14 +96,27 @@ public class AdminFloorPlanServiceImpl implements AdminFloorPlanService {
         FloorPlanImages images = request.images() != null
                 ? toFloorPlanImages(request.images())
                 : resolveImages(floorPlan);
+        List<Form> forms = request.forms() != null
+                ? deduplicateRequired(request.forms())
+                : resolveForms(floorPlan);
+        List<Structure> structures = request.structures() != null
+                ? deduplicateRequired(request.structures())
+                : resolveStructures(floorPlan);
+        List<Equilibrium> equilibriums = request.equilibriums() != null
+                ? deduplicateRequired(request.equilibriums())
+                : resolveEquilibriums(floorPlan);
 
         floorPlan.update(
-                request.form() != null ? request.form() : floorPlan.getForm(),
-                request.structure() != null ? request.structure() : floorPlan.getStructure(),
-                request.equilibrium() != null ? request.equilibrium() : floorPlan.getEquilibrium(),
+                request.name() != null ? normalizeRequired(request.name()) : floorPlan.getFloorPlanName(),
+                forms,
+                structures,
+                equilibriums,
                 request.floorPlanPrompt() != null ? normalizeRequired(request.floorPlanPrompt()) : floorPlan.getFloorPlanPrompt(),
                 images,
-                floorPlanImageJsonCodec.write(images.items())
+                floorPlanImageJsonCodec.write(images.items()),
+                floorPlanFormJsonCodec.write(forms),
+                floorPlanStructureJsonCodec.write(structures),
+                floorPlanEquilibriumJsonCodec.write(equilibriums)
         );
 
         return toResponse(floorPlanRepository.saveAndFlush(floorPlan));
@@ -104,11 +133,13 @@ public class AdminFloorPlanServiceImpl implements AdminFloorPlanService {
 
     private AdminFloorPlanResponse toResponse(FloorPlan floorPlan) {
         FloorPlanImages images = resolveImages(floorPlan);
+        // 기존 단일 컬럼은 대표값으로 유지하고, admin 응답은 JSON 기반 다중 매핑을 기준으로 복원한다.
         return new AdminFloorPlanResponse(
                 floorPlan.getId(),
-                floorPlan.getForm(),
-                floorPlan.getStructure(),
-                floorPlan.getEquilibrium(),
+                floorPlan.getFloorPlanName(),
+                resolveForms(floorPlan),
+                resolveStructures(floorPlan),
+                resolveEquilibriums(floorPlan),
                 floorPlan.getFloorPlanPrompt(),
                 floorPlan.getUrl(),
                 images.items().stream().map(AdminFloorPlanImageResponse::of).toList()
@@ -135,10 +166,35 @@ public class AdminFloorPlanServiceImpl implements AdminFloorPlanService {
                     floorPlan.getFilename(),
                     floorPlan.getOriginalFilename(),
                     floorPlan.getFileExtension(),
-                    1
+                    1,
+                    null
             );
         }
         return FloorPlanImages.restore(parsedImages, legacyImage);
+    }
+
+    private List<Form> resolveForms(FloorPlan floorPlan) {
+        List<Form> forms = floorPlanFormJsonCodec.read(floorPlan.getFormsJson());
+        if (!forms.isEmpty()) {
+            return forms;
+        }
+        return floorPlan.getForm() != null ? List.of(floorPlan.getForm()) : List.of();
+    }
+
+    private List<Structure> resolveStructures(FloorPlan floorPlan) {
+        List<Structure> structures = floorPlanStructureJsonCodec.read(floorPlan.getStructuresJson());
+        if (!structures.isEmpty()) {
+            return structures;
+        }
+        return floorPlan.getStructure() != null ? List.of(floorPlan.getStructure()) : List.of();
+    }
+
+    private List<Equilibrium> resolveEquilibriums(FloorPlan floorPlan) {
+        List<Equilibrium> equilibriums = floorPlanEquilibriumJsonCodec.read(floorPlan.getEquilibriumsJson());
+        if (!equilibriums.isEmpty()) {
+            return equilibriums;
+        }
+        return floorPlan.getEquilibrium() != null ? List.of(floorPlan.getEquilibrium()) : List.of();
     }
 
     private FloorPlanImageItem toFloorPlanImageItem(AdminFloorPlanImageRequest request) {
@@ -150,7 +206,8 @@ public class AdminFloorPlanServiceImpl implements AdminFloorPlanService {
                 request.filename(),
                 request.originalFilename(),
                 request.fileExtension(),
-                request.sortOrder()
+                request.sortOrder(),
+                normalizeNullable(request.view())
         );
     }
 
@@ -163,5 +220,30 @@ public class AdminFloorPlanServiceImpl implements AdminFloorPlanService {
             throw new GeneralException(ErrorCode.NOT_VALID_EXCEPTION);
         }
         return trimmed;
+    }
+
+    private String normalizeNullable(String value) {
+        if (value == null) {
+            return null;
+        }
+        String trimmed = value.trim();
+        if (trimmed.isEmpty()) {
+            return null;
+        }
+        return trimmed;
+    }
+
+    private <T> List<T> deduplicateRequired(List<T> values) {
+        if (values == null) {
+            throw new GeneralException(ErrorCode.NOT_VALID_EXCEPTION);
+        }
+        List<T> normalized = values.stream()
+                .filter(java.util.Objects::nonNull)
+                .distinct()
+                .toList();
+        if (normalized.isEmpty()) {
+            throw new GeneralException(ErrorCode.NOT_VALID_EXCEPTION);
+        }
+        return normalized;
     }
 }

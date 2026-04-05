@@ -1,5 +1,6 @@
 package or.sopt.houme.domain.user.presentation.admin.controller.dto.floorplan.request;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -15,6 +16,8 @@ public record AdminFloorPlanImageRequest(
         String fileExtension,
         @NotNull
         @Min(1)
-        Integer sortOrder
+        Integer sortOrder,
+        @JsonAlias({"viewName", "veiw"})
+        String view
 ) {
 }

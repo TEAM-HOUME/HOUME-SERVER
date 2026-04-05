@@ -2,9 +2,11 @@ package or.sopt.houme.domain.user.presentation.controller;
 
 import or.sopt.houme.domain.user.presentation.controller.dto.CustomUserDetails;
 import or.sopt.houme.domain.user.presentation.controller.dto.CustomUserDetailsService;
+import or.sopt.houme.domain.user.presentation.controller.dto.MyPageGeneratedImageV2Response;
 import or.sopt.houme.domain.user.presentation.controller.dto.MyPageInfoResponse;
 import or.sopt.houme.domain.user.model.entity.*;
 import or.sopt.houme.domain.user.repository.BlacklistTokenRepository;
+import or.sopt.houme.domain.user.service.NicknameService;
 import or.sopt.houme.domain.user.service.OAuthService;
 import or.sopt.houme.domain.user.service.UserDeletionService;
 import or.sopt.houme.domain.user.service.UserService;
@@ -27,6 +29,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import jakarta.servlet.http.HttpServletResponse;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
@@ -35,7 +38,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(
-        controllers = UserController.class,
+        controllers = {UserController.class, UserV2Controller.class},
         excludeAutoConfiguration = {
                 SecurityAutoConfiguration.class,
                 org.springframework.boot.autoconfigure.security.servlet.SecurityFilterAutoConfiguration.class,
@@ -57,6 +60,9 @@ class UserControllerTest {
 
     @MockBean
     private OAuthService oAuthService;
+
+    @MockBean
+    private NicknameService nicknameService;
 
     @MockBean
     private JWTConfig jwtConfig;
@@ -110,6 +116,27 @@ class UserControllerTest {
 
         // When & Then
         mockMvc.perform(get("/api/v1/mypage/user"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value(200))
+                .andExpect(jsonPath("$.msg").value("응답 성공"));
+    }
+
+    @Test
+    @DisplayName("마이페이지 생성 이미지 이력 v2 조회 성공")
+    @WithMockUser(username = "test@example.com", roles = "USER")
+    void getMyPageInfoV2_Success() throws Exception {
+        Long id = 1L;
+        User mockUser = mockUserDetails.getUser();
+
+        given(customUserDetailsService.loadUserById(id)).willReturn(mockUserDetails);
+        given(userService.getUserGeneratedImageHistoryListV2(mockUser))
+                .willReturn(MyPageGeneratedImageV2Response.of(List.of()));
+
+        UsernamePasswordAuthenticationToken auth =
+                new UsernamePasswordAuthenticationToken(mockUser, null, mockUserDetails.getAuthorities());
+        SecurityContextHolder.getContext().setAuthentication(auth);
+
+        mockMvc.perform(get("/api/v2/mypage/images"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.code").value(200))
                 .andExpect(jsonPath("$.msg").value("응답 성공"));

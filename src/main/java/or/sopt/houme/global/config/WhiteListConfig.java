@@ -50,7 +50,20 @@ public class WhiteListConfig {
     // 회원 관련 인가 설정
     public static final List<String> userWhiteList() {
         return List.of(
-                "/api/v1/check-has-generated-image"
+                "/api/v1/check-has-generated-image",
+                "/api/v1/landings"
+        );
+    }
+
+    // 탐색 탭 관련 인가 설정
+    public static final List<String> exploreWhiteList() {
+        return List.of(
+                "/api/v2/house-templates",
+                "/api/v2/house-templates/**",
+                "/api/v1/banners/**",
+                "/api/v1/other-styles",
+                "/api/v1/other-styles/**",
+                "/api/v2/recent-floor-plan"
         );
     }
 
