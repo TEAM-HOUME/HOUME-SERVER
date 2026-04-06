@@ -124,13 +124,18 @@ public class GenerateImageTransactionService {
             User user,
             Credit lockedCredit,
             Banner banner,
+            Long floorPlanId,
+            boolean isMirror,
+            String finalPrompt,
             ImageUploadResponseDTO imageResponse
     ) {
+        House house = houseService.createTemplateHouse(user, banner, finalPrompt, floorPlanId, isMirror);
+
         GenerateImage generateImage = generateImageService.createGenerateImage(
                 imageResponse,
-                null,
+                house,
                 GenerateImageType.LIST,
-                banner
+                null
         );
 
         creditService.commitCreditDeletion(lockedCredit);

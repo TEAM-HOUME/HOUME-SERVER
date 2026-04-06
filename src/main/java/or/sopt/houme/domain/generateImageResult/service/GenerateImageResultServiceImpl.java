@@ -185,6 +185,9 @@ public class GenerateImageResultServiceImpl implements GenerateImageResultServic
 
     private List<CurationRawProduct> resolveSelectedRawProducts(GenerateImage generateImage) {
         Banner banner = generateImage.getBanner();
+        if (banner == null && generateImage.getHouse() != null) {
+            banner = generateImage.getHouse().getBanner();
+        }
         if (banner != null) {
             Banner bannerWithRawProducts = bannerRepository.findAllByIdInWithRawProducts(List.of(banner.getId())).stream()
                     .findFirst()

@@ -387,6 +387,9 @@ public class GenerateImageFacade {
                     user,
                     lockedCredit,
                     banner,
+                    request.floorPlanId(),
+                    request.isMirror(),
+                    prompt,
                     imageUploadResponseDTO
             );
             log.info("배너 템플릿 기반 인테리어 이미지 생성 저장 완료 imageId={}", response.imageId());
@@ -451,6 +454,9 @@ public class GenerateImageFacade {
                     user,
                     lockedCredit,
                     style,
+                    request.floorPlanId(),
+                    request.isMirror(),
+                    prompt,
                     imageUploadResponseDTO
             );
             log.info("스타일 템플릿 기반 인테리어 이미지 생성 저장 완료 imageId={}", response.imageId());

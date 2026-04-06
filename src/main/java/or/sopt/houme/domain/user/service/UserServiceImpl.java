@@ -127,8 +127,8 @@ public class UserServiceImpl implements UserService {
                     generateImage.get().getId(),
                     generateImage.get().getUrl(),
                     representativeTag.get().getTagNameKr(),
-                    house.getEquilibrium(),
-                    house.getForm(),
+                    house.getEquilibrium() != null ? house.getEquilibrium().getDescription() : null,
+                    house.getForm() != null ? house.getForm().getDescription() : null,
                     isMirror
             );
             histories.add(dto);
@@ -262,8 +262,8 @@ public class UserServiceImpl implements UserService {
 
                             return ImageHistoriesResultPageResponse.ImageHistoryResultPageResponse.of(
                                     generateImage.getId(),
-                                    house.getEquilibrium().getDescription(),
-                                    house.getForm().toString(),
+                                    house.getEquilibrium() != null ? house.getEquilibrium().getDescription() : null,
+                                    house.getForm() != null ? house.getForm().toString() : null,
                                     tag.getTagNameKr(),
                                     findUser.getDisplayName(),
                                     generateImage.getUrl(),
@@ -355,7 +355,14 @@ public class UserServiceImpl implements UserService {
      */
     private Map<Long, Banner> buildBannerMap(List<GenerateImage> generateImages) {
         Set<Long> bannerIds = generateImages.stream()
-                .map(GenerateImage::getBanner)
+                .map(generateImage -> {
+                    Banner imageBanner = generateImage.getBanner();
+                    if (imageBanner != null) {
+                        return imageBanner;
+                    }
+                    House house = generateImage.getHouse();
+                    return house != null ? house.getBanner() : null;
+                })
                 .filter(Objects::nonNull)
                 .map(Banner::getId)
                 .collect(Collectors.toCollection(LinkedHashSet::new));
@@ -514,6 +521,9 @@ public class UserServiceImpl implements UserService {
      */
     private Banner resolveBanner(GenerateImage generateImage, Map<Long, Banner> bannersById) {
         Banner banner = generateImage.getBanner();
+        if (banner == null && generateImage.getHouse() != null) {
+            banner = generateImage.getHouse().getBanner();
+        }
         if (banner != null) {
             return bannersById.getOrDefault(banner.getId(), banner);
         }

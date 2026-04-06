@@ -2,6 +2,7 @@ package or.sopt.houme.domain.house.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import or.sopt.houme.domain.banner.model.entity.Banner;
 import or.sopt.houme.domain.house.model.floorPlan.entity.FloorPlan;
 import or.sopt.houme.domain.house.repository.floorPlan.FloorPlanRepository;
 import or.sopt.houme.domain.furniture.model.entity.Furniture;
@@ -111,6 +112,25 @@ public class HouseServiceImpl implements HouseService {
         house.updatePrompt(prompt);
 
         houseRepository.save(house);
+    }
+
+    @Transactional
+    @Override
+    public House createTemplateHouse(User user, Banner banner, String prompt, Long floorPlanId, boolean isMirror) {
+        House house = House.builder()
+                .form(null)
+                .structure(null)
+                .equilibrium(null)
+                .activity(null)
+                .user(user)
+                .banner(banner)
+                .isValid(true)
+                .housePrompt(prompt)
+                .build();
+
+        House savedHouse = houseRepository.save(house);
+        saveHouseFloorPlan(savedHouse, floorPlanId, isMirror);
+        return savedHouse;
     }
 
     // house activity 업데이트

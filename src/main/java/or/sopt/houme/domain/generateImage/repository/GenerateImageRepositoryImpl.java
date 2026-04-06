@@ -163,13 +163,23 @@ public class GenerateImageRepositoryImpl implements GenerateImageRepositoryCusto
             QBannerCurationRawProduct bannerRawMapping,
             List<Long> rawProductIds
     ) {
-        return JPAExpressions.selectOne()
+        BooleanExpression mappedByImageBanner = JPAExpressions.selectOne()
                 .from(bannerRawMapping)
                 .where(
                         bannerRawMapping.banner.id.eq(generateImage.banner.id),
                         bannerRawMapping.curationRawProduct.id.in(rawProductIds)
                 )
                 .exists();
+
+        BooleanExpression mappedByHouseBanner = JPAExpressions.selectOne()
+                .from(bannerRawMapping)
+                .where(
+                        bannerRawMapping.banner.id.eq(generateImage.house.banner.id),
+                        bannerRawMapping.curationRawProduct.id.in(rawProductIds)
+                )
+                .exists();
+
+        return mappedByImageBanner.or(mappedByHouseBanner);
     }
 
     private BooleanExpression hasUsedRawProducts(
