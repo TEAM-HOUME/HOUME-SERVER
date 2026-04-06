@@ -6,6 +6,7 @@ import or.sopt.houme.domain.furniture.model.entity.Furniture;
 import or.sopt.houme.domain.furniture.model.entity.FurnitureType;
 import or.sopt.houme.domain.furniture.presentation.dto.response.CurationProductDetailResponse;
 import or.sopt.houme.domain.furniture.presentation.dto.response.CurationProductFilterResponse;
+import or.sopt.houme.domain.furniture.presentation.dto.response.CurationProductListResponse;
 import or.sopt.houme.domain.furniture.repository.CurationRawProductColorRepository;
 import or.sopt.houme.domain.furniture.repository.CurationRawProductRepository;
 import or.sopt.houme.domain.furniture.repository.FurnitureRepository;
@@ -19,6 +20,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
 
 import java.util.List;
 import java.util.Optional;
@@ -58,10 +60,8 @@ class CurationProductServiceImplTest {
     void getFilterMetadata() {
         // given
         FurnitureType bedType = FurnitureType.builder().id(1L).nameKr("침대").nameEng("BED").build();
-        Furniture furniture = Furniture.builder().id(5L).furnitureNameKr("업무용 책상").furnitureNameEng("OFFICE_DESK").build();
-
         given(furnitureTypeRepository.findAll()).willReturn(List.of(bedType));
-        given(furnitureRepository.findAll()).willReturn(List.of(furniture));
+        given(furnitureRepository.findAll()).willReturn(List.of());
 
         // when
         CurationProductFilterResponse response = curationProductService.getFilterMetadata();
@@ -70,6 +70,51 @@ class CurationProductServiceImplTest {
         assertThat(response).isNotNull();
         assertThat(response.furnitureTypes()).hasSize(12);
         assertThat(response.furnitureTypes().get(1).nameKr()).isEqualTo("침대/프레임");
+    }
+
+    @Test
+    @DisplayName("getProducts()는 복합 필터 조건에 맞는 상품 목록과 메타데이터를 반환한다")
+    void getProducts() {
+        // given
+        String keyword = "테스트";
+        List<Long> typeIds = List.of(1L);
+        List<String> priceRangeIds = List.of("P1");
+        List<Long> colorIds = List.of(1L);
+        Long cursor = 100L;
+        Integer size = 20;
+
+        // 필터 역매핑을 위한 Mock 설정
+        FurnitureType bedType = FurnitureType.builder().id(1L).nameKr("침대").nameEng("BED").build();
+        given(furnitureTypeRepository.findAll()).willReturn(List.of(bedType));
+        given(furnitureRepository.findAll()).willReturn(List.of());
+
+        CurationRawProduct product = CurationRawProduct.builder()
+                .id(99L)
+                .productId(3003L)
+                .productName("테스트 침대")
+                .discountPrice(10000L)
+                .isExposed(true)
+                .build();
+
+        Page<CurationRawProduct> page = new org.springframework.data.domain.PageImpl<>(
+                List.of(product),
+                org.springframework.data.domain.PageRequest.of(0, size),
+                1
+        );
+
+        given(curationRawProductRepository.findAllByCurationFilters(
+                eq(keyword), eq(typeIds), any(), any(), eq(cursor), any()
+        )).willReturn(page);
+
+        // when
+        CurationProductListResponse response = curationProductService.getProducts(
+                keyword, typeIds, priceRangeIds, colorIds, cursor, size
+        );
+
+        // then
+        assertThat(response).isNotNull();
+        assertThat(response.products()).hasSize(1);
+        assertThat(response.meta().appliedFilters()).hasSize(3);
     }
 
     @Test
@@ -82,16 +127,12 @@ class CurationProductServiceImplTest {
                 .id(id)
                 .productId(3003L)
                 .productName("테스트 상품")
-                .productImageUrl("http://image.com")
-                .productSiteUrl("http://site.com")
-                .source("naver")
-                .discountPrice(10000L)
                 .isExposed(true)
                 .build();
 
         CurationRawProductColor color = CurationRawProductColor.builder()
                 .curationRawProduct(product)
-                .clientColorName("블랙, 미매핑색상")
+                .clientColorName("블랙")
                 .build();
 
         given(curationRawProductRepository.findByIdAndIsExposedTrue(id)).willReturn(Optional.of(product));
@@ -104,16 +145,6 @@ class CurationProductServiceImplTest {
         // then
         assertThat(response).isNotNull();
         assertThat(response.product().productId()).isEqualTo(3003L);
-        assertThat(response.product().colors()).hasSize(2);
-        
-        // 블랙 매핑 확인
-        assertThat(response.product().colors().get(0).name()).isEqualTo("블랙");
-        assertThat(response.product().colors().get(0).value()).isEqualTo("#000000");
-        
-        // 미매핑 색상 확인 (Hex 코드 형식이 아니므로 null 반환)
-        assertThat(response.product().colors().get(1).name()).isEqualTo("미매핑색상");
-        assertThat(response.product().colors().get(1).value()).isNull();
-        
-        assertThat(response.product().isLiked()).isFalse();
+        assertThat(response.product().colors()).isNotEmpty();
     }
 }

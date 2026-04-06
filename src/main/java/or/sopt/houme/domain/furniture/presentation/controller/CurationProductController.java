@@ -5,15 +5,15 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import or.sopt.houme.domain.furniture.presentation.dto.response.CurationProductDetailResponse;
 import or.sopt.houme.domain.furniture.presentation.dto.response.CurationProductFilterResponse;
+import or.sopt.houme.domain.furniture.presentation.dto.response.CurationProductListResponse;
 import or.sopt.houme.domain.furniture.service.CurationProductService;
 import or.sopt.houme.domain.user.presentation.controller.dto.CustomUserDetails;
 import or.sopt.houme.global.api.ApiResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/curations/products")
@@ -22,6 +22,22 @@ import org.springframework.web.bind.annotation.RestController;
 public class CurationProductController {
 
     private final CurationProductService curationProductService;
+
+    @GetMapping
+    @Operation(summary = "상품 리스트 조회 및 검색 API", 
+               description = "상품 탭 메인 API입니다. 필터링 조건들을 포함하며 무한 스크롤을 지원합니다.")
+    public ResponseEntity<ApiResponse<CurationProductListResponse>> getProducts(
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) List<Long> types,
+            @RequestParam(required = false) List<String> priceRanges,
+            @RequestParam(required = false) List<Long> colors,
+            @RequestParam(required = false) Long cursor,
+            @RequestParam(defaultValue = "20") Integer size
+    ) {
+        return ResponseEntity.ok(ApiResponse.ok(
+                curationProductService.getProducts(keyword, types, priceRanges, colors, cursor, size)
+        ));
+    }
 
     @GetMapping("/filters")
     @Operation(summary = "상품 검색 필터링 조건 조회 API", 
