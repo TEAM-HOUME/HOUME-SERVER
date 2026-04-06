@@ -117,10 +117,13 @@ public class HouseServiceImpl implements HouseService {
     @Transactional
     @Override
     public House createTemplateHouse(User user, Banner banner, String prompt, Long floorPlanId, boolean isMirror) {
+        FloorPlan floorPlan = floorPlanRepository.findById(floorPlanId)
+                .orElseThrow(() -> new HouseException(ErrorCode.NOT_FOUND_FLOOR_PLAN));
+
         House house = House.builder()
-                .form(null)
-                .structure(null)
-                .equilibrium(null)
+                .form(floorPlan.getForm())
+                .structure(floorPlan.getStructure())
+                .equilibrium(floorPlan.getEquilibrium())
                 .activity(null)
                 .user(user)
                 .banner(banner)
