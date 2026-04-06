@@ -97,16 +97,6 @@ public class JjymServiceImpl implements JjymService {
         jjymRepository.save(Jjym.of(user, recommendFurniture));
     }
 
-    @Override
-    public void hateRawProduct(Long userId, Long rawProductId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new UserException(ErrorCode.USER_NOT_FOUND));
-        RecommendFurniture recommendFurniture = resolveRawProductRecommendFurniture(rawProductId);
-
-        Optional<Jjym> existing = jjymRepository.findByUserIdAndRecommendFurnitureId(user.getId(), recommendFurniture.getId());
-        existing.ifPresent(jjymRepository::delete);
-    }
-
     @Transactional(readOnly = true)
     @Override
     public JjymListResponse getMyJjyms(Long userId) {

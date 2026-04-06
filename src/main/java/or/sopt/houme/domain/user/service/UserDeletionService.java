@@ -19,6 +19,7 @@ import or.sopt.houme.domain.furniture.repository.FurnitureRecommendBtnClickLogRe
 import or.sopt.houme.domain.furniture.repository.JjymRepository;
 import or.sopt.houme.domain.house.repository.InvalidHouseRequestRepository;
 import or.sopt.houme.domain.house.repository.address.AddressRepository;
+import or.sopt.houme.domain.house.repository.carousel.CarouselLikeLogRepository;
 import or.sopt.houme.domain.user.repository.BlacklistTokenRepository;
 import or.sopt.houme.domain.user.repository.RefreshTokenRepository;
 import or.sopt.houme.domain.user.repository.UserRepository;
@@ -48,6 +49,7 @@ public class UserDeletionService {
     private final AddressRepository addressRepository;
     private final PaymentBtnClickLogRepository paymentBtnClickLogRepository;
     private final FurnitureRecommendBtnClickLogRepository furnitureRecommendBtnClickLogRepository;
+    private final CarouselLikeLogRepository carouselLikeLogRepository;
     private final InvalidHouseRequestRepository invalidHouseRequestRepository;
     private final CreditRepository creditRepository;
     private final JjymRepository jjymRepository;
@@ -151,10 +153,10 @@ public class UserDeletionService {
         addressRepository.deleteByUserId(userId);
         paymentBtnClickLogRepository.deleteByUserId(userId);
         furnitureRecommendBtnClickLogRepository.deleteByUserId(userId);
+        carouselLikeLogRepository.deleteByUserId(userId);
         creditRepository.deleteByUserId(userId);
 
         // 4. 마지막으로 유저 삭제
         userRepository.deleteById(userId);
     }
 }
-

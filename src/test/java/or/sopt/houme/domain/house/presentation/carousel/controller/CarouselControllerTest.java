@@ -2,6 +2,7 @@ package or.sopt.houme.domain.house.presentation.carousel.controller;
 
 import or.sopt.houme.domain.house.presentation.carousel.controller.dto.GetCarouselListResponseDTO;
 import or.sopt.houme.domain.house.presentation.carousel.controller.dto.GetCarouselResponseDTO;
+import or.sopt.houme.domain.house.service.carousel.CarouselLikeLogService;
 import or.sopt.houme.domain.house.service.carousel.facade.CarouselOptimisticLockFacade;
 import or.sopt.houme.domain.house.service.carousel.CarouselService;
 import or.sopt.houme.domain.house.service.carousel.CarouselServiceImpl;
@@ -50,6 +51,9 @@ class CarouselControllerTest {
 
     @MockBean
     private CarouselOptimisticLockFacade carouselOptimisticLockFacade;
+
+    @MockBean
+    private CarouselLikeLogService carouselLikeLogService;
 
     private CustomUserDetails testUserDetails;
 
@@ -193,6 +197,48 @@ class CarouselControllerTest {
                 .andExpect(status().isInternalServerError())
                 .andExpect(jsonPath("$.code").value(ErrorCode.CAROUSEL_INTERRUPT_EXCEPTION.getCode()))
                 .andExpect(jsonPath("$.msg").value(ErrorCode.CAROUSEL_INTERRUPT_EXCEPTION.getMsg()));
+    }
+
+    @Test
+    @DisplayName("POST /api/v2/carousels/like 요청으로 좋아요를 추가하고 로그를 저장한다")
+    void likeCarouselV2_success() throws Exception {
+        Long rawProductId = 321L;
+        setAuthentication(testUserDetails);
+
+        mockMvc.perform(post("/api/v2/carousels/like")
+                        .param("rawProductId", String.valueOf(rawProductId))
+                        .requestAttr("userDetails", testUserDetails)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.msg").value("응답 성공"))
+                .andExpect(jsonPath("$.code").value(200))
+                .andExpect(jsonPath("$.data").value("상품 찜이 정상적으로 저장되었습니다"));
+
+        Mockito.verify(carouselOptimisticLockFacade, Mockito.times(1))
+                .likeCarouselV2(testUserDetails.getUser(), rawProductId);
+        Mockito.verify(carouselLikeLogService, Mockito.times(1))
+                .createLikeLog(testUserDetails.getUser(), rawProductId);
+    }
+
+    @Test
+    @DisplayName("POST /api/v2/carousels/hate 요청으로 싫어요를 처리하고 로그를 저장한다")
+    void hateCarouselV2_success() throws Exception {
+        Long rawProductId = 654L;
+        setAuthentication(testUserDetails);
+
+        mockMvc.perform(post("/api/v2/carousels/hate")
+                        .param("rawProductId", String.valueOf(rawProductId))
+                        .requestAttr("userDetails", testUserDetails)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.msg").value("응답 성공"))
+                .andExpect(jsonPath("$.code").value(200))
+                .andExpect(jsonPath("$.data").value("상품 찜 해제가 정상적으로 저장되었습니다"));
+
+        Mockito.verify(carouselOptimisticLockFacade, Mockito.times(1))
+                .hateCarouselV2(testUserDetails.getUser(), rawProductId);
+        Mockito.verify(carouselLikeLogService, Mockito.times(1))
+                .createHateLog(testUserDetails.getUser(), rawProductId);
     }
 
 

@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import or.sopt.houme.domain.house.presentation.carousel.controller.dto.GetCarouselListResponseDTO;
+import or.sopt.houme.domain.house.service.carousel.CarouselLikeLogService;
 import or.sopt.houme.domain.house.service.carousel.facade.CarouselOptimisticLockFacade;
 import or.sopt.houme.domain.house.service.carousel.CarouselService;
 import or.sopt.houme.domain.house.presentation.carousel.controller.dto.GetCarouselV2ListResponseDTO;
@@ -25,6 +26,7 @@ public class CarouselController {
 
     private final CarouselService carouselService;
     private final CarouselOptimisticLockFacade carouselOptimisticLockFacade;
+    private final CarouselLikeLogService carouselLikeLogService;
 
     @GetMapping("/api/v1/carousels")
     @Operation(summary = "캐러셀 조회 API",
@@ -97,8 +99,20 @@ public class CarouselController {
             @RequestParam @Min(value = 1, message = "rawProductId는 1 이상이어야 합니다.") Long rawProductId) {
 
         carouselOptimisticLockFacade.likeCarouselV2(userDetails.getUser(), rawProductId);
+        carouselLikeLogService.createLikeLog(userDetails.getUser(), rawProductId);
 
         return ResponseEntity.ok(ApiResponse.ok("상품 찜이 정상적으로 저장되었습니다"));
+    }
+
+    @PostMapping("/api/v2/carousels/hate")
+    @Operation(summary = "캐러셀 싫어요 API v2")
+    public ResponseEntity<ApiResponse<String>> hateCarouselV2(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @RequestParam @Min(value = 1, message = "rawProductId는 1 이상이어야 합니다.") Long rawProductId) {
+
+        carouselLikeLogService.createHateLog(userDetails.getUser(), rawProductId);
+
+        return ResponseEntity.ok(ApiResponse.ok("상품 찜 해제가 정상적으로 저장되었습니다"));
     }
 
 }

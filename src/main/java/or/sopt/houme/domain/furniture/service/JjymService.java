@@ -10,8 +10,6 @@ public interface JjymService {
 
     void likeRawProduct(Long userId, Long rawProductId);
 
-    void hateRawProduct(Long userId, Long rawProductId);
-
     JjymListResponse getMyJjyms(Long userId);
 
     JjymV2ListResponse getMyRawProductJjyms(Long userId);
