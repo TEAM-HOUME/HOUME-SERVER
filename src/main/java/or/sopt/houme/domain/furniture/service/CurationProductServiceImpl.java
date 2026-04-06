@@ -131,27 +131,31 @@ private List<CurationProductDetailResponse.ProductColorDetail> extractColorDetai
     }
 
     private String mapToFriendlyLabel(FurnitureType type, Furniture furniture) {
-        String typeEng = type.getNameEng();
-        String furnitureEng = furniture.getFurnitureNameEng();
+        String typeEng = type.getNameEng() != null ? type.getNameEng().toUpperCase().trim() : "";
+        String furnitureEng = furniture.getFurnitureNameEng() != null ? furniture.getFurnitureNameEng().toUpperCase().trim() : "";
 
-        // 1. 중분류(Furniture) 우선 매핑
-        if ("OFFICE_DESK".equalsIgnoreCase(furnitureEng)) return "업무용 책상";
-        if ("DINING_TABLE".equalsIgnoreCase(furnitureEng)) return "식탁";
-        if ("SITTING_TABLE".equalsIgnoreCase(furnitureEng)) return "좌식 테이블";
-        if ("CLOSET".equalsIgnoreCase(furnitureEng)) return "옷장";
-        if ("SINGLE_SOFA".equalsIgnoreCase(furnitureEng)) return "의자/스툴";
-        if ("CHAIR".equalsIgnoreCase(furnitureEng)) return "의자/스툴";
-        if ("DRESSER".equalsIgnoreCase(furnitureEng)) return "화장대/협탁";
+        // 1. 중분류(Furniture) 우선 매핑 (O(1) switch)
+        switch (furnitureEng) {
+            case "OFFICE_DESK": return "업무용 책상";
+            case "DINING_TABLE": return "식탁";
+            case "SITTING_TABLE": return "좌식 테이블";
+            case "CLOSET": return "옷장";
+            case "SINGLE_SOFA":
+            case "CHAIR": return "의자/스툴";
+            case "DRESSER": return "화장대/협탁";
+            default: break;
+        }
 
-        // 2. 대분류(FurnitureType) 매핑
-        if ("BED".equalsIgnoreCase(typeEng)) return "침대/프레임";
-        if ("STORAGE".equalsIgnoreCase(typeEng)) return "수납/장식장";
-        if ("SOFA".equalsIgnoreCase(typeEng)) return "소파";
-        if ("LIGHTING".equalsIgnoreCase(typeEng)) return "조명";
-        if ("SELECTIVE".equalsIgnoreCase(typeEng)) return "그 외";
-        if ("ETC".equalsIgnoreCase(typeEng)) return "기타";
-
-        return "기타";
+        // 2. 대분류(FurnitureType) 매핑 (O(1) switch)
+        return switch (typeEng) {
+            case "BED" -> "침대/프레임";
+            case "STORAGE" -> "수납/장식장";
+            case "SOFA" -> "소파";
+            case "LIGHTING" -> "조명";
+            case "SELECTIVE" -> "그 외";
+            case "ETC" -> "기타";
+            default -> "기타";
+        };
     }
 
     private List<FurnitureTypeFilterResponse> getFurnitureTypeFilters() {
