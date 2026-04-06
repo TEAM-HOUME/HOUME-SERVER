@@ -34,6 +34,7 @@ public class CarouselServiceImpl implements CarouselService {
     private final CarouselPreferenceRepository carouselPreferenceRepository;
     private final CurationRawProductRepository curationRawProductRepository;
     private final JjymService jjymService;
+    private final CarouselLikeLogService carouselLikeLogService;
 
     @Override
     public GetCarouselListResponseDTO getCarousel(int page) {
@@ -74,10 +75,10 @@ public class CarouselServiceImpl implements CarouselService {
         updateLike(user.getId(), carouselId, false);
     }
 
-    @Override
     @Transactional
-    public void likeCarouselV2(User user, Long rawProductId) {
+    public void likeCarouselV2WithLog(User user, Long rawProductId) {
         jjymService.likeRawProduct(user.getId(), rawProductId);
+        carouselLikeLogService.createLikeLog(user, rawProductId);
     }
 
     private Page<CurationRawProduct> findExposedRawProductsExcludingJjym(

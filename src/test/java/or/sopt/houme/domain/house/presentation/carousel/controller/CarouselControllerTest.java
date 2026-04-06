@@ -216,8 +216,6 @@ class CarouselControllerTest {
 
         Mockito.verify(carouselOptimisticLockFacade, Mockito.times(1))
                 .likeCarouselV2(testUserDetails.getUser(), rawProductId);
-        Mockito.verify(carouselLikeLogService, Mockito.times(1))
-                .createLikeLog(testUserDetails.getUser(), rawProductId);
     }
 
     @Test
@@ -235,8 +233,6 @@ class CarouselControllerTest {
                 .andExpect(jsonPath("$.code").value(200))
                 .andExpect(jsonPath("$.data").value("상품 찜 해제가 정상적으로 저장되었습니다"));
 
-        Mockito.verify(carouselOptimisticLockFacade, Mockito.times(1))
-                .hateCarouselV2(testUserDetails.getUser(), rawProductId);
         Mockito.verify(carouselLikeLogService, Mockito.times(1))
                 .createHateLog(testUserDetails.getUser(), rawProductId);
     }

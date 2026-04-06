@@ -99,7 +99,6 @@ public class CarouselController {
             @RequestParam @Min(value = 1, message = "rawProductId는 1 이상이어야 합니다.") Long rawProductId) {
 
         carouselOptimisticLockFacade.likeCarouselV2(userDetails.getUser(), rawProductId);
-        carouselLikeLogService.createLikeLog(userDetails.getUser(), rawProductId);
 
         return ResponseEntity.ok(ApiResponse.ok("상품 찜이 정상적으로 저장되었습니다"));
     }

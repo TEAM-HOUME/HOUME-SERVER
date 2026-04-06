@@ -68,7 +68,7 @@ public class CarouselOptimisticLockFacade {
 
         while (retryCount < MAX_RETRIES) {
             try {
-                preferenceService.likeCarouselV2(user, rawProductId);
+                preferenceService.likeCarouselV2WithLog(user, rawProductId);
                 return;
             } catch (OptimisticLockException | DataIntegrityViolationException e) {
                 long backoffTime = (long) Math.pow(2, retryCount) * RETRY_DELAY_MS;
