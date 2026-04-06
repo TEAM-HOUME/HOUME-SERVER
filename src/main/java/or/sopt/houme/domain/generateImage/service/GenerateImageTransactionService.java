@@ -53,8 +53,7 @@ public class GenerateImageTransactionService {
                 .map(result -> generateImageService.createGenerateImage(
                         result,
                         house,
-                        generationType,
-                        null
+                        generationType
                 ))
                 .toList();
 
@@ -97,8 +96,7 @@ public class GenerateImageTransactionService {
         GenerateImage generateImage = generateImageService.createGenerateImage(
                 imageResponse,
                 house,
-                generationType,
-                null
+                generationType
         );
 
         // 4. 크레딧 차감 확정 (PENDING -> DELETE)
@@ -134,8 +132,7 @@ public class GenerateImageTransactionService {
         GenerateImage generateImage = generateImageService.createGenerateImage(
                 imageResponse,
                 house,
-                GenerateImageType.LIST,
-                null
+                GenerateImageType.LIST
         );
 
         creditService.commitCreditDeletion(lockedCredit);

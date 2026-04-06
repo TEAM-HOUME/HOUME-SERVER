@@ -88,7 +88,7 @@ public class GenerateImageRepositoryImpl implements GenerateImageRepositoryCusto
         return queryFactory
                 .selectFrom(generateImage)
                 .join(generateImage.house, house).fetchJoin()
-                .leftJoin(generateImage.banner, banner).fetchJoin()
+                .leftJoin(house.banner, banner).fetchJoin()
                 .where(
                         house.user.id.eq(userId),
                         house.isValid.isTrue()
@@ -152,10 +152,10 @@ public class GenerateImageRepositoryImpl implements GenerateImageRepositoryCusto
         }
         if (generationType == GenerateImageType.LIST) {
             return generateImage.generationType.eq(GenerateImageType.LIST)
-                    .or(generateImage.generationType.isNull().and(generateImage.banner.isNotNull()));
+                    .or(generateImage.generationType.isNull().and(generateImage.house.banner.isNotNull()));
         }
         return generateImage.generationType.eq(GenerateImageType.RECOMMEND)
-                .or(generateImage.generationType.isNull().and(generateImage.banner.isNull()));
+                .or(generateImage.generationType.isNull().and(generateImage.house.banner.isNull()));
     }
 
     private BooleanExpression hasBannerMappedRawProducts(
@@ -163,14 +163,6 @@ public class GenerateImageRepositoryImpl implements GenerateImageRepositoryCusto
             QBannerCurationRawProduct bannerRawMapping,
             List<Long> rawProductIds
     ) {
-        BooleanExpression mappedByImageBanner = JPAExpressions.selectOne()
-                .from(bannerRawMapping)
-                .where(
-                        bannerRawMapping.banner.id.eq(generateImage.banner.id),
-                        bannerRawMapping.curationRawProduct.id.in(rawProductIds)
-                )
-                .exists();
-
         BooleanExpression mappedByHouseBanner = JPAExpressions.selectOne()
                 .from(bannerRawMapping)
                 .where(
@@ -179,7 +171,7 @@ public class GenerateImageRepositoryImpl implements GenerateImageRepositoryCusto
                 )
                 .exists();
 
-        return mappedByImageBanner.or(mappedByHouseBanner);
+        return mappedByHouseBanner;
     }
 
     private BooleanExpression hasUsedRawProducts(

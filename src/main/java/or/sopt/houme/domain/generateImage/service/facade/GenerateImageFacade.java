@@ -176,8 +176,7 @@ public class GenerateImageFacade {
                 generateImage = generateImageService.createGenerateImage(
                         imageUploadResponseDTO,
                         house,
-                        GenerateImageType.RECOMMEND,
-                        null
+                        GenerateImageType.RECOMMEND
                 );
 
             } catch (Exception e) {

@@ -356,10 +356,6 @@ public class UserServiceImpl implements UserService {
     private Map<Long, Banner> buildBannerMap(List<GenerateImage> generateImages) {
         Set<Long> bannerIds = generateImages.stream()
                 .map(generateImage -> {
-                    Banner imageBanner = generateImage.getBanner();
-                    if (imageBanner != null) {
-                        return imageBanner;
-                    }
                     House house = generateImage.getHouse();
                     return house != null ? house.getBanner() : null;
                 })
@@ -520,10 +516,7 @@ public class UserServiceImpl implements UserService {
      * 생성 이미지에 연결된 배너를 배너 맵 기준으로 보정하여 반환합니다.
      */
     private Banner resolveBanner(GenerateImage generateImage, Map<Long, Banner> bannersById) {
-        Banner banner = generateImage.getBanner();
-        if (banner == null && generateImage.getHouse() != null) {
-            banner = generateImage.getHouse().getBanner();
-        }
+        Banner banner = generateImage.getHouse() != null ? generateImage.getHouse().getBanner() : null;
         if (banner != null) {
             return bannersById.getOrDefault(banner.getId(), banner);
         }

@@ -366,12 +366,22 @@ class UserServiceImplTest {
                 .build();
         banner.getBannerRawProducts().add(BannerCurationRawProduct.of(banner, bannerRawProduct));
 
+        House houseWithBanner = House.builder()
+                .id(house.getId())
+                .form(house.getForm())
+                .structure(house.getStructure())
+                .equilibrium(house.getEquilibrium())
+                .activity(house.getActivity())
+                .user(user)
+                .banner(banner)
+                .isValid(true)
+                .build();
+
         GenerateImage bannerImage = GenerateImage.builder()
                 .id(201L)
                 .url("https://cdn.com/banner-image.png")
-                .house(house)
+                .house(houseWithBanner)
                 .generationType(GenerateImageType.LIST)
-                .banner(banner)
                 .build();
         ReflectionTestUtils.setField(bannerImage, "createdAt", LocalDateTime.of(2026, 3, 24, 11, 0));
 
