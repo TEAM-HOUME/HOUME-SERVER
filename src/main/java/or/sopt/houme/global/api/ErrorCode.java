@@ -44,6 +44,9 @@ public enum ErrorCode {
 
     // 이미지 관련 예외
     IMAGE_PROCESSING_ERROR(HttpStatus.BAD_REQUEST,40012 ,"이미지 컬러 해시값 계산 중 오류가 발생하였습니다."),
+    INVALID_GENERATE_IMAGE_REQUEST(HttpStatus.BAD_REQUEST, 40028, "이미지 생성 요청 값이 유효하지 않습니다."),
+    INVALID_GENERATE_IMAGE_RESULT_REQUEST(HttpStatus.BAD_REQUEST, 40029, "이미지 결과 조회 요청 값이 유효하지 않습니다."),
+    INVALID_GENERATE_IMAGE_TYPE(HttpStatus.BAD_REQUEST, 40030, "해당 API에서 지원하지 않는 이미지 생성 타입입니다."),
 
     // 네이버 쇼핑 API 관련 예외
     NAVER_API_DATA_PARSE_ERROR(HttpStatus.BAD_REQUEST, 40013, "네이버 API 응답의 productId 필드를 숫자로 변환하는 중 오류가 발생했습니다."),
@@ -60,6 +63,11 @@ public enum ErrorCode {
     DUPLICATE_FURNITURE_TYPE_ENG(HttpStatus.BAD_REQUEST, 40018, "중복된 가구타입 영어명입니다."),
     CANNOT_DELETE_FURNITURE_TYPE_IN_USE(HttpStatus.BAD_REQUEST, 40019, "해당 가구 타입을 사용하는 가구들을 먼저 삭제해주세요."),
     INVALID_FLOOR_PLAN_NAME(HttpStatus.BAD_REQUEST, 40024, "도면 이름은 비어 있을 수 없습니다."),
+
+    // 배너 관련 예외
+    INVALID_BANNER_ANSWER_CHIP(HttpStatus.BAD_REQUEST, 40025, "배너 답변 칩 데이터가 유효하지 않습니다."),
+    INVALID_BANNER_SIZE(HttpStatus.BAD_REQUEST, 40026, "size는 1 이상의 값이어야 합니다."),
+    INVALID_FLOOR_PLAN_SIZE(HttpStatus.BAD_REQUEST, 40027, "size는 1 이상의 값이어야 합니다."),
 
 
     /**

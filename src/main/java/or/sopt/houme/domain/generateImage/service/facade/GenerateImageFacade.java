@@ -206,7 +206,7 @@ public class GenerateImageFacade {
         } catch (ValidException validException) {
             // 유효값 검증 실패시
             log.error("유효값 검증 실패: {}", validException.getMessage(), validException);
-            throw new ValidException(ErrorCode.NOT_VALID_EXCEPTION);
+            throw new GenerateImageException(ErrorCode.INVALID_GENERATE_IMAGE_REQUEST);
         } catch (GenerateImageException e) {
             throw e;
         } catch (Exception e) {
@@ -313,7 +313,7 @@ public class GenerateImageFacade {
             if (lockedCredit != null && lockedCredit.getStatus() == CreditStatus.PENDING) {
                 creditService.rollbackCreditPending(lockedCredit);
             }
-            throw new ValidException(ErrorCode.NOT_VALID_EXCEPTION);
+            throw new GenerateImageException(ErrorCode.INVALID_GENERATE_IMAGE_REQUEST);
         } catch (GenerateImageException | ImageFallbackException | CreditException e) {
             // 이미지 생성 중 어떤 예외라도 발생하면 크레딧 상태 복구
             if (lockedCredit != null && lockedCredit.getStatus() == CreditStatus.PENDING) {
@@ -360,7 +360,7 @@ public class GenerateImageFacade {
             BannerStyleAnswerChip selectedChip = parseStyleAnswerChips(banner.getStyleAnswerChipsJson()).stream()
                     .filter(chip -> chip.id() != null && chip.id().equals(request.answerId()))
                     .findFirst()
-                    .orElseThrow(() -> new ValidException(ErrorCode.NOT_VALID_EXCEPTION));
+                    .orElseThrow(() -> new GenerateImageException(ErrorCode.INVALID_BANNER_ANSWER_CHIP));
 
             String floorPlanImageUrl = resolveFloorPlanImageUrl(floorPlan, request.floorPlanView());
             List<String> referenceImageUrls = buildReferenceImageUrls(banner, selectedChip, floorPlanImageUrl);
@@ -620,7 +620,7 @@ public class GenerateImageFacade {
             if (lockedCredit != null && lockedCredit.getStatus() == CreditStatus.PENDING) {
                 creditService.rollbackCreditPending(lockedCredit);
             }
-            throw new ValidException(ErrorCode.NOT_VALID_EXCEPTION);
+            throw new GenerateImageException(ErrorCode.INVALID_GENERATE_IMAGE_REQUEST);
         } catch (GenerateImageException | ImageFallbackException | CreditException e) {
             // 이미지 생성 중 어떤 예외라도 발생하면 크레딧 상태 복구
             if (lockedCredit != null && lockedCredit.getStatus() == CreditStatus.PENDING) {
@@ -911,7 +911,7 @@ public class GenerateImageFacade {
             return Enum.valueOf(enumType, value);
         } catch (IllegalArgumentException e) {
             log.warn("유효성 검증 실패 {}: {}", enumType.getSimpleName(), value);
-            throw new ValidException(ErrorCode.NOT_VALID_EXCEPTION);
+            throw new GenerateImageException(ErrorCode.INVALID_GENERATE_IMAGE_REQUEST);
         }
     }
 
