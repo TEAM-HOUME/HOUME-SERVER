@@ -10,6 +10,7 @@ public interface CurationRawProductRepositoryCustom {
 
     Page<CurationRawProduct> searchByKeyword(String keyword, Pageable pageable);
 
+    Page<CurationRawProduct> findExposedRawProductsExcludingLikedByUser(Long userId, Pageable pageable);
     List<CurationRawProduct> findAllSimilarByFurnitureTypeIds(
             List<Long> furnitureTypeIds,
             List<Long> excludeRawProductIds,

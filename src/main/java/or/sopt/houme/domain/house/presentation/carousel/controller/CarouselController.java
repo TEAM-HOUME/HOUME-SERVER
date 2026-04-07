@@ -2,41 +2,66 @@ package or.sopt.houme.domain.house.presentation.carousel.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import or.sopt.houme.domain.house.presentation.carousel.controller.dto.GetCarouselListResponseDTO;
+import or.sopt.houme.domain.house.service.carousel.CarouselLikeLogService;
 import or.sopt.houme.domain.house.service.carousel.facade.CarouselOptimisticLockFacade;
 import or.sopt.houme.domain.house.service.carousel.CarouselService;
+import or.sopt.houme.domain.house.presentation.carousel.controller.dto.GetCarouselV2ListResponseDTO;
 import or.sopt.houme.domain.user.presentation.controller.dto.CustomUserDetails;
 import or.sopt.houme.global.api.ApiResponse;
 import or.sopt.houme.global.api.ErrorCode;
 import or.sopt.houme.global.api.handler.CarouselException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v1")
 @Tag(name = "캐러셀 관련 API")
+@Validated
 public class CarouselController {
 
     private final CarouselService carouselService;
     private final CarouselOptimisticLockFacade carouselOptimisticLockFacade;
+    private final CarouselLikeLogService carouselLikeLogService;
 
-    @GetMapping("/carousels")
+    @GetMapping("/api/v1/carousels")
     @Operation(summary = "캐러셀 조회 API",
     description = "한 번 조회 시, 다섯개의 캐러셀을 반환합니다. <br><br>" +
             "**page는 0부터** 넣어주세요 (null일시 0이 기본)")
     public ResponseEntity<ApiResponse<GetCarouselListResponseDTO>> getCarousels(
-            @RequestParam(value = "page", required = false, defaultValue = "0") Integer page) {
+            @RequestParam(value = "page", required = false, defaultValue = "0")
+            @Min(value = 0, message = "page는 0 이상이어야 합니다.")
+            Integer page) {
 
         GetCarouselListResponseDTO carousels = carouselService.getCarousel(page);
 
         return ResponseEntity.ok(ApiResponse.ok(carousels));
     }
 
+    @GetMapping("/api/v2/carousels")
+    @Operation(summary = "캐러셀 조회 API v2",
+            description = "실제 상품을 응답합니다. 한 번 조회 시, 다섯개의 캐러셀을 반환합니다. <br><br>" +
+                    "**page는 0부터** 넣어주세요 (null일시 0이 기본)")
+    public ResponseEntity<ApiResponse<GetCarouselV2ListResponseDTO>> getCarouselsV2(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @RequestParam(value = "page", required = false, defaultValue = "0")
+            @Min(value = 0, message = "page는 0 이상이어야 합니다.")
+            Integer page) {
 
-    @PostMapping("/carousels/like")
+        GetCarouselListResponseDTO carousels = carouselService.getCarouselV2(
+                page,
+                userDetails.getUser()
+        );
+
+        return ResponseEntity.ok(ApiResponse.ok(GetCarouselV2ListResponseDTO.of(carousels.carouselResponseDTOS())));
+    }
+
+
+    @PostMapping("/api/v1/carousels/like")
     @Operation(summary = "캐러셀 좋아요 API")
     public ResponseEntity<ApiResponse<String>> likeCarousel(
             @AuthenticationPrincipal CustomUserDetails userDetails,
@@ -52,7 +77,7 @@ public class CarouselController {
     }
 
 
-    @PostMapping("/carousels/hate")
+    @PostMapping("/api/v1/carousels/hate")
     @Operation(summary = "캐러셀 싫어요 API")
     public ResponseEntity<ApiResponse<String>> hateCarousel(
             @AuthenticationPrincipal CustomUserDetails userDetails,
@@ -66,4 +91,27 @@ public class CarouselController {
 
         return ResponseEntity.ok(ApiResponse.ok("캐러셀 싫어요가 정상적으로 저장되었습니다"));
     }
+
+    @PostMapping("/api/v2/carousels/like")
+    @Operation(summary = "캐러셀 좋아요 API v2")
+    public ResponseEntity<ApiResponse<String>> likeCarouselV2(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @RequestParam @Min(value = 1, message = "rawProductId는 1 이상이어야 합니다.") Long rawProductId) {
+
+        carouselOptimisticLockFacade.likeCarouselV2(userDetails.getUser(), rawProductId);
+
+        return ResponseEntity.ok(ApiResponse.ok("상품 찜이 정상적으로 저장되었습니다"));
+    }
+
+    @PostMapping("/api/v2/carousels/hate")
+    @Operation(summary = "캐러셀 싫어요 API v2")
+    public ResponseEntity<ApiResponse<String>> hateCarouselV2(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @RequestParam @Min(value = 1, message = "rawProductId는 1 이상이어야 합니다.") Long rawProductId) {
+
+        carouselLikeLogService.createHateLog(userDetails.getUser(), rawProductId);
+
+        return ResponseEntity.ok(ApiResponse.ok("캐러셀 싫어요 로그가 정상적으로 저장되었습니다"));
+    }
+
 }

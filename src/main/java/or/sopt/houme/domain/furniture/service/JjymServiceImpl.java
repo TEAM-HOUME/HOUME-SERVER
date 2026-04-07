@@ -19,6 +19,8 @@ import or.sopt.houme.domain.user.repository.UserRepository;
 import or.sopt.houme.global.api.ErrorCode;
 import or.sopt.houme.global.api.GeneralException;
 import or.sopt.houme.global.api.handler.FurnitureException;
+import or.sopt.houme.global.api.handler.FurnitureException;
+import or.sopt.houme.global.api.handler.UserException;
 import or.sopt.houme.global.api.handler.UserException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -69,19 +71,7 @@ public class JjymServiceImpl implements JjymService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserException(ErrorCode.USER_NOT_FOUND));
 
-        CurationRawProduct rawProduct = curationRawProductRepository.findById(rawProductId)
-                .orElseThrow(() -> new FurnitureException(ErrorCode.NOT_FOUND_CURATION_RAW_PRODUCT));
-
-        RecommendFurniture recommendFurniture = recommendFurnitureRepository
-                .findBySourceAndFurnitureProductId(CurationSource.RAW, rawProduct.getProductId())
-                .orElseGet(() -> recommendFurnitureRepository.save(RecommendFurniture.from(
-                        rawProduct.getProductImageUrl(),
-                        rawProduct.getProductSiteUrl(),
-                        rawProduct.getProductName(),
-                        rawProduct.getProductMallName(),
-                        rawProduct.getProductId(),
-                        CurationSource.RAW
-                )));
+        RecommendFurniture recommendFurniture = resolveRawProductRecommendFurniture(rawProductId);
 
         Optional<Jjym> existing = jjymRepository.findByUserIdAndRecommendFurnitureId(user.getId(), recommendFurniture.getId());
         if (existing.isPresent()) {
@@ -91,6 +81,20 @@ public class JjymServiceImpl implements JjymService {
 
         jjymRepository.save(Jjym.of(user, recommendFurniture));
         return true;
+    }
+
+    @Override
+    public void likeRawProduct(Long userId, Long rawProductId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserException(ErrorCode.USER_NOT_FOUND));
+        RecommendFurniture recommendFurniture = resolveRawProductRecommendFurniture(rawProductId);
+
+        Optional<Jjym> existing = jjymRepository.findByUserIdAndRecommendFurnitureId(user.getId(), recommendFurniture.getId());
+        if (existing.isPresent()) {
+            return;
+        }
+
+        jjymRepository.save(Jjym.of(user, recommendFurniture));
     }
 
     @Transactional(readOnly = true)
@@ -262,5 +266,21 @@ public class JjymServiceImpl implements JjymService {
             return color.getRawColorName();
         }
         return null;
+    }
+
+    private RecommendFurniture resolveRawProductRecommendFurniture(Long rawProductId) {
+        CurationRawProduct rawProduct = curationRawProductRepository.findById(rawProductId)
+                .orElseThrow(() -> new FurnitureException(ErrorCode.NOT_FOUND_CURATION_RAW_PRODUCT));
+
+        return recommendFurnitureRepository
+                .findBySourceAndFurnitureProductId(CurationSource.RAW, rawProduct.getProductId())
+                .orElseGet(() -> recommendFurnitureRepository.save(RecommendFurniture.from(
+                        rawProduct.getProductImageUrl(),
+                        rawProduct.getProductSiteUrl(),
+                        rawProduct.getProductName(),
+                        rawProduct.getProductMallName(),
+                        rawProduct.getProductId(),
+                        CurationSource.RAW
+                )));
     }
 }

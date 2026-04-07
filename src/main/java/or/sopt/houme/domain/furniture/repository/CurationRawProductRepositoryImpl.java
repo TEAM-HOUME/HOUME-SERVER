@@ -2,9 +2,14 @@ package or.sopt.houme.domain.furniture.repository;
 
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import or.sopt.houme.domain.furniture.model.entity.CurationRawProduct;
+import or.sopt.houme.domain.furniture.model.entity.CurationSource;
+import or.sopt.houme.domain.furniture.model.entity.QCurationRawProduct;
+import or.sopt.houme.domain.furniture.model.entity.QJjym;
+import or.sopt.houme.domain.furniture.model.entity.QRecommendFurniture;
 import or.sopt.houme.domain.furniture.model.entity.QCurationRawProductFurnitureTag;
 import or.sopt.houme.domain.furniture.model.entity.QCurationRawProduct;
 import or.sopt.houme.domain.furniture.model.entity.QFurniture;
@@ -51,6 +56,46 @@ public class CurationRawProductRepositoryImpl implements CurationRawProductRepos
                 .select(rawProduct.count())
                 .from(rawProduct)
                 .where(where)
+                .fetchOne();
+
+        return new PageImpl<>(content, pageable, total == null ? 0 : total);
+    }
+
+    @Override
+    public Page<CurationRawProduct> findExposedRawProductsExcludingLikedByUser(Long userId, Pageable pageable) {
+        QCurationRawProduct rawProduct = QCurationRawProduct.curationRawProduct;
+        QJjym jjym = QJjym.jjym;
+        QRecommendFurniture recommendFurniture = QRecommendFurniture.recommendFurniture;
+
+        BooleanExpression isNotLikedByUser = JPAExpressions
+                .selectOne()
+                .from(jjym)
+                .join(jjym.recommendFurniture, recommendFurniture)
+                .where(
+                        jjym.user.id.eq(userId),
+                        recommendFurniture.source.eq(CurationSource.RAW),
+                        recommendFurniture.furnitureProductId.eq(rawProduct.productId)
+                )
+                .notExists();
+
+        List<CurationRawProduct> content = queryFactory
+                .selectFrom(rawProduct)
+                .where(
+                        rawProduct.isExposed.isTrue(),
+                        isNotLikedByUser
+                )
+                .orderBy(rawProduct.id.desc())
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
+                .fetch();
+
+        Long total = queryFactory
+                .select(rawProduct.count())
+                .from(rawProduct)
+                .where(
+                        rawProduct.isExposed.isTrue(),
+                        isNotLikedByUser
+                )
                 .fetchOne();
 
         return new PageImpl<>(content, pageable, total == null ? 0 : total);
