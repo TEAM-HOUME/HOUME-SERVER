@@ -8,9 +8,6 @@ import or.sopt.houme.domain.generateImage.model.entity.GenerateImageType;
 import or.sopt.houme.domain.generateImage.model.entity.GenerateImageUsedProduct;
 import or.sopt.houme.domain.house.model.entity.House;
 import or.sopt.houme.domain.house.model.entity.enums.Activity;
-import or.sopt.houme.domain.house.model.entity.enums.Equilibrium;
-import or.sopt.houme.domain.house.model.entity.enums.Form;
-import or.sopt.houme.domain.house.model.entity.enums.Structure;
 import or.sopt.houme.domain.user.model.entity.*;
 import or.sopt.houme.global.config.QuerydslConfig;
 import org.junit.jupiter.api.BeforeEach;
@@ -59,9 +56,6 @@ class GenerateImageRepositoryImplTest {
 
         house = House.builder()
                 .user(user)
-                .form(Form.OFFICETEL)
-                .structure(Structure.OPEN_ONE_ROOM)
-                .equilibrium(Equilibrium.UNDER_5)
                 .activity(Activity.REMOTE_WORK)
                 .isValid(true)
                 .build();
@@ -158,21 +152,30 @@ class GenerateImageRepositoryImplTest {
                 .build();
         em.persist(related2);
 
+        House nonMatchedHouse = House.builder()
+                .user(user)
+                .activity(Activity.REMOTE_WORK)
+                .isValid(true)
+                .build();
+        em.persist(nonMatchedHouse);
+
         GenerateImage nonMatched = GenerateImage.builder()
                 .url("https://cdn.com/non-matched.png")
                 .filename("non-matched.png")
                 .originalFilename("non-matched-origin.png")
                 .fileExtension("png")
-                .house(house)
+                .house(nonMatchedHouse)
                 .generationType(GenerateImageType.LIST)
                 .build();
         em.persist(nonMatched);
 
-        // 배너 + 배너 매핑(native) : current/related1이 동일 배너를 바라보도록 구성
+        // 배너 + 배너 매핑(native) : house가 배너를 바라보도록 구성
         em.createNativeQuery("insert into banners(id) values (100)").executeUpdate();
-        em.createNativeQuery("update generate_images set banner_id = 100 where id in (:currentId, :related1Id)")
-                .setParameter("currentId", current.getId())
-                .setParameter("related1Id", related1.getId())
+        em.createNativeQuery("update houses set banner_id = 100 where id = :houseId")
+                .setParameter("houseId", house.getId())
+                .executeUpdate();
+        em.createNativeQuery("update generate_images set generation_type = 'RECOMMEND' where id = :seedImageId")
+                .setParameter("seedImageId", generateImage.getId())
                 .executeUpdate();
         em.createNativeQuery("""
                 insert into banner_curation_raw_products(banner_id, curation_raw_product_id)
