@@ -19,6 +19,7 @@ import or.sopt.houme.domain.user.repository.UserRepository;
 import or.sopt.houme.global.api.ErrorCode;
 import or.sopt.houme.global.api.GeneralException;
 import or.sopt.houme.global.api.handler.FurnitureException;
+import or.sopt.houme.global.api.handler.FurnitureException;
 import or.sopt.houme.global.api.handler.UserException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -67,7 +68,7 @@ public class JjymServiceImpl implements JjymService {
     @Override
     public boolean rawProductJjymToggle(Long userId, Long rawProductId) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new UserException(ErrorCode.USER_NOT_FOUND));
+                .orElseThrow(() -> new GeneralException(ErrorCode.USER_NOT_FOUND));
 
         CurationRawProduct rawProduct = curationRawProductRepository.findById(rawProductId)
                 .orElseThrow(() -> new FurnitureException(ErrorCode.NOT_FOUND_CURATION_RAW_PRODUCT));
