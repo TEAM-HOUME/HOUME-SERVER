@@ -10,12 +10,18 @@ import or.sopt.houme.domain.banner.model.entity.Banner;
 import or.sopt.houme.domain.banner.model.entity.BannerCurationRawProduct;
 import or.sopt.houme.domain.banner.repository.BannerRepository;
 import or.sopt.houme.domain.furniture.model.entity.CurationRawProduct;
+import or.sopt.houme.domain.furniture.model.entity.CurationRawProductColor;
 import or.sopt.houme.domain.furniture.model.entity.CurationRawProductFurnitureTag;
+import or.sopt.houme.domain.furniture.model.entity.CurationSource;
 import or.sopt.houme.domain.furniture.model.entity.Furniture;
 import or.sopt.houme.domain.furniture.model.entity.FurnitureTag;
 import or.sopt.houme.domain.furniture.model.entity.FurnitureType;
+import or.sopt.houme.domain.furniture.model.entity.RecommendFurniture;
+import or.sopt.houme.domain.furniture.repository.CurationRawProductColorRepository;
 import or.sopt.houme.domain.furniture.repository.CurationRawProductFurnitureTagRepository;
 import or.sopt.houme.domain.furniture.repository.CurationRawProductRepository;
+import or.sopt.houme.domain.furniture.repository.JjymRepository;
+import or.sopt.houme.domain.furniture.repository.RecommendFurnitureRepository;
 import or.sopt.houme.domain.generateImage.model.entity.GenerateImage;
 import or.sopt.houme.domain.generateImage.model.entity.GenerateImageType;
 import or.sopt.houme.domain.generateImage.repository.GenerateImageRepository;
@@ -58,10 +64,19 @@ class GenerateImageResultServiceImplTest {
     private GenerateImageUsedProductRepository generateImageUsedProductRepository;
 
     @Mock
+    private CurationRawProductColorRepository curationRawProductColorRepository;
+
+    @Mock
     private CurationRawProductRepository curationRawProductRepository;
 
     @Mock
     private CurationRawProductFurnitureTagRepository curationRawProductFurnitureTagRepository;
+
+    @Mock
+    private RecommendFurnitureRepository recommendFurnitureRepository;
+
+    @Mock
+    private JjymRepository jjymRepository;
 
     @Mock
     private HouseService houseService;
@@ -89,6 +104,7 @@ class GenerateImageResultServiceImplTest {
         Banner bannerRef = Banner.builder()
                 .id(10L)
                 .build();
+      
         House house = House.builder()
                 .id(100L)
                 .banner(bannerRef)
@@ -103,6 +119,7 @@ class GenerateImageResultServiceImplTest {
 
         CurationRawProduct rawProduct = CurationRawProduct.builder()
                 .id(101L)
+                .productId(1001L)
                 .productName("테스트 상품")
                 .productImageUrl("https://product-image")
                 .listPrice(39900L)
@@ -123,8 +140,28 @@ class GenerateImageResultServiceImplTest {
 
         when(generateImageService.findGenerateImage(1L)).thenReturn(listImage);
         when(bannerRepository.findAllByIdInWithRawProducts(List.of(10L))).thenReturn(List.of(bannerWithRawProducts));
+        when(curationRawProductColorRepository.findAllByCurationRawProductIdIn(List.of(101L)))
+                .thenReturn(List.of(
+                        CurationRawProductColor.builder()
+                                .id(1L)
+                                .curationRawProduct(rawProduct)
+                                .clientColorName("화이트")
+                                .build(),
+                        CurationRawProductColor.builder()
+                                .id(2L)
+                                .curationRawProduct(rawProduct)
+                                .rawColorName("아이보리")
+                                .build()
+                ));
+        when(recommendFurnitureRepository.findAllBySourceAndFurnitureProductIdIn(CurationSource.RAW, List.of(1001L)))
+                .thenReturn(List.of(RecommendFurniture.builder()
+                        .id(501L)
+                        .source(CurationSource.RAW)
+                        .furnitureProductId(1001L)
+                        .build()));
+        when(jjymRepository.findAllByUserIdAndRecommendFurnitureIdIn(1L, List.of(501L))).thenReturn(List.of());
 
-        User user = mock(User.class);
+        User user = User.builder().id(1L).build();
 
         GenerateImageResultResponse response = generateImageResultService.getListResultItems(user, 1L);
 
@@ -134,6 +171,9 @@ class GenerateImageResultServiceImplTest {
         assertThat(response.products()).hasSize(1);
         assertThat(response.products().getFirst().id()).isEqualTo(101L);
         assertThat(response.products().getFirst().name()).isEqualTo("테스트 상품");
+        assertThat(response.products().getFirst().colors()).extracting("name").containsExactly("화이트", "아이보리");
+        assertThat(response.products().getFirst().colors()).extracting("value").containsExactly("#FFFFFF", "#FFF8E1");
+        assertThat(response.products().getFirst().isLiked()).isFalse();
     }
 
     @Test
@@ -152,6 +192,7 @@ class GenerateImageResultServiceImplTest {
 
         CurationRawProduct selected = CurationRawProduct.builder()
                 .id(101L)
+                .productId(1001L)
                 .brand("선택브랜드")
                 .productName("선택 상품")
                 .build();
@@ -174,10 +215,10 @@ class GenerateImageResultServiceImplTest {
                 .furnitureTag(furnitureTag)
                 .build();
 
-        CurationRawProduct c1 = CurationRawProduct.builder().id(201L).productName("furniture-type-1").build();
-        CurationRawProduct c2 = CurationRawProduct.builder().id(202L).productName("furniture-type-2").build();
-        CurationRawProduct c3 = CurationRawProduct.builder().id(203L).productName("furniture-type-3").build();
-        CurationRawProduct c4 = CurationRawProduct.builder().id(204L).productName("furniture-type-4").build();
+        CurationRawProduct c1 = CurationRawProduct.builder().id(201L).productId(2001L).productName("furniture-type-1").build();
+        CurationRawProduct c2 = CurationRawProduct.builder().id(202L).productId(2002L).productName("furniture-type-2").build();
+        CurationRawProduct c3 = CurationRawProduct.builder().id(203L).productId(2003L).productName("furniture-type-3").build();
+        CurationRawProduct c4 = CurationRawProduct.builder().id(204L).productId(2004L).productName("furniture-type-4").build();
 
         when(generateImageService.findGenerateImage(1L)).thenReturn(listImage);
         when(bannerRepository.findAllByIdInWithRawProducts(List.of(10L))).thenReturn(List.of(bannerWithRawProducts));
@@ -185,13 +226,38 @@ class GenerateImageResultServiceImplTest {
                 .thenReturn(List.of(selectedProductMapping));
         when(curationRawProductRepository.findAllSimilarByFurnitureTypeIds(eq(List.of(1L)), eq(List.of(101L)), any()))
                 .thenReturn(List.of(c1, c2, c3, c4));
+        when(curationRawProductColorRepository.findAllByCurationRawProductIdIn(List.of(201L, 202L, 203L, 204L)))
+                .thenReturn(List.of(
+                        CurationRawProductColor.builder()
+                                .id(11L)
+                                .curationRawProduct(c1)
+                                .clientColorName("오크")
+                                .build(),
+                        CurationRawProductColor.builder()
+                                .id(12L)
+                                .curationRawProduct(c2)
+                                .rawColorName("블랙")
+                                .build()
+                ));
+        when(recommendFurnitureRepository.findAllBySourceAndFurnitureProductIdIn(CurationSource.RAW, List.of(2001L, 2002L, 2003L, 2004L)))
+                .thenReturn(List.of(
+                        RecommendFurniture.builder().id(701L).source(CurationSource.RAW).furnitureProductId(2001L).build(),
+                        RecommendFurniture.builder().id(702L).source(CurationSource.RAW).furnitureProductId(2002L).build(),
+                        RecommendFurniture.builder().id(703L).source(CurationSource.RAW).furnitureProductId(2003L).build(),
+                        RecommendFurniture.builder().id(704L).source(CurationSource.RAW).furnitureProductId(2004L).build()
+                ));
+        when(jjymRepository.findAllByUserIdAndRecommendFurnitureIdIn(1L, List.of(701L, 702L, 703L, 704L))).thenReturn(List.of());
 
-        User user = mock(User.class);
+        User user = User.builder().id(1L).build();
         SimilarItemsResponse response = generateImageResultService.getSimilarItems(user, 1L);
 
         assertThat(response.products()).hasSize(4);
         assertThat(response.products().get(0).id()).isEqualTo(201L);
         assertThat(response.products().get(3).id()).isEqualTo(204L);
+        assertThat(response.products().get(0).colors()).extracting("name").containsExactly("오크");
+        assertThat(response.products().get(1).colors()).extracting("name").containsExactly("블랙");
+        assertThat(response.products().get(2).colors()).isEmpty();
+        assertThat(response.products().get(0).isLiked()).isFalse();
     }
 
     @Test

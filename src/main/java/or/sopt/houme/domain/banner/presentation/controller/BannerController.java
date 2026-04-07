@@ -9,8 +9,10 @@ import or.sopt.houme.domain.banner.presentation.dto.response.LandingListResponse
 import or.sopt.houme.domain.banner.presentation.dto.response.OtherStyleDetailResponse;
 import or.sopt.houme.domain.banner.presentation.dto.response.OtherStyleListResponse;
 import or.sopt.houme.domain.banner.service.BannerService;
+import or.sopt.houme.domain.user.presentation.controller.dto.CustomUserDetails;
 import or.sopt.houme.global.api.ApiResponse;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -54,7 +56,12 @@ public class BannerController {
 
     @GetMapping("/other-styles/{styleId}")
     @Operation(summary = "스타일 디테일 페이지 조회 API")
-    public ResponseEntity<ApiResponse<OtherStyleDetailResponse>> getOtherStyleDetail(@PathVariable Long styleId) {
-        return ResponseEntity.ok(ApiResponse.ok(bannerExploreService.getOtherStyleDetail(styleId)));
+    public ResponseEntity<ApiResponse<OtherStyleDetailResponse>> getOtherStyleDetail(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @PathVariable Long styleId
+    ) {
+        return ResponseEntity.ok(ApiResponse.ok(
+                bannerExploreService.getOtherStyleDetail(userDetails != null ? userDetails.getUser() : null, styleId)
+        ));
     }
 }

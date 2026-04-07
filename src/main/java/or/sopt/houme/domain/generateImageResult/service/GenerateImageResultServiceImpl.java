@@ -5,9 +5,17 @@ import or.sopt.houme.domain.banner.model.entity.Banner;
 import or.sopt.houme.domain.banner.model.entity.BannerCurationRawProduct;
 import or.sopt.houme.domain.banner.repository.BannerRepository;
 import or.sopt.houme.domain.furniture.model.entity.CurationRawProduct;
+import or.sopt.houme.domain.furniture.model.entity.CurationRawProductColor;
 import or.sopt.houme.domain.furniture.model.entity.CurationRawProductFurnitureTag;
+import or.sopt.houme.domain.furniture.model.entity.CurationSource;
+import or.sopt.houme.domain.furniture.model.entity.Jjym;
+import or.sopt.houme.domain.furniture.model.entity.RecommendFurniture;
+import or.sopt.houme.domain.furniture.presentation.dto.response.ProductColorResponse;
+import or.sopt.houme.domain.furniture.repository.CurationRawProductColorRepository;
 import or.sopt.houme.domain.furniture.repository.CurationRawProductFurnitureTagRepository;
 import or.sopt.houme.domain.furniture.repository.CurationRawProductRepository;
+import or.sopt.houme.domain.furniture.repository.JjymRepository;
+import or.sopt.houme.domain.furniture.repository.RecommendFurnitureRepository;
 import or.sopt.houme.domain.generateImage.model.entity.GenerateImage;
 import or.sopt.houme.domain.generateImage.model.entity.GenerateImageType;
 import or.sopt.houme.domain.generateImage.model.entity.GenerateImageUsedProduct;
@@ -35,6 +43,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -45,8 +54,11 @@ public class GenerateImageResultServiceImpl implements GenerateImageResultServic
     private final GenerateImageRepository generateImageRepository;
     private final BannerRepository bannerRepository;
     private final GenerateImageUsedProductRepository generateImageUsedProductRepository;
+    private final CurationRawProductColorRepository curationRawProductColorRepository;
     private final CurationRawProductRepository curationRawProductRepository;
     private final CurationRawProductFurnitureTagRepository curationRawProductFurnitureTagRepository;
+    private final RecommendFurnitureRepository recommendFurnitureRepository;
+    private final JjymRepository jjymRepository;
     private final HouseService houseService;
 
     private static final int RELATED_IMAGE_LIMIT = 10;
@@ -63,8 +75,16 @@ public class GenerateImageResultServiceImpl implements GenerateImageResultServic
         }
 
         boolean isMirror = resolveIsMirror(generateImage);
-        List<GenerateImageResultProductResponse> products = resolveSelectedRawProducts(generateImage).stream()
-                .map(GenerateImageResultProductResponse::from)
+        List<CurationRawProduct> selectedProducts = resolveSelectedRawProducts(generateImage);
+        Map<Long, List<ProductColorResponse>> colorsByRawProductId = buildColorsByRawProductId(selectedProducts);
+        Set<Long> likedRawProductIds = resolveLikedRawProductIds(user, selectedProducts);
+
+        List<GenerateImageResultProductResponse> products = selectedProducts.stream()
+                .map(rawProduct -> GenerateImageResultProductResponse.from(
+                        rawProduct,
+                        colorsByRawProductId.getOrDefault(rawProduct.getId(), List.of()),
+                        likedRawProductIds.contains(rawProduct.getId())
+                ))
                 .toList();
 
         return GenerateImageResultResponse.of(
@@ -134,8 +154,15 @@ public class GenerateImageResultServiceImpl implements GenerateImageResultServic
                 selectedRawProductIds
         );
 
+        Map<Long, List<ProductColorResponse>> colorsByRawProductId = buildColorsByRawProductId(recommendedProducts);
+        Set<Long> likedRawProductIds = resolveLikedRawProductIds(user, recommendedProducts);
+
         return SimilarItemsResponse.of(recommendedProducts.stream()
-                .map(SimilarItemResponse::from)
+                .map(rawProduct -> SimilarItemResponse.from(
+                        rawProduct,
+                        colorsByRawProductId.getOrDefault(rawProduct.getId(), List.of()),
+                        likedRawProductIds.contains(rawProduct.getId())
+                ))
                 .toList());
     }
 
@@ -297,5 +324,98 @@ public class GenerateImageResultServiceImpl implements GenerateImageResultServic
             return Long.MAX_VALUE;
         }
         return mapping.getId();
+    }
+
+    private Map<Long, List<ProductColorResponse>> buildColorsByRawProductId(List<CurationRawProduct> rawProducts) {
+        List<Long> rawProductIds = rawProducts.stream()
+                .map(CurationRawProduct::getId)
+                .filter(Objects::nonNull)
+                .toList();
+        if (rawProductIds.isEmpty()) {
+            return Map.of();
+        }
+
+        Map<Long, LinkedHashSet<String>> colorSetByRawProductId = new LinkedHashMap<>();
+        for (CurationRawProductColor color : curationRawProductColorRepository.findAllByCurationRawProductIdIn(rawProductIds)) {
+            Long rawProductId = color.getCurationRawProduct().getId();
+            String colorName = resolveColorName(color);
+            if (colorName == null) {
+                continue;
+            }
+            colorSetByRawProductId.computeIfAbsent(rawProductId, ignored -> new LinkedHashSet<>())
+                    .add(colorName);
+        }
+
+        Map<Long, List<ProductColorResponse>> colorsByRawProductId = new LinkedHashMap<>();
+        for (Map.Entry<Long, LinkedHashSet<String>> entry : colorSetByRawProductId.entrySet()) {
+            List<ProductColorResponse> colors = entry.getValue().stream()
+                    .map(ProductColorResponse::fromName)
+                    .toList();
+            colorsByRawProductId.put(entry.getKey(), colors);
+        }
+        return colorsByRawProductId;
+    }
+
+    private String resolveColorName(CurationRawProductColor color) {
+        if (color.getClientColorName() != null && !color.getClientColorName().isBlank()) {
+            return color.getClientColorName();
+        }
+        if (color.getRawColorName() != null && !color.getRawColorName().isBlank()) {
+            return color.getRawColorName();
+        }
+        return null;
+    }
+
+    private Set<Long> resolveLikedRawProductIds(User user, List<CurationRawProduct> rawProducts) {
+        if (user == null || rawProducts.isEmpty()) {
+            return Set.of();
+        }
+
+        List<Long> productIds = rawProducts.stream()
+                .map(CurationRawProduct::getProductId)
+                .filter(Objects::nonNull)
+                .distinct()
+                .toList();
+        if (productIds.isEmpty()) {
+            return Set.of();
+        }
+
+        Map<Long, CurationRawProduct> rawProductByProductId = rawProducts.stream()
+                .filter(rawProduct -> rawProduct.getProductId() != null)
+                .collect(Collectors.toMap(
+                        CurationRawProduct::getProductId,
+                        rawProduct -> rawProduct,
+                        (left, right) -> left
+                ));
+
+        Map<Long, Long> recommendFurnitureIdByProductId = recommendFurnitureRepository
+                .findAllBySourceAndFurnitureProductIdIn(CurationSource.RAW, productIds)
+                .stream()
+                .collect(Collectors.toMap(
+                        RecommendFurniture::getFurnitureProductId,
+                        RecommendFurniture::getId,
+                        (left, right) -> left
+                ));
+
+        List<Long> recommendFurnitureIds = recommendFurnitureIdByProductId.values().stream().distinct().toList();
+        if (recommendFurnitureIds.isEmpty()) {
+            return Set.of();
+        }
+
+        Set<Long> likedRecommendFurnitureIds = jjymRepository
+                .findAllByUserIdAndRecommendFurnitureIdIn(user.getId(), recommendFurnitureIds)
+                .stream()
+                .map(Jjym::getRecommendFurniture)
+                .filter(Objects::nonNull)
+                .map(RecommendFurniture::getId)
+                .collect(Collectors.toSet());
+
+        return recommendFurnitureIdByProductId.entrySet().stream()
+                .filter(entry -> likedRecommendFurnitureIds.contains(entry.getValue()))
+                .map(Map.Entry::getKey)
+                .map(rawProductByProductId::get)
+                .filter(Objects::nonNull)
+                .map(CurationRawProduct::getId)
+                .collect(Collectors.toSet());
     }
 }

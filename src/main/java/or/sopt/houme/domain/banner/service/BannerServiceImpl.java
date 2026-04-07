@@ -18,7 +18,17 @@ import or.sopt.houme.domain.banner.presentation.dto.response.OtherStyleDetailPro
 import or.sopt.houme.domain.banner.presentation.dto.response.OtherStyleDetailResponse;
 import or.sopt.houme.domain.banner.presentation.dto.response.OtherStyleListResponse;
 import or.sopt.houme.domain.banner.presentation.dto.response.OtherStyleResponse;
+import or.sopt.houme.domain.furniture.model.entity.CurationSource;
 import or.sopt.houme.domain.banner.repository.BannerRepository;
+import or.sopt.houme.domain.furniture.model.entity.CurationRawProduct;
+import or.sopt.houme.domain.furniture.model.entity.CurationRawProductColor;
+import or.sopt.houme.domain.furniture.model.entity.Jjym;
+import or.sopt.houme.domain.furniture.model.entity.RecommendFurniture;
+import or.sopt.houme.domain.furniture.presentation.dto.response.ProductColorResponse;
+import or.sopt.houme.domain.furniture.repository.CurationRawProductColorRepository;
+import or.sopt.houme.domain.furniture.repository.JjymRepository;
+import or.sopt.houme.domain.furniture.repository.RecommendFurnitureRepository;
+import or.sopt.houme.domain.user.model.entity.User;
 import or.sopt.houme.global.api.ErrorCode;
 import or.sopt.houme.global.api.GeneralException;
 import or.sopt.houme.global.api.handler.BannerException;
@@ -26,7 +36,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -36,6 +51,9 @@ public class BannerServiceImpl implements BannerService {
     private static final TypeReference<List<BannerStyleAnswerChip>> STYLE_ANSWER_CHIP_TYPE = new TypeReference<>() {};
 
     private final BannerRepository bannerRepository;
+    private final CurationRawProductColorRepository curationRawProductColorRepository;
+    private final RecommendFurnitureRepository recommendFurnitureRepository;
+    private final JjymRepository jjymRepository;
     private final ObjectMapper objectMapper;
 
     @Override
@@ -101,15 +119,24 @@ public class BannerServiceImpl implements BannerService {
     }
 
     @Override
-    public OtherStyleDetailResponse getOtherStyleDetail(Long styleId) {
+    public OtherStyleDetailResponse getOtherStyleDetail(User user, Long styleId) {
         Banner style = bannerRepository.findByIdWithRawProducts(styleId, BannerType.STYLE, false)
                 .orElseThrow(() -> new BannerException(ErrorCode.NOT_FOUND_STYLE));
 
-        List<OtherStyleDetailProductResponse> products = style.getBannerRawProducts().stream()
+        List<CurationRawProduct> rawProducts = style.getBannerRawProducts().stream()
                 .sorted((left, right) -> Long.compare(safeMappingId(left), safeMappingId(right)))
                 .map(BannerCurationRawProduct::getCurationRawProduct)
                 .filter(java.util.Objects::nonNull)
-                .map(OtherStyleDetailProductResponse::from)
+                .toList();
+        Map<Long, List<ProductColorResponse>> colorsByRawProductId = buildColorsByRawProductId(rawProducts);
+        Set<Long> likedRawProductIds = resolveLikedRawProductIds(user, rawProducts);
+
+        List<OtherStyleDetailProductResponse> products = rawProducts.stream()
+                .map(rawProduct -> OtherStyleDetailProductResponse.from(
+                        rawProduct,
+                        colorsByRawProductId.getOrDefault(rawProduct.getId(), List.of()),
+                        likedRawProductIds.contains(rawProduct.getId())
+                ))
                 .toList();
 
         return OtherStyleDetailResponse.of(
@@ -151,5 +178,98 @@ public class BannerServiceImpl implements BannerService {
             return Long.MAX_VALUE;
         }
         return mapping.getId();
+    }
+
+    private Map<Long, List<ProductColorResponse>> buildColorsByRawProductId(List<CurationRawProduct> rawProducts) {
+        List<Long> rawProductIds = rawProducts.stream()
+                .map(CurationRawProduct::getId)
+                .filter(java.util.Objects::nonNull)
+                .toList();
+        if (rawProductIds.isEmpty()) {
+            return Map.of();
+        }
+
+        Map<Long, LinkedHashSet<String>> colorSetByRawProductId = new LinkedHashMap<>();
+        for (CurationRawProductColor color : curationRawProductColorRepository.findAllByCurationRawProductIdIn(rawProductIds)) {
+            Long rawProductId = color.getCurationRawProduct().getId();
+            String colorName = resolveColorName(color);
+            if (colorName == null) {
+                continue;
+            }
+            colorSetByRawProductId.computeIfAbsent(rawProductId, ignored -> new LinkedHashSet<>())
+                    .add(colorName);
+        }
+
+        Map<Long, List<ProductColorResponse>> colorsByRawProductId = new LinkedHashMap<>();
+        for (Map.Entry<Long, LinkedHashSet<String>> entry : colorSetByRawProductId.entrySet()) {
+            List<ProductColorResponse> colors = entry.getValue().stream()
+                    .map(ProductColorResponse::fromName)
+                    .toList();
+            colorsByRawProductId.put(entry.getKey(), colors);
+        }
+        return colorsByRawProductId;
+    }
+
+    private Set<Long> resolveLikedRawProductIds(User user, List<CurationRawProduct> rawProducts) {
+        if (user == null || rawProducts.isEmpty()) {
+            return Set.of();
+        }
+
+        List<Long> productIds = rawProducts.stream()
+                .map(CurationRawProduct::getProductId)
+                .filter(java.util.Objects::nonNull)
+                .distinct()
+                .toList();
+        if (productIds.isEmpty()) {
+            return Set.of();
+        }
+
+        Map<Long, CurationRawProduct> rawProductByProductId = rawProducts.stream()
+                .filter(rawProduct -> rawProduct.getProductId() != null)
+                .collect(Collectors.toMap(
+                        CurationRawProduct::getProductId,
+                        rawProduct -> rawProduct,
+                        (left, right) -> left
+                ));
+
+        Map<Long, Long> recommendFurnitureIdByProductId = recommendFurnitureRepository
+                .findAllBySourceAndFurnitureProductIdIn(CurationSource.RAW, productIds)
+                .stream()
+                .collect(Collectors.toMap(
+                        RecommendFurniture::getFurnitureProductId,
+                        RecommendFurniture::getId,
+                        (left, right) -> left
+                ));
+
+        List<Long> recommendFurnitureIds = recommendFurnitureIdByProductId.values().stream().distinct().toList();
+        if (recommendFurnitureIds.isEmpty()) {
+            return Set.of();
+        }
+
+        Set<Long> likedRecommendFurnitureIds = jjymRepository
+                .findAllByUserIdAndRecommendFurnitureIdIn(user.getId(), recommendFurnitureIds)
+                .stream()
+                .map(Jjym::getRecommendFurniture)
+                .filter(java.util.Objects::nonNull)
+                .map(RecommendFurniture::getId)
+                .collect(Collectors.toSet());
+
+        return recommendFurnitureIdByProductId.entrySet().stream()
+                .filter(entry -> likedRecommendFurnitureIds.contains(entry.getValue()))
+                .map(Map.Entry::getKey)
+                .map(rawProductByProductId::get)
+                .filter(java.util.Objects::nonNull)
+                .map(CurationRawProduct::getId)
+                .collect(Collectors.toSet());
+    }
+
+    private String resolveColorName(CurationRawProductColor color) {
+        if (color.getClientColorName() != null && !color.getClientColorName().isBlank()) {
+            return color.getClientColorName();
+        }
+        if (color.getRawColorName() != null && !color.getRawColorName().isBlank()) {
+            return color.getRawColorName();
+        }
+        return null;
     }
 }
