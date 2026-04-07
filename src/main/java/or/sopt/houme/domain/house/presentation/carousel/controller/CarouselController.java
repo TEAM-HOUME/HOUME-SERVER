@@ -111,7 +111,7 @@ public class CarouselController {
 
         carouselLikeLogService.createHateLog(userDetails.getUser(), rawProductId);
 
-        return ResponseEntity.ok(ApiResponse.ok("상품 찜 해제가 정상적으로 저장되었습니다"));
+        return ResponseEntity.ok(ApiResponse.ok("캐러셀 싫어요 로그가 정상적으로 저장되었습니다"));
     }
 
 }
