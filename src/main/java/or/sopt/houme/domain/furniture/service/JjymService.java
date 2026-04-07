@@ -8,6 +8,8 @@ public interface JjymService {
 
     boolean rawProductJjymToggle(Long userId, Long rawProductId);
 
+    void likeRawProduct(Long userId, Long rawProductId);
+
     JjymListResponse getMyJjyms(Long userId);
 
     JjymV2ListResponse getMyRawProductJjyms(Long userId);

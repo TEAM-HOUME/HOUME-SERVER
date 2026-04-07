@@ -11,11 +11,16 @@ import or.sopt.houme.domain.generateImage.model.entity.GenerateImage;
 import or.sopt.houme.domain.generateImage.model.entity.GenerateImageType;
 import or.sopt.houme.domain.house.model.entity.House;
 import or.sopt.houme.domain.house.model.entity.enums.Activity;
+import or.sopt.houme.domain.house.model.entity.mapping.HouseFloorPlan;
+import or.sopt.houme.domain.house.model.floorPlan.entity.FloorPlan;
+import or.sopt.houme.domain.house.repository.HouseFloorPlanRepository;
 import or.sopt.houme.domain.house.service.HouseService;
 import or.sopt.houme.domain.house.presentation.taste.dto.response.TagDTO;
 import or.sopt.houme.domain.house.model.taste.entity.Tag;
 import or.sopt.houme.domain.user.model.entity.User;
 import or.sopt.houme.domain.user.service.UserService;
+import or.sopt.houme.global.api.ErrorCode;
+import or.sopt.houme.global.api.handler.HouseException;
 import or.sopt.houme.global.dto.ImageUploadResponseDTO;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -30,6 +35,7 @@ public class GenerateImageTransactionService {
 
     private final CreditService creditService;
     private final HouseService houseService;
+    private final HouseFloorPlanRepository houseFloorPlanRepository;
     private final GenerateImageService generateImageService;
     private final UserService userService;
 
@@ -53,8 +59,7 @@ public class GenerateImageTransactionService {
                 .map(result -> generateImageService.createGenerateImage(
                         result,
                         house,
-                        generationType,
-                        null
+                        generationType
                 ))
                 .toList();
 
@@ -62,12 +67,13 @@ public class GenerateImageTransactionService {
         userService.updateHasGeneratedImage(user);
 
         // 반환 리스트 생성
+        FloorPlan floorPlan = getFloorPlanOrThrow(house);
         List<ImageInfoResponse> imageInfoResponses = new ArrayList<>();
         for (int i = 0; i < generateImages.size(); i++) {
             imageInfoResponses.add(
                     ImageInfoResponse.of(generateImages.get(i).getId(), generateImages.get(i).getUrl(),
                             generateImageRequest.floorPlan().isMirror(),
-                            house.getEquilibrium().getDescription(), house.getForm().getDescription(),
+                            floorPlan.getEquilibrium().getDescription(), floorPlan.getForm().getDescription(),
                             priorityIdList.get(i).tagNameKr(), user.getName())
             );
         }
@@ -97,8 +103,7 @@ public class GenerateImageTransactionService {
         GenerateImage generateImage = generateImageService.createGenerateImage(
                 imageResponse,
                 house,
-                generationType,
-                null
+                generationType
         );
 
         // 4. 크레딧 차감 확정 (PENDING -> DELETE)
@@ -108,12 +113,13 @@ public class GenerateImageTransactionService {
         userService.updateHasGeneratedImage(user);
 
         // 6. 응답 DTO 생성
+        FloorPlan floorPlan = getFloorPlanOrThrow(house);
         return ImageInfoResponse.of(
                 generateImage.getId(),
                 generateImage.getUrl(),
                 request.floorPlan().isMirror(),
-                house.getEquilibrium().getDescription(),
-                house.getForm().getDescription(),
+                floorPlan.getEquilibrium().getDescription(),
+                floorPlan.getForm().getDescription(),
                 priorityTag.getTagNameKr(),
                 user.getName()
         );
@@ -124,17 +130,27 @@ public class GenerateImageTransactionService {
             User user,
             Credit lockedCredit,
             Banner banner,
+            Long floorPlanId,
+            boolean isMirror,
+            String finalPrompt,
             ImageUploadResponseDTO imageResponse
     ) {
+        House house = houseService.createTemplateHouse(user, banner, finalPrompt, floorPlanId, isMirror);
+
         GenerateImage generateImage = generateImageService.createGenerateImage(
                 imageResponse,
-                null,
-                GenerateImageType.LIST,
-                banner
+                house,
+                GenerateImageType.LIST
         );
 
         creditService.commitCreditDeletion(lockedCredit);
         userService.updateHasGeneratedImage(user);
         return BannerGenerateImageResponse.of(generateImage.getId());
+    }
+
+    private FloorPlan getFloorPlanOrThrow(House house) {
+        return houseFloorPlanRepository.findHouseFloorPlanByHouseId(house.getId())
+                .map(HouseFloorPlan::getFloorPlan)
+                .orElseThrow(() -> new HouseException(ErrorCode.NOT_FOUND_FLOOR_PLAN));
     }
 }

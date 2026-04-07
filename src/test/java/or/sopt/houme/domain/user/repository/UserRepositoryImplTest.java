@@ -6,9 +6,6 @@ import or.sopt.houme.domain.credit.model.entity.CreditStatus;
 import or.sopt.houme.domain.generateImage.model.entity.GenerateImage;
 import or.sopt.houme.domain.house.model.entity.House;
 import or.sopt.houme.domain.house.model.entity.enums.Activity;
-import or.sopt.houme.domain.house.model.entity.enums.Equilibrium;
-import or.sopt.houme.domain.house.model.entity.enums.Form;
-import or.sopt.houme.domain.house.model.entity.enums.Structure;
 import or.sopt.houme.domain.house.model.entity.mapping.HouseTaste;
 import or.sopt.houme.domain.house.model.taste.entity.Tag;
 import or.sopt.houme.domain.house.model.taste.entity.Taste;
@@ -106,9 +103,6 @@ class UserRepositoryImplTest {
 
         // 4. House 2개 생성
         House house1 = House.builder()
-                .form(Form.OFFICETEL)
-                .structure(Structure.OPEN_ONE_ROOM)
-                .equilibrium(Equilibrium.UNDER_5)
                 .activity(Activity.REMOTE_WORK)
                 .user(mockUser)
                 .isValid(true)
@@ -116,9 +110,6 @@ class UserRepositoryImplTest {
         em.persist(house1);
 
         House house2 = House.builder()
-                .form(Form.APARTMENT)
-                .structure(Structure.DUPLEX)
-                .equilibrium(Equilibrium.BETWEEN_6_10)
                 .activity(Activity.READING)
                 .user(mockUser)
                 .isValid(true)

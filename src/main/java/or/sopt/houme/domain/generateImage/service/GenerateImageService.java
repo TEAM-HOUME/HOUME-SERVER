@@ -1,6 +1,5 @@
 package or.sopt.houme.domain.generateImage.service;
 
-import or.sopt.houme.domain.banner.model.entity.Banner;
 import or.sopt.houme.domain.generateImage.model.entity.GenerateImage;
 import or.sopt.houme.domain.generateImage.model.entity.GenerateImageType;
 import or.sopt.houme.domain.house.model.entity.House;
@@ -17,8 +16,7 @@ public interface GenerateImageService {
     GenerateImage createGenerateImage(
             ImageUploadResponseDTO request,
             House house,
-            GenerateImageType generationType,
-            Banner banner
+            GenerateImageType generationType
     );
 
     // 이미지 ID로 조회

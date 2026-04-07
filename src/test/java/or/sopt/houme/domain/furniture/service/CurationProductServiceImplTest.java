@@ -68,8 +68,20 @@ class CurationProductServiceImplTest {
 
         // then
         assertThat(response).isNotNull();
+        
+        // 1. 가구 유형 검증
         assertThat(response.furnitureTypes()).hasSize(12);
+        assertThat(response.furnitureTypes().get(1).id()).isEqualTo(1L); // 침대/프레임
         assertThat(response.furnitureTypes().get(1).nameKr()).isEqualTo("침대/프레임");
+        
+        // 2. 가격대 검증
+        assertThat(response.priceRanges()).hasSize(8);
+        assertThat(response.priceRanges().get(1).min()).isEqualTo(0L);
+        assertThat(response.priceRanges().get(2).min()).isEqualTo(50001L);
+        
+        // 3. 색상 검증
+        assertThat(response.colors()).hasSize(15);
+        assertThat(response.colors().get(0).label()).isEqualTo("화이트");
     }
 
     @Test
@@ -110,7 +122,7 @@ class CurationProductServiceImplTest {
         assertThat(response.product().colors().get(0).name()).isEqualTo("블랙");
         assertThat(response.product().colors().get(0).value()).isEqualTo("#000000");
         
-        // 미매핑 색상 확인 (Hex 코드 형식이 아니므로 null 반환)
+        // 미매핑 색상 확인
         assertThat(response.product().colors().get(1).name()).isEqualTo("미매핑색상");
         assertThat(response.product().colors().get(1).value()).isNull();
         

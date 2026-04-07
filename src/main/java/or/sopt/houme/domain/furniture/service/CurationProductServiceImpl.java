@@ -1,20 +1,20 @@
 package or.sopt.houme.domain.furniture.service;
 
 import lombok.RequiredArgsConstructor;
+import or.sopt.houme.domain.furniture.model.entity.CurationRawProduct;
 import or.sopt.houme.domain.furniture.model.entity.CurationRawProductColor;
+import or.sopt.houme.domain.furniture.model.entity.CurationSource;
 import or.sopt.houme.domain.furniture.model.entity.Furniture;
 import or.sopt.houme.domain.furniture.model.entity.FurnitureType;
 import or.sopt.houme.domain.furniture.presentation.dto.response.ColorFilterResponse;
+import or.sopt.houme.domain.furniture.presentation.dto.response.CurationProductDetailResponse;
 import or.sopt.houme.domain.furniture.presentation.dto.response.CurationProductFilterResponse;
 import or.sopt.houme.domain.furniture.presentation.dto.response.FurnitureTypeFilterResponse;
 import or.sopt.houme.domain.furniture.presentation.dto.response.PriceRangeFilterResponse;
-import or.sopt.houme.domain.furniture.repository.FurnitureRepository;
-import or.sopt.houme.domain.furniture.repository.FurnitureTypeRepository;
-import or.sopt.houme.domain.furniture.model.entity.CurationRawProduct;
-import or.sopt.houme.domain.furniture.presentation.dto.response.CurationProductDetailResponse;
-import or.sopt.houme.domain.furniture.model.entity.CurationSource;
 import or.sopt.houme.domain.furniture.repository.CurationRawProductColorRepository;
 import or.sopt.houme.domain.furniture.repository.CurationRawProductRepository;
+import or.sopt.houme.domain.furniture.repository.FurnitureRepository;
+import or.sopt.houme.domain.furniture.repository.FurnitureTypeRepository;
 import or.sopt.houme.domain.furniture.repository.JjymRepository;
 import or.sopt.houme.domain.furniture.repository.RecommendFurnitureRepository;
 import or.sopt.houme.domain.user.model.entity.User;
@@ -85,36 +85,37 @@ public class CurationProductServiceImpl implements CurationProductService {
                 .map(recommend -> jjymRepository.existsByUserIdAndRecommendFurnitureId(user.getId(), recommend.getId()))
                 .orElse(false);
     }
-private List<CurationProductDetailResponse.ProductColorDetail> extractColorDetails(Long productId) {
-    List<CurationRawProductColor> colorEntities = curationRawProductColorRepository.findAllByCurationRawProductId(productId);
-    List<CurationProductDetailResponse.ProductColorDetail> details = new java.util.ArrayList<>();
 
-    for (CurationRawProductColor colorEntity : colorEntities) {
-        String clientColorName = colorEntity.getClientColorName();
-        if (clientColorName == null || clientColorName.isBlank()) {
-            continue;
-        }
+    private List<CurationProductDetailResponse.ProductColorDetail> extractColorDetails(Long productId) {
+        List<CurationRawProductColor> colorEntities = curationRawProductColorRepository.findAllByCurationRawProductId(productId);
+        List<CurationProductDetailResponse.ProductColorDetail> details = new java.util.ArrayList<>();
 
-        // 콤마로 구분된 여러 색상 처리
-        String[] names = clientColorName.split("[,/]");
-        for (String name : names) {
-            String trimmedName = name.trim();
-            if (trimmedName.isEmpty()) continue;
-
-            // 각 이름별로 Hex 코드 매핑
-            List<String> hexCodes = ColorHexMapper.toHexCodes(List.of(trimmedName));
-            String hexValue = hexCodes.isEmpty() ? null : hexCodes.get(0);
-
-            // 리뷰 반영: hexValue가 실제 hex 포맷(#...)이 아닐 경우 null 처리하여 안정성 확보
-            if (hexValue != null && !hexValue.startsWith("#")) {
-                hexValue = null;
+        for (CurationRawProductColor colorEntity : colorEntities) {
+            String clientColorName = colorEntity.getClientColorName();
+            if (clientColorName == null || clientColorName.isBlank()) {
+                continue;
             }
 
-            details.add(new CurationProductDetailResponse.ProductColorDetail(trimmedName, hexValue));
+            // 콤마로 구분된 여러 색상 처리
+            String[] names = clientColorName.split("[,/]");
+            for (String name : names) {
+                String trimmedName = name.trim();
+                if (trimmedName.isEmpty()) continue;
+
+                // 각 이름별로 Hex 코드 매핑
+                List<String> hexCodes = ColorHexMapper.toHexCodes(List.of(trimmedName));
+                String hexValue = hexCodes.isEmpty() ? null : hexCodes.get(0);
+
+                // 리뷰 반영: hexValue가 실제 hex 포맷(#...)이 아닐 경우 null 처리하여 안정성 확보
+                if (hexValue != null && !hexValue.startsWith("#")) {
+                    hexValue = null;
+                }
+
+                details.add(new CurationProductDetailResponse.ProductColorDetail(trimmedName, hexValue));
+            }
         }
+        return details;
     }
-    return details;
-}
 
     private String extractCategoryName(CurationRawProduct product) {
         // 상품에 매핑된 첫 번째 가구 태그 정보를 바탕으로 카테고리명 추출

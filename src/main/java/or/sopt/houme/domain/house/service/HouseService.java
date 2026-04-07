@@ -1,5 +1,6 @@
 package or.sopt.houme.domain.house.service;
 
+import or.sopt.houme.domain.banner.model.entity.Banner;
 import or.sopt.houme.domain.house.presentation.dto.LatestHouseConditionDTO;
 import or.sopt.houme.domain.house.presentation.dto.request.HouseSelectRequest;
 import or.sopt.houme.domain.house.presentation.dto.response.HouseIdResponse;
@@ -31,6 +32,9 @@ public interface HouseService {
 
     // 생성된 이미지 프롬프트 저장
     void saveHousePrompt(House house, String prompt);
+
+    // 템플릿 기반 이미지 생성을 위한 house 저장
+    House createTemplateHouse(User user, Banner banner, String prompt, Long floorPlanId, boolean isMirror);
 
     // houseId와 floorPlan 저장
     void saveHouseFloorPlan(House house, Long floorPlanId, boolean isMirror);

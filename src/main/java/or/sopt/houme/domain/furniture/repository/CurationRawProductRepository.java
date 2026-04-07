@@ -46,6 +46,10 @@ public interface CurationRawProductRepository extends JpaRepository<CurationRawP
 
     List<CurationRawProduct> findAllByProductIdIn(List<Long> productIds);
 
+    Page<CurationRawProduct> findAllByIsExposedTrueOrderByIdDesc(Pageable pageable);
+
+    Page<CurationRawProduct> findAllByIsExposedTrueAndProductIdNotInOrderByIdDesc(List<Long> productIds, Pageable pageable);
+
     @Query("""
             select distinct rawProduct
             from CurationRawProduct rawProduct
@@ -67,4 +71,5 @@ public interface CurationRawProductRepository extends JpaRepository<CurationRawP
             @Param("furnitureTag") FurnitureTag furnitureTag,
             @Param("productIds") List<Long> productIds
     );
+
 }
