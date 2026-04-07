@@ -3,8 +3,10 @@ package or.sopt.houme.domain.furniture.service;
 import lombok.RequiredArgsConstructor;
 import or.sopt.houme.domain.furniture.model.entity.CurationRawProduct;
 import or.sopt.houme.domain.furniture.model.entity.CurationRawProductColor;
+import or.sopt.houme.domain.furniture.model.entity.CurationRawProductFurnitureTag;
 import or.sopt.houme.domain.furniture.model.entity.CurationSource;
 import or.sopt.houme.domain.furniture.model.entity.Furniture;
+import or.sopt.houme.domain.furniture.model.entity.FurnitureTag;
 import or.sopt.houme.domain.furniture.model.entity.FurnitureType;
 import or.sopt.houme.domain.furniture.presentation.dto.response.ColorFilterResponse;
 import or.sopt.houme.domain.furniture.presentation.dto.response.CurationProductDetailResponse;
@@ -96,17 +98,14 @@ public class CurationProductServiceImpl implements CurationProductService {
                 continue;
             }
 
-            // 콤마로 구분된 여러 색상 처리
             String[] names = clientColorName.split("[,/]");
             for (String name : names) {
                 String trimmedName = name.trim();
                 if (trimmedName.isEmpty()) continue;
 
-                // 각 이름별로 Hex 코드 매핑
                 List<String> hexCodes = ColorHexMapper.toHexCodes(List.of(trimmedName));
                 String hexValue = hexCodes.isEmpty() ? null : hexCodes.get(0);
 
-                // 리뷰 반영: hexValue가 실제 hex 포맷(#...)이 아닐 경우 null 처리하여 안정성 확보
                 if (hexValue != null && !hexValue.startsWith("#")) {
                     hexValue = null;
                 }
@@ -118,11 +117,13 @@ public class CurationProductServiceImpl implements CurationProductService {
     }
 
     private String extractCategoryName(CurationRawProduct product) {
-        // 상품에 매핑된 첫 번째 가구 태그 정보를 바탕으로 카테고리명 추출
+        // 리뷰 반영: 다중 매핑 시 우선순위(priority)가 가장 높은(숫자가 낮은) 태그를 대표 카테고리로 선택
         return product.getFurnitureTagMappings().stream()
+                .map(CurationRawProductFurnitureTag::getFurnitureTag)
+                .sorted(java.util.Comparator.comparing(FurnitureTag::getPriority))
                 .findFirst()
-                .map(mapping -> {
-                    Furniture furniture = mapping.getFurnitureTag().getFurniture();
+                .map(tag -> {
+                    Furniture furniture = tag.getFurniture();
                     FurnitureType type = furniture.getFurnitureType();
 
                     // 필터 API에서 정의한 사용자 친화적 레이블 매핑 로직 재사용

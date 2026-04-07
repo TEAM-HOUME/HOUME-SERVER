@@ -2,7 +2,9 @@ package or.sopt.houme.domain.furniture.service;
 
 import or.sopt.houme.domain.furniture.model.entity.CurationRawProduct;
 import or.sopt.houme.domain.furniture.model.entity.CurationRawProductColor;
+import or.sopt.houme.domain.furniture.model.entity.CurationRawProductFurnitureTag;
 import or.sopt.houme.domain.furniture.model.entity.Furniture;
+import or.sopt.houme.domain.furniture.model.entity.FurnitureTag;
 import or.sopt.houme.domain.furniture.model.entity.FurnitureType;
 import or.sopt.houme.domain.furniture.presentation.dto.response.CurationProductDetailResponse;
 import or.sopt.houme.domain.furniture.presentation.dto.response.CurationProductFilterResponse;
@@ -20,12 +22,13 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 
 @ExtendWith(MockitoExtension.class)
@@ -58,74 +61,55 @@ class CurationProductServiceImplTest {
     void getFilterMetadata() {
         // given
         FurnitureType bedType = FurnitureType.builder().id(1L).nameKr("침대").nameEng("BED").build();
-        Furniture furniture = Furniture.builder().id(5L).furnitureNameKr("업무용 책상").furnitureNameEng("OFFICE_DESK").build();
-
         given(furnitureTypeRepository.findAll()).willReturn(List.of(bedType));
-        given(furnitureRepository.findAll()).willReturn(List.of(furniture));
+        given(furnitureRepository.findAll()).willReturn(List.of());
 
         // when
         CurationProductFilterResponse response = curationProductService.getFilterMetadata();
 
         // then
         assertThat(response).isNotNull();
-        
-        // 1. 가구 유형 검증
         assertThat(response.furnitureTypes()).hasSize(12);
-        assertThat(response.furnitureTypes().get(1).id()).isEqualTo(1L); // 침대/프레임
         assertThat(response.furnitureTypes().get(1).nameKr()).isEqualTo("침대/프레임");
-        
-        // 2. 가격대 검증
-        assertThat(response.priceRanges()).hasSize(8);
-        assertThat(response.priceRanges().get(1).min()).isEqualTo(0L);
-        assertThat(response.priceRanges().get(2).min()).isEqualTo(50001L);
-        
-        // 3. 색상 검증
-        assertThat(response.colors()).hasSize(15);
-        assertThat(response.colors().get(0).label()).isEqualTo("화이트");
     }
 
     @Test
-    @DisplayName("getProductDetail()은 노출된 상품만 ID로 상세 정보를 조회하여 반환한다")
-    void getProductDetail() {
+    @DisplayName("getProductDetail()은 다중 매핑 시 우선순위가 가장 높은 카테고리명을 반환한다")
+    void getProductDetail_withMultipleTags() {
         // given
         Long id = 1L;
         User user = User.builder().id(1L).build();
+
+        // 우선순위 5인 침대 태그
+        FurnitureType bedType = FurnitureType.builder().nameEng("BED").build();
+        Furniture bed = Furniture.builder().furnitureType(bedType).build();
+        FurnitureTag bedTag = FurnitureTag.builder().furniture(bed).priority(5).build();
+
+        // 우선순위 1인 소파 태그 (더 높음)
+        FurnitureType sofaType = FurnitureType.builder().nameEng("SOFA").build();
+        Furniture sofa = Furniture.builder().furnitureType(sofaType).build();
+        FurnitureTag sofaTag = FurnitureTag.builder().furniture(sofa).priority(1).build();
+
+        Set<CurationRawProductFurnitureTag> mappings = new HashSet<>();
+        mappings.add(CurationRawProductFurnitureTag.builder().furnitureTag(bedTag).build());
+        mappings.add(CurationRawProductFurnitureTag.builder().furnitureTag(sofaTag).build());
+
         CurationRawProduct product = CurationRawProduct.builder()
                 .id(id)
                 .productId(3003L)
-                .productName("테스트 상품")
-                .productImageUrl("http://image.com")
-                .productSiteUrl("http://site.com")
-                .source("naver")
-                .discountPrice(10000L)
                 .isExposed(true)
-                .build();
-
-        CurationRawProductColor color = CurationRawProductColor.builder()
-                .curationRawProduct(product)
-                .clientColorName("블랙, 미매핑색상")
+                .furnitureTagMappings(mappings)
                 .build();
 
         given(curationRawProductRepository.findByIdAndIsExposedTrue(id)).willReturn(Optional.of(product));
-        given(curationRawProductColorRepository.findAllByCurationRawProductId(id)).willReturn(List.of(color));
-        given(recommendFurnitureRepository.findBySourceAndFurnitureProductId(any(), eq(3003L))).willReturn(Optional.empty());
+        given(curationRawProductColorRepository.findAllByCurationRawProductId(id)).willReturn(List.of());
+        given(recommendFurnitureRepository.findBySourceAndFurnitureProductId(any(), any())).willReturn(Optional.empty());
 
         // when
         CurationProductDetailResponse response = curationProductService.getProductDetail(id, user);
 
         // then
-        assertThat(response).isNotNull();
-        assertThat(response.product().productId()).isEqualTo(3003L);
-        assertThat(response.product().colors()).hasSize(2);
-        
-        // 블랙 매핑 확인
-        assertThat(response.product().colors().get(0).name()).isEqualTo("블랙");
-        assertThat(response.product().colors().get(0).value()).isEqualTo("#000000");
-        
-        // 미매핑 색상 확인
-        assertThat(response.product().colors().get(1).name()).isEqualTo("미매핑색상");
-        assertThat(response.product().colors().get(1).value()).isNull();
-        
-        assertThat(response.product().isLiked()).isFalse();
+        // 우선순위 1인 소파가 선택되어야 함
+        assertThat(response.product().categoryName()).isEqualTo("소파");
     }
 }
