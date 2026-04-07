@@ -21,8 +21,12 @@ import or.sopt.houme.domain.generateImage.model.entity.GenerateImageUsedProduct;
 import or.sopt.houme.domain.generateImage.repository.GenerateImageRepository;
 import or.sopt.houme.domain.generateImage.repository.GenerateImageUsedProductRepository;
 import or.sopt.houme.domain.house.model.entity.House;
+import or.sopt.houme.domain.house.model.entity.mapping.HouseFloorPlan;
 import or.sopt.houme.domain.house.model.entity.enums.Equilibrium;
 import or.sopt.houme.domain.house.model.entity.enums.Form;
+import or.sopt.houme.domain.house.model.entity.enums.Structure;
+import or.sopt.houme.domain.house.model.floorPlan.entity.FloorPlan;
+import or.sopt.houme.domain.house.repository.HouseFloorPlanRepository;
 import or.sopt.houme.domain.house.repository.HouseRepository;
 import or.sopt.houme.domain.preference.model.entity.GenerateImagePreference;
 import or.sopt.houme.domain.preference.model.entity.Preference;
@@ -61,6 +65,7 @@ class UserServiceImplTest {
 
     private final UserRepository userRepository = mock(UserRepository.class);
     private final HouseRepository houseRepository = mock(HouseRepository.class);
+    private final HouseFloorPlanRepository houseFloorPlanRepository = mock(HouseFloorPlanRepository.class);
     private final TagRepository tagRepository = mock(TagRepository.class);
     private final GenerateImageRepository generateImageRepository = mock(GenerateImageRepository.class);
     private final CreditRepository creditRepository = mock(CreditRepository.class);
@@ -79,6 +84,7 @@ class UserServiceImplTest {
     private final UserServiceImpl userService = new UserServiceImpl(
             userRepository,
             houseRepository,
+            houseFloorPlanRepository,
             tagRepository,
             generateImageRepository,
             creditRepository,
@@ -108,9 +114,8 @@ class UserServiceImplTest {
                 .build();
 
         house = House.builder()
+                .id(20L)
                 .user(user)
-                .form(Form.APARTMENT)
-                .equilibrium(Equilibrium.UNDER_5)
                 .build();
 
         tag = Tag.builder()
@@ -157,6 +162,10 @@ class UserServiceImplTest {
     void getUserImageHistoryList_MultipleGenerateImages_ReturnsFirst() {
         // given
         Long userId = user.getId();
+        FloorPlan floorPlan = FloorPlan.builder()
+                .form(Form.APARTMENT)
+                .equilibrium(Equilibrium.UNDER_5)
+                .build();
 
         given(userRepository.findById(userId))
                 .willReturn(Optional.of(user));
@@ -185,6 +194,8 @@ class UserServiceImplTest {
         // 3. 대표 태그 반환
         given(tagRepository.findMostFrequentTagByHouseId(house.getId()))
                 .willReturn(Optional.ofNullable(tag));
+        given(houseFloorPlanRepository.findHouseFloorPlanByHouseId(house.getId()))
+                .willReturn(Optional.of(HouseFloorPlan.builder().house(house).floorPlan(floorPlan).isReverse(false).build()));
 
         // when
         UserImageHistoryListResponse response = userService.getUserImageHistoryList(user);
@@ -215,7 +226,10 @@ class UserServiceImplTest {
 
         House house = House.builder()
                 .id(houseId)
+                .build();
+        FloorPlan floorPlan = FloorPlan.builder()
                 .form(Form.OFFICETEL)
+                .structure(Structure.OPEN_ONE_ROOM)
                 .equilibrium(Equilibrium.UNDER_5)
                 .build();
 
@@ -251,6 +265,8 @@ class UserServiceImplTest {
         // generateImages 리스트 2개 반환
         given(generateImageRepository.findGenerateImagesByHouseId(house.getId()))
                 .willReturn(List.of(generateImage1, generateImage2));
+        given(houseFloorPlanRepository.findHouseFloorPlanByHouseId(house.getId()))
+                .willReturn(Optional.of(HouseFloorPlan.builder().house(house).floorPlan(floorPlan).isReverse(false).build()));
 
         given(generateImagePreferenceRepository.findFirstByGenerateImageIdOrderByIdDesc(generateImage1.getId()))
                 .willReturn(Optional.of(generateImagePreference1));
@@ -368,9 +384,6 @@ class UserServiceImplTest {
 
         House houseWithBanner = House.builder()
                 .id(house.getId())
-                .form(house.getForm())
-                .structure(house.getStructure())
-                .equilibrium(house.getEquilibrium())
                 .activity(house.getActivity())
                 .user(user)
                 .banner(banner)

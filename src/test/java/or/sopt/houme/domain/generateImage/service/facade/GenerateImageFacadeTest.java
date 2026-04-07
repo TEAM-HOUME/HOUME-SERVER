@@ -27,7 +27,9 @@ import or.sopt.houme.domain.house.model.entity.enums.Activity;
 import or.sopt.houme.domain.house.model.entity.enums.Equilibrium;
 import or.sopt.houme.domain.house.model.entity.enums.Form;
 import or.sopt.houme.domain.house.model.entity.enums.Structure;
+import or.sopt.houme.domain.house.model.entity.mapping.HouseFloorPlan;
 import or.sopt.houme.domain.house.model.floorPlan.entity.FloorPlan;
+import or.sopt.houme.domain.house.repository.HouseFloorPlanRepository;
 import or.sopt.houme.domain.house.repository.floorPlan.FloorPlanRepository;
 import or.sopt.houme.domain.house.service.HouseService;
 import or.sopt.houme.domain.generateImage.service.openai.facade.OpenAiFacade;
@@ -96,6 +98,9 @@ class GenerateImageFacadeTest {
     HouseService houseService;
 
     @Mock
+    HouseFloorPlanRepository houseFloorPlanRepository;
+
+    @Mock
     CreditService creditService;
 
     @Mock
@@ -141,12 +146,14 @@ class GenerateImageFacadeTest {
                 .role(Role.ROLE_USER)
                 .build();
 
-        House house = House.builder()
-                .id(1L)
+        FloorPlan floorPlan = FloorPlan.builder()
                 .form(Form.OFFICETEL)
                 .structure(Structure.OPEN_ONE_ROOM)
-                .activity(Activity.READING)
                 .equilibrium(Equilibrium.UNDER_5)
+                .build();
+        House house = House.builder()
+                .id(1L)
+                .activity(Activity.READING)
                 .user(user)
                 .isValid(true)
                 .build();
@@ -165,12 +172,14 @@ class GenerateImageFacadeTest {
                 .build();
 
         when(houseService.updateHouseActivity(generateImageRequest.houseId(), Activity.valueOf(generateImageRequest.activity()))).thenReturn(house);
+        when(houseFloorPlanRepository.findHouseFloorPlanByHouseId(house.getId()))
+                .thenReturn(Optional.of(HouseFloorPlan.builder().house(house).floorPlan(floorPlan).isReverse(false).build()));
 
         when(tasteTagService.getPriorityId(generateImageRequest.moodBoardIds()))
                 .thenReturn(tag);
 
         PromptRequestDTO promptRequestDTO = PromptRequestDTO.of(
-                1L, tag.getId(), house.getEquilibrium(),
+                1L, tag.getId(), floorPlan.getEquilibrium(),
                 PromptFurnitureListDTO.of(List.of())
         );
 
@@ -210,7 +219,7 @@ class GenerateImageFacadeTest {
         assertThat(imageInfoResponse).isNotNull();
         assertThat(imageInfoResponse.tagName()).isEqualTo(tag.getTagNameKr());
         assertThat(imageInfoResponse.imageUrl()).isEqualTo(imageLink);
-        assertThat(imageInfoResponse.houseForm()).isEqualTo(house.getForm().getDescription());
+        assertThat(imageInfoResponse.houseForm()).isEqualTo(floorPlan.getForm().getDescription());
         assertThat(imageInfoResponse.name()).isEqualTo(user.getName());
     }
 
@@ -230,12 +239,14 @@ class GenerateImageFacadeTest {
                 .role(Role.ROLE_USER)
                 .build();
 
-        House house = House.builder()
-                .id(1L)
+        FloorPlan floorPlan = FloorPlan.builder()
                 .form(Form.OFFICETEL)
                 .structure(Structure.OPEN_ONE_ROOM)
-                .activity(Activity.REMOTE_WORK)
                 .equilibrium(Equilibrium.UNDER_5)
+                .build();
+        House house = House.builder()
+                .id(1L)
+                .activity(Activity.REMOTE_WORK)
                 .user(user)
                 .isValid(true)
                 .build();
@@ -273,9 +284,11 @@ class GenerateImageFacadeTest {
 
         when(tasteTagService.getPriorityId(generateImageRequest.moodBoardIds()))
                 .thenReturn(tag);
+        when(houseFloorPlanRepository.findHouseFloorPlanByHouseId(house.getId()))
+                .thenReturn(Optional.of(HouseFloorPlan.builder().house(house).floorPlan(floorPlan).isReverse(false).build()));
 
         PromptRequestDTO promptRequestDTO = PromptRequestDTO.of(
-                1L, tag.getId(), house.getEquilibrium(),
+                1L, tag.getId(), floorPlan.getEquilibrium(),
                 PromptFurnitureListDTO.of(generateImageRequest.selectiveIds())
         );
 
@@ -286,7 +299,7 @@ class GenerateImageFacadeTest {
         String pullPrompt = "pull_prompt";
 
         ImageInfoResponse tempImageInfoResponse = new ImageInfoResponse(
-                1L, imageLink, false, house.getEquilibrium().getDescription(), house.getForm().getDescription(), tag.getTagNameKr(), user.getName()
+                1L, imageLink, false, floorPlan.getEquilibrium().getDescription(), floorPlan.getForm().getDescription(), tag.getTagNameKr(), user.getName()
                 );
 
         ImageUploadResponseDTO imageUploadResponseDTO = ImageUploadResponseDTO.from(
@@ -331,7 +344,7 @@ class GenerateImageFacadeTest {
         assertThat(imageInfoResponse).isNotNull();
         assertThat(imageInfoResponse.tagName()).isEqualTo(tag.getTagNameKr());
         assertThat(imageInfoResponse.imageUrl()).isEqualTo(imageLink);
-        assertThat(imageInfoResponse.houseForm()).isEqualTo(house.getForm().getDescription());
+        assertThat(imageInfoResponse.houseForm()).isEqualTo(floorPlan.getForm().getDescription());
         assertThat(imageInfoResponse.name()).isEqualTo(user.getName());
     }
 

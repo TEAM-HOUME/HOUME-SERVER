@@ -102,7 +102,8 @@ public class HouseServiceImpl implements HouseService {
         if (latestHouse == null) {
             throw new GeneralException(ErrorCode.NOT_FOUND_HOUSE);
         }
-        return new LatestHouseConditionDTO(latestHouse.getForm(), latestHouse.getStructure(), latestHouse.getEquilibrium());
+        FloorPlan floorPlan = getFloorPlanOrThrow(latestHouse);
+        return new LatestHouseConditionDTO(floorPlan.getForm(), floorPlan.getStructure(), floorPlan.getEquilibrium());
     }
 
     // house prompt 저장
@@ -121,9 +122,6 @@ public class HouseServiceImpl implements HouseService {
                 .orElseThrow(() -> new HouseException(ErrorCode.NOT_FOUND_FLOOR_PLAN));
 
         House house = House.builder()
-                .form(floorPlan.getForm())
-                .structure(floorPlan.getStructure())
-                .equilibrium(floorPlan.getEquilibrium())
                 .activity(null)
                 .user(user)
                 .banner(banner)
@@ -226,15 +224,22 @@ public class HouseServiceImpl implements HouseService {
 
     // 유효한 요청일 때 house 저장
     private Long saveValidHouse(User user, Form form, Structure structure, Equilibrium equilibrium) {
+        FloorPlan matchedFloorPlan = floorPlanRepository.findFirstByFormAndStructureAndEquilibrium(form, structure, equilibrium)
+                .orElseThrow(() -> new HouseException(ErrorCode.NOT_FOUND_FLOOR_PLAN));
+
         House house = House.builder()
-                .form(form)
-                .structure(structure)
-                .equilibrium(equilibrium)
                 .user(user)
                 .isValid(true)
                 .build();
         House save = houseRepository.save(house);
+        saveHouseFloorPlan(save, matchedFloorPlan.getId(), false);
 
         return save.getId();
+    }
+
+    private FloorPlan getFloorPlanOrThrow(House house) {
+        return houseFloorPlanRepository.findHouseFloorPlanByHouseId(house.getId())
+                .map(HouseFloorPlan::getFloorPlan)
+                .orElseThrow(() -> new HouseException(ErrorCode.NOT_FOUND_FLOOR_PLAN));
     }
 }

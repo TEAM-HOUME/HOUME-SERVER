@@ -36,6 +36,8 @@ import or.sopt.houme.domain.house.model.entity.enums.Activity;
 import or.sopt.houme.domain.house.model.entity.enums.Equilibrium;
 import or.sopt.houme.domain.house.model.entity.enums.Structure;
 import or.sopt.houme.domain.house.model.floorPlan.entity.FloorPlan;
+import or.sopt.houme.domain.house.model.entity.mapping.HouseFloorPlan;
+import or.sopt.houme.domain.house.repository.HouseFloorPlanRepository;
 import or.sopt.houme.domain.house.model.floorPlan.vo.FloorPlanImageItem;
 import or.sopt.houme.domain.house.repository.floorPlan.FloorPlanRepository;
 import or.sopt.houme.domain.house.service.HouseService;
@@ -77,6 +79,7 @@ public class GenerateImageFacade {
     private final BannerRepository bannerRepository;
     private final FloorPlanRepository floorPlanRepository;
     private final HouseService houseService;
+    private final HouseFloorPlanRepository houseFloorPlanRepository;
     private final CreditService creditService;
     private final TasteTagService tasteTagService;
     private final UserService userService;
@@ -129,12 +132,13 @@ public class GenerateImageFacade {
 
         // house_floor_plan 생성 및 저장
         houseService.saveHouseFloorPlan(house, generateImageRequest.floorPlan().floorPlanId(), generateImageRequest.floorPlan().isMirror());
+        FloorPlan houseFloorPlan = requireHouseFloorPlan(house);
 
         // 침대 ID 찾기
         Optional<Long> bedId = furnitureService.findBedId(generateImageRequest.selectiveIds());
 
         // 복층이 아닌 경우 침대 추가
-        if (!house.getStructure().equals(Structure.DUPLEX) && bedId.isPresent()) {
+        if (!houseFloorPlan.getStructure().equals(Structure.DUPLEX) && bedId.isPresent()) {
             log.info("복층이 아닌 경우 침대 추가");
             generateImageRequest.selectiveIds().add(bedId.get());
         }
@@ -187,8 +191,8 @@ public class GenerateImageFacade {
 
             // 이미지 반환 ImageInfoResponse 생성
             ImageInfoResponse imageInfoResponse = ImageInfoResponse.of(generateImage.getId(), generateImage.getUrl(),
-                    generateImageRequest.floorPlan().isMirror(), house.getEquilibrium().getDescription(),
-                    house.getForm().getDescription(), tag.getTagNameKr(), user.getName());
+                    generateImageRequest.floorPlan().isMirror(), houseFloorPlan.getEquilibrium().getDescription(),
+                    houseFloorPlan.getForm().getDescription(), tag.getTagNameKr(), user.getName());
 
             // 만약 Fallback 이미지라면, 예외처리
             if (generateImage.getUrl().equals(S3Constant.FALL_BACK_IMAGE)) {
@@ -501,12 +505,13 @@ public class GenerateImageFacade {
 
             // house_floor_plan 생성 및 저장
             houseService.saveHouseFloorPlan(house, generateImageRequest.floorPlan().floorPlanId(), generateImageRequest.floorPlan().isMirror());
+            FloorPlan houseFloorPlan = requireHouseFloorPlan(house);
 
             // 침대 ID 찾기
             Optional<Long> bedId = furnitureService.findBedId(generateImageRequest.selectiveIds());
 
             // 복층이 아닌 경우 침대 추가
-            if (!house.getStructure().equals(Structure.DUPLEX) && bedId.isPresent()) {
+            if (!houseFloorPlan.getStructure().equals(Structure.DUPLEX) && bedId.isPresent()) {
                 log.info("복층이 아닌 경우 침대 추가");
                 generateImageRequest.selectiveIds().add(bedId.get());
             }
@@ -568,7 +573,7 @@ public class GenerateImageFacade {
                     if (results.get(i).getImageLink().equals(S3Constant.FALL_BACK_IMAGE)) {
                         fallbackResponses.add(ImageInfoResponse.of(null, results.get(i).getImageLink(),
                                 generateImageRequest.floorPlan().isMirror(), generateImageRequest.equilibrium(),
-                                house.getForm().getDescription(), priorityIdList.get(i).tagNameKr(), user.getName()));
+                                houseFloorPlan.getForm().getDescription(), priorityIdList.get(i).tagNameKr(), user.getName()));
                     }
                 }
                 // fallback 이미지가 포함되어 있다면 예외처리
@@ -811,10 +816,11 @@ public class GenerateImageFacade {
 
         // 반전여부
         boolean isMirror = houseService.getIsMirrorByHouseId(houseId);
+        FloorPlan floorPlan = requireHouseFloorPlan(houseById);
         // 평형
-        String equilibrium = houseById.getEquilibrium().getDescription();
+        String equilibrium = floorPlan.getEquilibrium().getDescription();
         // 집 형태
-        String houseForm = houseById.getForm().getDescription();
+        String houseForm = floorPlan.getForm().getDescription();
 
         // 태그 찾기
         Tag tag = tagService.findTagByUserIdAndImageId(user.getId(), generateImage.getId());
@@ -918,6 +924,12 @@ public class GenerateImageFacade {
             log.warn("유효성 검증 실패 {}: {}", enumType.getSimpleName(), value);
             throw new GenerateImageException(ErrorCode.INVALID_GENERATE_IMAGE_REQUEST);
         }
+    }
+
+    private FloorPlan requireHouseFloorPlan(House house) {
+        return houseFloorPlanRepository.findHouseFloorPlanByHouseId(house.getId())
+                .map(HouseFloorPlan::getFloorPlan)
+                .orElseThrow(() -> new HouseException(ErrorCode.NOT_FOUND_FLOOR_PLAN));
     }
 
 }
