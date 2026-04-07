@@ -231,7 +231,7 @@ class CarouselControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.msg").value("응답 성공"))
                 .andExpect(jsonPath("$.code").value(200))
-                .andExpect(jsonPath("$.data").value("상품 찜 해제가 정상적으로 저장되었습니다"));
+                .andExpect(jsonPath("$.data").value("캐러셀 싫어요 로그가 정상적으로 저장되었습니다"));
 
         Mockito.verify(carouselLikeLogService, Mockito.times(1))
                 .createHateLog(testUserDetails.getUser(), rawProductId);
