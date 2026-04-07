@@ -69,4 +69,5 @@ public interface CurationRawProductRepository extends JpaRepository<CurationRawP
             @Param("furnitureTag") FurnitureTag furnitureTag,
             @Param("productIds") List<Long> productIds
     );
+
 }
