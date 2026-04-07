@@ -19,6 +19,8 @@ import or.sopt.houme.domain.house.presentation.taste.dto.response.TagDTO;
 import or.sopt.houme.domain.house.model.taste.entity.Tag;
 import or.sopt.houme.domain.user.model.entity.User;
 import or.sopt.houme.domain.user.service.UserService;
+import or.sopt.houme.global.api.ErrorCode;
+import or.sopt.houme.global.api.handler.HouseException;
 import or.sopt.houme.global.dto.ImageUploadResponseDTO;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -149,6 +151,6 @@ public class GenerateImageTransactionService {
     private FloorPlan getFloorPlanOrThrow(House house) {
         return houseFloorPlanRepository.findHouseFloorPlanByHouseId(house.getId())
                 .map(HouseFloorPlan::getFloorPlan)
-                .orElseThrow(() -> new IllegalStateException("House floorPlan mapping must not be null"));
+                .orElseThrow(() -> new HouseException(ErrorCode.NOT_FOUND_FLOOR_PLAN));
     }
 }

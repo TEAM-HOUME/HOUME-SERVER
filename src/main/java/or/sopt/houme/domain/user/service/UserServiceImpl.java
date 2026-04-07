@@ -268,7 +268,7 @@ public class UserServiceImpl implements UserService {
                             return ImageHistoriesResultPageResponse.ImageHistoryResultPageResponse.of(
                                     generateImage.getId(),
                                     floorPlan != null && floorPlan.getEquilibrium() != null ? floorPlan.getEquilibrium().getDescription() : null,
-                                    floorPlan != null && floorPlan.getForm() != null ? floorPlan.getForm().toString() : null,
+                                    floorPlan != null && floorPlan.getForm() != null ? floorPlan.getForm().getDescription() : null,
                                     tag.getTagNameKr(),
                                     findUser.getDisplayName(),
                                     generateImage.getUrl(),

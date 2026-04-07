@@ -293,7 +293,7 @@ class UserServiceImplTest {
         // 공통 속성 검증
         response.histories().forEach(history -> {
             assertThat(history.equilibrium()).isEqualTo("5평 이하");
-            assertThat(history.houseForm()).isEqualTo("OFFICETEL");
+            assertThat(history.houseForm()).isEqualTo("오피스텔");
             assertThat(history.tasteTag()).isEqualTo("모던");
             assertThat(history.name()).isEqualTo("테스트유저");
             assertThat(history.isLike()).isTrue();
