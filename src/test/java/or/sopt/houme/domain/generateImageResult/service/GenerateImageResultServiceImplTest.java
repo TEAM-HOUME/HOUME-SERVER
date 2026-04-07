@@ -30,6 +30,7 @@ import or.sopt.houme.domain.generateImage.service.GenerateImageService;
 import or.sopt.houme.domain.generateImageResult.presentation.dto.response.GenerateImageResultResponse;
 import or.sopt.houme.domain.generateImageResult.presentation.dto.response.RelatedImagesResponse;
 import or.sopt.houme.domain.generateImageResult.presentation.dto.response.SimilarItemsResponse;
+import or.sopt.houme.domain.house.model.entity.House;
 import or.sopt.houme.domain.house.model.taste.entity.Tag;
 import or.sopt.houme.domain.house.service.HouseService;
 import or.sopt.houme.domain.user.model.entity.User;
@@ -103,11 +104,17 @@ class GenerateImageResultServiceImplTest {
         Banner bannerRef = Banner.builder()
                 .id(10L)
                 .build();
+      
+        House house = House.builder()
+                .id(100L)
+                .banner(bannerRef)
+                .build();
+
         GenerateImage listImage = GenerateImage.builder()
                 .id(1L)
                 .url("https://generated-image")
                 .generationType(GenerateImageType.LIST)
-                .banner(bannerRef)
+                .house(house)
                 .build();
 
         CurationRawProduct rawProduct = CurationRawProduct.builder()
@@ -173,10 +180,14 @@ class GenerateImageResultServiceImplTest {
     @DisplayName("유사 상품 조회는 가구타입 우선 후보를 먼저 채우고 최대 4개를 반환한다")
     void getSimilarItems_prioritizesFurnitureTypeAndLimitsToFour() {
         Banner bannerRef = Banner.builder().id(10L).build();
+        House house = House.builder()
+                .id(100L)
+                .banner(bannerRef)
+                .build();
         GenerateImage listImage = GenerateImage.builder()
                 .id(1L)
                 .generationType(GenerateImageType.LIST)
-                .banner(bannerRef)
+                .house(house)
                 .build();
 
         CurationRawProduct selected = CurationRawProduct.builder()
@@ -253,10 +264,14 @@ class GenerateImageResultServiceImplTest {
     @DisplayName("related-images는 LIST 타입 기준으로 현재 이미지를 제외하고 최신순/중복제거 결과를 반환한다")
     void getRelatedImages_returnsLatestDistinctImagesExcludingCurrent() {
         Banner bannerRef = Banner.builder().id(10L).build();
+        House house = House.builder()
+                .id(100L)
+                .banner(bannerRef)
+                .build();
         GenerateImage current = GenerateImage.builder()
                 .id(1L)
                 .generationType(GenerateImageType.LIST)
-                .banner(bannerRef)
+                .house(house)
                 .build();
 
         CurationRawProduct selected = CurationRawProduct.builder()

@@ -62,6 +62,26 @@ public final class ColorHexMapper {
         return value == null || value.isBlank();
     }
 
+    public static Map<String, String> getStandardColorFilters() {
+        Map<String, String> filters = new java.util.LinkedHashMap<>();
+        filters.put("화이트", "#FFFFFF");
+        filters.put("그레이", "#808080");
+        filters.put("블랙", "#000000");
+        filters.put("베이지", "#F5F5DC");
+        filters.put("브라운", "#8B4513");
+        filters.put("실버", "#C0C0C0");
+        filters.put("골드", "#FFD700");
+        filters.put("레드", "#FF0000");
+        filters.put("오렌지", "#FFA500");
+        filters.put("옐로우", "#FFFF00");
+        filters.put("그린", "#008000");
+        filters.put("블루", "#0000FF");
+        filters.put("네이비", "#000080");
+        filters.put("바이올렛", "#8F00FF");
+        filters.put("핑크", "#FFC0CB");
+        return filters;
+    }
+
     private static Map<String, String> buildColorMap() {
         Map<String, String> map = new LinkedHashMap<>();
 

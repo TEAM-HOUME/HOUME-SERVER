@@ -2,6 +2,7 @@ package or.sopt.houme.domain.house.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import or.sopt.houme.domain.banner.model.entity.Banner;
 import or.sopt.houme.domain.house.model.floorPlan.entity.FloorPlan;
 import or.sopt.houme.domain.house.repository.floorPlan.FloorPlanRepository;
 import or.sopt.houme.domain.furniture.model.entity.Furniture;
@@ -101,7 +102,8 @@ public class HouseServiceImpl implements HouseService {
         if (latestHouse == null) {
             throw new GeneralException(ErrorCode.NOT_FOUND_HOUSE);
         }
-        return new LatestHouseConditionDTO(latestHouse.getForm(), latestHouse.getStructure(), latestHouse.getEquilibrium());
+        FloorPlan floorPlan = getFloorPlanOrThrow(latestHouse);
+        return new LatestHouseConditionDTO(floorPlan.getForm(), floorPlan.getStructure(), floorPlan.getEquilibrium());
     }
 
     // house prompt 저장
@@ -111,6 +113,25 @@ public class HouseServiceImpl implements HouseService {
         house.updatePrompt(prompt);
 
         houseRepository.save(house);
+    }
+
+    @Transactional
+    @Override
+    public House createTemplateHouse(User user, Banner banner, String prompt, Long floorPlanId, boolean isMirror) {
+        FloorPlan floorPlan = floorPlanRepository.findById(floorPlanId)
+                .orElseThrow(() -> new HouseException(ErrorCode.NOT_FOUND_FLOOR_PLAN));
+
+        House house = House.builder()
+                .activity(null)
+                .user(user)
+                .banner(banner)
+                .isValid(true)
+                .housePrompt(prompt)
+                .build();
+
+        House savedHouse = houseRepository.save(house);
+        saveHouseFloorPlan(savedHouse, floorPlanId, isMirror);
+        return savedHouse;
     }
 
     // house activity 업데이트
@@ -203,15 +224,22 @@ public class HouseServiceImpl implements HouseService {
 
     // 유효한 요청일 때 house 저장
     private Long saveValidHouse(User user, Form form, Structure structure, Equilibrium equilibrium) {
+        FloorPlan matchedFloorPlan = floorPlanRepository.findFirstByFormAndStructureAndEquilibrium(form, structure, equilibrium)
+                .orElseThrow(() -> new HouseException(ErrorCode.NOT_FOUND_FLOOR_PLAN));
+
         House house = House.builder()
-                .form(form)
-                .structure(structure)
-                .equilibrium(equilibrium)
                 .user(user)
                 .isValid(true)
                 .build();
         House save = houseRepository.save(house);
+        saveHouseFloorPlan(save, matchedFloorPlan.getId(), false);
 
         return save.getId();
+    }
+
+    private FloorPlan getFloorPlanOrThrow(House house) {
+        return houseFloorPlanRepository.findHouseFloorPlanByHouseId(house.getId())
+                .map(HouseFloorPlan::getFloorPlan)
+                .orElseThrow(() -> new HouseException(ErrorCode.NOT_FOUND_FLOOR_PLAN));
     }
 }

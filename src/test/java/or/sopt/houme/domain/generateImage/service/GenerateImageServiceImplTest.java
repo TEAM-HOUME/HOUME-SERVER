@@ -3,9 +3,6 @@ package or.sopt.houme.domain.generateImage.service;
 import or.sopt.houme.domain.generateImage.model.entity.GenerateImage;
 import or.sopt.houme.domain.generateImage.repository.GenerateImageRepository;
 import or.sopt.houme.domain.house.model.entity.House;
-import or.sopt.houme.domain.house.model.entity.enums.Equilibrium;
-import or.sopt.houme.domain.house.model.entity.enums.Form;
-import or.sopt.houme.domain.house.model.entity.enums.Structure;
 import or.sopt.houme.domain.house.repository.HouseRepository;
 import or.sopt.houme.domain.user.model.entity.*;
 import or.sopt.houme.domain.user.repository.UserRepository;
@@ -62,9 +59,6 @@ class GenerateImageServiceImplTest {
 
         savedHouse = houseRepository.save(
                 House.builder()
-                        .form(Form.OFFICETEL)
-                        .structure(Structure.OPEN_ONE_ROOM)
-                        .equilibrium(Equilibrium.UNDER_5)
                         .isValid(true)
                         .user(savedUser)
                         .build()
