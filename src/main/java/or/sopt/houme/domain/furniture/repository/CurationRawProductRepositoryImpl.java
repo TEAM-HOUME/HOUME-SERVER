@@ -84,6 +84,24 @@ public class CurationRawProductRepositoryImpl implements CurationRawProductRepos
                         rawProduct.isExposed.isTrue(),
                         isNotLikedByUser
                 )
+                .orderBy(rawProduct.id.desc())
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
+                .fetch();
+
+        Long total = queryFactory
+                .select(rawProduct.count())
+                .from(rawProduct)
+                .where(
+                        rawProduct.isExposed.isTrue(),
+                        isNotLikedByUser
+                )
+                .fetchOne();
+
+        return new PageImpl<>(content, pageable, total == null ? 0 : total);
+    }
+
+    @Override
     public List<CurationRawProduct> findAllSimilarByFurnitureTypeIds(
             List<Long> furnitureTypeIds,
             List<Long> excludeRawProductIds,
@@ -112,17 +130,6 @@ public class CurationRawProductRepositoryImpl implements CurationRawProductRepos
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
                 .fetch();
-
-        Long total = queryFactory
-                .select(rawProduct.count())
-                .from(rawProduct)
-                .where(
-                        rawProduct.isExposed.isTrue(),
-                        isNotLikedByUser
-                )
-                .fetchOne();
-
-        return new PageImpl<>(content, pageable, total == null ? 0 : total);
     }
 
     @Override
