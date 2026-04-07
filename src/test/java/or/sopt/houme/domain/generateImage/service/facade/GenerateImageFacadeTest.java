@@ -284,8 +284,6 @@ class GenerateImageFacadeTest {
 
         when(tasteTagService.getPriorityId(generateImageRequest.moodBoardIds()))
                 .thenReturn(tag);
-        when(houseFloorPlanRepository.findHouseFloorPlanByHouseId(house.getId()))
-                .thenReturn(Optional.of(HouseFloorPlan.builder().house(house).floorPlan(floorPlan).isReverse(false).build()));
 
         PromptRequestDTO promptRequestDTO = PromptRequestDTO.of(
                 1L, tag.getId(), floorPlan.getEquilibrium(),
