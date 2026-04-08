@@ -115,9 +115,11 @@ public class FurnitureServiceImpl implements FurnitureService {
         List<ActivityFurniture> mappings = activityFurnitureRepository.findAllByOrderByPriorityAscIdAsc();
         Map<Activity, List<FurnitureItem>> grouped = new EnumMap<>(Activity.class);
 
-        for (ActivityFurniture mapping : mappings) {
+        for (ActivityFurniture mapping : mappings.stream()
+                .sorted(Comparator.comparingInt(ActivityFurniture::getPriority).thenComparing(ActivityFurniture::getId))
+                .toList()) {
             grouped.computeIfAbsent(mapping.getActivity(), key -> new ArrayList<>())
-                    .add(FurnitureItem.from(mapping.getFurniture()));
+                    .add(FurnitureItem.from(mapping.getFurniture(), mapping.getPriority()));
         }
 
         return Arrays.stream(Activity.values())

@@ -14,6 +14,10 @@ public record FurnitureItem(
     private static final Set<String> REMOVABLE_CATEGORIES = Set.of("침대", "소파");
 
     public static FurnitureItem from(Furniture furniture) {
+        return from(furniture, furniture.getPriority());
+    }
+
+    public static FurnitureItem from(Furniture furniture, Integer priority) {
         String categoryName = furniture.getFurnitureType().getNameKr();
         String rawLabel = furniture.getFurnitureNameKr();
 
@@ -27,7 +31,7 @@ public record FurnitureItem(
                 furniture.getId(),
                 furniture.getFurnitureNameEng(),
                 cleanLabel,
-                furniture.getPriority()
+                priority
         );
     }
 }
