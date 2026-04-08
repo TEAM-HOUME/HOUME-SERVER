@@ -521,6 +521,12 @@ public class GenerateImageFacade {
                     combinedFurnitureIds,
                     selectedTag.getId()
             );
+            log.info(
+                    "V4 이미지 생성에 사용된 furniture_tag ids: {} (tagId={}, furnitureIds={})",
+                    matchedFurnitureTags.stream().map(FurnitureTag::getId).toList(),
+                    selectedTag.getId(),
+                    combinedFurnitureIds
+            );
 
             String floorPlanImageUrl = resolveFloorPlanImageUrl(floorPlan, request.floorPlanView());
             List<String> referenceImageUrls = buildV4ReferenceImageUrls(floorPlanImageUrl, matchedFurnitureTags);
