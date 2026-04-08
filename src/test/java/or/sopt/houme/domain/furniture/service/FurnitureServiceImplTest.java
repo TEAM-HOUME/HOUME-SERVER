@@ -328,7 +328,7 @@ class FurnitureServiceImplTest {
         List<ActivityWithFurnitureResponse> responses = furnitureService.getActivityFurnitureMappings();
 
         // Then
-        assertThat(responses).hasSize(Activity.values().length);
+        assertThat(responses).hasSize(2);
         assertThat(responses.get(0).code()).isEqualTo(Activity.REMOTE_WORK.name());
         assertThat(responses.get(0).furnitures())
                 .extracting(furniture -> furniture.label())
