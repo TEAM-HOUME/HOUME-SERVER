@@ -148,6 +148,39 @@ public class GenerateImageTransactionService {
         return BannerGenerateImageResponse.of(generateImage.getId());
     }
 
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public BannerGenerateImageResponse saveV4ImageAndConfirmCredit(
+            User user,
+            Credit lockedCredit,
+            Long floorPlanId,
+            boolean isMirror,
+            String finalPrompt,
+            ImageUploadResponseDTO imageResponse,
+            Activity activity,
+            java.util.List<Long> furnitureIds,
+            java.util.List<Long> moodBoardIds
+    ) {
+        House house = houseService.createTemplateHouse(user, null, finalPrompt, floorPlanId, isMirror);
+        houseService.updateHouseActivity(house.getId(), activity);
+
+        if (furnitureIds != null && !furnitureIds.isEmpty()) {
+            houseService.saveHouseFurniture(house, furnitureIds);
+        }
+        if (moodBoardIds != null && !moodBoardIds.isEmpty()) {
+            houseService.saveHouseTaste(house, moodBoardIds);
+        }
+
+        GenerateImage generateImage = generateImageService.createGenerateImage(
+                imageResponse,
+                house,
+                GenerateImageType.LIST
+        );
+
+        creditService.commitCreditDeletion(lockedCredit);
+        userService.updateHasGeneratedImage(user);
+        return BannerGenerateImageResponse.of(generateImage.getId());
+    }
+
     private FloorPlan getFloorPlanOrThrow(House house) {
         return houseFloorPlanRepository.findHouseFloorPlanByHouseId(house.getId())
                 .map(HouseFloorPlan::getFloorPlan)

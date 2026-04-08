@@ -9,11 +9,17 @@ import or.sopt.houme.domain.banner.repository.BannerRepository;
 import or.sopt.houme.domain.credit.model.entity.Credit;
 import or.sopt.houme.domain.credit.model.entity.CreditStatus;
 import or.sopt.houme.domain.credit.service.CreditService;
+import or.sopt.houme.domain.furniture.model.entity.ActivityFurniture;
+import or.sopt.houme.domain.furniture.model.entity.Furniture;
+import or.sopt.houme.domain.furniture.model.entity.FurnitureTag;
+import or.sopt.houme.domain.furniture.repository.ActivityFurnitureRepository;
 import or.sopt.houme.domain.furniture.service.FurnitureService;
 import or.sopt.houme.domain.furniture.repository.CurationRawProductRepository;
+import or.sopt.houme.domain.furniture.repository.FurnitureTagRepository;
 import or.sopt.houme.domain.generateImage.infrastructure.gemini.service.GeminiImageService;
 import or.sopt.houme.domain.generateImage.presentation.dto.request.BannerGenerateImageRequest;
 import or.sopt.houme.domain.generateImage.presentation.dto.request.GenerateImageRequest;
+import or.sopt.houme.domain.generateImage.presentation.dto.request.GenerateImageV4Request;
 import or.sopt.houme.domain.generateImage.presentation.dto.response.BannerGenerateImageResponse;
 import or.sopt.houme.domain.generateImage.presentation.dto.response.ImageInfoResponse;
 import or.sopt.houme.domain.generateImage.model.entity.GenerateImage;
@@ -29,6 +35,7 @@ import or.sopt.houme.domain.house.model.entity.enums.Form;
 import or.sopt.houme.domain.house.model.entity.enums.Structure;
 import or.sopt.houme.domain.house.model.entity.mapping.HouseFloorPlan;
 import or.sopt.houme.domain.house.model.floorPlan.entity.FloorPlan;
+import or.sopt.houme.domain.house.model.floorPlan.vo.FloorPlanImageItem;
 import or.sopt.houme.domain.house.repository.HouseFloorPlanRepository;
 import or.sopt.houme.domain.house.repository.floorPlan.FloorPlanRepository;
 import or.sopt.houme.domain.house.service.HouseService;
@@ -60,6 +67,7 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -87,6 +95,12 @@ class GenerateImageFacadeTest {
 
     @Mock
     CurationRawProductRepository curationRawProductRepository;
+
+    @Mock
+    FurnitureTagRepository furnitureTagRepository;
+
+    @Mock
+    ActivityFurnitureRepository activityFurnitureRepository;
 
     @Mock
     FloorPlanImageJsonCodec floorPlanImageJsonCodec;
@@ -420,6 +434,123 @@ class GenerateImageFacadeTest {
                 eq(false),
                 any(),
                 eq(imageUploadResponseDTO)
+        );
+    }
+
+    @Test
+    @DisplayName("V4 이미지 생성은 활동 연계 가구를 포함한 reference 이미지로 호출 후 저장한다")
+    void generateImageV4ByGemini_callsSaveV4ImageAndConfirmCredit() {
+        User user = User.builder()
+                .id(1L)
+                .name("test_user")
+                .build();
+
+        Credit lockedCredit = Credit.builder()
+                .id(10L)
+                .status(CreditStatus.PENDING)
+                .user(user)
+                .build();
+
+        GenerateImageV4Request request = new GenerateImageV4Request(
+                11L,
+                "창가 뷰",
+                true,
+                List.of(1L, 2L),
+                "REMOTE_WORK",
+                List.of(7L)
+        );
+
+        Tag selectedTag = Tag.builder()
+                .id(100L)
+                .tagPrompt("스타일 프롬프트")
+                .build();
+
+        FloorPlan floorPlan = FloorPlan.builder()
+                .id(11L)
+                .url("https://floorplan-default")
+                .floorPlanPrompt("도면 프롬프트")
+                .imagesJson("[]")
+                .build();
+
+        Furniture selectedFurniture = Furniture.builder().id(7L).build();
+        Furniture activityFurniture = Furniture.builder().id(8L).build();
+
+        ActivityFurniture mapping = ActivityFurniture.builder()
+                .id(1L)
+                .activity(Activity.REMOTE_WORK)
+                .furniture(activityFurniture)
+                .priority(1)
+                .build();
+
+        FurnitureTag selectedFurnitureTag = FurnitureTag.builder()
+                .id(1L)
+                .furniture(selectedFurniture)
+                .tag(selectedTag)
+                .furnitureUrl("https://furniture-7")
+                .furniturePrompt("선택 가구 프롬프트")
+                .priority(1)
+                .searchKeyword("k1")
+                .build();
+        FurnitureTag activityFurnitureTag = FurnitureTag.builder()
+                .id(2L)
+                .furniture(activityFurniture)
+                .tag(selectedTag)
+                .furnitureUrl("https://furniture-8")
+                .furniturePrompt("활동 가구 프롬프트")
+                .priority(2)
+                .searchKeyword("k2")
+                .build();
+
+        ImageUploadResponseDTO imageUploadResponseDTO = ImageUploadResponseDTO.from(
+                "generated.webp",
+                "generated-original.webp",
+                "https://generated-image",
+                "image/webp"
+        );
+
+        when(creditService.tryLockAndGetCredit(user)).thenReturn(lockedCredit);
+        when(tasteTagService.getPriorityId(request.moodBoardIds())).thenReturn(selectedTag);
+        when(floorPlanRepository.findById(11L)).thenReturn(Optional.of(floorPlan));
+        when(activityFurnitureRepository.findAllByActivityOrderByPriorityAscIdAsc(Activity.REMOTE_WORK))
+                .thenReturn(List.of(mapping));
+        when(furnitureTagRepository.findAllByFurnitureIdInAndTagId(List.of(7L, 8L), 100L))
+                .thenReturn(List.of(selectedFurnitureTag, activityFurnitureTag));
+        when(floorPlanImageJsonCodec.read("[]"))
+                .thenReturn(List.of(FloorPlanImageItem.create("https://floorplan-view", "file", "orig", "png", 1, "창가 뷰")));
+        when(geminiImageService.createImageWithReferences(any(), any()))
+                .thenReturn(imageUploadResponseDTO);
+        when(generateImageTransactionService.saveV4ImageAndConfirmCredit(
+                eq(user),
+                eq(lockedCredit),
+                eq(11L),
+                eq(true),
+                any(),
+                eq(imageUploadResponseDTO),
+                eq(Activity.REMOTE_WORK),
+                eq(List.of(7L, 8L)),
+                eq(List.of(1L, 2L))
+        )).thenReturn(BannerGenerateImageResponse.of(999L));
+
+        BannerGenerateImageResponse response = generateImageFacade.generateImageV4ByGemini(user, request);
+
+        assertThat(response.imageId()).isEqualTo(999L);
+        verify(geminiImageService).createImageWithReferences(
+                any(),
+                argThat(urls -> urls.size() == 3
+                        && urls.get(0).equals("https://floorplan-view")
+                        && urls.contains("https://furniture-7")
+                        && urls.contains("https://furniture-8"))
+        );
+        verify(generateImageTransactionService).saveV4ImageAndConfirmCredit(
+                eq(user),
+                eq(lockedCredit),
+                eq(11L),
+                eq(true),
+                any(),
+                eq(imageUploadResponseDTO),
+                eq(Activity.REMOTE_WORK),
+                eq(List.of(7L, 8L)),
+                eq(List.of(1L, 2L))
         );
     }
 }

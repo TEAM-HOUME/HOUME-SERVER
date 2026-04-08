@@ -6,6 +6,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import or.sopt.houme.domain.generateImage.presentation.dto.request.BannerGenerateImageRequest;
 import or.sopt.houme.domain.generateImage.presentation.dto.request.GenerateImageRequest;
+import or.sopt.houme.domain.generateImage.presentation.dto.request.GenerateImageV4Request;
 import or.sopt.houme.domain.generateImage.presentation.dto.request.OtherStyleGenerateImageRequest;
 import or.sopt.houme.domain.generateImage.presentation.dto.response.BannerGenerateImageResponse;
 import or.sopt.houme.domain.generateImage.presentation.dto.response.ImageInfoListResponse;
@@ -105,6 +106,18 @@ public class GenerateImageController {
         ImageInfoListResponse imageInfoListResponse = generateImageFacade.generateImageBy2eaGemini(userDetails.getUser(), request);
 
         return ResponseEntity.ok(ApiResponse.ok(imageInfoListResponse));
+    }
+
+    @Operation(summary = "V4 템플릿 기반 이미지 생성 API",
+            description = "도면/뷰, 무드보드, 주요활동, 가구를 기반으로 Gemini 모델로 이미지 1장을 생성합니다.")
+    @PostMapping("/v4/generated-images/generate")
+    public ResponseEntity<ApiResponse<BannerGenerateImageResponse>> generateImageV4ByGemini(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @RequestBody @Valid GenerateImageV4Request request
+    ) {
+        BannerGenerateImageResponse response =
+                generateImageFacade.generateImageV4ByGemini(userDetails.getUser(), request);
+        return ResponseEntity.ok(ApiResponse.ok(response));
     }
 
     @Operation(summary = "배너 템플릿 기반 인테리어 이미지 생성 API",
