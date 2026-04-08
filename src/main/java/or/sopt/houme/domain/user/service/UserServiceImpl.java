@@ -21,7 +21,9 @@ import or.sopt.houme.domain.generateImage.repository.GenerateImageRepository;
 import or.sopt.houme.domain.generateImage.repository.GenerateImageUsedProductRepository;
 import or.sopt.houme.domain.house.model.entity.House;
 import or.sopt.houme.domain.house.model.entity.mapping.HouseFloorPlan;
+import or.sopt.houme.domain.house.model.floorPlan.entity.FloorPlan;
 import or.sopt.houme.domain.house.model.taste.entity.Tag;
+import or.sopt.houme.domain.house.repository.HouseFloorPlanRepository;
 import or.sopt.houme.domain.house.repository.HouseRepository;
 import or.sopt.houme.domain.house.repository.taste.tag.TagRepository;
 import or.sopt.houme.domain.preference.model.entity.Factor;
@@ -74,6 +76,7 @@ public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
     private final HouseRepository houseRepository;
+    private final HouseFloorPlanRepository houseFloorPlanRepository;
     private final TagRepository tagRepository;
     private final GenerateImageRepository generateImageRepository;
     private final CreditRepository creditRepository;
@@ -122,13 +125,14 @@ public class UserServiceImpl implements UserService {
             boolean isMirror = houseFloorPlans != null && !houseFloorPlans.isEmpty() && houseFloorPlans.get(0).isReverse();
 
             // 4. DTO 생성
+            FloorPlan floorPlan = resolveFloorPlan(house);
             UserImageHistoryDTO dto = new UserImageHistoryDTO(
                     house.getId(),
                     generateImage.get().getId(),
                     generateImage.get().getUrl(),
                     representativeTag.get().getTagNameKr(),
-                    house.getEquilibrium(),
-                    house.getForm(),
+                    floorPlan != null && floorPlan.getEquilibrium() != null ? floorPlan.getEquilibrium().getDescription() : null,
+                    floorPlan != null && floorPlan.getForm() != null ? floorPlan.getForm().getDescription() : null,
                     isMirror
             );
             histories.add(dto);
@@ -259,11 +263,12 @@ public class UserServiceImpl implements UserService {
                             Boolean isLike = likes.get(i); // likes 리스트에서 해당 인덱스의 값 가져오기
                             Tag tag = tags.get(i);
                             Factor factor = factors.get(i);
+                            FloorPlan floorPlan = resolveFloorPlan(house);
 
                             return ImageHistoriesResultPageResponse.ImageHistoryResultPageResponse.of(
                                     generateImage.getId(),
-                                    house.getEquilibrium().getDescription(),
-                                    house.getForm().toString(),
+                                    floorPlan != null && floorPlan.getEquilibrium() != null ? floorPlan.getEquilibrium().getDescription() : null,
+                                    floorPlan != null && floorPlan.getForm() != null ? floorPlan.getForm().getDescription() : null,
                                     tag.getTagNameKr(),
                                     findUser.getDisplayName(),
                                     generateImage.getUrl(),
@@ -355,7 +360,10 @@ public class UserServiceImpl implements UserService {
      */
     private Map<Long, Banner> buildBannerMap(List<GenerateImage> generateImages) {
         Set<Long> bannerIds = generateImages.stream()
-                .map(GenerateImage::getBanner)
+                .map(generateImage -> {
+                    House house = generateImage.getHouse();
+                    return house != null ? house.getBanner() : null;
+                })
                 .filter(Objects::nonNull)
                 .map(Banner::getId)
                 .collect(Collectors.toCollection(LinkedHashSet::new));
@@ -513,7 +521,7 @@ public class UserServiceImpl implements UserService {
      * 생성 이미지에 연결된 배너를 배너 맵 기준으로 보정하여 반환합니다.
      */
     private Banner resolveBanner(GenerateImage generateImage, Map<Long, Banner> bannersById) {
-        Banner banner = generateImage.getBanner();
+        Banner banner = generateImage.getHouse() != null ? generateImage.getHouse().getBanner() : null;
         if (banner != null) {
             return bannersById.getOrDefault(banner.getId(), banner);
         }
@@ -534,6 +542,12 @@ public class UserServiceImpl implements UserService {
             return firstName + "로 생성된 이미지";
         }
         return firstName + " 외 " + remainingCount + "개로 생성된 이미지";
+    }
+
+    private FloorPlan resolveFloorPlan(House house) {
+        return houseFloorPlanRepository.findHouseFloorPlanByHouseId(house.getId())
+                .map(HouseFloorPlan::getFloorPlan)
+                .orElse(null);
     }
 
     private User findUser(User user) {

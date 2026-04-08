@@ -2,6 +2,8 @@ package or.sopt.houme.domain.furniture.presentation.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 import or.sopt.houme.domain.furniture.presentation.dto.response.CurationProductDetailResponse;
 import or.sopt.houme.domain.furniture.presentation.dto.response.CurationProductFilterResponse;
@@ -11,6 +13,7 @@ import or.sopt.houme.domain.user.presentation.controller.dto.CustomUserDetails;
 import or.sopt.houme.global.api.ApiResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -19,6 +22,7 @@ import java.util.List;
 @RequestMapping("/api/v1/curations/products")
 @RequiredArgsConstructor
 @Tag(name = "상품 큐레이션 API")
+@Validated
 public class CurationProductController {
 
     private final CurationProductService curationProductService;
@@ -32,7 +36,7 @@ public class CurationProductController {
             @RequestParam(required = false) List<String> priceRanges,
             @RequestParam(required = false) List<Long> colors,
             @RequestParam(required = false) Long cursor,
-            @RequestParam(defaultValue = "20") Integer size
+            @RequestParam(defaultValue = "20") @Positive @Max(100) Integer size
     ) {
         return ResponseEntity.ok(ApiResponse.ok(
                 curationProductService.getProducts(keyword, types, priceRanges, colors, cursor, size)

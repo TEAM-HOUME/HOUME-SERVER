@@ -7,6 +7,10 @@ public record GetCarouselResponseDTO(
         String url
 )
 {
+    public static GetCarouselResponseDTO of(Long carouselId, String url) {
+        return new GetCarouselResponseDTO(carouselId, url);
+    }
+
     public static GetCarouselResponseDTO from(Carousel carousel) {
         return new GetCarouselResponseDTO(
                 carousel.getId(),

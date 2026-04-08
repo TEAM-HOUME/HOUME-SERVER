@@ -3,7 +3,6 @@ package or.sopt.houme.domain.furniture.service;
 import or.sopt.houme.domain.furniture.presentation.dto.response.CurationProductDetailResponse;
 import or.sopt.houme.domain.furniture.presentation.dto.response.CurationProductFilterResponse;
 import or.sopt.houme.domain.furniture.presentation.dto.response.CurationProductListResponse;
-
 import or.sopt.houme.domain.user.model.entity.User;
 
 import java.util.List;

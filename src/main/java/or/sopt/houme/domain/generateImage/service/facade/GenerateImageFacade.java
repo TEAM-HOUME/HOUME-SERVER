@@ -36,6 +36,8 @@ import or.sopt.houme.domain.house.model.entity.enums.Activity;
 import or.sopt.houme.domain.house.model.entity.enums.Equilibrium;
 import or.sopt.houme.domain.house.model.entity.enums.Structure;
 import or.sopt.houme.domain.house.model.floorPlan.entity.FloorPlan;
+import or.sopt.houme.domain.house.model.entity.mapping.HouseFloorPlan;
+import or.sopt.houme.domain.house.repository.HouseFloorPlanRepository;
 import or.sopt.houme.domain.house.model.floorPlan.vo.FloorPlanImageItem;
 import or.sopt.houme.domain.house.repository.floorPlan.FloorPlanRepository;
 import or.sopt.houme.domain.house.service.HouseService;
@@ -77,6 +79,7 @@ public class GenerateImageFacade {
     private final BannerRepository bannerRepository;
     private final FloorPlanRepository floorPlanRepository;
     private final HouseService houseService;
+    private final HouseFloorPlanRepository houseFloorPlanRepository;
     private final CreditService creditService;
     private final TasteTagService tasteTagService;
     private final UserService userService;
@@ -129,12 +132,13 @@ public class GenerateImageFacade {
 
         // house_floor_plan 생성 및 저장
         houseService.saveHouseFloorPlan(house, generateImageRequest.floorPlan().floorPlanId(), generateImageRequest.floorPlan().isMirror());
+        FloorPlan houseFloorPlan = requireHouseFloorPlan(house);
 
         // 침대 ID 찾기
         Optional<Long> bedId = furnitureService.findBedId(generateImageRequest.selectiveIds());
 
         // 복층이 아닌 경우 침대 추가
-        if (!house.getStructure().equals(Structure.DUPLEX) && bedId.isPresent()) {
+        if (!houseFloorPlan.getStructure().equals(Structure.DUPLEX) && bedId.isPresent()) {
             log.info("복층이 아닌 경우 침대 추가");
             generateImageRequest.selectiveIds().add(bedId.get());
         }
@@ -176,8 +180,7 @@ public class GenerateImageFacade {
                 generateImage = generateImageService.createGenerateImage(
                         imageUploadResponseDTO,
                         house,
-                        GenerateImageType.RECOMMEND,
-                        null
+                        GenerateImageType.RECOMMEND
                 );
 
             } catch (Exception e) {
@@ -188,8 +191,8 @@ public class GenerateImageFacade {
 
             // 이미지 반환 ImageInfoResponse 생성
             ImageInfoResponse imageInfoResponse = ImageInfoResponse.of(generateImage.getId(), generateImage.getUrl(),
-                    generateImageRequest.floorPlan().isMirror(), house.getEquilibrium().getDescription(),
-                    house.getForm().getDescription(), tag.getTagNameKr(), user.getName());
+                    generateImageRequest.floorPlan().isMirror(), houseFloorPlan.getEquilibrium().getDescription(),
+                    houseFloorPlan.getForm().getDescription(), tag.getTagNameKr(), user.getName());
 
             // 만약 Fallback 이미지라면, 예외처리
             if (generateImage.getUrl().equals(S3Constant.FALL_BACK_IMAGE)) {
@@ -206,7 +209,7 @@ public class GenerateImageFacade {
         } catch (ValidException validException) {
             // 유효값 검증 실패시
             log.error("유효값 검증 실패: {}", validException.getMessage(), validException);
-            throw new ValidException(ErrorCode.NOT_VALID_EXCEPTION);
+            throw new GenerateImageException(ErrorCode.INVALID_GENERATE_IMAGE_REQUEST);
         } catch (GenerateImageException e) {
             throw e;
         } catch (Exception e) {
@@ -313,7 +316,7 @@ public class GenerateImageFacade {
             if (lockedCredit != null && lockedCredit.getStatus() == CreditStatus.PENDING) {
                 creditService.rollbackCreditPending(lockedCredit);
             }
-            throw new ValidException(ErrorCode.NOT_VALID_EXCEPTION);
+            throw new GenerateImageException(ErrorCode.INVALID_GENERATE_IMAGE_REQUEST);
         } catch (GenerateImageException | ImageFallbackException | CreditException e) {
             // 이미지 생성 중 어떤 예외라도 발생하면 크레딧 상태 복구
             if (lockedCredit != null && lockedCredit.getStatus() == CreditStatus.PENDING) {
@@ -360,7 +363,7 @@ public class GenerateImageFacade {
             BannerStyleAnswerChip selectedChip = parseStyleAnswerChips(banner.getStyleAnswerChipsJson()).stream()
                     .filter(chip -> chip.id() != null && chip.id().equals(request.answerId()))
                     .findFirst()
-                    .orElseThrow(() -> new ValidException(ErrorCode.NOT_VALID_EXCEPTION));
+                    .orElseThrow(() -> new GenerateImageException(ErrorCode.INVALID_BANNER_ANSWER_CHIP));
 
             String floorPlanImageUrl = resolveFloorPlanImageUrl(floorPlan, request.floorPlanView());
             List<String> referenceImageUrls = buildReferenceImageUrls(banner, selectedChip, floorPlanImageUrl);
@@ -387,6 +390,9 @@ public class GenerateImageFacade {
                     user,
                     lockedCredit,
                     banner,
+                    request.floorPlanId(),
+                    request.isMirror(),
+                    prompt,
                     imageUploadResponseDTO
             );
             log.info("배너 템플릿 기반 인테리어 이미지 생성 저장 완료 imageId={}", response.imageId());
@@ -451,6 +457,9 @@ public class GenerateImageFacade {
                     user,
                     lockedCredit,
                     style,
+                    request.floorPlanId(),
+                    request.isMirror(),
+                    prompt,
                     imageUploadResponseDTO
             );
             log.info("스타일 템플릿 기반 인테리어 이미지 생성 저장 완료 imageId={}", response.imageId());
@@ -496,12 +505,13 @@ public class GenerateImageFacade {
 
             // house_floor_plan 생성 및 저장
             houseService.saveHouseFloorPlan(house, generateImageRequest.floorPlan().floorPlanId(), generateImageRequest.floorPlan().isMirror());
+            FloorPlan houseFloorPlan = requireHouseFloorPlan(house);
 
             // 침대 ID 찾기
             Optional<Long> bedId = furnitureService.findBedId(generateImageRequest.selectiveIds());
 
             // 복층이 아닌 경우 침대 추가
-            if (!house.getStructure().equals(Structure.DUPLEX) && bedId.isPresent()) {
+            if (!houseFloorPlan.getStructure().equals(Structure.DUPLEX) && bedId.isPresent()) {
                 log.info("복층이 아닌 경우 침대 추가");
                 generateImageRequest.selectiveIds().add(bedId.get());
             }
@@ -563,7 +573,7 @@ public class GenerateImageFacade {
                     if (results.get(i).getImageLink().equals(S3Constant.FALL_BACK_IMAGE)) {
                         fallbackResponses.add(ImageInfoResponse.of(null, results.get(i).getImageLink(),
                                 generateImageRequest.floorPlan().isMirror(), generateImageRequest.equilibrium(),
-                                house.getForm().getDescription(), priorityIdList.get(i).tagNameKr(), user.getName()));
+                                houseFloorPlan.getForm().getDescription(), priorityIdList.get(i).tagNameKr(), user.getName()));
                     }
                 }
                 // fallback 이미지가 포함되어 있다면 예외처리
@@ -620,7 +630,7 @@ public class GenerateImageFacade {
             if (lockedCredit != null && lockedCredit.getStatus() == CreditStatus.PENDING) {
                 creditService.rollbackCreditPending(lockedCredit);
             }
-            throw new ValidException(ErrorCode.NOT_VALID_EXCEPTION);
+            throw new GenerateImageException(ErrorCode.INVALID_GENERATE_IMAGE_REQUEST);
         } catch (GenerateImageException | ImageFallbackException | CreditException e) {
             // 이미지 생성 중 어떤 예외라도 발생하면 크레딧 상태 복구
             if (lockedCredit != null && lockedCredit.getStatus() == CreditStatus.PENDING) {
@@ -806,10 +816,11 @@ public class GenerateImageFacade {
 
         // 반전여부
         boolean isMirror = houseService.getIsMirrorByHouseId(houseId);
+        FloorPlan floorPlan = requireHouseFloorPlan(houseById);
         // 평형
-        String equilibrium = houseById.getEquilibrium().getDescription();
+        String equilibrium = floorPlan.getEquilibrium().getDescription();
         // 집 형태
-        String houseForm = houseById.getForm().getDescription();
+        String houseForm = floorPlan.getForm().getDescription();
 
         // 태그 찾기
         Tag tag = tagService.findTagByUserIdAndImageId(user.getId(), generateImage.getId());
@@ -911,8 +922,14 @@ public class GenerateImageFacade {
             return Enum.valueOf(enumType, value);
         } catch (IllegalArgumentException e) {
             log.warn("유효성 검증 실패 {}: {}", enumType.getSimpleName(), value);
-            throw new ValidException(ErrorCode.NOT_VALID_EXCEPTION);
+            throw new GenerateImageException(ErrorCode.INVALID_GENERATE_IMAGE_REQUEST);
         }
+    }
+
+    private FloorPlan requireHouseFloorPlan(House house) {
+        return houseFloorPlanRepository.findHouseFloorPlanByHouseId(house.getId())
+                .map(HouseFloorPlan::getFloorPlan)
+                .orElseThrow(() -> new HouseException(ErrorCode.NOT_FOUND_FLOOR_PLAN));
     }
 
 }

@@ -8,6 +8,9 @@ import or.sopt.houme.domain.house.model.entity.enums.Activity;
 import or.sopt.houme.domain.house.model.entity.enums.Equilibrium;
 import or.sopt.houme.domain.house.model.entity.enums.Form;
 import or.sopt.houme.domain.house.model.entity.enums.Structure;
+import or.sopt.houme.domain.house.model.entity.mapping.HouseFloorPlan;
+import or.sopt.houme.domain.house.model.floorPlan.entity.FloorPlan;
+import or.sopt.houme.domain.house.repository.HouseFloorPlanRepository;
 import or.sopt.houme.domain.house.repository.HouseRepository;
 import or.sopt.houme.domain.user.model.entity.*;
 import or.sopt.houme.domain.user.repository.UserRepository;
@@ -42,6 +45,9 @@ class HouseServiceImplTest {
     @Mock
     private HouseRepository houseRepository;
 
+    @Mock
+    private HouseFloorPlanRepository houseFloorPlanRepository;
+
     private User savedUser;
     private House savedHouse;
 
@@ -62,9 +68,6 @@ class HouseServiceImplTest {
 
         savedHouse = House.builder()
                 .id(1L)
-                        .form(Form.OFFICETEL)
-                        .structure(Structure.OPEN_ONE_ROOM)
-                        .equilibrium(Equilibrium.UNDER_5)
                         .isValid(true)
                         .user(savedUser)
                         .build();
@@ -107,7 +110,14 @@ class HouseServiceImplTest {
     @DisplayName("User를 받아서 최근에 입력한 House 조건들을 받을 수 있다.")
     void getHouseOptionsResponse_ShouldReturnValidHouse() {
         // Given
+        FloorPlan floorPlan = FloorPlan.builder()
+                .form(Form.OFFICETEL)
+                .structure(Structure.OPEN_ONE_ROOM)
+                .equilibrium(Equilibrium.UNDER_5)
+                .build();
         when(houseRepository.findLatestHouse(savedUser)).thenReturn(savedHouse);
+        when(houseFloorPlanRepository.findHouseFloorPlanByHouseId(savedHouse.getId()))
+                .thenReturn(Optional.of(HouseFloorPlan.builder().house(savedHouse).floorPlan(floorPlan).isReverse(false).build()));
 
         // When
         LatestHouseConditionDTO latestHouse = houseService.findLatestHouse(savedUser);

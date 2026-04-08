@@ -2,19 +2,26 @@ package or.sopt.houme.domain.furniture.repository;
 
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import or.sopt.houme.domain.furniture.model.entity.CurationRawProduct;
+import or.sopt.houme.domain.furniture.model.entity.CurationSource;
 import or.sopt.houme.domain.furniture.model.entity.QCurationRawProduct;
 import or.sopt.houme.domain.furniture.model.entity.QCurationRawProductColor;
 import or.sopt.houme.domain.furniture.model.entity.QCurationRawProductFurnitureTag;
 import or.sopt.houme.domain.furniture.model.entity.QFurniture;
 import or.sopt.houme.domain.furniture.model.entity.QFurnitureTag;
 import or.sopt.houme.domain.furniture.model.entity.QFurnitureType;
+import or.sopt.houme.domain.furniture.model.entity.QJjym;
+import or.sopt.houme.domain.furniture.model.entity.QRecommendFurniture;
 import or.sopt.houme.domain.furniture.repository.CurationRawProductRepositoryCustom.PriceRangeFilter;
+import or.sopt.houme.domain.house.model.taste.entity.QTag;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
+import org.springframework.data.domain.SliceImpl;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -58,7 +65,7 @@ public class CurationRawProductRepositoryImpl implements CurationRawProductRepos
     }
 
     @Override
-    public Page<CurationRawProduct> findAllByCurationFilters(
+    public Slice<CurationRawProduct> findAllByCurationFilters(
             String keyword,
             List<Long> typeIds,
             List<PriceRangeFilter> priceRanges,
@@ -75,19 +82,16 @@ public class CurationRawProductRepositoryImpl implements CurationRawProductRepos
 
         BooleanBuilder finalWhere = new BooleanBuilder();
 
-        // 1. 기본 노출 조건 및 커서 (필수 AND)
-        finalWhere.and(rawProduct.isExposed.isTrue());
+        finalWhere.and(rawProduct.isExposed.isTrue().or(rawProduct.isExposed.isNull()));
         if (cursor != null) {
             finalWhere.and(rawProduct.id.lt(cursor));
         }
 
-        // 2. 키워드 검색 (AND)
         if (keyword != null && !keyword.isBlank()) {
             finalWhere.and(rawProduct.productName.containsIgnoreCase(keyword)
                     .or(rawProduct.brand.containsIgnoreCase(keyword)));
         }
 
-        // 3. 가구 유형 필터 (types) - 그룹 내 OR
         if (typeIds != null && !typeIds.isEmpty()) {
             finalWhere.and(rawProduct.id.in(
                     queryFactory.select(mapping.curationRawProduct.id)
@@ -99,7 +103,6 @@ public class CurationRawProductRepositoryImpl implements CurationRawProductRepos
             ));
         }
 
-        // 4. 가격대 필터 (priceRanges) - 그룹 내 OR
         if (priceRanges != null && !priceRanges.isEmpty()) {
             BooleanBuilder priceGroupBuilder = new BooleanBuilder();
             for (PriceRangeFilter range : priceRanges) {
@@ -111,7 +114,6 @@ public class CurationRawProductRepositoryImpl implements CurationRawProductRepos
             finalWhere.and(priceGroupBuilder);
         }
 
-        // 5. 색상 필터 (colors) - 그룹 내 OR
         if (colorNames != null && !colorNames.isEmpty()) {
             BooleanBuilder colorGroupBuilder = new BooleanBuilder();
             for (String colorName : colorNames) {
@@ -128,19 +130,169 @@ public class CurationRawProductRepositoryImpl implements CurationRawProductRepos
                 .selectFrom(rawProduct)
                 .where(finalWhere)
                 .orderBy(rawProduct.id.desc())
+                .limit(pageable.getPageSize() + 1)
+                .fetch();
+
+        boolean hasNext = false;
+        if (content.size() > pageable.getPageSize()) {
+            content.remove(pageable.getPageSize());
+            hasNext = true;
+        }
+
+        return new SliceImpl<>(content, pageable, hasNext);
+    }
+
+    @Override
+    public Page<CurationRawProduct> findExposedRawProductsExcludingLikedByUser(Long userId, Pageable pageable) {
+        QCurationRawProduct rawProduct = QCurationRawProduct.curationRawProduct;
+        QJjym jjym = QJjym.jjym;
+        QRecommendFurniture recommendFurniture = QRecommendFurniture.recommendFurniture;
+
+        BooleanExpression isNotLikedByUser = JPAExpressions
+                .selectOne()
+                .from(jjym)
+                .join(jjym.recommendFurniture, recommendFurniture)
+                .where(
+                        jjym.user.id.eq(userId),
+                        recommendFurniture.source.eq(CurationSource.RAW),
+                        recommendFurniture.furnitureProductId.eq(rawProduct.productId)
+                )
+                .notExists();
+
+        List<CurationRawProduct> content = queryFactory
+                .selectFrom(rawProduct)
+                .where(
+                        rawProduct.isExposed.isTrue().or(rawProduct.isExposed.isNull()),
+                        isNotLikedByUser
+                )
+                .orderBy(rawProduct.id.desc())
+                .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
                 .fetch();
 
         Long total = queryFactory
                 .select(rawProduct.count())
                 .from(rawProduct)
-                .where(finalWhere)
+                .where(
+                        rawProduct.isExposed.isTrue().or(rawProduct.isExposed.isNull()),
+                        isNotLikedByUser
+                )
                 .fetchOne();
 
         return new PageImpl<>(content, pageable, total == null ? 0 : total);
     }
 
+    @Override
+    public List<CurationRawProduct> findAllSimilarByFurnitureTypeIds(
+            List<Long> furnitureTypeIds,
+            List<Long> excludeRawProductIds,
+            Pageable pageable
+    ) {
+        QCurationRawProduct rawProduct = QCurationRawProduct.curationRawProduct;
+        QCurationRawProductFurnitureTag mapping = QCurationRawProductFurnitureTag.curationRawProductFurnitureTag;
+        QFurnitureTag furnitureTag = QFurnitureTag.furnitureTag;
+        QFurniture furniture = QFurniture.furniture;
+        QFurnitureType furnitureType = QFurnitureType.furnitureType;
+
+        BooleanBuilder where = new BooleanBuilder();
+        where.and(rawProduct.isExposed.isTrue());
+        where.and(inFurnitureTypeIds(furnitureType.id, furnitureTypeIds));
+        where.and(notInIds(rawProduct.id, excludeRawProductIds));
+
+        return queryFactory
+                .selectDistinct(rawProduct)
+                .from(rawProduct)
+                .join(rawProduct.furnitureTagMappings, mapping)
+                .join(mapping.furnitureTag, furnitureTag)
+                .join(furnitureTag.furniture, furniture)
+                .join(furniture.furnitureType, furnitureType)
+                .where(where)
+                .orderBy(rawProduct.id.desc())
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
+                .fetch();
+    }
+
+    @Override
+    public List<CurationRawProduct> findAllSimilarByTagIds(
+            List<Long> tagIds,
+            List<Long> excludeRawProductIds,
+            Pageable pageable
+    ) {
+        QCurationRawProduct rawProduct = QCurationRawProduct.curationRawProduct;
+        QCurationRawProductFurnitureTag mapping = QCurationRawProductFurnitureTag.curationRawProductFurnitureTag;
+        QFurnitureTag furnitureTag = QFurnitureTag.furnitureTag;
+        QTag tag = QTag.tag;
+
+        BooleanBuilder where = new BooleanBuilder();
+        where.and(rawProduct.isExposed.isTrue());
+        where.and(inIds(tag.id, tagIds));
+        where.and(notInIds(rawProduct.id, excludeRawProductIds));
+
+        return queryFactory
+                .selectDistinct(rawProduct)
+                .from(rawProduct)
+                .join(rawProduct.furnitureTagMappings, mapping)
+                .join(mapping.furnitureTag, furnitureTag)
+                .join(furnitureTag.tag, tag)
+                .where(where)
+                .orderBy(rawProduct.id.desc())
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
+                .fetch();
+    }
+
+    @Override
+    public List<CurationRawProduct> findAllSimilarByBrands(
+            List<String> brands,
+            List<Long> excludeRawProductIds,
+            Pageable pageable
+    ) {
+        QCurationRawProduct rawProduct = QCurationRawProduct.curationRawProduct;
+
+        BooleanBuilder where = new BooleanBuilder();
+        where.and(rawProduct.isExposed.isTrue());
+        where.and(inBrands(rawProduct.brand, brands));
+        where.and(notInIds(rawProduct.id, excludeRawProductIds));
+
+        return queryFactory
+                .selectFrom(rawProduct)
+                .where(where)
+                .orderBy(rawProduct.id.desc())
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
+                .fetch();
+    }
+
     private BooleanExpression containsIgnoreCase(com.querydsl.core.types.dsl.StringPath path, String keyword) {
         return path.isNotNull().and(path.containsIgnoreCase(keyword));
+    }
+
+    private BooleanExpression inFurnitureTypeIds(com.querydsl.core.types.dsl.NumberPath<Long> field, List<Long> ids) {
+        if (ids == null || ids.isEmpty()) {
+            return null;
+        }
+        return field.in(ids);
+    }
+
+    private BooleanExpression notInIds(com.querydsl.core.types.dsl.NumberPath<Long> field, List<Long> ids) {
+        if (ids == null || ids.isEmpty()) {
+            return null;
+        }
+        return field.notIn(ids);
+    }
+
+    private BooleanExpression inIds(com.querydsl.core.types.dsl.NumberPath<Long> field, List<Long> ids) {
+        if (ids == null || ids.isEmpty()) {
+            return null;
+        }
+        return field.in(ids);
+    }
+
+    private BooleanExpression inBrands(com.querydsl.core.types.dsl.StringPath field, List<String> brands) {
+        if (brands == null || brands.isEmpty()) {
+            return null;
+        }
+        return field.in(brands);
     }
 }

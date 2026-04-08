@@ -36,7 +36,8 @@ public interface CurationRawProductRepository extends JpaRepository<CurationRawP
             Long productId
     );
 
-    Optional<CurationRawProduct> findByIdAndIsExposedTrue(Long id);
+    @Query("select rp from CurationRawProduct rp where rp.id = :id and (rp.isExposed = true or rp.isExposed is null)")
+    Optional<CurationRawProduct> findByIdAndIsExposedTrueOrNull(@Param("id") Long id);
 
     List<CurationRawProduct> findAllBySourceAndCategoryAndProductIdIn(
             String source,
@@ -46,12 +47,18 @@ public interface CurationRawProductRepository extends JpaRepository<CurationRawP
 
     List<CurationRawProduct> findAllByProductIdIn(List<Long> productIds);
 
+    @Query("select rp from CurationRawProduct rp where (rp.isExposed = true or rp.isExposed is null) order by rp.id desc")
+    Page<CurationRawProduct> findAllByIsExposedTrueOrNullOrderByIdDesc(Pageable pageable);
+
+    @Query("select rp from CurationRawProduct rp where (rp.isExposed = true or rp.isExposed is null) and rp.productId not in :productIds order by rp.id desc")
+    Page<CurationRawProduct> findAllByIsExposedTrueOrNullAndProductIdNotInOrderByIdDesc(@Param("productIds") List<Long> productIds, Pageable pageable);
+
     @Query("""
             select distinct rawProduct
             from CurationRawProduct rawProduct
             join rawProduct.furnitureTagMappings mapping
             where mapping.furnitureTag = :furnitureTag
-              and rawProduct.isExposed = true
+              and (rawProduct.isExposed = true or rawProduct.isExposed is null)
             """)
     List<CurationRawProduct> findAllByFurnitureTag(@Param("furnitureTag") FurnitureTag furnitureTag);
 
@@ -61,7 +68,7 @@ public interface CurationRawProductRepository extends JpaRepository<CurationRawP
             join rawProduct.furnitureTagMappings mapping
             where mapping.furnitureTag = :furnitureTag
               and rawProduct.productId in :productIds
-              and rawProduct.isExposed = true
+              and (rawProduct.isExposed = true or rawProduct.isExposed is null)
             """)
     List<CurationRawProduct> findAllByFurnitureTagAndProductIdIn(
             @Param("furnitureTag") FurnitureTag furnitureTag,

@@ -2,7 +2,9 @@ package or.sopt.houme.domain.furniture.service;
 
 import or.sopt.houme.domain.furniture.model.entity.CurationRawProduct;
 import or.sopt.houme.domain.furniture.model.entity.CurationRawProductColor;
+import or.sopt.houme.domain.furniture.model.entity.CurationRawProductFurnitureTag;
 import or.sopt.houme.domain.furniture.model.entity.Furniture;
+import or.sopt.houme.domain.furniture.model.entity.FurnitureTag;
 import or.sopt.houme.domain.furniture.model.entity.FurnitureType;
 import or.sopt.houme.domain.furniture.presentation.dto.response.CurationProductDetailResponse;
 import or.sopt.houme.domain.furniture.presentation.dto.response.CurationProductFilterResponse;
@@ -20,10 +22,14 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Slice;
+import org.springframework.data.domain.SliceImpl;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -83,7 +89,6 @@ class CurationProductServiceImplTest {
         Long cursor = 100L;
         Integer size = 20;
 
-        // 필터 역매핑을 위한 Mock 설정
         FurnitureType bedType = FurnitureType.builder().id(1L).nameKr("침대").nameEng("BED").build();
         given(furnitureTypeRepository.findAll()).willReturn(List.of(bedType));
         given(furnitureRepository.findAll()).willReturn(List.of());
@@ -94,17 +99,18 @@ class CurationProductServiceImplTest {
                 .productName("테스트 침대")
                 .discountPrice(10000L)
                 .isExposed(true)
+                .furnitureTagMappings(new HashSet<>())
                 .build();
 
-        Page<CurationRawProduct> page = new org.springframework.data.domain.PageImpl<>(
+        Slice<CurationRawProduct> slice = new SliceImpl<>(
                 List.of(product),
-                org.springframework.data.domain.PageRequest.of(0, size),
-                1
+                PageRequest.of(0, size),
+                false
         );
 
         given(curationRawProductRepository.findAllByCurationFilters(
-                eq(keyword), eq(typeIds), any(), any(), eq(cursor), any()
-        )).willReturn(page);
+                eq(keyword), any(), any(), any(), eq(cursor), any()
+        )).willReturn(slice);
 
         // when
         CurationProductListResponse response = curationProductService.getProducts(
@@ -118,33 +124,39 @@ class CurationProductServiceImplTest {
     }
 
     @Test
-    @DisplayName("getProductDetail()은 노출된 상품만 ID로 상세 정보를 조회하여 반환한다")
-    void getProductDetail() {
+    @DisplayName("getProductDetail()은 다중 매핑 시 우선순위가 가장 높은 카테고리명을 반환한다")
+    void getProductDetail_withMultipleTags() {
         // given
         Long id = 1L;
         User user = User.builder().id(1L).build();
+
+        FurnitureType bedType = FurnitureType.builder().nameEng("BED").build();
+        Furniture bed = Furniture.builder().furnitureType(bedType).build();
+        FurnitureTag bedTag = FurnitureTag.builder().furniture(bed).priority(5).build();
+
+        FurnitureType sofaType = FurnitureType.builder().nameEng("SOFA").build();
+        Furniture sofa = Furniture.builder().furnitureType(sofaType).build();
+        FurnitureTag sofaTag = FurnitureTag.builder().furniture(sofa).priority(1).build();
+
+        Set<CurationRawProductFurnitureTag> mappings = new HashSet<>();
+        mappings.add(CurationRawProductFurnitureTag.builder().furnitureTag(bedTag).build());
+        mappings.add(CurationRawProductFurnitureTag.builder().furnitureTag(sofaTag).build());
+
         CurationRawProduct product = CurationRawProduct.builder()
                 .id(id)
                 .productId(3003L)
-                .productName("테스트 상품")
                 .isExposed(true)
+                .furnitureTagMappings(mappings)
                 .build();
 
-        CurationRawProductColor color = CurationRawProductColor.builder()
-                .curationRawProduct(product)
-                .clientColorName("블랙")
-                .build();
-
-        given(curationRawProductRepository.findByIdAndIsExposedTrue(id)).willReturn(Optional.of(product));
-        given(curationRawProductColorRepository.findAllByCurationRawProductId(id)).willReturn(List.of(color));
-        given(recommendFurnitureRepository.findBySourceAndFurnitureProductId(any(), eq(3003L))).willReturn(Optional.empty());
+        given(curationRawProductRepository.findByIdAndIsExposedTrueOrNull(id)).willReturn(Optional.of(product));
+        given(curationRawProductColorRepository.findAllByCurationRawProductId(id)).willReturn(List.of());
+        given(recommendFurnitureRepository.findBySourceAndFurnitureProductId(any(), any())).willReturn(Optional.empty());
 
         // when
         CurationProductDetailResponse response = curationProductService.getProductDetail(id, user);
 
         // then
-        assertThat(response).isNotNull();
-        assertThat(response.product().productId()).isEqualTo(3003L);
-        assertThat(response.product().colors()).isNotEmpty();
+        assertThat(response.product().categoryName()).isEqualTo("소파");
     }
 }
