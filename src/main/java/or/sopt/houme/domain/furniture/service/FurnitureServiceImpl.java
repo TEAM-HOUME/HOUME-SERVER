@@ -81,11 +81,20 @@ public class FurnitureServiceImpl implements FurnitureService {
                         Collectors.collectingAndThen(
                                 Collectors.mapping(FurnitureItem::from, Collectors.toList()),
                                 list -> {
-                                    list.sort(Comparator.comparing(FurnitureItem::id, Comparator.nullsLast(Comparator.naturalOrder())));     // FurnitureItem 리스트 id 기준으로 정렬
+                                    list.sort(
+                                            Comparator.comparing(
+                                                            FurnitureItem::priority,
+                                                            Comparator.nullsLast(Comparator.naturalOrder())
+                                                    )
+                                                    .thenComparing(FurnitureItem::id, Comparator.nullsLast(Comparator.naturalOrder()))
+                                    );
                                     return list;
                                 }
                         )
                 ));
+
+        Map<Long, Integer> furnitureTypePriorityById = furnitureTypes.stream()
+                .collect(Collectors.toMap(FurnitureType::getId, FurnitureType::getPriority));
 
         // 각 FurnitureType에 해당하는 FurnitureGroup 생성
         return furnitureTypes.stream()
@@ -94,7 +103,13 @@ public class FurnitureServiceImpl implements FurnitureService {
                     List<FurnitureItem> items = furnitureByCategory.getOrDefault(furnitureType.getId(), Collections.emptyList());
                     return FurnitureCategoryGroup.from(furnitureType, items);
                 })
-                .sorted(Comparator.comparing(FurnitureCategoryGroup::categoryId)) // 카테고리 ID로 정렬
+                .sorted(
+                        Comparator.comparing(
+                                        (FurnitureCategoryGroup group) -> furnitureTypePriorityById.get(group.categoryId()),
+                                        Comparator.nullsLast(Comparator.naturalOrder())
+                                )
+                                .thenComparing(FurnitureCategoryGroup::categoryId, Comparator.nullsLast(Comparator.naturalOrder()))
+                )
                 .toList();
     }
 

@@ -184,6 +184,37 @@ class FurnitureServiceImplTest {
     }
 
     @Test
+    @DisplayName("대시보드 카테고리는 furnitureType priority 오름차순으로 정렬된다.")
+    void getDashboardCategories_sortedByFurnitureTypePriority() {
+        // Given
+        FurnitureType sofaType = FurnitureType.builder()
+                .id(10L)
+                .nameKr("소파")
+                .nameEng("SOFA")
+                .priority(2)
+                .build();
+        FurnitureType bedType = FurnitureType.builder()
+                .id(20L)
+                .nameKr("침대/프레임")
+                .nameEng("BED")
+                .priority(1)
+                .build();
+
+        when(furnitureTypeRepository.findAll()).thenReturn(List.of(sofaType, bedType));
+        when(furnitureRepository.findAllWithFurnitureType()).thenReturn(List.of(
+                createFurniture(1L, "SINGLE_SOFA", "1인용 소파", sofaType),
+                createFurniture(2L, "SINGLE", "싱글", bedType)
+        ));
+
+        // When
+        List<FurnitureCategoryGroup> categories = furnitureService.getDashboardCategories();
+
+        // Then
+        assertThat(categories).extracting(FurnitureCategoryGroup::nameKr)
+                .containsExactly("침대/프레임", "소파");
+    }
+
+    @Test
     @DisplayName("감지된 단어와 선택 가구의 교집합만 추려 priority 오름차순으로 정렬된다")
     void categories_intersection_sorted() {
         // Given
