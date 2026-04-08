@@ -55,7 +55,19 @@ public class FurnitureServiceImpl implements FurnitureService {
     @Cacheable(value = "furnitureAndActivityCache")
     @Override
     public FurnitureAndActivityResponse getFurnitureAndActivity() {
+        List<FurnitureCategoryGroup> list = getDashboardCategories();
 
+        // 주요 활동 담기
+        List<ActivityItem> activities = Arrays.stream(Activity.values())
+                .map(ActivityItem::from)
+                .toList();
+
+        // 반환 Response 생성
+        return FurnitureAndActivityResponse.of(activities, list);
+    }
+
+    @Override
+    public List<FurnitureCategoryGroup> getDashboardCategories() {
         // 모든 카테고리 가져오기
         List<FurnitureType> furnitureTypes = furnitureTypeRepository.findAll();
 
@@ -76,7 +88,7 @@ public class FurnitureServiceImpl implements FurnitureService {
                 ));
 
         // 각 FurnitureType에 해당하는 FurnitureGroup 생성
-        List<FurnitureCategoryGroup> list = furnitureTypes.stream()
+        return furnitureTypes.stream()
                 .map(furnitureType -> {
                     // 없으면 빈 리스트
                     List<FurnitureItem> items = furnitureByCategory.getOrDefault(furnitureType.getId(), Collections.emptyList());
@@ -84,14 +96,6 @@ public class FurnitureServiceImpl implements FurnitureService {
                 })
                 .sorted(Comparator.comparing(FurnitureCategoryGroup::categoryId)) // 카테고리 ID로 정렬
                 .toList();
-
-        // 주요 활동 담기
-        List<ActivityItem> activities = Arrays.stream(Activity.values())
-                .map(ActivityItem::from)
-                .toList();
-
-        // 반환 Response 생성
-        return FurnitureAndActivityResponse.of(activities, list);
     }
 
     @Override

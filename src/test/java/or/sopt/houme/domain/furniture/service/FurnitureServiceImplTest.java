@@ -3,6 +3,7 @@ package or.sopt.houme.domain.furniture.service;
 import or.sopt.houme.domain.furniture.presentation.dto.response.FurnitureAndActivityResponse;
 import or.sopt.houme.domain.furniture.presentation.dto.response.ActivityWithFurnitureResponse;
 import or.sopt.houme.domain.furniture.presentation.dto.response.FurnitureCategoriesResponse;
+import or.sopt.houme.domain.furniture.presentation.dto.response.FurnitureCategoryGroup;
 import or.sopt.houme.domain.furniture.model.entity.ActivityFurniture;
 import or.sopt.houme.domain.furniture.model.entity.Furniture;
 import or.sopt.houme.domain.furniture.model.entity.FurnitureTag;
@@ -147,6 +148,39 @@ class FurnitureServiceImplTest {
         assertThat(furnitureAndActivity.categories().get(2).nameKr()).isEqualTo("수납");
         assertThat(furnitureAndActivity.categories().get(3).nameKr()).isEqualTo("테이블");
         assertThat(furnitureAndActivity.categories().get(4).nameKr()).isEqualTo("그 외");
+    }
+
+    @Test
+    @DisplayName("대시보드 카테고리만 별도로 조회할 수 있다.")
+    void getDashboardCategories() {
+        // Given
+        FurnitureType bedType = FurnitureType.builder()
+                .id(1L)
+                .nameKr("침대")
+                .nameEng("BED")
+                .build();
+        FurnitureType sofaType = FurnitureType.builder()
+                .id(2L)
+                .nameKr("소파")
+                .nameEng("SOFA")
+                .build();
+        List<FurnitureType> categoryList = List.of(bedType, sofaType);
+
+        List<Furniture> furnitureList = List.of(
+                createFurniture(10L, "SINGLE", "싱글", bedType),
+                createFurniture(20L, "SINGLE_SOFA", "1인용 소파", sofaType)
+        );
+
+        when(furnitureTypeRepository.findAll()).thenReturn(categoryList);
+        when(furnitureRepository.findAllWithFurnitureType()).thenReturn(furnitureList);
+
+        // When
+        List<FurnitureCategoryGroup> categories = furnitureService.getDashboardCategories();
+
+        // Then
+        assertThat(categories).hasSize(2);
+        assertThat(categories.get(0).nameKr()).isEqualTo("침대");
+        assertThat(categories.get(1).nameKr()).isEqualTo("소파");
     }
 
     @Test

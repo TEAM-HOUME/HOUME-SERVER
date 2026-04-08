@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import or.sopt.houme.domain.furniture.infrastructure.dto.external.naverShop.FurnitureProductsInfoResponse;
 import or.sopt.houme.domain.furniture.presentation.dto.response.ActivityFurnitureMappingsResponse;
 import or.sopt.houme.domain.furniture.presentation.dto.response.ActivityWithFurnitureResponse;
+import or.sopt.houme.domain.furniture.presentation.dto.response.DashboardCategoriesResponse;
 import or.sopt.houme.domain.furniture.presentation.dto.response.FurnitureAndActivityResponse;
 import or.sopt.houme.domain.furniture.presentation.dto.response.FurnitureCategoriesResponse;
 import or.sopt.houme.domain.furniture.infrastructure.dto.external.naverShop.forPlan.FurnitureProductsInfoResponseForPlan;
@@ -49,9 +50,22 @@ public class FurnitureController {
     @Operation(summary = "주요활동별 매핑 가구 조회 API",
             description = "주요활동 선택 UI에서 사용할 활동별 가구 매핑 목록을 조회합니다.")
     @GetMapping("/v2/dashboard/activities")
-    public ResponseEntity<ApiResponse<ActivityFurnitureMappingsResponse>> getActivityFurnitureMappings() {
+    public ResponseEntity<ApiResponse<ActivityFurnitureMappingsResponse>> getActivityFurnitureMappings(
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
         List<ActivityWithFurnitureResponse> activities = furnitureService.getActivityFurnitureMappings();
         return ResponseEntity.ok(ApiResponse.ok(ActivityFurnitureMappingsResponse.of(activities)));
+    }
+
+    @Operation(summary = "대시보드 가구 카테고리 조회 API",
+            description = "대시보드에서 사용할 가구 카테고리 목록을 조회합니다.")
+    @GetMapping("/v2/dashboard/categories")
+    public ResponseEntity<ApiResponse<DashboardCategoriesResponse>> getDashboardCategories(
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        return ResponseEntity.ok(ApiResponse.ok(
+                DashboardCategoriesResponse.of(furnitureService.getDashboardCategories())
+        ));
     }
 
     @Operation(summary = "생성된 이미지에서 가구 카테고리 조회 API",

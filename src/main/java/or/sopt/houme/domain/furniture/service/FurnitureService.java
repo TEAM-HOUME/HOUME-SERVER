@@ -2,6 +2,7 @@ package or.sopt.houme.domain.furniture.service;
 
 import or.sopt.houme.domain.furniture.presentation.dto.response.FurnitureAndActivityResponse;
 import or.sopt.houme.domain.furniture.presentation.dto.response.ActivityWithFurnitureResponse;
+import or.sopt.houme.domain.furniture.presentation.dto.response.FurnitureCategoryGroup;
 import or.sopt.houme.domain.furniture.presentation.dto.response.FurnitureCategoriesResponse;
 import or.sopt.houme.domain.furniture.model.entity.FurnitureTag;
 import or.sopt.houme.domain.user.model.entity.User;
@@ -16,6 +17,9 @@ public interface FurnitureService {
 
     // 주요활동별 매핑 가구 제공
     List<ActivityWithFurnitureResponse> getActivityFurnitureMappings();
+
+    // 대시보드 카테고리 제공
+    List<FurnitureCategoryGroup> getDashboardCategories();
 
     FurnitureCategoriesResponse getFurnitureCategoriesByStyle(User user, Long imageId, List<String> detectedObjects);
 
