@@ -121,6 +121,7 @@ public class CurationProductServiceImpl implements CurationProductService {
         return product.getFurnitureTagMappings().stream()
                 .map(CurationRawProductFurnitureTag::getFurnitureTag)
                 .sorted(java.util.Comparator.comparing(FurnitureTag::getPriority))
+                .filter(tag -> tag.getFurniture() != null && tag.getFurniture().getFurnitureType() != null)
                 .findFirst()
                 .map(tag -> {
                     Furniture furniture = tag.getFurniture();
@@ -129,7 +130,7 @@ public class CurationProductServiceImpl implements CurationProductService {
                     // 필터 API에서 정의한 사용자 친화적 레이블 매핑 로직 재사용
                     return mapToFriendlyLabel(type, furniture);
                 })
-                .orElse("기타"); // 매핑 정보가 없으면 기본값 '기타'
+                .orElse("기타"); // 매핑 정보가 없거나 가구 정보가 부재할 경우 기본값 '기타'
     }
 
     private String mapToFriendlyLabel(FurnitureType type, Furniture furniture) {
