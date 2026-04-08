@@ -5,12 +5,15 @@ import or.sopt.houme.domain.furniture.infrastructure.client.FastApiImageHashClie
 import or.sopt.houme.domain.furniture.infrastructure.client.NaverShopApiClient;
 import or.sopt.houme.domain.furniture.presentation.dto.ActivityItem;
 import or.sopt.houme.domain.furniture.presentation.dto.FurnitureItem;
+import or.sopt.houme.domain.furniture.presentation.dto.response.ActivityWithFurnitureResponse;
 import or.sopt.houme.domain.furniture.presentation.dto.response.FurnitureAndActivityResponse;
 import or.sopt.houme.domain.furniture.presentation.dto.response.FurnitureCategoriesResponse;
 import or.sopt.houme.domain.furniture.presentation.dto.response.FurnitureCategoryGroup;
+import or.sopt.houme.domain.furniture.model.entity.ActivityFurniture;
 import or.sopt.houme.domain.furniture.model.entity.Furniture;
 import or.sopt.houme.domain.furniture.model.entity.FurnitureTag;
 import or.sopt.houme.domain.furniture.model.entity.FurnitureType;
+import or.sopt.houme.domain.furniture.repository.ActivityFurnitureRepository;
 import or.sopt.houme.domain.furniture.repository.FurnitureRepository;
 import or.sopt.houme.domain.furniture.repository.FurnitureTagRepository;
 import or.sopt.houme.domain.furniture.repository.FurnitureTypeRepository;
@@ -43,6 +46,7 @@ public class FurnitureServiceImpl implements FurnitureService {
     private final HouseRepository houseRepository;
     private final FurnitureTagRepository furnitureTagRepository;
     private final FurnitureTypeRepository furnitureTypeRepository;
+    private final ActivityFurnitureRepository activityFurnitureRepository;
 
     private final NaverShopApiClient naverShopApiClient;
     private final FastApiImageHashClient imageHashClient;
@@ -88,6 +92,24 @@ public class FurnitureServiceImpl implements FurnitureService {
 
         // 반환 Response 생성
         return FurnitureAndActivityResponse.of(activities, list);
+    }
+
+    @Override
+    public List<ActivityWithFurnitureResponse> getActivityFurnitureMappings() {
+        List<ActivityFurniture> mappings = activityFurnitureRepository.findAllByOrderByPriorityAscIdAsc();
+        Map<Activity, List<FurnitureItem>> grouped = new EnumMap<>(Activity.class);
+
+        for (ActivityFurniture mapping : mappings) {
+            grouped.computeIfAbsent(mapping.getActivity(), key -> new ArrayList<>())
+                    .add(FurnitureItem.from(mapping.getFurniture()));
+        }
+
+        return Arrays.stream(Activity.values())
+                .map(activity -> ActivityWithFurnitureResponse.of(
+                        activity,
+                        grouped.getOrDefault(activity, List.of())
+                ))
+                .toList();
     }
 
     @Override

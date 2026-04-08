@@ -1,11 +1,14 @@
 package or.sopt.houme.domain.furniture.service;
 
 import or.sopt.houme.domain.furniture.presentation.dto.response.FurnitureAndActivityResponse;
+import or.sopt.houme.domain.furniture.presentation.dto.response.ActivityWithFurnitureResponse;
 import or.sopt.houme.domain.furniture.presentation.dto.response.FurnitureCategoriesResponse;
+import or.sopt.houme.domain.furniture.model.entity.ActivityFurniture;
 import or.sopt.houme.domain.furniture.model.entity.Furniture;
 import or.sopt.houme.domain.furniture.model.entity.FurnitureTag;
 import or.sopt.houme.domain.furniture.model.entity.FurnitureType;
 import or.sopt.houme.domain.furniture.model.entity.FurnitureTypes;
+import or.sopt.houme.domain.furniture.repository.ActivityFurnitureRepository;
 import or.sopt.houme.domain.furniture.repository.FurnitureRepository;
 import or.sopt.houme.domain.furniture.repository.FurnitureTagRepository;
 import or.sopt.houme.domain.house.model.entity.House;
@@ -62,6 +65,8 @@ class FurnitureServiceImplTest {
 
     @Mock
     FurnitureTypeRepository furnitureTypeRepository;
+    @Mock
+    ActivityFurnitureRepository activityFurnitureRepository;
 
     @Test
     @DisplayName("주요활동, 가구들에 대한 정보들을 받을 수 있다.")
@@ -216,6 +221,57 @@ class FurnitureServiceImplTest {
         assertThat(response.categories())
                 .extracting(FurnitureCategoriesResponse.FurnitureCategoryResponse::categoryName)
                 .containsExactly("식탁", "의자", "침대");
+    }
+
+    @Test
+    @DisplayName("주요활동별 매핑 가구를 조회할 수 있다.")
+    void getActivityFurnitureMappings() {
+        // Given
+        FurnitureType tableType = FurnitureType.builder()
+                .id(4L)
+                .nameKr("테이블")
+                .nameEng("TABLE")
+                .build();
+
+        FurnitureType selectiveType = FurnitureType.builder()
+                .id(5L)
+                .nameKr("그 외")
+                .nameEng("SELECTIVE")
+                .build();
+
+        Furniture desk = createFurniture(10L, "DESK", "업무용 책상", tableType);
+        Furniture bookshelf = createFurniture(11L, "BOOKSHELF", "책 선반", selectiveType);
+
+        ActivityFurniture remoteWork = ActivityFurniture.builder()
+                .id(1L)
+                .activity(Activity.REMOTE_WORK)
+                .furniture(desk)
+                .priority(1)
+                .build();
+
+        ActivityFurniture reading = ActivityFurniture.builder()
+                .id(2L)
+                .activity(Activity.READING)
+                .furniture(bookshelf)
+                .priority(1)
+                .build();
+
+        when(activityFurnitureRepository.findAllByOrderByPriorityAscIdAsc())
+                .thenReturn(List.of(remoteWork, reading));
+
+        // When
+        List<ActivityWithFurnitureResponse> responses = furnitureService.getActivityFurnitureMappings();
+
+        // Then
+        assertThat(responses).hasSize(Activity.values().length);
+        assertThat(responses.get(0).code()).isEqualTo(Activity.REMOTE_WORK.name());
+        assertThat(responses.get(0).furnitures())
+                .extracting(furniture -> furniture.label())
+                .containsExactly("업무용 책상");
+        assertThat(responses.get(1).code()).isEqualTo(Activity.READING.name());
+        assertThat(responses.get(1).furnitures())
+                .extracting(furniture -> furniture.label())
+                .containsExactly("책 선반");
     }
 
     @Test
