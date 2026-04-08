@@ -93,23 +93,20 @@ public class FurnitureServiceImpl implements FurnitureService {
                         )
                 ));
 
-        Map<Long, Integer> furnitureTypePriorityById = furnitureTypes.stream()
-                .collect(Collectors.toMap(FurnitureType::getId, FurnitureType::getPriority));
-
         // 각 FurnitureType에 해당하는 FurnitureGroup 생성
         return furnitureTypes.stream()
+                .sorted(
+                        Comparator.comparing(
+                                        FurnitureType::getPriority,
+                                        Comparator.nullsLast(Comparator.naturalOrder())
+                                )
+                                .thenComparing(FurnitureType::getId, Comparator.nullsLast(Comparator.naturalOrder()))
+                )
                 .map(furnitureType -> {
                     // 없으면 빈 리스트
                     List<FurnitureItem> items = furnitureByCategory.getOrDefault(furnitureType.getId(), Collections.emptyList());
                     return FurnitureCategoryGroup.from(furnitureType, items);
                 })
-                .sorted(
-                        Comparator.comparing(
-                                        (FurnitureCategoryGroup group) -> furnitureTypePriorityById.get(group.categoryId()),
-                                        Comparator.nullsLast(Comparator.naturalOrder())
-                                )
-                                .thenComparing(FurnitureCategoryGroup::categoryId, Comparator.nullsLast(Comparator.naturalOrder()))
-                )
                 .toList();
     }
 
