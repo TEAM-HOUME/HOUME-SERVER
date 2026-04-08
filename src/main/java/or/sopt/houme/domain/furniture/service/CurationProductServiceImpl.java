@@ -1,14 +1,27 @@
 package or.sopt.houme.domain.furniture.service;
 
 import lombok.RequiredArgsConstructor;
+import or.sopt.houme.domain.furniture.model.entity.CurationRawProduct;
+import or.sopt.houme.domain.furniture.model.entity.CurationRawProductColor;
+import or.sopt.houme.domain.furniture.model.entity.CurationRawProductFurnitureTag;
+import or.sopt.houme.domain.furniture.model.entity.CurationSource;
 import or.sopt.houme.domain.furniture.model.entity.Furniture;
+import or.sopt.houme.domain.furniture.model.entity.FurnitureTag;
 import or.sopt.houme.domain.furniture.model.entity.FurnitureType;
 import or.sopt.houme.domain.furniture.presentation.dto.response.ColorFilterResponse;
+import or.sopt.houme.domain.furniture.presentation.dto.response.CurationProductDetailResponse;
 import or.sopt.houme.domain.furniture.presentation.dto.response.CurationProductFilterResponse;
 import or.sopt.houme.domain.furniture.presentation.dto.response.FurnitureTypeFilterResponse;
 import or.sopt.houme.domain.furniture.presentation.dto.response.PriceRangeFilterResponse;
+import or.sopt.houme.domain.furniture.repository.CurationRawProductColorRepository;
+import or.sopt.houme.domain.furniture.repository.CurationRawProductRepository;
 import or.sopt.houme.domain.furniture.repository.FurnitureRepository;
 import or.sopt.houme.domain.furniture.repository.FurnitureTypeRepository;
+import or.sopt.houme.domain.furniture.repository.JjymRepository;
+import or.sopt.houme.domain.furniture.repository.RecommendFurnitureRepository;
+import or.sopt.houme.domain.user.model.entity.User;
+import or.sopt.houme.global.api.ErrorCode;
+import or.sopt.houme.global.api.handler.FurnitureException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,6 +34,10 @@ public class CurationProductServiceImpl implements CurationProductService {
 
     private final FurnitureTypeRepository furnitureTypeRepository;
     private final FurnitureRepository furnitureRepository;
+    private final CurationRawProductRepository curationRawProductRepository;
+    private final CurationRawProductColorRepository curationRawProductColorRepository;
+    private final RecommendFurnitureRepository recommendFurnitureRepository;
+    private final JjymRepository jjymRepository;
 
     @Override
     public CurationProductFilterResponse getFilterMetadata() {
@@ -29,6 +46,119 @@ public class CurationProductServiceImpl implements CurationProductService {
                 getPriceRangeFilters(),
                 getColorFilters()
         );
+    }
+
+    @Override
+    public CurationProductDetailResponse getProductDetail(Long id, User user) {
+        CurationRawProduct product = curationRawProductRepository.findByIdAndIsExposedTrue(id)
+                .orElseThrow(() -> new FurnitureException(ErrorCode.NOT_FOUND_CURATION_RAW_PRODUCT));
+
+        String categoryName = extractCategoryName(product);
+        List<CurationProductDetailResponse.ProductColorDetail> colors = extractColorDetails(id);
+        boolean isLiked = checkIsLiked(product, user);
+
+        return new CurationProductDetailResponse(
+                new CurationProductDetailResponse.ProductDetail(
+                        product.getId(),
+                        product.getProductId(),
+                        categoryName,
+                        product.getSource(),
+                        product.getBrand(),
+                        product.getProductName(),
+                        product.getProductImageUrl(),
+                        product.getListPrice(),
+                        product.getDiscountRate(),
+                        product.getDiscountPrice(),
+                        product.getProductMallName(),
+                        product.getProductSiteUrl(),
+                        colors,
+                        isLiked
+                )
+        );
+    }
+
+    private boolean checkIsLiked(CurationRawProduct product, User user) {
+        if (user == null) {
+            return false;
+        }
+
+        // curation_raw_products 데이터는 CurationSource.RAW로 관리됨
+        return recommendFurnitureRepository.findBySourceAndFurnitureProductId(CurationSource.RAW, product.getProductId())
+                .map(recommend -> jjymRepository.existsByUserIdAndRecommendFurnitureId(user.getId(), recommend.getId()))
+                .orElse(false);
+    }
+
+    private List<CurationProductDetailResponse.ProductColorDetail> extractColorDetails(Long productId) {
+        List<CurationRawProductColor> colorEntities = curationRawProductColorRepository.findAllByCurationRawProductId(productId);
+        List<CurationProductDetailResponse.ProductColorDetail> details = new java.util.ArrayList<>();
+
+        for (CurationRawProductColor colorEntity : colorEntities) {
+            String clientColorName = colorEntity.getClientColorName();
+            if (clientColorName == null || clientColorName.isBlank()) {
+                continue;
+            }
+
+            String[] names = clientColorName.split("[,/]");
+            for (String name : names) {
+                String trimmedName = name.trim();
+                if (trimmedName.isEmpty()) continue;
+
+                List<String> hexCodes = ColorHexMapper.toHexCodes(List.of(trimmedName));
+                String hexValue = hexCodes.isEmpty() ? null : hexCodes.get(0);
+
+                if (hexValue != null && !hexValue.startsWith("#")) {
+                    hexValue = null;
+                }
+
+                details.add(new CurationProductDetailResponse.ProductColorDetail(trimmedName, hexValue));
+            }
+        }
+        return details;
+    }
+
+    private String extractCategoryName(CurationRawProduct product) {
+        // 리뷰 반영: 다중 매핑 시 우선순위(priority)가 가장 높은(숫자가 낮은) 태그를 대표 카테고리로 선택
+        return product.getFurnitureTagMappings().stream()
+                .map(CurationRawProductFurnitureTag::getFurnitureTag)
+                .sorted(java.util.Comparator.comparing(FurnitureTag::getPriority))
+                .filter(tag -> tag.getFurniture() != null && tag.getFurniture().getFurnitureType() != null)
+                .findFirst()
+                .map(tag -> {
+                    Furniture furniture = tag.getFurniture();
+                    FurnitureType type = furniture.getFurnitureType();
+
+                    // 필터 API에서 정의한 사용자 친화적 레이블 매핑 로직 재사용
+                    return mapToFriendlyLabel(type, furniture);
+                })
+                .orElse("기타"); // 매핑 정보가 없거나 가구 정보가 부재할 경우 기본값 '기타'
+    }
+
+    private String mapToFriendlyLabel(FurnitureType type, Furniture furniture) {
+        String typeEng = type.getNameEng() != null ? type.getNameEng().toUpperCase().trim() : "";
+        String furnitureEng = furniture.getFurnitureNameEng() != null ? furniture.getFurnitureNameEng().toUpperCase().trim() : "";
+
+        // 1. 중분류(Furniture) 우선 매핑 (O(1) switch)
+        switch (furnitureEng) {
+            case "OFFICE_DESK": return "업무용 책상";
+            case "DINING_TABLE": return "식탁";
+            case "SITTING_TABLE": return "좌식 테이블";
+            case "CLOSET": return "옷장";
+            case "SINGLE_SOFA":
+            case "CHAIR": return "의자/스툴";
+            case "DRESSER": return "화장대/협탁";
+            default: break;
+        }
+
+        // 2. 대분류(FurnitureType) 매핑 (O(1) switch)
+        return switch (typeEng) {
+            case "BED" -> "침대/프레임";
+            case "STORAGE" -> "수납/장식장";
+            case "SOFA" -> "소파";
+            case "LIGHTING" -> "조명";
+            case "SELECTIVE" -> "그 외";
+            case "ETC" -> "기타";
+            default -> "기타";
+        };
     }
 
     private List<FurnitureTypeFilterResponse> getFurnitureTypeFilters() {

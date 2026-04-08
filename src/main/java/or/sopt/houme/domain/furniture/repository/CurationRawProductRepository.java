@@ -36,6 +36,8 @@ public interface CurationRawProductRepository extends JpaRepository<CurationRawP
             Long productId
     );
 
+    Optional<CurationRawProduct> findByIdAndIsExposedTrue(Long id);
+
     List<CurationRawProduct> findAllBySourceAndCategoryAndProductIdIn(
             String source,
             SoozipCategory category,
