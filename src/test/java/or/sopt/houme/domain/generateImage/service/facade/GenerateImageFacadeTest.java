@@ -51,7 +51,9 @@ import or.sopt.houme.domain.house.service.taste.TasteTagService;
 import or.sopt.houme.domain.user.model.entity.*;
 import or.sopt.houme.domain.user.service.UserService;
 import or.sopt.houme.domain.user.util.floorplan.FloorPlanImageJsonCodec;
+import or.sopt.houme.global.api.ErrorCode;
 import or.sopt.houme.global.dto.ImageUploadResponseDTO;
+import or.sopt.houme.global.api.handler.HouseException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -65,9 +67,13 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -551,6 +557,88 @@ class GenerateImageFacadeTest {
                 eq(Activity.REMOTE_WORK),
                 eq(List.of(7L, 8L)),
                 eq(List.of(1L, 2L))
+        );
+    }
+
+    @Test
+    @DisplayName("V4 이미지 생성은 존재하지 않는 floorPlanView 입력 시 예외를 던진다")
+    void generateImageV4ByGemini_throwsWhenFloorPlanViewNotFound() {
+        User user = User.builder()
+                .id(1L)
+                .name("test_user")
+                .build();
+
+        Credit lockedCredit = Credit.builder()
+                .id(10L)
+                .status(CreditStatus.PENDING)
+                .user(user)
+                .build();
+
+        GenerateImageV4Request request = new GenerateImageV4Request(
+                11L,
+                "창가 뷰",
+                true,
+                List.of(1L, 2L),
+                "REMOTE_WORK",
+                List.of(7L)
+        );
+
+        Tag selectedTag = Tag.builder()
+                .id(100L)
+                .tagPrompt("스타일 프롬프트")
+                .build();
+
+        FloorPlan floorPlan = FloorPlan.builder()
+                .id(11L)
+                .url("https://floorplan-default")
+                .floorPlanPrompt("도면 프롬프트")
+                .imagesJson("[]")
+                .build();
+
+        ActivityFurniture mapping = ActivityFurniture.builder()
+                .id(1L)
+                .activity(Activity.REMOTE_WORK)
+                .furniture(Furniture.builder().id(8L).build())
+                .priority(1)
+                .build();
+
+        FurnitureTag furnitureTag = FurnitureTag.builder()
+                .id(1L)
+                .furniture(Furniture.builder().id(7L).build())
+                .tag(selectedTag)
+                .furnitureUrl("https://furniture-7")
+                .furniturePrompt("선택 가구 프롬프트")
+                .priority(1)
+                .searchKeyword("k1")
+                .build();
+
+        when(creditService.tryLockAndGetCredit(user)).thenReturn(lockedCredit);
+        when(tasteTagService.getPriorityId(request.moodBoardIds())).thenReturn(selectedTag);
+        when(floorPlanRepository.findById(11L)).thenReturn(Optional.of(floorPlan));
+        when(activityFurnitureRepository.findAllByActivityOrderByPriorityAscIdAsc(Activity.REMOTE_WORK))
+                .thenReturn(List.of(mapping));
+        when(furnitureTagRepository.findAllByFurnitureIdInAndTagId(List.of(7L, 8L), 100L))
+                .thenReturn(List.of(furnitureTag));
+        when(floorPlanImageJsonCodec.read("[]"))
+                .thenReturn(List.of(FloorPlanImageItem.create("https://floorplan-view", "file", "orig", "png", 1, "정면")));
+
+        assertThatThrownBy(() -> generateImageFacade.generateImageV4ByGemini(user, request))
+                .isInstanceOf(HouseException.class)
+                .extracting(ex -> ((HouseException) ex).getErrorCode())
+                .isEqualTo(ErrorCode.INVALID_FLOOR_PLAN_VIEW);
+
+        verify(creditService).rollbackCreditPending(lockedCredit);
+        verify(geminiImageService, never()).createImageWithReferences(any(), any());
+        verify(generateImageTransactionService, never()).saveV4ImageAndConfirmCredit(
+                any(),
+                any(),
+                anyLong(),
+                anyBoolean(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any()
         );
     }
 }

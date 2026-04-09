@@ -528,7 +528,7 @@ public class GenerateImageFacade {
                     combinedFurnitureIds
             );
 
-            String floorPlanImageUrl = resolveFloorPlanImageUrl(floorPlan, request.floorPlanView());
+            String floorPlanImageUrl = resolveFloorPlanImageUrlStrict(floorPlan, request.floorPlanView());
             List<String> referenceImageUrls = buildV4ReferenceImageUrls(floorPlanImageUrl, matchedFurnitureTags);
             String prompt = buildV4Prompt(floorPlan, selectedTag, matchedFurnitureTags);
 
@@ -805,6 +805,23 @@ public class GenerateImageFacade {
                 .filter(url -> url != null && !url.isBlank())
                 .findFirst()
                 .orElse(floorPlan.getUrl());
+    }
+
+    private String resolveFloorPlanImageUrlStrict(FloorPlan floorPlan, String floorPlanView) {
+        List<FloorPlanImageItem> images = floorPlanImageJsonCodec.read(floorPlan.getImagesJson());
+        String normalizedView = floorPlanView == null ? "" : floorPlanView.trim();
+
+        if (normalizedView.isEmpty()) {
+            throw new HouseException(ErrorCode.INVALID_FLOOR_PLAN_VIEW);
+        }
+
+        return images.stream()
+                .filter(Objects::nonNull)
+                .filter(item -> item.url() != null && !item.url().isBlank())
+                .filter(item -> item.view() != null && item.view().trim().equalsIgnoreCase(normalizedView))
+                .map(FloorPlanImageItem::url)
+                .findFirst()
+                .orElseThrow(() -> new HouseException(ErrorCode.INVALID_FLOOR_PLAN_VIEW));
     }
 
     private List<String> buildReferenceImageUrls(
