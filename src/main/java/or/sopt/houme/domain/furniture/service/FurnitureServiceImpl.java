@@ -115,9 +115,7 @@ public class FurnitureServiceImpl implements FurnitureService {
         List<ActivityFurniture> mappings = activityFurnitureRepository.findAllByOrderByPriorityAscIdAsc();
         Map<Activity, List<FurnitureItem>> grouped = new LinkedHashMap<>();
 
-        for (ActivityFurniture mapping : mappings.stream()
-                .sorted(Comparator.comparingInt(ActivityFurniture::getPriority).thenComparing(ActivityFurniture::getId))
-                .toList()) {
+        for (ActivityFurniture mapping : mappings) {
             grouped.computeIfAbsent(mapping.getActivity(), key -> new ArrayList<>())
                     .add(FurnitureItem.from(mapping.getFurniture(), mapping.getPriority()));
         }
