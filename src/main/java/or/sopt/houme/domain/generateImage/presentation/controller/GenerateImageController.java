@@ -108,7 +108,7 @@ public class GenerateImageController {
         return ResponseEntity.ok(ApiResponse.ok(imageInfoListResponse));
     }
 
-    @Operation(summary = "V4 템플릿 기반 이미지 생성 API",
+    @Operation(summary = "V4 이미지 생성 API",
             description = "도면/뷰, 무드보드, 주요활동, 가구를 기반으로 Gemini 모델로 이미지 1장을 생성합니다.")
     @PostMapping("/v4/generated-images/generate")
     public ResponseEntity<ApiResponse<BannerGenerateImageResponse>> generateImageV4ByGemini(
