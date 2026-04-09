@@ -16,9 +16,6 @@ import or.sopt.houme.domain.house.model.entity.enums.Activity;
                         name = "uk_activity_furnitures_activity_furniture",
                         columnNames = {"activity", "furniture_id"}
                 )
-        },
-        indexes = {
-                @Index(name = "idx_activity_furnitures_activity_priority", columnList = "activity, priority")
         }
 )
 public class ActivityFurniture {
