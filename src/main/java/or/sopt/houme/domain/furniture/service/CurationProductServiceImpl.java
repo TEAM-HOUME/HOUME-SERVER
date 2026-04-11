@@ -9,12 +9,17 @@ import or.sopt.houme.domain.furniture.model.entity.Furniture;
 import or.sopt.houme.domain.furniture.model.entity.FurnitureTag;
 import or.sopt.houme.domain.furniture.model.entity.FurnitureType;
 import or.sopt.houme.domain.furniture.presentation.dto.response.ColorFilterResponse;
+import or.sopt.houme.domain.furniture.presentation.dto.response.CurationProductAppliedFilterResponse;
 import or.sopt.houme.domain.furniture.presentation.dto.response.CurationProductDetailResponse;
 import or.sopt.houme.domain.furniture.presentation.dto.response.CurationProductFilterResponse;
+import or.sopt.houme.domain.furniture.presentation.dto.response.CurationProductListResponse;
+import or.sopt.houme.domain.furniture.presentation.dto.response.CurationProductMetaResponse;
+import or.sopt.houme.domain.furniture.presentation.dto.response.CurationProductResponse;
 import or.sopt.houme.domain.furniture.presentation.dto.response.FurnitureTypeFilterResponse;
 import or.sopt.houme.domain.furniture.presentation.dto.response.PriceRangeFilterResponse;
 import or.sopt.houme.domain.furniture.repository.CurationRawProductColorRepository;
 import or.sopt.houme.domain.furniture.repository.CurationRawProductRepository;
+import or.sopt.houme.domain.furniture.repository.CurationRawProductRepositoryCustom;
 import or.sopt.houme.domain.furniture.repository.FurnitureRepository;
 import or.sopt.houme.domain.furniture.repository.FurnitureTypeRepository;
 import or.sopt.houme.domain.furniture.repository.JjymRepository;
@@ -22,10 +27,15 @@ import or.sopt.houme.domain.furniture.repository.RecommendFurnitureRepository;
 import or.sopt.houme.domain.user.model.entity.User;
 import or.sopt.houme.global.api.ErrorCode;
 import or.sopt.houme.global.api.handler.FurnitureException;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -49,8 +59,145 @@ public class CurationProductServiceImpl implements CurationProductService {
     }
 
     @Override
+    public CurationProductListResponse getProducts(
+            String keyword,
+            List<Long> typeIds,
+            List<String> priceRangeIds,
+            List<Long> colorIds,
+            Long cursor,
+            Integer size
+    ) {
+        validatePaginationParams(size);
+
+        Pageable pageable = PageRequest.of(0, size);
+        List<String> colorNames = extractColorNames(colorIds);
+        List<CurationRawProductRepositoryCustom.PriceRangeFilter> priceFilters = extractPriceFilters(priceRangeIds);
+
+        // Sentinel 값(0L, 음수) 전처리
+        List<Long> filteredTypeIds = preprocessTypeIds(typeIds);
+        
+        // 0L(전체)이 포함되어 있다면 가구 유형 필터링을 적용하지 않음
+        if (typeIds != null && typeIds.contains(0L)) {
+            filteredTypeIds = null; 
+        }
+
+        Slice<CurationRawProduct> productSlice = curationRawProductRepository.findAllByCurationFilters(
+                keyword, filteredTypeIds, priceFilters, colorNames, cursor, pageable
+        );
+
+        List<CurationProductResponse> products = productSlice.getContent().stream()
+                .map(p -> new CurationProductResponse(
+                        p.getId(),
+                        p.getProductId(),
+                        extractCategoryName(p),
+                        p.getSource(),
+                        p.getBrand(),
+                        p.getProductName(),
+                        p.getProductImageUrl(),
+                        p.getListPrice(),
+                        p.getDiscountRate(),
+                        p.getDiscountPrice(),
+                        p.getProductMallName(),
+                        p.getProductSiteUrl()
+                ))
+                .toList();
+
+        Long nextCursor = products.isEmpty() ? null : products.get(products.size() - 1).id();
+        List<CurationProductAppliedFilterResponse> appliedFilters = buildAppliedFilters(typeIds, priceRangeIds, colorIds);
+
+        return new CurationProductListResponse(
+                products,
+                new CurationProductMetaResponse(nextCursor, productSlice.hasNext(), appliedFilters)
+        );
+    }
+
+    private void validatePaginationParams(Integer size) {
+        if (size == null || size <= 0 || size > 100) {
+            throw new FurnitureException(ErrorCode.NOT_VALID_EXCEPTION);
+        }
+    }
+
+    private List<Long> preprocessTypeIds(List<Long> typeIds) {
+        if (typeIds == null || typeIds.isEmpty()) return null;
+        
+        // 실제 PK(양수)만 추출
+        List<Long> actualIds = typeIds.stream()
+                .filter(id -> id != null && id > 0)
+                .collect(Collectors.toList());
+        
+        // 음수 ID(매핑불가 항목)만 선택했다면 절대로 매칭될 수 없는 값(-999L)을 넣어 빈 결과 유도
+        boolean hasOnlyNegativeIds = actualIds.isEmpty() && typeIds.stream().anyMatch(id -> id < 0);
+        return hasOnlyNegativeIds ? List.of(-999L) : (actualIds.isEmpty() ? null : actualIds);
+    }
+
+    private List<String> extractColorNames(List<Long> colorIds) {
+        if (colorIds == null || colorIds.isEmpty()) return List.of();
+
+        java.util.Map<String, String> standardColors = ColorHexMapper.getStandardColorFilters();
+        java.util.List<String> allColorNames = new java.util.ArrayList<>(standardColors.keySet());
+
+        return colorIds.stream()
+                .filter(id -> id != null && id >= 1 && id <= allColorNames.size())
+                .map(id -> allColorNames.get(id.intValue() - 1))
+                .toList();
+    }
+
+    private List<CurationRawProductRepositoryCustom.PriceRangeFilter> extractPriceFilters(List<String> priceRangeIds) {
+        if (priceRangeIds == null || priceRangeIds.isEmpty()) return List.of();
+
+        List<PriceRangeFilterResponse> allPriceMetadata = getPriceRangeFilters();
+        return priceRangeIds.stream()
+                .map(id -> allPriceMetadata.stream()
+                        .filter(meta -> meta.id().equalsIgnoreCase(id))
+                        .findFirst()
+                        .map(meta -> new CurationRawProductRepositoryCustom.PriceRangeFilter(meta.min(), meta.max()))
+                        .orElse(null))
+                .filter(Objects::nonNull)
+                .toList();
+    }
+
+    private List<CurationProductAppliedFilterResponse> buildAppliedFilters(
+            List<Long> typeIds, List<String> priceRangeIds, List<Long> colorIds
+    ) {
+        List<CurationProductAppliedFilterResponse> filters = new java.util.ArrayList<>();
+
+        if (typeIds != null) {
+            List<FurnitureTypeFilterResponse> allTypes = getFurnitureTypeFilters();
+            for (Long id : typeIds) {
+                allTypes.stream()
+                        .filter(t -> t.id().equals(id))
+                        .findFirst()
+                        .ifPresent(t -> filters.add(new CurationProductAppliedFilterResponse("type", t.id().toString(), t.nameKr(), null)));
+            }
+        }
+
+        if (priceRangeIds != null) {
+            List<PriceRangeFilterResponse> allPrices = getPriceRangeFilters();
+            for (String id : priceRangeIds) {
+                allPrices.stream()
+                        .filter(p -> p.id().equalsIgnoreCase(id))
+                        .findFirst()
+                        .ifPresent(p -> filters.add(new CurationProductAppliedFilterResponse("price", p.id(), p.label(), null)));
+            }
+        }
+
+        if (colorIds != null) {
+            java.util.Map<String, String> standardColors = ColorHexMapper.getStandardColorFilters();
+            java.util.List<java.util.Map.Entry<String, String>> entries = new java.util.ArrayList<>(standardColors.entrySet());
+            for (Long id : colorIds) {
+                if (id != null && id >= 1 && id <= entries.size()) {
+                    java.util.Map.Entry<String, String> entry = entries.get(id.intValue() - 1);
+                    filters.add(new CurationProductAppliedFilterResponse("color", id.toString(), entry.getKey(), entry.getValue()));
+                }
+            }
+        }
+
+        return filters;
+    }
+
+    @Override
     public CurationProductDetailResponse getProductDetail(Long id, User user) {
-        CurationRawProduct product = curationRawProductRepository.findByIdAndIsExposedTrue(id)
+        CurationRawProduct product = curationRawProductRepository.findByIdAndIsExposedTrueOrNull(id)
                 .orElseThrow(() -> new FurnitureException(ErrorCode.NOT_FOUND_CURATION_RAW_PRODUCT));
 
         String categoryName = extractCategoryName(product);
@@ -81,8 +228,6 @@ public class CurationProductServiceImpl implements CurationProductService {
         if (user == null) {
             return false;
         }
-
-        // curation_raw_products 데이터는 CurationSource.RAW로 관리됨
         return recommendFurnitureRepository.findBySourceAndFurnitureProductId(CurationSource.RAW, product.getProductId())
                 .map(recommend -> jjymRepository.existsByUserIdAndRecommendFurnitureId(user.getId(), recommend.getId()))
                 .orElse(false);
@@ -117,7 +262,6 @@ public class CurationProductServiceImpl implements CurationProductService {
     }
 
     private String extractCategoryName(CurationRawProduct product) {
-        // 리뷰 반영: 다중 매핑 시 우선순위(priority)가 가장 높은(숫자가 낮은) 태그를 대표 카테고리로 선택
         return product.getFurnitureTagMappings().stream()
                 .map(CurationRawProductFurnitureTag::getFurnitureTag)
                 .sorted(java.util.Comparator.comparing(FurnitureTag::getPriority))
@@ -126,18 +270,15 @@ public class CurationProductServiceImpl implements CurationProductService {
                 .map(tag -> {
                     Furniture furniture = tag.getFurniture();
                     FurnitureType type = furniture.getFurnitureType();
-
-                    // 필터 API에서 정의한 사용자 친화적 레이블 매핑 로직 재사용
                     return mapToFriendlyLabel(type, furniture);
                 })
-                .orElse("기타"); // 매핑 정보가 없거나 가구 정보가 부재할 경우 기본값 '기타'
+                .orElse("기타");
     }
 
     private String mapToFriendlyLabel(FurnitureType type, Furniture furniture) {
         String typeEng = type.getNameEng() != null ? type.getNameEng().toUpperCase().trim() : "";
         String furnitureEng = furniture.getFurnitureNameEng() != null ? furniture.getFurnitureNameEng().toUpperCase().trim() : "";
 
-        // 1. 중분류(Furniture) 우선 매핑 (O(1) switch)
         switch (furnitureEng) {
             case "OFFICE_DESK": return "업무용 책상";
             case "DINING_TABLE": return "식탁";
@@ -149,7 +290,6 @@ public class CurationProductServiceImpl implements CurationProductService {
             default: break;
         }
 
-        // 2. 대분류(FurnitureType) 매핑 (O(1) switch)
         return switch (typeEng) {
             case "BED" -> "침대/프레임";
             case "STORAGE" -> "수납/장식장";
@@ -162,7 +302,6 @@ public class CurationProductServiceImpl implements CurationProductService {
     }
 
     private List<FurnitureTypeFilterResponse> getFurnitureTypeFilters() {
-        // DB에서 실시간 데이터 로드 (안정성 확보)
         List<FurnitureType> types = furnitureTypeRepository.findAll();
         List<Furniture> furnitures = furnitureRepository.findAll();
 
@@ -176,8 +315,8 @@ public class CurationProductServiceImpl implements CurationProductService {
                 findType(types, "STORAGE", "수납/장식장"),
                 findType(types, "SOFA", "소파"),
                 new FurnitureTypeFilterResponse(-1L, "의자/스툴", "CHAIR"),
-                new FurnitureTypeFilterResponse(-1L, "화장대/협탁", "DRESSER"),
-                new FurnitureTypeFilterResponse(-1L, "조명", "LIGHTING"),
+                new FurnitureTypeFilterResponse(-2L, "화장대/협탁", "DRESSER"),
+                new FurnitureTypeFilterResponse(-3L, "조명", "LIGHTING"),
                 findType(types, "ETC", "기타")
         );
     }

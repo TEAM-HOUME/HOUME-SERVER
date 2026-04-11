@@ -13,4 +13,5 @@ public interface ActivityFurnitureRepository extends JpaRepository<ActivityFurni
 
     @EntityGraph(attributePaths = {"furniture", "furniture.furnitureType"})
     List<ActivityFurniture> findAllByActivityOrderByPriorityAscIdAsc(Activity activity);
+    List<ActivityFurniture> findAllByOrderByPriorityAscIdAsc();
 }
