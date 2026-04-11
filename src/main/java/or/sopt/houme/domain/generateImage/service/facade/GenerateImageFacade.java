@@ -13,12 +13,18 @@ import or.sopt.houme.domain.credit.model.entity.Credit;
 import or.sopt.houme.domain.credit.model.entity.CreditStatus;
 import or.sopt.houme.domain.credit.service.CreditService;
 import or.sopt.houme.domain.furniture.model.entity.CurationRawProduct;
+import or.sopt.houme.domain.furniture.model.entity.FurnitureTag;
+import or.sopt.houme.domain.furniture.model.entity.ActivityFurniture;
+import or.sopt.houme.domain.furniture.model.entity.Furniture;
+import or.sopt.houme.domain.furniture.repository.ActivityFurnitureRepository;
 import or.sopt.houme.domain.furniture.repository.CurationRawProductRepository;
+import or.sopt.houme.domain.furniture.repository.FurnitureTagRepository;
 import or.sopt.houme.domain.furniture.service.FurnitureService;
 import or.sopt.houme.domain.generateImage.presentation.dto.SelectedTagInfo;
 import or.sopt.houme.domain.generateImage.model.entity.GenerateImageType;
 import or.sopt.houme.domain.generateImage.presentation.dto.request.BannerGenerateImageRequest;
 import or.sopt.houme.domain.generateImage.presentation.dto.request.GenerateImageRequest;
+import or.sopt.houme.domain.generateImage.presentation.dto.request.GenerateImageV4Request;
 import or.sopt.houme.domain.generateImage.presentation.dto.request.OtherStyleGenerateImageRequest;
 import or.sopt.houme.domain.generateImage.presentation.dto.response.BannerGenerateImageResponse;
 import or.sopt.houme.domain.generateImage.presentation.dto.response.ImageInfoListResponse;
@@ -85,6 +91,8 @@ public class GenerateImageFacade {
     private final UserService userService;
     private final TagService tagService;
     private final FurnitureService furnitureService;
+    private final FurnitureTagRepository furnitureTagRepository;
+    private final ActivityFurnitureRepository activityFurnitureRepository;
     private final CurationRawProductRepository curationRawProductRepository;
     private final FloorPlanImageJsonCodec floorPlanImageJsonCodec;
     private final ObjectMapper objectMapper;
@@ -487,6 +495,92 @@ public class GenerateImageFacade {
         }
     }
 
+    public BannerGenerateImageResponse generateImageV4ByGemini(User user, GenerateImageV4Request request) {
+        Credit lockedCredit = null;
+
+        try {
+            log.info(
+                    "V4 이미지 생성 시작 userId={}, floorPlanId={}, view={}, isMirror={}, moodBoardCount={}, furnitureCount={}",
+                    user.getId(),
+                    request.floorPlanId(),
+                    request.floorPlanView(),
+                    request.isMirror(),
+                    request.moodBoardIds().size(),
+                    request.furnitureIds().size()
+            );
+
+            lockedCredit = creditService.tryLockAndGetCredit(user);
+
+            Activity activity = enumValueOf(Activity.class, request.activity());
+            Tag selectedTag = tasteTagService.getPriorityId(request.moodBoardIds());
+            FloorPlan floorPlan = floorPlanRepository.findById(request.floorPlanId())
+                    .orElseThrow(() -> new HouseException(ErrorCode.NOT_FOUND_FLOOR_PLAN));
+
+            List<Long> combinedFurnitureIds = buildCombinedFurnitureIds(activity, request.furnitureIds());
+            List<FurnitureTag> matchedFurnitureTags = furnitureTagRepository.findAllByFurnitureIdInAndTagId(
+                    combinedFurnitureIds,
+                    selectedTag.getId()
+            );
+            log.info(
+                    "V4 이미지 생성에 사용된 furniture_tag ids: {} (tagId={}, furnitureIds={})",
+                    matchedFurnitureTags.stream().map(FurnitureTag::getId).toList(),
+                    selectedTag.getId(),
+                    combinedFurnitureIds
+            );
+
+            String floorPlanImageUrl = resolveFloorPlanImageUrlStrict(floorPlan, request.floorPlanView());
+            List<String> referenceImageUrls = buildV4ReferenceImageUrls(floorPlanImageUrl, matchedFurnitureTags);
+            String prompt = buildV4Prompt(floorPlan, selectedTag, matchedFurnitureTags);
+
+            log.info(
+                    "V4 이미지 생성 프롬프트/참고이미지 tagId={}, prompt={}, referenceImageCount={}",
+                    selectedTag.getId(),
+                    prompt,
+                    referenceImageUrls.size()
+            );
+
+            ImageUploadResponseDTO imageUploadResponseDTO =
+                    geminiImageService.createImageWithReferences(prompt, referenceImageUrls);
+
+            if (imageUploadResponseDTO.getImageLink().equals(S3Constant.FALL_BACK_IMAGE)) {
+                log.error("V4 이미지 생성 중 폴백 이미지가 생성되었습니다.");
+                throw new ImageFallbackException(ErrorCode.GENERATED_IMAGE_EXCEPTION, null);
+            }
+
+            return generateImageTransactionService.saveV4ImageAndConfirmCredit(
+                    user,
+                    lockedCredit,
+                    request.floorPlanId(),
+                    request.isMirror(),
+                    prompt,
+                    imageUploadResponseDTO,
+                    activity,
+                    combinedFurnitureIds,
+                    request.moodBoardIds()
+            );
+        } catch (ValidException validException) {
+            if (lockedCredit != null && lockedCredit.getStatus() == CreditStatus.PENDING) {
+                creditService.rollbackCreditPending(lockedCredit);
+            }
+            throw validException;
+        } catch (GeneralException e) {
+            if (lockedCredit != null && lockedCredit.getStatus() == CreditStatus.PENDING) {
+                creditService.rollbackCreditPending(lockedCredit);
+            }
+            throw e;
+        } catch (Exception e) {
+            log.error("V4 이미지 생성 중 오류 발생: {}", e.getMessage(), e);
+            if (lockedCredit != null && lockedCredit.getStatus() == CreditStatus.PENDING) {
+                creditService.rollbackCreditPending(lockedCredit);
+            }
+            throw new GenerateImageException(ErrorCode.GENERATED_IMAGE_EXCEPTION);
+        } finally {
+            if (lockedCredit != null) {
+                creditService.releaseLock(user);
+            }
+        }
+    }
+
     private ImageInfoListResponse generateImageBy2eaInternal(User user, GenerateImageRequest generateImageRequest, boolean useGemini) {
 
         // finally 블록에서 사용하기 위해 선언
@@ -713,6 +807,23 @@ public class GenerateImageFacade {
                 .orElse(floorPlan.getUrl());
     }
 
+    private String resolveFloorPlanImageUrlStrict(FloorPlan floorPlan, String floorPlanView) {
+        List<FloorPlanImageItem> images = floorPlanImageJsonCodec.read(floorPlan.getImagesJson());
+        String normalizedView = floorPlanView == null ? "" : floorPlanView.trim();
+
+        if (normalizedView.isEmpty()) {
+            throw new HouseException(ErrorCode.INVALID_FLOOR_PLAN_VIEW);
+        }
+
+        return images.stream()
+                .filter(Objects::nonNull)
+                .filter(item -> item.url() != null && !item.url().isBlank())
+                .filter(item -> item.view() != null && item.view().trim().equalsIgnoreCase(normalizedView))
+                .map(FloorPlanImageItem::url)
+                .findFirst()
+                .orElseThrow(() -> new HouseException(ErrorCode.INVALID_FLOOR_PLAN_VIEW));
+    }
+
     private List<String> buildReferenceImageUrls(
             Banner banner,
             BannerStyleAnswerChip selectedChip,
@@ -797,6 +908,51 @@ public class GenerateImageFacade {
         if (floorPlan.getFloorPlanPrompt() != null && !floorPlan.getFloorPlanPrompt().isBlank()) {
             parts.add(floorPlan.getFloorPlanPrompt());
         }
+        return String.join("\n\n", parts);
+    }
+
+    private List<Long> buildCombinedFurnitureIds(Activity activity, List<Long> requestFurnitureIds) {
+        LinkedHashSet<Long> ids = new LinkedHashSet<>();
+        if (requestFurnitureIds != null) {
+            ids.addAll(requestFurnitureIds);
+        }
+
+        List<ActivityFurniture> activityMappings =
+                activityFurnitureRepository.findAllByActivityOrderByPriorityAscIdAsc(activity);
+        activityMappings.stream()
+                .map(ActivityFurniture::getFurniture)
+                .filter(Objects::nonNull)
+                .map(Furniture::getId)
+                .filter(Objects::nonNull)
+                .forEach(ids::add);
+
+        return List.copyOf(ids);
+    }
+
+    private List<String> buildV4ReferenceImageUrls(String floorPlanImageUrl, List<FurnitureTag> furnitureTags) {
+        LinkedHashSet<String> urls = new LinkedHashSet<>();
+        if (floorPlanImageUrl != null && !floorPlanImageUrl.isBlank()) {
+            urls.add(floorPlanImageUrl);
+        }
+        furnitureTags.stream()
+                .map(FurnitureTag::getFurnitureUrl)
+                .filter(url -> url != null && !url.isBlank())
+                .forEach(urls::add);
+        return List.copyOf(urls);
+    }
+
+    private String buildV4Prompt(FloorPlan floorPlan, Tag selectedTag, List<FurnitureTag> furnitureTags) {
+        List<String> parts = new ArrayList<>();
+        if (floorPlan.getFloorPlanPrompt() != null && !floorPlan.getFloorPlanPrompt().isBlank()) {
+            parts.add(floorPlan.getFloorPlanPrompt());
+        }
+        if (selectedTag.getTagPrompt() != null && !selectedTag.getTagPrompt().isBlank()) {
+            parts.add(selectedTag.getTagPrompt());
+        }
+        furnitureTags.stream()
+                .map(FurnitureTag::getFurniturePrompt)
+                .filter(prompt -> prompt != null && !prompt.isBlank())
+                .forEach(parts::add);
         return String.join("\n\n", parts);
     }
 

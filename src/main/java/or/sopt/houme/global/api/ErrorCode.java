@@ -47,6 +47,7 @@ public enum ErrorCode {
     INVALID_GENERATE_IMAGE_REQUEST(HttpStatus.BAD_REQUEST, 40028, "이미지 생성 요청 값이 유효하지 않습니다."),
     INVALID_GENERATE_IMAGE_RESULT_REQUEST(HttpStatus.BAD_REQUEST, 40029, "이미지 결과 조회 요청 값이 유효하지 않습니다."),
     INVALID_GENERATE_IMAGE_TYPE(HttpStatus.BAD_REQUEST, 40030, "해당 API에서 지원하지 않는 이미지 생성 타입입니다."),
+    INVALID_FLOOR_PLAN_VIEW(HttpStatus.BAD_REQUEST, 40031, "도면 뷰 문자열을 찾을 수 없습니다."),
 
     // 네이버 쇼핑 API 관련 예외
     NAVER_API_DATA_PARSE_ERROR(HttpStatus.BAD_REQUEST, 40013, "네이버 API 응답의 productId 필드를 숫자로 변환하는 중 오류가 발생했습니다."),
