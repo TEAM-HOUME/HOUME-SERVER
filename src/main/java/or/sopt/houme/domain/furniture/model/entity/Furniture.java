@@ -45,6 +45,10 @@ public class Furniture {
     @Column(name = "object365_word", nullable = true)
     private String object365Word;
 
+    // 대시보드 가구 노출 우선순위
+    @Column(name = "priority")
+    private Integer priority;
+
     public void setFurnitureTags(List<FurnitureTag> furnitureTags) {
         this.furnitureTags = furnitureTags;
     }

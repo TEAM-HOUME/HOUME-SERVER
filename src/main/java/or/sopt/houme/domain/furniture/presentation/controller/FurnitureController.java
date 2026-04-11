@@ -3,6 +3,9 @@ package or.sopt.houme.domain.furniture.presentation.controller;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import or.sopt.houme.domain.furniture.infrastructure.dto.external.naverShop.FurnitureProductsInfoResponse;
+import or.sopt.houme.domain.furniture.presentation.dto.response.ActivityFurnitureMappingsResponse;
+import or.sopt.houme.domain.furniture.presentation.dto.response.ActivityWithFurnitureResponse;
+import or.sopt.houme.domain.furniture.presentation.dto.response.DashboardCategoriesResponse;
 import or.sopt.houme.domain.furniture.presentation.dto.response.FurnitureAndActivityResponse;
 import or.sopt.houme.domain.furniture.presentation.dto.response.FurnitureCategoriesResponse;
 import or.sopt.houme.domain.furniture.infrastructure.dto.external.naverShop.forPlan.FurnitureProductsInfoResponseForPlan;
@@ -17,7 +20,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/v1")
+@RequestMapping("/api")
 @RequiredArgsConstructor
 public class FurnitureController {
 
@@ -36,12 +39,33 @@ public class FurnitureController {
                     "    - 식탁, 의자\n" +
                     "    - 옷장\n" +
                     "    - 소파")
-    @GetMapping("/dashboard-info")
+    @GetMapping("/v1/dashboard-info")
     public ResponseEntity<ApiResponse<FurnitureAndActivityResponse>> getFurnitureAndActivity() {
 
         FurnitureAndActivityResponse furnitureAndActivity = furnitureService.getFurnitureAndActivity();
 
         return ResponseEntity.ok(ApiResponse.ok(furnitureAndActivity));
+    }
+
+    @Operation(summary = "주요활동별 매핑 가구 조회 API",
+            description = "주요활동 선택 UI에서 사용할 활동별 가구 매핑 목록을 조회합니다.")
+    @GetMapping("/v2/dashboard/activities")
+    public ResponseEntity<ApiResponse<ActivityFurnitureMappingsResponse>> getActivityFurnitureMappings(
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        List<ActivityWithFurnitureResponse> activities = furnitureService.getActivityFurnitureMappings();
+        return ResponseEntity.ok(ApiResponse.ok(ActivityFurnitureMappingsResponse.of(activities)));
+    }
+
+    @Operation(summary = "대시보드 가구 카테고리 조회 API",
+            description = "대시보드에서 사용할 가구 카테고리 목록을 조회합니다.")
+    @GetMapping("/v2/dashboard/categories")
+    public ResponseEntity<ApiResponse<DashboardCategoriesResponse>> getDashboardCategories(
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        return ResponseEntity.ok(ApiResponse.ok(
+                DashboardCategoriesResponse.of(furnitureService.getDashboardCategories())
+        ));
     }
 
     @Operation(summary = "생성된 이미지에서 가구 카테고리 조회 API",
@@ -60,7 +84,7 @@ public class FurnitureController {
                     "- 책 선반 : WHITE_BOOKSHELF\n" +
                     "- 장식장 : DISPLAY_CABINET\n" +
                     "- 2인용 소파 : TWO_SEATER_SOFA")
-    @GetMapping("/generated-images/{imageId}/curations/categories")
+    @GetMapping("/v1/generated-images/{imageId}/curations/categories")
     public ResponseEntity<ApiResponse<FurnitureCategoriesResponse>> getFurnitureCategories(@AuthenticationPrincipal CustomUserDetails userDetails, @PathVariable Long imageId, @RequestParam List<String> detectedObjects) {
         FurnitureCategoriesResponse response = furnitureService.getFurnitureCategoriesByStyle(userDetails.getUser(), imageId, detectedObjects);
 
@@ -69,7 +93,7 @@ public class FurnitureController {
 
     @Operation(summary = "가구 카테고리를 클릭하여 가구 제품 조회 API",
             description = "생성된 이미지의 큐레이션 탭에서 가구 카테고리를 클릭하여 네이버 쇼핑 API를 통한 가구 제품들을 검색합니다.")
-    @GetMapping("/generated-images/{imageId}/curations/products/{categoryId}")
+    @GetMapping("/v1/generated-images/{imageId}/curations/products/{categoryId}")
     public ResponseEntity<ApiResponse<FurnitureProductsInfoResponse>> getFurnitureProductInfoFromNaverApi(@AuthenticationPrincipal CustomUserDetails userDetails, @PathVariable Long imageId, @PathVariable Long categoryId) {
         FurnitureProductsInfoResponse response = furnitureFacade.getFurnitureProductInfoFromNaverApi(userDetails.getUser(), imageId, categoryId);
 
@@ -82,7 +106,7 @@ public class FurnitureController {
                     "- searchKeyword로 검색어를 커스텀할 수 있습니다.\n" +
                     "- pHash(0~100)사이값을 입력하여, pHash와 colorHash의 비율을 커스텀할 수 있습니다.\n" +
                     "  - colorHash는 100-pHash로 산정됩니다.")
-    @GetMapping("/generated-images/{tagId}/curations/products/{furnitureId}/for-plan")
+    @GetMapping("/v1/generated-images/{tagId}/curations/products/{furnitureId}/for-plan")
     public ResponseEntity<ApiResponse<FurnitureProductsInfoResponseForPlan>> getFurnitureProductInfoFromNaverApiForPlan(
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @PathVariable Long tagId,
@@ -106,7 +130,7 @@ public class FurnitureController {
                     "- searchKeyword로 검색어를 커스텀할 수 있습니다.\n" +
                     "- pHash(0~100)사이값을 입력하여, pHash와 colorHash의 비율을 커스텀할 수 있습니다.\n" +
                     "- V2: mallName/네이버페이 필터 파라미터 적용 (allowedMalls는 서버 프로퍼티 사용, payFilter는 빈 값)" )
-    @GetMapping("/generated-images/{tagId}/curations/products/{furnitureId}/for-plan/detail")
+    @GetMapping("/v1/generated-images/{tagId}/curations/products/{furnitureId}/for-plan/detail")
     public ResponseEntity<ApiResponse<FurnitureProductsInfoResponseForPlan>> getFurnitureProductInfoFromNaverApiForPlanV2(
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @PathVariable Long tagId,
@@ -129,4 +153,3 @@ public class FurnitureController {
         return ResponseEntity.ok(ApiResponse.ok(response));
     }
 }
-
