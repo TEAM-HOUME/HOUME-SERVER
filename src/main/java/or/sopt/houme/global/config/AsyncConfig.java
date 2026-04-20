@@ -50,6 +50,17 @@ public class AsyncConfig {
         this.virtualConcurrencyLimit = virtualConcurrencyLimit;
     }
 
+    @Bean(name = "tokenRefreshExecutor")
+    public Executor tokenRefreshExecutor() {
+        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+        executor.setCorePoolSize(2);
+        executor.setMaxPoolSize(4);
+        executor.setQueueCapacity(100);
+        executor.setThreadNamePrefix("TokenRefresh-");
+        executor.initialize();
+        return executor;
+    }
+
     @Bean(name = "imageGenerationExecutor")
     public Executor imageGenerationExecutor(){
         if ("virtual".equalsIgnoreCase(executorMode)) {

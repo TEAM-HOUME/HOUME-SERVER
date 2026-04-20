@@ -196,6 +196,56 @@ public class CurationProductServiceImpl implements CurationProductService {
     }
 
     @Override
+    public CurationProductListResponse getProductsV2(
+            String keyword,
+            List<Long> typeIds,
+            List<String> priceRangeIds,
+            List<Long> colorIds,
+            Long cursor,
+            Integer size
+    ) {
+        validatePaginationParams(size);
+
+        Pageable pageable = PageRequest.of(0, size);
+        List<String> colorNames = extractColorNames(colorIds);
+        List<CurationRawProductRepositoryCustom.PriceRangeFilter> priceFilters = extractPriceFilters(priceRangeIds);
+
+        List<Long> filteredTypeIds = preprocessTypeIds(typeIds);
+        if (typeIds != null && typeIds.contains(0L)) {
+            filteredTypeIds = null;
+        }
+
+        Slice<CurationRawProduct> productSlice = curationRawProductRepository.findAllByCurationFiltersV2(
+                keyword, filteredTypeIds, priceFilters, colorNames, cursor, pageable
+        );
+
+        List<CurationProductResponse> products = productSlice.getContent().stream()
+                .map(p -> new CurationProductResponse(
+                        p.getId(),
+                        p.getProductId(),
+                        extractCategoryName(p),
+                        p.getSource(),
+                        p.getBrand(),
+                        p.getProductName(),
+                        p.getProductImageUrl(),
+                        p.getListPrice(),
+                        p.getDiscountRate(),
+                        p.getDiscountPrice(),
+                        p.getProductMallName(),
+                        p.getProductSiteUrl()
+                ))
+                .toList();
+
+        Long nextCursor = products.isEmpty() ? null : products.get(products.size() - 1).id();
+        List<CurationProductAppliedFilterResponse> appliedFilters = buildAppliedFilters(typeIds, priceRangeIds, colorIds);
+
+        return new CurationProductListResponse(
+                products,
+                new CurationProductMetaResponse(nextCursor, productSlice.hasNext(), appliedFilters)
+        );
+    }
+
+    @Override
     public CurationProductDetailResponse getProductDetail(Long id, User user) {
         CurationRawProduct product = curationRawProductRepository.findByIdAndIsExposedTrueOrNull(id)
                 .orElseThrow(() -> new FurnitureException(ErrorCode.NOT_FOUND_CURATION_RAW_PRODUCT));

@@ -19,6 +19,15 @@ public interface CurationRawProductRepositoryCustom {
             Pageable pageable
     );
 
+    Slice<CurationRawProduct> findAllByCurationFiltersV2(
+            String keyword,
+            List<Long> typeIds,
+            List<PriceRangeFilter> priceRanges,
+            List<String> colorNames,
+            Long cursor,
+            Pageable pageable
+    );
+
     Page<CurationRawProduct> findExposedRawProductsExcludingLikedByUser(Long userId, Pageable pageable);
 
     List<CurationRawProduct> findAllSimilarByFurnitureTypeIds(

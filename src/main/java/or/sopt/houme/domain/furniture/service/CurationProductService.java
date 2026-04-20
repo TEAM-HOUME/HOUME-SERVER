@@ -19,5 +19,14 @@ public interface CurationProductService {
             Integer size
     );
 
+    CurationProductListResponse getProductsV2(
+            String keyword,
+            List<Long> typeIds,
+            List<String> priceRangeIds,
+            List<Long> colorIds,
+            Long cursor,
+            Integer size
+    );
+
     CurationProductDetailResponse getProductDetail(Long id, User user);
 }

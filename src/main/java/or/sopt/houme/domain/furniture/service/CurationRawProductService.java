@@ -7,6 +7,8 @@ import or.sopt.houme.domain.furniture.model.entity.FurnitureTag;
 import or.sopt.houme.domain.furniture.model.entity.SoozipCategory;
 import or.sopt.houme.domain.furniture.repository.CurationRawProductRepository;
 import or.sopt.houme.domain.furniture.service.dto.CurationRawProductSaveResult;
+import or.sopt.houme.domain.furniture.service.event.CurationRawProductTokenRefreshEvent;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,6 +26,7 @@ import java.util.stream.Collectors;
 public class CurationRawProductService {
 
     private final CurationRawProductRepository curationRawProductRepository;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Transactional(readOnly = true)
     public List<NaverFurnitureProductDto> getCandidatesByFurnitureTag(FurnitureTag furnitureTag) {
@@ -133,7 +136,9 @@ public class CurationRawProductService {
         }
 
         if (!toSave.isEmpty()) {
-            curationRawProductRepository.saveAll(toSave);
+            List<CurationRawProduct> saved = curationRawProductRepository.saveAll(toSave);
+            List<Long> savedIds = saved.stream().map(CurationRawProduct::getId).toList();
+            eventPublisher.publishEvent(new CurationRawProductTokenRefreshEvent(savedIds));
         }
 
         return new CurationRawProductSaveResult(inserted, updated, skipped);

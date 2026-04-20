@@ -124,6 +124,48 @@ class CurationProductServiceImplTest {
     }
 
     @Test
+    @DisplayName("getProductsV2()는 v2 레포지토리 메서드를 호출하여 토큰 기반 검색 결과를 반환한다")
+    void getProductsV2() {
+        // given
+        String keyword = "매트리스";
+        Integer size = 20;
+
+        FurnitureType bedType = FurnitureType.builder().id(1L).nameKr("침대").nameEng("BED").build();
+        given(furnitureTypeRepository.findAll()).willReturn(List.of(bedType));
+        given(furnitureRepository.findAll()).willReturn(List.of());
+
+        CurationRawProduct product = CurationRawProduct.builder()
+                .id(99L)
+                .productId(3003L)
+                .productName("SS매트리스 침대")
+                .discountPrice(200000L)
+                .isExposed(true)
+                .furnitureTagMappings(new HashSet<>())
+                .build();
+        product.updateSearchTokens("SS매트리스 침대 SS 매트리스");
+
+        Slice<CurationRawProduct> slice = new SliceImpl<>(
+                List.of(product),
+                PageRequest.of(0, size),
+                false
+        );
+
+        given(curationRawProductRepository.findAllByCurationFiltersV2(
+                eq(keyword), any(), any(), any(), any(), any()
+        )).willReturn(slice);
+
+        // when
+        CurationProductListResponse response = curationProductService.getProductsV2(
+                keyword, null, null, null, null, size
+        );
+
+        // then
+        assertThat(response.products()).hasSize(1);
+        assertThat(response.products().get(0).name()).isEqualTo("SS매트리스 침대");
+        assertThat(response.meta().hasNext()).isFalse();
+    }
+
+    @Test
     @DisplayName("getProductDetail()은 다중 매핑 시 우선순위가 가장 높은 카테고리명을 반환한다")
     void getProductDetail_withMultipleTags() {
         // given
