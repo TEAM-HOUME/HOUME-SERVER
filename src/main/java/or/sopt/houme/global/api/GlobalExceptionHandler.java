@@ -2,6 +2,7 @@ package or.sopt.houme.global.api;
 
 import io.sentry.Sentry;
 import or.sopt.houme.global.api.handler.ImageFallbackException;
+import jakarta.validation.ConstraintViolationException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -115,6 +116,15 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(HandlerMethodValidationException.class)
     public ResponseEntity<ApiResponse<Void>> handleMethodValidationException(HandlerMethodValidationException e) {
+        ErrorCode errorCode = ErrorCode.NOT_VALID_EXCEPTION;
+
+        Sentry.captureException(e);
+
+        return ResponseEntity.status(errorCode.getStatus()).body(ApiResponse.fail(errorCode.getCode(), errorCode.getMsg()));
+    }
+
+    @ExceptionHandler(ConstraintViolationException.class)
+    public ResponseEntity<ApiResponse<Void>> handleConstraintViolationException(ConstraintViolationException e) {
         ErrorCode errorCode = ErrorCode.NOT_VALID_EXCEPTION;
 
         Sentry.captureException(e);

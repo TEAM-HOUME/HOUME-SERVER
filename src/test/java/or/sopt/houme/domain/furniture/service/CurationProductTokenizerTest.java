@@ -4,6 +4,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import java.util.Arrays;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -78,7 +79,7 @@ class CurationProductTokenizerTest {
     @Test
     @DisplayName("null 또는 빈 값은 토큰에 포함되지 않는다")
     void buildTokens_ignoresNullAndBlank() {
-        String result = tokenizer.buildTokens(null, "  ", List.of(null, ""), List.of());
+        String result = tokenizer.buildTokens(null, "  ", Arrays.asList(null, ""), List.of());
 
         assertThat(result).isBlank();
     }

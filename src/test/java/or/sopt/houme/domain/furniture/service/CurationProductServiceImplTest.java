@@ -130,10 +130,6 @@ class CurationProductServiceImplTest {
         String keyword = "매트리스";
         Integer size = 20;
 
-        FurnitureType bedType = FurnitureType.builder().id(1L).nameKr("침대").nameEng("BED").build();
-        given(furnitureTypeRepository.findAll()).willReturn(List.of(bedType));
-        given(furnitureRepository.findAll()).willReturn(List.of());
-
         CurationRawProduct product = CurationRawProduct.builder()
                 .id(99L)
                 .productId(3003L)
