@@ -144,6 +144,7 @@ public class CurationProductServiceImpl implements CurationProductService {
 
     private List<CurationRawProductRepositoryCustom.PriceRangeFilter> extractPriceFilters(List<String> priceRangeIds) {
         if (priceRangeIds == null || priceRangeIds.isEmpty()) return List.of();
+        if (priceRangeIds.stream().anyMatch(id -> "P0".equalsIgnoreCase(id))) return List.of();
 
         List<PriceRangeFilterResponse> allPriceMetadata = getPriceRangeFilters();
         return priceRangeIds.stream()
