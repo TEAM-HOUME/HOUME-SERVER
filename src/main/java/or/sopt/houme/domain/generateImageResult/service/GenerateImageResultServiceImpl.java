@@ -70,9 +70,7 @@ public class GenerateImageResultServiceImpl implements GenerateImageResultServic
         }
 
         GenerateImage generateImage = generateImageService.findGenerateImage(imageId);
-        if (generateImage.getResolvedGenerationType() != GenerateImageType.LIST) {
-            throw new GenerateImageException(ErrorCode.INVALID_GENERATE_IMAGE_TYPE);
-        }
+        validateListResultAccessible(generateImage);
 
         boolean isMirror = resolveIsMirror(generateImage);
         List<CurationRawProduct> selectedProducts = resolveSelectedRawProducts(generateImage);
@@ -102,9 +100,7 @@ public class GenerateImageResultServiceImpl implements GenerateImageResultServic
         }
 
         GenerateImage generateImage = generateImageService.findGenerateImage(imageId);
-        if (generateImage.getResolvedGenerationType() != GenerateImageType.LIST) {
-            throw new GenerateImageException(ErrorCode.INVALID_GENERATE_IMAGE_TYPE);
-        }
+        validateListResultAccessible(generateImage);
 
         List<CurationRawProduct> selectedProducts = resolveSelectedRawProducts(generateImage);
         if (selectedProducts.isEmpty()) {
@@ -175,9 +171,7 @@ public class GenerateImageResultServiceImpl implements GenerateImageResultServic
         }
 
         GenerateImage generateImage = generateImageService.findGenerateImage(imageId);
-        if (generateImage.getResolvedGenerationType() != GenerateImageType.LIST) {
-            throw new GenerateImageException(ErrorCode.INVALID_GENERATE_IMAGE_TYPE);
-        }
+        validateListResultAccessible(generateImage);
 
         List<Long> selectedRawProductIds = resolveSelectedRawProducts(generateImage).stream()
                 .map(CurationRawProduct::getId)
@@ -210,6 +204,14 @@ public class GenerateImageResultServiceImpl implements GenerateImageResultServic
             return false;
         }
         return houseService.getIsMirrorByHouseId(generateImage.getHouse().getId());
+    }
+
+    private void validateListResultAccessible(GenerateImage generateImage) {
+        boolean hasBanner = generateImage.getHouse() != null && generateImage.getHouse().getBanner() != null;
+        boolean isListType = generateImage.getGenerationType() == GenerateImageType.LIST;
+        if (!hasBanner || !isListType) {
+            throw new GenerateImageException(ErrorCode.INVALID_GENERATE_IMAGE_TYPE);
+        }
     }
 
     private List<CurationRawProduct> resolveSelectedRawProducts(GenerateImage generateImage) {
