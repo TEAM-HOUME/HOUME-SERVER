@@ -1,10 +1,13 @@
 package or.sopt.houme.domain.generateImage.service;
 
 import or.sopt.houme.domain.banner.model.entity.Banner;
+import or.sopt.houme.domain.banner.model.entity.BannerCurationRawProduct;
 import or.sopt.houme.domain.credit.model.entity.Credit;
 import or.sopt.houme.domain.credit.service.CreditService;
+import or.sopt.houme.domain.furniture.model.entity.CurationRawProduct;
 import or.sopt.houme.domain.generateImage.model.entity.GenerateImage;
 import or.sopt.houme.domain.generateImage.model.entity.GenerateImageType;
+import or.sopt.houme.domain.generateImage.repository.GenerateImageUsedProductRepository;
 import or.sopt.houme.domain.generateImage.presentation.dto.response.BannerGenerateImageResponse;
 import or.sopt.houme.domain.house.model.entity.House;
 import or.sopt.houme.domain.house.service.HouseService;
@@ -17,6 +20,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -39,6 +44,9 @@ class GenerateImageTransactionServiceTest {
     private GenerateImageService generateImageService;
 
     @Mock
+    private GenerateImageUsedProductRepository generateImageUsedProductRepository;
+
+    @Mock
     private UserService userService;
 
     @Test
@@ -48,6 +56,8 @@ class GenerateImageTransactionServiceTest {
         Credit lockedCredit = mock(Credit.class);
         Banner banner = mock(Banner.class);
         House house = mock(House.class);
+        BannerCurationRawProduct bannerMapping = mock(BannerCurationRawProduct.class);
+        CurationRawProduct rawProduct = mock(CurationRawProduct.class);
 
         Long floorPlanId = 3L;
         boolean isMirror = true;
@@ -73,6 +83,9 @@ class GenerateImageTransactionServiceTest {
                 .thenReturn(house);
         when(generateImageService.createGenerateImage(imageResponse, house, GenerateImageType.LIST))
                 .thenReturn(generateImage);
+        when(rawProduct.getId()).thenReturn(1L);
+        when(bannerMapping.getCurationRawProduct()).thenReturn(rawProduct);
+        when(banner.getBannerRawProducts()).thenReturn(List.of(bannerMapping));
 
         BannerGenerateImageResponse response = generateImageTransactionService.saveBannerImageAndConfirmCredit(
                 user,
@@ -87,6 +100,7 @@ class GenerateImageTransactionServiceTest {
         assertThat(response.imageId()).isEqualTo(101L);
         verify(houseService).createTemplateHouse(user, banner, finalPrompt, floorPlanId, isMirror);
         verify(generateImageService).createGenerateImage(imageResponse, house, GenerateImageType.LIST);
+        verify(generateImageUsedProductRepository).saveAll(anyList());
         verify(creditService).commitCreditDeletion(lockedCredit);
         verify(userService).updateHasGeneratedImage(user);
     }
@@ -114,6 +128,7 @@ class GenerateImageTransactionServiceTest {
         )).isInstanceOf(RuntimeException.class)
                 .hasMessageContaining("image save failed");
 
+        verify(generateImageUsedProductRepository, never()).saveAll(anyList());
         verify(creditService, never()).commitCreditDeletion(any());
         verify(userService, never()).updateHasGeneratedImage(any());
     }
@@ -125,6 +140,8 @@ class GenerateImageTransactionServiceTest {
         Credit lockedCredit = mock(Credit.class);
         Banner banner = mock(Banner.class);
         House house = mock(House.class);
+        BannerCurationRawProduct bannerMapping = mock(BannerCurationRawProduct.class);
+        CurationRawProduct rawProduct = mock(CurationRawProduct.class);
         ImageUploadResponseDTO imageResponse = ImageUploadResponseDTO.from(
                 "file.jpg",
                 "origin.jpg",
@@ -145,6 +162,9 @@ class GenerateImageTransactionServiceTest {
         when(houseService.createTemplateHouse(user, banner, "prompt", 2L, true)).thenReturn(house);
         when(generateImageService.createGenerateImage(imageResponse, house, GenerateImageType.LIST))
                 .thenReturn(generateImage);
+        when(rawProduct.getId()).thenReturn(1L);
+        when(bannerMapping.getCurationRawProduct()).thenReturn(rawProduct);
+        when(banner.getBannerRawProducts()).thenReturn(List.of(bannerMapping));
         doThrow(new RuntimeException("credit commit failed"))
                 .when(creditService).commitCreditDeletion(lockedCredit);
 
@@ -153,6 +173,7 @@ class GenerateImageTransactionServiceTest {
         )).isInstanceOf(RuntimeException.class)
                 .hasMessageContaining("credit commit failed");
 
+        verify(generateImageUsedProductRepository).saveAll(anyList());
         verify(creditService).commitCreditDeletion(lockedCredit);
         verify(userService, never()).updateHasGeneratedImage(any());
     }

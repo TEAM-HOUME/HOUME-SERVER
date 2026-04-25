@@ -2,8 +2,12 @@ package or.sopt.houme.domain.generateImage.service;
 
 import lombok.RequiredArgsConstructor;
 import or.sopt.houme.domain.banner.model.entity.Banner;
+import or.sopt.houme.domain.banner.model.entity.BannerCurationRawProduct;
+import or.sopt.houme.domain.furniture.model.entity.CurationRawProduct;
 import or.sopt.houme.domain.credit.model.entity.Credit;
+import or.sopt.houme.domain.generateImage.model.entity.GenerateImageUsedProduct;
 import or.sopt.houme.domain.credit.service.CreditService;
+import or.sopt.houme.domain.generateImage.repository.GenerateImageUsedProductRepository;
 import or.sopt.houme.domain.generateImage.presentation.dto.request.GenerateImageRequest;
 import or.sopt.houme.domain.generateImage.presentation.dto.response.BannerGenerateImageResponse;
 import or.sopt.houme.domain.generateImage.presentation.dto.response.ImageInfoResponse;
@@ -27,7 +31,10 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
@@ -37,6 +44,7 @@ public class GenerateImageTransactionService {
     private final HouseService houseService;
     private final HouseFloorPlanRepository houseFloorPlanRepository;
     private final GenerateImageService generateImageService;
+    private final GenerateImageUsedProductRepository generateImageUsedProductRepository;
     private final UserService userService;
 
     // DB 관련 로직을 위한 별도의 @Transactional 메서드 생성
@@ -142,6 +150,7 @@ public class GenerateImageTransactionService {
                 house,
                 GenerateImageType.LIST
         );
+        saveUsedProductsFromBanner(generateImage, banner);
 
         creditService.commitCreditDeletion(lockedCredit);
         userService.updateHasGeneratedImage(user);
@@ -185,5 +194,34 @@ public class GenerateImageTransactionService {
         return houseFloorPlanRepository.findHouseFloorPlanByHouseId(house.getId())
                 .map(HouseFloorPlan::getFloorPlan)
                 .orElseThrow(() -> new HouseException(ErrorCode.NOT_FOUND_FLOOR_PLAN));
+    }
+
+    private void saveUsedProductsFromBanner(GenerateImage generateImage, Banner banner) {
+        if (generateImage == null || banner == null || banner.getBannerRawProducts() == null || banner.getBannerRawProducts().isEmpty()) {
+            return;
+        }
+
+        Map<Long, CurationRawProduct> orderedDistinct = new LinkedHashMap<>();
+        banner.getBannerRawProducts().stream()
+                .sorted((left, right) -> Long.compare(safeMappingId(left), safeMappingId(right)))
+                .map(BannerCurationRawProduct::getCurationRawProduct)
+                .filter(Objects::nonNull)
+                .forEach(rawProduct -> orderedDistinct.putIfAbsent(rawProduct.getId(), rawProduct));
+
+        List<GenerateImageUsedProduct> mappings = new ArrayList<>();
+        int sortOrder = 1;
+        for (CurationRawProduct rawProduct : orderedDistinct.values()) {
+            mappings.add(GenerateImageUsedProduct.of(generateImage, rawProduct, sortOrder++));
+        }
+        if (!mappings.isEmpty()) {
+            generateImageUsedProductRepository.saveAll(mappings);
+        }
+    }
+
+    private long safeMappingId(BannerCurationRawProduct mapping) {
+        if (mapping == null || mapping.getId() == null) {
+            return Long.MAX_VALUE;
+        }
+        return mapping.getId();
     }
 }
