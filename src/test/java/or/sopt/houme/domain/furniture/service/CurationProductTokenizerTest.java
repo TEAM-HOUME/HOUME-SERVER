@@ -35,8 +35,8 @@ class CurationProductTokenizerTest {
         // "SS매트리스" → "SS" + "매트리스" 모두 포함
         String result = tokenizer.buildTokens("SS매트리스", null, List.of(), List.of());
 
-        assertThat(result).contains("SS매트리스");
-        assertThat(result).contains("SS");
+        assertThat(result).contains("ss매트리스");
+        assertThat(result).contains("ss");
         assertThat(result).contains("매트리스");
     }
 

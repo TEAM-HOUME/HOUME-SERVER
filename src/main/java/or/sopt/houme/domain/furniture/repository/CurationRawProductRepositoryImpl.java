@@ -165,9 +165,9 @@ public class CurationRawProductRepositoryImpl implements CurationRawProductRepos
             finalWhere.and(rawProduct.id.lt(cursor));
         }
 
-        // v2: search_tokens 기반 검색 (pg_trgm GIN 인덱스 활용)
+        // v2: search_tokens 기반 검색 (pg_trgm GIN 인덱스 활용, 토큰은 lowercase 저장이므로 contains 사용)
         if (keyword != null && !keyword.isBlank()) {
-            finalWhere.and(rawProduct.searchTokens.containsIgnoreCase(keyword));
+            finalWhere.and(rawProduct.searchTokens.contains(keyword.toLowerCase()));
         }
 
         if (typeIds != null && !typeIds.isEmpty()) {

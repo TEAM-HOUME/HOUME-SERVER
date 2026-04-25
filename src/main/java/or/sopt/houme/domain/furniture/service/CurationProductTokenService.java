@@ -33,7 +33,7 @@ public class CurationProductTokenService {
     public void refreshTokensForProducts(List<Long> productIds) {
         if (productIds == null || productIds.isEmpty()) return;
 
-        List<CurationRawProduct> products = curationRawProductRepository.findAllById(productIds);
+        List<CurationRawProduct> products = curationRawProductRepository.findAllByIdWithFurnitureTags(productIds);
         Map<Long, List<String>> keywordsByProductId = loadCustomKeywords(productIds);
 
         for (CurationRawProduct product : products) {

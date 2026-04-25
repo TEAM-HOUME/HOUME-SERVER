@@ -19,10 +19,16 @@ public class CurationProductTokenBackfillRunner implements ApplicationRunner {
 
     private final CurationProductTokenService curationProductTokenService;
 
+    private static final int MAX_ITERATIONS = 10000;
+
     @Override
     public void run(ApplicationArguments args) {
         curationProductTokenService.initPgTrgm();
-        backfill();
+        try {
+            backfill();
+        } catch (Exception e) {
+            log.error("search_tokens 백필 중 오류 발생 — 서버 기동은 계속됩니다: {}", e.getMessage(), e);
+        }
     }
 
     private void backfill() {
@@ -34,15 +40,25 @@ public class CurationProductTokenBackfillRunner implements ApplicationRunner {
 
         log.info("search_tokens 백필 시작: {}건", nullCount);
         long processed = 0;
+        int iterations = 0;
 
-        while (true) {
+        while (iterations++ < MAX_ITERATIONS) {
             List<Long> ids = curationProductTokenService.findNullTokenProductIds(BATCH_SIZE);
             if (ids.isEmpty()) break;
-            curationProductTokenService.refreshTokensForProducts(ids);
+            try {
+                curationProductTokenService.refreshTokensForProducts(ids);
+            } catch (Exception e) {
+                log.error("search_tokens 백필 배치 오류 (ids={}): {}", ids, e.getMessage(), e);
+                break;
+            }
             processed += ids.size();
             log.info("search_tokens 백필 진행: {}/{}", processed, nullCount);
         }
 
-        log.info("search_tokens 백필 완료: {}건 처리", processed);
+        if (iterations >= MAX_ITERATIONS) {
+            log.warn("search_tokens 백필 최대 반복 횟수 도달 — 일부 상품이 처리되지 않았을 수 있습니다.");
+        } else {
+            log.info("search_tokens 백필 완료: {}건 처리", processed);
+        }
     }
 }

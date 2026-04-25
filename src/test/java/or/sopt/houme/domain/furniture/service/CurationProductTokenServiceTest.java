@@ -54,7 +54,7 @@ class CurationProductTokenServiceTest {
                 .furnitureTagMappings(new HashSet<>())
                 .build();
 
-        given(curationRawProductRepository.findAllById(List.of(1L))).willReturn(List.of(product));
+        given(curationRawProductRepository.findAllByIdWithFurnitureTags(List.of(1L))).willReturn(List.of(product));
         given(searchKeywordRepository.findAllByCurationRawProductIdIn(anyList())).willReturn(List.of());
         given(tokenizer.buildTokens(any(), any(), anyList(), anyList())).willReturn("퀸 침대 프레임 이케아");
 
@@ -80,7 +80,7 @@ class CurationProductTokenServiceTest {
 
         CurationProductSearchKeyword keyword = CurationProductSearchKeyword.of(product, "1인용침대");
 
-        given(curationRawProductRepository.findAllById(List.of(1L))).willReturn(List.of(product));
+        given(curationRawProductRepository.findAllByIdWithFurnitureTags(List.of(1L))).willReturn(List.of(product));
         given(searchKeywordRepository.findAllByCurationRawProductIdIn(anyList())).willReturn(List.of(keyword));
         given(tokenizer.buildTokens(any(), any(), anyList(), anyList())).willReturn("침대 1인용침대");
 

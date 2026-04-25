@@ -17,13 +17,15 @@ public class CurationProductTokenizer {
 
         for (String name : furnitureTypeNames) {
             if (name != null && !name.isBlank()) {
-                tokens.add(name.trim());
+                tokens.add(name.trim().toLowerCase());
+                addWordTokens(tokens, name);
             }
         }
 
         for (String kw : customKeywords) {
             if (kw != null && !kw.isBlank()) {
-                tokens.add(kw.trim());
+                tokens.add(kw.trim().toLowerCase());
+                addWordTokens(tokens, kw);
             }
         }
 
@@ -35,12 +37,12 @@ public class CurationProductTokenizer {
 
         String[] words = text.split("[\\s\\-_/()\\[\\],.]+");
         for (String word : words) {
-            String trimmed = word.trim();
+            String trimmed = word.trim().toLowerCase();
             if (trimmed.isEmpty()) continue;
             tokens.add(trimmed);
 
             // 한글/비한글 경계에서 복합어 분리
-            // ex) "SS매트리스" → "SS" + "매트리스", "3인용소파" → "3인용" + "소파"
+            // ex) "SS매트리스" → "ss" + "매트리스", "3인용소파" → "3인용" + "소파"
             String[] parts = trimmed.split("(?<=[가-힣])(?=[^가-힣])|(?<=[^가-힣])(?=[가-힣])");
             if (parts.length > 1) {
                 for (String part : parts) {
