@@ -156,12 +156,14 @@ public class GenerateImageResultServiceImpl implements GenerateImageResultServic
 
         Map<Long, List<ProductColorResponse>> colorsByRawProductId = buildColorsByRawProductId(recommendedProducts);
         Set<Long> likedRawProductIds = resolveLikedRawProductIds(user, recommendedProducts);
+        Map<Long, Long> jjymCountByRawProductId = resolveJjymCountByRawProductId(recommendedProducts);
 
         return SimilarItemsResponse.of(recommendedProducts.stream()
                 .map(rawProduct -> SimilarItemResponse.from(
                         rawProduct,
                         colorsByRawProductId.getOrDefault(rawProduct.getId(), List.of()),
-                        likedRawProductIds.contains(rawProduct.getId())
+                        likedRawProductIds.contains(rawProduct.getId()),
+                        jjymCountByRawProductId.getOrDefault(rawProduct.getId(), 0L)
                 ))
                 .toList());
     }
@@ -417,5 +419,50 @@ public class GenerateImageResultServiceImpl implements GenerateImageResultServic
                 .filter(Objects::nonNull)
                 .map(CurationRawProduct::getId)
                 .collect(Collectors.toSet());
+    }
+
+    private Map<Long, Long> resolveJjymCountByRawProductId(List<CurationRawProduct> rawProducts) {
+        if (rawProducts == null || rawProducts.isEmpty()) {
+            return Map.of();
+        }
+
+        List<Long> productIds = rawProducts.stream()
+                .map(CurationRawProduct::getProductId)
+                .filter(Objects::nonNull)
+                .distinct()
+                .toList();
+        if (productIds.isEmpty()) {
+            return Map.of();
+        }
+
+        Map<Long, Long> recommendFurnitureIdByProductId = recommendFurnitureRepository
+                .findAllBySourceAndFurnitureProductIdIn(CurationSource.RAW, productIds)
+                .stream()
+                .collect(Collectors.toMap(
+                        RecommendFurniture::getFurnitureProductId,
+                        RecommendFurniture::getId,
+                        (left, right) -> left
+                ));
+        List<Long> recommendFurnitureIds = recommendFurnitureIdByProductId.values().stream()
+                .distinct()
+                .toList();
+        if (recommendFurnitureIds.isEmpty()) {
+            return Map.of();
+        }
+
+        Map<Long, Long> jjymCountByRecommendFurnitureId = jjymRepository.countByRecommendFurnitureIds(recommendFurnitureIds);
+
+        Map<Long, Long> result = new LinkedHashMap<>();
+        for (CurationRawProduct rawProduct : rawProducts) {
+            if (rawProduct == null || rawProduct.getId() == null) {
+                continue;
+            }
+            Long recommendFurnitureId = recommendFurnitureIdByProductId.get(rawProduct.getProductId());
+            Long jjymCount = recommendFurnitureId == null
+                    ? 0L
+                    : jjymCountByRecommendFurnitureId.getOrDefault(recommendFurnitureId, 0L);
+            result.put(rawProduct.getId(), jjymCount);
+        }
+        return result;
     }
 }

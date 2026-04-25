@@ -15,13 +15,15 @@ public record SimilarItemResponse(
         Long finalPrice,
         String linkUrl,
         List<ProductColorResponse> colors,
-        boolean isLiked
+        boolean isLiked,
+        Long jjymCount
 ) {
 
     public static SimilarItemResponse from(
             CurationRawProduct product,
             List<ProductColorResponse> colors,
-            boolean isLiked
+            boolean isLiked,
+            Long jjymCount
     ) {
         return new SimilarItemResponse(
                 product.getId(),
@@ -33,7 +35,8 @@ public record SimilarItemResponse(
                 product.getDiscountPrice(),
                 product.getProductSiteUrl(),
                 colors,
-                isLiked
+                isLiked,
+                jjymCount
         );
     }
 }
