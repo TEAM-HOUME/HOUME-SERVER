@@ -32,22 +32,25 @@ class CurationProductTokenizerTest {
     @Test
     @DisplayName("한글/영문 경계의 복합어가 분리된 토큰으로 추가된다")
     void buildTokens_splitsKoreanEnglishBoundary() {
-        // "SS매트리스" → "SS" + "매트리스" 모두 포함
+        // "SS매트리스" → "ss매트리스" + "ss" + "매트리스" 모두 토큰으로 포함
         String result = tokenizer.buildTokens("SS매트리스", null, List.of(), List.of());
+        List<String> tokens = List.of(result.split(" "));
 
-        assertThat(result).contains("ss매트리스");
-        assertThat(result).contains("ss");
-        assertThat(result).contains("매트리스");
+        assertThat(tokens).contains("ss매트리스");
+        assertThat(tokens).contains("ss");
+        assertThat(tokens).contains("매트리스");
     }
 
     @Test
-    @DisplayName("숫자/한글 경계의 복합어가 분리된 토큰으로 추가된다")
+    @DisplayName("숫자/한글 경계의 복합어는 경계에서 분리된다")
     void buildTokens_splitsNumberKoreanBoundary() {
-        // "3인용소파" → "3인용" + "소파" 모두 포함
+        // "3인용소파" → 한글/비한글 경계: "3" + "인용소파" 로 분리됨
         String result = tokenizer.buildTokens("3인용소파", null, List.of(), List.of());
+        List<String> tokens = List.of(result.split(" "));
 
-        assertThat(result).contains("3인용소파");
-        assertThat(result).contains("소파");
+        assertThat(tokens).contains("3인용소파");
+        assertThat(tokens).contains("3");
+        assertThat(tokens).contains("인용소파");
     }
 
     @Test

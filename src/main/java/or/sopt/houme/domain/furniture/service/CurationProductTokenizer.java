@@ -15,14 +15,14 @@ public class CurationProductTokenizer {
         addWordTokens(tokens, productName);
         addWordTokens(tokens, brand);
 
-        for (String name : furnitureTypeNames) {
+        for (String name : furnitureTypeNames == null ? List.<String>of() : furnitureTypeNames) {
             if (name != null && !name.isBlank()) {
                 tokens.add(name.trim().toLowerCase());
                 addWordTokens(tokens, name);
             }
         }
 
-        for (String kw : customKeywords) {
+        for (String kw : customKeywords == null ? List.<String>of() : customKeywords) {
             if (kw != null && !kw.isBlank()) {
                 tokens.add(kw.trim().toLowerCase());
                 addWordTokens(tokens, kw);

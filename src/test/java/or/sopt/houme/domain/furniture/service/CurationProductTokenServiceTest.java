@@ -99,6 +99,6 @@ class CurationProductTokenServiceTest {
     void refreshTokensForProducts_doesNothingForEmptyList() {
         curationProductTokenService.refreshTokensForProducts(List.of());
 
-        verify(curationRawProductRepository, org.mockito.Mockito.never()).findAllById(anyList());
+        verify(curationRawProductRepository, org.mockito.Mockito.never()).findAllByIdWithFurnitureTags(anyList());
     }
 }
