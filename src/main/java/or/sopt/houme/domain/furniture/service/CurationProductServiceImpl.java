@@ -354,6 +354,7 @@ public class CurationProductServiceImpl implements CurationProductService {
     private List<ColorFilterResponse> getColorFilters() {
         java.util.Map<String, String> standardFilters = ColorHexMapper.getStandardColorFilters();
         java.util.List<ColorFilterResponse> responses = new java.util.ArrayList<>();
+        responses.add(new ColorFilterResponse(0L, "전체", null));
 
         long id = 1L;
         for (java.util.Map.Entry<String, String> entry : standardFilters.entrySet()) {
