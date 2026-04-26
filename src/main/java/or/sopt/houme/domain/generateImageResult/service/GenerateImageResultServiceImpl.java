@@ -18,9 +18,7 @@ import or.sopt.houme.domain.furniture.repository.JjymRepository;
 import or.sopt.houme.domain.furniture.repository.RecommendFurnitureRepository;
 import or.sopt.houme.domain.generateImage.model.entity.GenerateImage;
 import or.sopt.houme.domain.generateImage.model.entity.GenerateImageType;
-import or.sopt.houme.domain.generateImage.model.entity.GenerateImageUsedProduct;
 import or.sopt.houme.domain.generateImage.repository.GenerateImageRepository;
-import or.sopt.houme.domain.generateImage.repository.GenerateImageUsedProductRepository;
 import or.sopt.houme.domain.generateImage.service.GenerateImageService;
 import or.sopt.houme.domain.generateImageResult.presentation.dto.response.GenerateImageResultProductResponse;
 import or.sopt.houme.domain.generateImageResult.presentation.dto.response.GenerateImageResultResponse;
@@ -53,7 +51,6 @@ public class GenerateImageResultServiceImpl implements GenerateImageResultServic
     private final GenerateImageService generateImageService;
     private final GenerateImageRepository generateImageRepository;
     private final BannerRepository bannerRepository;
-    private final GenerateImageUsedProductRepository generateImageUsedProductRepository;
     private final CurationRawProductColorRepository curationRawProductColorRepository;
     private final CurationRawProductRepository curationRawProductRepository;
     private final CurationRawProductFurnitureTagRepository curationRawProductFurnitureTagRepository;
@@ -70,9 +67,7 @@ public class GenerateImageResultServiceImpl implements GenerateImageResultServic
         }
 
         GenerateImage generateImage = generateImageService.findGenerateImage(imageId);
-        if (generateImage.getResolvedGenerationType() != GenerateImageType.LIST) {
-            throw new GenerateImageException(ErrorCode.INVALID_GENERATE_IMAGE_TYPE);
-        }
+        validateListResultAccessible(generateImage);
 
         boolean isMirror = resolveIsMirror(generateImage);
         List<CurationRawProduct> selectedProducts = resolveSelectedRawProducts(generateImage);
@@ -102,9 +97,7 @@ public class GenerateImageResultServiceImpl implements GenerateImageResultServic
         }
 
         GenerateImage generateImage = generateImageService.findGenerateImage(imageId);
-        if (generateImage.getResolvedGenerationType() != GenerateImageType.LIST) {
-            throw new GenerateImageException(ErrorCode.INVALID_GENERATE_IMAGE_TYPE);
-        }
+        validateListResultAccessible(generateImage);
 
         List<CurationRawProduct> selectedProducts = resolveSelectedRawProducts(generateImage);
         if (selectedProducts.isEmpty()) {
@@ -155,13 +148,16 @@ public class GenerateImageResultServiceImpl implements GenerateImageResultServic
         );
 
         Map<Long, List<ProductColorResponse>> colorsByRawProductId = buildColorsByRawProductId(recommendedProducts);
-        Set<Long> likedRawProductIds = resolveLikedRawProductIds(user, recommendedProducts);
+        Map<Long, Long> recommendFurnitureIdByProductId = resolveRecommendFurnitureIdByProductId(recommendedProducts);
+        Set<Long> likedRawProductIds = resolveLikedRawProductIds(user, recommendedProducts, recommendFurnitureIdByProductId);
+        Map<Long, Long> jjymCountByRawProductId = resolveJjymCountByRawProductId(recommendedProducts, recommendFurnitureIdByProductId);
 
         return SimilarItemsResponse.of(recommendedProducts.stream()
                 .map(rawProduct -> SimilarItemResponse.from(
                         rawProduct,
                         colorsByRawProductId.getOrDefault(rawProduct.getId(), List.of()),
-                        likedRawProductIds.contains(rawProduct.getId())
+                        likedRawProductIds.contains(rawProduct.getId()),
+                        jjymCountByRawProductId.getOrDefault(rawProduct.getId(), 0L)
                 ))
                 .toList());
     }
@@ -173,9 +169,7 @@ public class GenerateImageResultServiceImpl implements GenerateImageResultServic
         }
 
         GenerateImage generateImage = generateImageService.findGenerateImage(imageId);
-        if (generateImage.getResolvedGenerationType() != GenerateImageType.LIST) {
-            throw new GenerateImageException(ErrorCode.INVALID_GENERATE_IMAGE_TYPE);
-        }
+        validateListResultAccessible(generateImage);
 
         List<Long> selectedRawProductIds = resolveSelectedRawProducts(generateImage).stream()
                 .map(CurationRawProduct::getId)
@@ -210,22 +204,27 @@ public class GenerateImageResultServiceImpl implements GenerateImageResultServic
         return houseService.getIsMirrorByHouseId(generateImage.getHouse().getId());
     }
 
+    private void validateListResultAccessible(GenerateImage generateImage) {
+        boolean hasBanner = generateImage.getHouse() != null && generateImage.getHouse().getBanner() != null;
+        boolean isListType = generateImage.getGenerationType() == GenerateImageType.LIST;
+        if (!hasBanner || !isListType) {
+            throw new GenerateImageException(ErrorCode.INVALID_GENERATE_IMAGE_TYPE);
+        }
+    }
+
     private List<CurationRawProduct> resolveSelectedRawProducts(GenerateImage generateImage) {
         Banner banner = generateImage.getHouse() != null ? generateImage.getHouse().getBanner() : null;
-        if (banner != null) {
-            Banner bannerWithRawProducts = bannerRepository.findAllByIdInWithRawProducts(List.of(banner.getId())).stream()
-                    .findFirst()
-                    .orElse(banner);
-
-            return bannerWithRawProducts.getBannerRawProducts().stream()
-                    .sorted((left, right) -> Long.compare(safeMappingId(left), safeMappingId(right)))
-                    .map(BannerCurationRawProduct::getCurationRawProduct)
-                    .filter(Objects::nonNull)
-                    .toList();
+        if (banner == null) {
+            throw new GenerateImageException(ErrorCode.INVALID_GENERATE_IMAGE_TYPE);
         }
 
-        return generateImageUsedProductRepository.findAllByGenerateImageIdInWithRawProduct(List.of(generateImage.getId())).stream()
-                .map(GenerateImageUsedProduct::getCurationRawProduct)
+        Banner bannerWithRawProducts = bannerRepository.findAllByIdInWithRawProducts(List.of(banner.getId())).stream()
+                .findFirst()
+                .orElse(banner);
+
+        return bannerWithRawProducts.getBannerRawProducts().stream()
+                .sorted((left, right) -> Long.compare(safeMappingId(left), safeMappingId(right)))
+                .map(BannerCurationRawProduct::getCurationRawProduct)
                 .filter(Objects::nonNull)
                 .toList();
     }
@@ -371,29 +370,23 @@ public class GenerateImageResultServiceImpl implements GenerateImageResultServic
             return Set.of();
         }
 
-        List<Long> productIds = rawProducts.stream()
-                .map(CurationRawProduct::getProductId)
-                .filter(Objects::nonNull)
-                .distinct()
-                .toList();
-        if (productIds.isEmpty()) {
+        Map<Long, Long> recommendFurnitureIdByProductId = resolveRecommendFurnitureIdByProductId(rawProducts);
+        return resolveLikedRawProductIds(user, rawProducts, recommendFurnitureIdByProductId);
+    }
+
+    private Set<Long> resolveLikedRawProductIds(
+            User user,
+            List<CurationRawProduct> rawProducts,
+            Map<Long, Long> recommendFurnitureIdByProductId
+    ) {
+        if (user == null || rawProducts.isEmpty() || recommendFurnitureIdByProductId.isEmpty()) {
             return Set.of();
         }
-
         Map<Long, CurationRawProduct> rawProductByProductId = rawProducts.stream()
                 .filter(rawProduct -> rawProduct.getProductId() != null)
                 .collect(Collectors.toMap(
                         CurationRawProduct::getProductId,
                         rawProduct -> rawProduct,
-                        (left, right) -> left
-                ));
-
-        Map<Long, Long> recommendFurnitureIdByProductId = recommendFurnitureRepository
-                .findAllBySourceAndFurnitureProductIdIn(CurationSource.RAW, productIds)
-                .stream()
-                .collect(Collectors.toMap(
-                        RecommendFurniture::getFurnitureProductId,
-                        RecommendFurniture::getId,
                         (left, right) -> left
                 ));
 
@@ -417,5 +410,60 @@ public class GenerateImageResultServiceImpl implements GenerateImageResultServic
                 .filter(Objects::nonNull)
                 .map(CurationRawProduct::getId)
                 .collect(Collectors.toSet());
+    }
+
+    private Map<Long, Long> resolveJjymCountByRawProductId(
+            List<CurationRawProduct> rawProducts,
+            Map<Long, Long> recommendFurnitureIdByProductId
+    ) {
+        if (rawProducts == null || rawProducts.isEmpty() || recommendFurnitureIdByProductId.isEmpty()) {
+            return Map.of();
+        }
+
+        List<Long> recommendFurnitureIds = recommendFurnitureIdByProductId.values().stream()
+                .distinct()
+                .toList();
+        if (recommendFurnitureIds.isEmpty()) {
+            return Map.of();
+        }
+
+        Map<Long, Long> jjymCountByRecommendFurnitureId = jjymRepository.countByRecommendFurnitureIds(recommendFurnitureIds);
+
+        Map<Long, Long> result = new LinkedHashMap<>();
+        for (CurationRawProduct rawProduct : rawProducts) {
+            if (rawProduct == null || rawProduct.getId() == null) {
+                continue;
+            }
+            Long recommendFurnitureId = recommendFurnitureIdByProductId.get(rawProduct.getProductId());
+            Long jjymCount = recommendFurnitureId == null
+                    ? 0L
+                    : jjymCountByRecommendFurnitureId.getOrDefault(recommendFurnitureId, 0L);
+            result.put(rawProduct.getId(), jjymCount);
+        }
+        return result;
+    }
+
+    private Map<Long, Long> resolveRecommendFurnitureIdByProductId(List<CurationRawProduct> rawProducts) {
+        if (rawProducts == null || rawProducts.isEmpty()) {
+            return Map.of();
+        }
+
+        List<Long> productIds = rawProducts.stream()
+                .map(CurationRawProduct::getProductId)
+                .filter(Objects::nonNull)
+                .distinct()
+                .toList();
+        if (productIds.isEmpty()) {
+            return Map.of();
+        }
+
+        return recommendFurnitureRepository
+                .findAllBySourceAndFurnitureProductIdIn(CurationSource.RAW, productIds)
+                .stream()
+                .collect(Collectors.toMap(
+                        RecommendFurniture::getFurnitureProductId,
+                        RecommendFurniture::getId,
+                        (left, right) -> left
+                ));
     }
 }

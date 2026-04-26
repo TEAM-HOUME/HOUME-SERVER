@@ -37,6 +37,7 @@ import or.sopt.houme.domain.user.model.entity.User;
 import or.sopt.houme.global.api.handler.GenerateImageException;
 
 import java.util.List;
+import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -247,6 +248,8 @@ class GenerateImageResultServiceImplTest {
                         RecommendFurniture.builder().id(704L).source(CurationSource.RAW).furnitureProductId(2004L).build()
                 ));
         when(jjymRepository.findAllByUserIdAndRecommendFurnitureIdIn(1L, List.of(701L, 702L, 703L, 704L))).thenReturn(List.of());
+        when(jjymRepository.countByRecommendFurnitureIds(List.of(701L, 702L, 703L, 704L)))
+                .thenReturn(Map.of(701L, 4L, 702L, 2L));
 
         User user = User.builder().id(1L).build();
         SimilarItemsResponse response = generateImageResultService.getSimilarItems(user, 1L);
@@ -258,6 +261,9 @@ class GenerateImageResultServiceImplTest {
         assertThat(response.products().get(1).colors()).extracting("name").containsExactly("블랙");
         assertThat(response.products().get(2).colors()).isEmpty();
         assertThat(response.products().get(0).isLiked()).isFalse();
+        assertThat(response.products().get(0).jjymCount()).isEqualTo(4L);
+        assertThat(response.products().get(1).jjymCount()).isEqualTo(2L);
+        assertThat(response.products().get(2).jjymCount()).isEqualTo(0L);
     }
 
     @Test
