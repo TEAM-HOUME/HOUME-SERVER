@@ -102,12 +102,13 @@ public class CurationProductServiceImpl implements CurationProductService {
                 ))
                 .toList();
 
-        Long nextCursor = products.isEmpty() ? null : products.get(products.size() - 1).id();
+        boolean hasNext = productSlice.hasNext();
+        Long nextCursor = hasNext ? products.get(products.size() - 1).id() : null;
         List<CurationProductAppliedFilterResponse> appliedFilters = buildAppliedFilters(typeIds, priceRangeIds, colorIds);
 
         return new CurationProductListResponse(
                 products,
-                new CurationProductMetaResponse(nextCursor, productSlice.hasNext(), appliedFilters)
+                new CurationProductMetaResponse(nextCursor, hasNext, appliedFilters)
         );
     }
 
@@ -237,12 +238,13 @@ public class CurationProductServiceImpl implements CurationProductService {
                 ))
                 .toList();
 
-        Long nextCursor = products.isEmpty() ? null : products.get(products.size() - 1).id();
+        boolean hasNext = productSlice.hasNext();
+        Long nextCursor = hasNext ? products.get(products.size() - 1).id() : null;
         List<CurationProductAppliedFilterResponse> appliedFilters = buildAppliedFilters(typeIds, priceRangeIds, colorIds);
 
         return new CurationProductListResponse(
                 products,
-                new CurationProductMetaResponse(nextCursor, productSlice.hasNext(), appliedFilters)
+                new CurationProductMetaResponse(nextCursor, hasNext, appliedFilters)
         );
     }
 
