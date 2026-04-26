@@ -8,8 +8,11 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -35,7 +38,12 @@ import java.util.stream.Collectors;
 @Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
-@Table(name = "banners")
+@Table(
+        name = "banners",
+        uniqueConstraints = {
+                @UniqueConstraint(name = "uk_banners_banner_id", columnNames = "banner_id")
+        }
+)
 @Comment("스타일 배너 본체 정보")
 public class Banner extends BaseEntity {
 
@@ -73,6 +81,11 @@ public class Banner extends BaseEntity {
     @Comment("스타일 답변 칩 목록 JSON")
     private String styleAnswerChipsJson;
 
+    @ManyToOne
+    @JoinColumn(name = "banner_id")
+    @Comment("LANDING이 참조하는 BANNER")
+    private Banner linkedBanner;
+
     @OneToMany(mappedBy = "banner", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     private List<BannerCurationRawProduct> bannerRawProducts = new ArrayList<>();
@@ -84,7 +97,8 @@ public class Banner extends BaseEntity {
             String styleDescription,
             String styleQuestion,
             String stylePrompt,
-            String styleAnswerChipsJson
+            String styleAnswerChipsJson,
+            Banner linkedBanner
     ) {
         return Banner.builder()
                 .bannerType(bannerType)
@@ -94,6 +108,7 @@ public class Banner extends BaseEntity {
                 .styleQuestion(styleQuestion)
                 .stylePrompt(stylePrompt)
                 .styleAnswerChipsJson(styleAnswerChipsJson)
+                .linkedBanner(linkedBanner)
                 .build();
     }
 
@@ -104,7 +119,8 @@ public class Banner extends BaseEntity {
             String styleDescription,
             String styleQuestion,
             String stylePrompt,
-            String styleAnswerChipsJson
+            String styleAnswerChipsJson,
+            Banner linkedBanner
     ) {
         this.bannerType = bannerType;
         this.bannerImageUrl = bannerImageUrl;
@@ -113,6 +129,7 @@ public class Banner extends BaseEntity {
         this.styleQuestion = styleQuestion;
         this.stylePrompt = stylePrompt;
         this.styleAnswerChipsJson = styleAnswerChipsJson;
+        this.linkedBanner = linkedBanner;
     }
 
     public void replaceRawProducts(List<BannerCurationRawProduct> mappings) {
