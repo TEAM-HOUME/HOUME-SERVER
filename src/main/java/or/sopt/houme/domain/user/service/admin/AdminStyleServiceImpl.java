@@ -47,6 +47,7 @@ public class AdminStyleServiceImpl implements AdminStyleService {
                 adminBannerSupport.normalizeRequired(request.styleDescription()),
                 null,
                 adminBannerSupport.normalizeRequired(request.stylePrompt()),
+                null,
                 null
         );
         style.replaceRawProducts(adminBannerSupport.buildMappings(style, request.mappedRawProductIds(), requiredRawProducts));
@@ -92,6 +93,7 @@ public class AdminStyleServiceImpl implements AdminStyleService {
                 request.styleDescription() != null ? adminBannerSupport.normalizeRequired(request.styleDescription()) : style.getStyleDescription(),
                 null,
                 request.stylePrompt() != null ? adminBannerSupport.normalizeRequired(request.stylePrompt()) : style.getStylePrompt(),
+                null,
                 null
         );
         style.replaceRawProducts(adminBannerSupport.buildMappings(style, targetMappedRawProductIds, requiredRawProducts));

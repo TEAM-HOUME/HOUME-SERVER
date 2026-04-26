@@ -42,6 +42,7 @@ public class AdminLandingServiceImpl implements AdminLandingService {
                 null,
                 null,
                 null,
+                null,
                 null
         );
         Banner savedLanding = bannerRepository.saveAndFlush(landing);
@@ -73,6 +74,7 @@ public class AdminLandingServiceImpl implements AdminLandingService {
                 BannerType.LANDING,
                 request.bannerImageUrl() != null ? adminBannerSupport.normalizeRequired(request.bannerImageUrl()) : landing.getBannerImageUrl(),
                 request.bannerTitle() != null ? adminBannerSupport.normalizeRequired(request.bannerTitle()) : landing.getBannerTitle(),
+                null,
                 null,
                 null,
                 null,

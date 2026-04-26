@@ -52,7 +52,8 @@ public class AdminBannerServiceImpl implements AdminBannerService {
                 adminBannerSupport.normalizeRequired(request.styleDescription()),
                 adminBannerSupport.normalizeRequired(request.styleQuestion()),
                 adminBannerSupport.normalizeRequired(request.stylePrompt()),
-                adminBannerSupport.toStyleAnswerChipsJson(styleAnswerChips)
+                adminBannerSupport.toStyleAnswerChipsJson(styleAnswerChips),
+                null
         );
         banner.replaceRawProducts(adminBannerSupport.buildMappings(banner, request.mappedRawProductIds(), requiredRawProducts));
         Banner savedBanner = bannerRepository.saveAndFlush(banner);
@@ -99,7 +100,8 @@ public class AdminBannerServiceImpl implements AdminBannerService {
                 request.styleDescription() != null ? adminBannerSupport.normalizeRequired(request.styleDescription()) : banner.getStyleDescription(),
                 request.styleQuestion() != null ? adminBannerSupport.normalizeRequired(request.styleQuestion()) : banner.getStyleQuestion(),
                 request.stylePrompt() != null ? adminBannerSupport.normalizeRequired(request.stylePrompt()) : banner.getStylePrompt(),
-                adminBannerSupport.toStyleAnswerChipsJson(targetChips)
+                adminBannerSupport.toStyleAnswerChipsJson(targetChips),
+                null
         );
         banner.replaceRawProducts(adminBannerSupport.buildMappings(banner, targetMappedRawProductIds, requiredRawProducts));
 
