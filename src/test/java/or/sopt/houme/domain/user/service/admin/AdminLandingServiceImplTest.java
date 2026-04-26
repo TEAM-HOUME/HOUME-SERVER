@@ -41,7 +41,7 @@ class AdminLandingServiceImplTest {
     @Test
     @DisplayName("create()는 랜딩을 생성한다")
     void create_success() {
-        Banner landing = Banner.create(BannerType.LANDING, "https://landing-image", "랜딩 제목", null, null, null, null);
+        Banner landing = Banner.create(BannerType.LANDING, "https://landing-image", "랜딩 제목", null, null, null, null, null);
         ReflectionTestUtils.setField(landing, "id", 30L);
         ReflectionTestUtils.setField(landing, "createdAt", LocalDateTime.of(2026, 3, 27, 12, 0));
         ReflectionTestUtils.setField(landing, "updatedAt", LocalDateTime.of(2026, 3, 27, 12, 5));
@@ -61,7 +61,7 @@ class AdminLandingServiceImplTest {
     @Test
     @DisplayName("update()는 랜딩을 수정한다")
     void update_success() {
-        Banner landing = Banner.create(BannerType.LANDING, "https://old-image", "기존 랜딩", null, null, null, null);
+        Banner landing = Banner.create(BannerType.LANDING, "https://old-image", "기존 랜딩", null, null, null, null, null);
         ReflectionTestUtils.setField(landing, "id", 31L);
         ReflectionTestUtils.setField(landing, "createdAt", LocalDateTime.of(2026, 3, 27, 12, 0));
         ReflectionTestUtils.setField(landing, "updatedAt", LocalDateTime.of(2026, 3, 27, 12, 5));
@@ -80,7 +80,7 @@ class AdminLandingServiceImplTest {
     @Test
     @DisplayName("getAll()은 랜딩 목록을 반환한다")
     void getAll_success() {
-        Banner landing = Banner.create(BannerType.LANDING, "https://landing-image", "랜딩 제목", null, null, null, null);
+        Banner landing = Banner.create(BannerType.LANDING, "https://landing-image", "랜딩 제목", null, null, null, null, null);
         ReflectionTestUtils.setField(landing, "id", 32L);
         ReflectionTestUtils.setField(landing, "createdAt", LocalDateTime.of(2026, 3, 27, 12, 0));
         ReflectionTestUtils.setField(landing, "updatedAt", LocalDateTime.of(2026, 3, 27, 12, 5));

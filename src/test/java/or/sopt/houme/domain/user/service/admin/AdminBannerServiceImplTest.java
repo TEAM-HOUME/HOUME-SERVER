@@ -133,7 +133,8 @@ class AdminBannerServiceImplTest {
                 "설명",
                 "질문",
                 "prompt",
-                "[]"
+                "[]",
+                null
         );
         ReflectionTestUtils.setField(banner, "id", 10L);
         ReflectionTestUtils.setField(banner, "createdAt", LocalDateTime.of(2026, 3, 13, 12, 0));
@@ -185,7 +186,8 @@ class AdminBannerServiceImplTest {
                 "기존 설명",
                 "기존 질문",
                 "기존 프롬프트",
-                "[]"
+                "[]",
+                null
         );
         ReflectionTestUtils.setField(banner, "id", 11L);
         ReflectionTestUtils.setField(banner, "createdAt", LocalDateTime.of(2026, 3, 13, 12, 0));
