@@ -79,7 +79,9 @@ public class WhiteListConfig {
     public static final List<String> curationWhiteList() {
         return List.of(
                 "/api/v1/curations/products",
-                "/api/v1/curations/products/**"
+                "/api/v1/curations/products/**",
+                "/api/v2/curations/products",
+                "/api/v2/curations/products/**"
         );
     }
 
