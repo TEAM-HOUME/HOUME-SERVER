@@ -1,18 +1,6 @@
 package or.sopt.houme.domain.banner.model.entity;
 
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.Table;
-import jakarta.persistence.UniqueConstraint;
+import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -41,7 +29,7 @@ import java.util.stream.Collectors;
 @Table(
         name = "banners",
         uniqueConstraints = {
-                @UniqueConstraint(name = "uk_banners_banner_id", columnNames = "banner_id")
+                @UniqueConstraint(name = "uk_banners_banner_id", columnNames = "linked_banner_id")
         }
 )
 @Comment("스타일 배너 본체 정보")
@@ -81,8 +69,8 @@ public class Banner extends BaseEntity {
     @Comment("스타일 답변 칩 목록 JSON")
     private String styleAnswerChipsJson;
 
-    @ManyToOne
-    @JoinColumn(name = "banner_id")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "linked_banner_id")
     @Comment("LANDING이 참조하는 BANNER")
     private Banner linkedBanner;
 
