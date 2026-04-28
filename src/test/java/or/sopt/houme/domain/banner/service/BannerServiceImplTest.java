@@ -58,14 +58,16 @@ class BannerServiceImplTest {
                 null,
                 null,
                 null,
+                null,
                 null
         );
 
-        when(bannerRepository.findAllWithRawProducts(BannerType.LANDING, false)).thenReturn(List.of(landing));
+        when(bannerRepository.findAllLandingsWithLinkedBanner()).thenReturn(List.of(landing));
 
         LandingListResponse response = bannerService.getLandings();
 
         assertThat(response.landings()).hasSize(1);
+        assertThat(response.landings().getFirst().bannerId()).isNull();
         assertThat(response.landings().getFirst().name()).isEqualTo("랜딩 제목");
         assertThat(response.landings().getFirst().imageUrl()).isEqualTo("https://landing-image");
     }

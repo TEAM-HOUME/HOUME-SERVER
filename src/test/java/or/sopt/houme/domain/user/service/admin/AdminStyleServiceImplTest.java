@@ -56,6 +56,7 @@ class AdminStyleServiceImplTest {
                 "스타일 설명",
                 null,
                 "prompt",
+                null,
                 null
         );
         ReflectionTestUtils.setField(style, "id", 20L);
@@ -96,6 +97,7 @@ class AdminStyleServiceImplTest {
                 "기존 설명",
                 null,
                 "old prompt",
+                null,
                 null
         );
         ReflectionTestUtils.setField(style, "id", 21L);
@@ -162,7 +164,8 @@ class AdminStyleServiceImplTest {
                 "설명",
                 "질문",
                 "prompt",
-                "[]"
+                "[]",
+                null
         );
 
         when(bannerRepository.findByIdWithRawProducts(99L, BannerType.STYLE, false)).thenReturn(Optional.of(banner));
@@ -181,6 +184,7 @@ class AdminStyleServiceImplTest {
                 "설명",
                 null,
                 "prompt",
+                null,
                 null
         );
         ReflectionTestUtils.setField(style, "id", 30L);
@@ -194,7 +198,8 @@ class AdminStyleServiceImplTest {
                 "배너 설명",
                 "질문",
                 "prompt",
-                "[]"
+                "[]",
+                null
         );
         ReflectionTestUtils.setField(banner, "id", 31L);
 
@@ -217,7 +222,8 @@ class AdminStyleServiceImplTest {
                 "설명",
                 "질문",
                 "prompt",
-                "[]"
+                "[]",
+                null
         );
 
         when(bannerRepository.findByIdWithRawProducts(55L, BannerType.STYLE, false)).thenReturn(Optional.of(banner));
