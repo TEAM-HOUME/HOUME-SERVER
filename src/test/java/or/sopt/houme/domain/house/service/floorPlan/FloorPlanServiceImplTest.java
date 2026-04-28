@@ -4,6 +4,7 @@ import or.sopt.houme.domain.generateImage.repository.GenerateImageRepository;
 import or.sopt.houme.domain.house.presentation.floorPlan.dto.response.FloorPlanListResponse;
 import or.sopt.houme.domain.house.presentation.floorPlan.dto.response.ExploreHouseTemplateDetailResponse;
 import or.sopt.houme.domain.house.presentation.floorPlan.dto.response.ExploreHouseTemplateListResponse;
+import or.sopt.houme.domain.house.presentation.floorPlan.dto.response.RecentFloorPlanResponse;
 import or.sopt.houme.domain.house.model.floorPlan.entity.FloorPlan;
 import or.sopt.houme.domain.house.repository.floorPlan.FloorPlanRepository;
 import or.sopt.houme.domain.house.model.entity.enums.Equilibrium;
@@ -52,6 +53,20 @@ class FloorPlanServiceImplTest {
 
     @Mock
     FloorPlanEquilibriumJsonCodec floorPlanEquilibriumJsonCodec;
+
+    @Test
+    @DisplayName("최근 생성 이력이 없으면 floorPlan은 null 필드 객체로 반환한다")
+    void getRecentFloorPlan_returnsEmptyObjectWhenNoRecentImage() {
+        RecentFloorPlanResponse response = floorPlanService.getRecentFloorPlan(null);
+
+        assertThat(response.hasRecentImage()).isFalse();
+        assertThat(response.floorPlan()).isNotNull();
+        assertThat(response.floorPlan().id()).isNull();
+        assertThat(response.floorPlan().name()).isNull();
+        assertThat(response.floorPlan().imageUrl()).isNull();
+        assertThat(response.floorPlan().equilibrium()).isNull();
+        assertThat(response.floorPlan().view()).isNull();
+    }
 
     @Test
     @DisplayName("사용자가 입력한 값들을 토대로 도면 템플릿을 필터링해서 내려줄 수 있다.")
