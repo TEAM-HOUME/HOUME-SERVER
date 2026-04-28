@@ -6,6 +6,7 @@ import or.sopt.houme.domain.furniture.infrastructure.client.NaverShopApiClient;
 import or.sopt.houme.domain.furniture.presentation.dto.ActivityItem;
 import or.sopt.houme.domain.furniture.presentation.dto.FurnitureItem;
 import or.sopt.houme.domain.furniture.presentation.dto.response.ActivityWithFurnitureResponse;
+import or.sopt.houme.domain.furniture.presentation.dto.response.FurnitureCategoryItem;
 import or.sopt.houme.domain.furniture.presentation.dto.response.FurnitureAndActivityResponse;
 import or.sopt.houme.domain.furniture.presentation.dto.response.FurnitureCategoriesResponse;
 import or.sopt.houme.domain.furniture.presentation.dto.response.FurnitureCategoryGroup;
@@ -104,7 +105,11 @@ public class FurnitureServiceImpl implements FurnitureService {
                 )
                 .map(furnitureType -> {
                     // 없으면 빈 리스트
-                    List<FurnitureItem> items = furnitureByCategory.getOrDefault(furnitureType.getId(), Collections.emptyList());
+                    List<FurnitureCategoryItem> items = furnitureByCategory
+                            .getOrDefault(furnitureType.getId(), Collections.emptyList())
+                            .stream()
+                            .map(FurnitureCategoryItem::from)
+                            .toList();
                     return FurnitureCategoryGroup.from(furnitureType, items);
                 })
                 .toList();
