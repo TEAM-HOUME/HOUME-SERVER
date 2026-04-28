@@ -86,6 +86,19 @@ public class BannerRepositoryImpl implements BannerRepositoryCustom {
         return List.copyOf(distinctById.values());
     }
 
+    @Override
+    public List<Banner> findAllLandingsWithLinkedBanner() {
+        QBanner banner = QBanner.banner;
+        QBanner linkedBanner = new QBanner("linkedBanner");
+
+        return queryFactory
+                .selectFrom(banner)
+                .leftJoin(banner.linkedBanner, linkedBanner).fetchJoin()
+                .where(banner.bannerType.eq(BannerType.LANDING))
+                .orderBy(banner.id.asc())
+                .fetch();
+    }
+
     private BooleanBuilder bannerTypeCondition(QBanner banner, BannerType bannerType, boolean includeLegacyBanner) {
         BooleanBuilder condition = new BooleanBuilder();
         condition.or(banner.bannerType.eq(bannerType));

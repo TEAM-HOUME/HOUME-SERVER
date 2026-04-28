@@ -59,8 +59,7 @@ public class BannerServiceImpl implements BannerService {
     @Override
     public LandingListResponse getLandings() {
         return LandingListResponse.of(
-                bannerRepository.findAllWithRawProducts(BannerType.LANDING, false).stream()
-                        .sorted((left, right) -> Long.compare(left.getId(), right.getId()))
+                bannerRepository.findAllLandingsWithLinkedBanner().stream()
                         .map(LandingResponse::from)
                         .toList()
         );

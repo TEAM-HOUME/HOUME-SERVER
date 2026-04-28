@@ -62,7 +62,7 @@ class BannerServiceImplTest {
                 null
         );
 
-        when(bannerRepository.findAllWithRawProducts(BannerType.LANDING, false)).thenReturn(List.of(landing));
+        when(bannerRepository.findAllLandingsWithLinkedBanner()).thenReturn(List.of(landing));
 
         LandingListResponse response = bannerService.getLandings();
 
