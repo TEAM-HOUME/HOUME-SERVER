@@ -21,6 +21,7 @@ import or.sopt.houme.domain.generateImage.presentation.dto.request.BannerGenerat
 import or.sopt.houme.domain.generateImage.presentation.dto.request.GenerateImageRequest;
 import or.sopt.houme.domain.generateImage.presentation.dto.request.GenerateImageV4Request;
 import or.sopt.houme.domain.generateImage.presentation.dto.response.BannerGenerateImageResponse;
+import or.sopt.houme.domain.generateImage.presentation.dto.response.GenerateImageV4Response;
 import or.sopt.houme.domain.generateImage.presentation.dto.response.ImageInfoResponse;
 import or.sopt.houme.domain.generateImage.model.entity.GenerateImage;
 import or.sopt.houme.domain.generateImage.model.entity.GenerateImageType;
@@ -535,11 +536,12 @@ class GenerateImageFacadeTest {
                 eq(Activity.REMOTE_WORK),
                 eq(List.of(7L, 8L)),
                 eq(List.of(1L, 2L))
-        )).thenReturn(BannerGenerateImageResponse.of(999L));
+        )).thenReturn(GenerateImageV4Response.of(999L, "https://generated-image"));
 
-        BannerGenerateImageResponse response = generateImageFacade.generateImageV4ByGemini(user, request);
+        GenerateImageV4Response response = generateImageFacade.generateImageV4ByGemini(user, request);
 
         assertThat(response.imageId()).isEqualTo(999L);
+        assertThat(response.imageUrl()).isEqualTo("https://generated-image");
         verify(geminiImageService).createImageWithReferences(
                 any(),
                 argThat(urls -> urls.size() == 3

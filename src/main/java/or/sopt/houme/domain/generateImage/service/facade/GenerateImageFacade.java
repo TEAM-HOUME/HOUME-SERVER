@@ -27,6 +27,7 @@ import or.sopt.houme.domain.generateImage.presentation.dto.request.GenerateImage
 import or.sopt.houme.domain.generateImage.presentation.dto.request.GenerateImageV4Request;
 import or.sopt.houme.domain.generateImage.presentation.dto.request.OtherStyleGenerateImageRequest;
 import or.sopt.houme.domain.generateImage.presentation.dto.response.BannerGenerateImageResponse;
+import or.sopt.houme.domain.generateImage.presentation.dto.response.GenerateImageV4Response;
 import or.sopt.houme.domain.generateImage.presentation.dto.response.ImageInfoListResponse;
 import or.sopt.houme.domain.generateImage.presentation.dto.response.ImageInfoResponse;
 import or.sopt.houme.domain.generateImage.presentation.dto.response.OtherStyleGenerateImageResponse;
@@ -495,7 +496,7 @@ public class GenerateImageFacade {
         }
     }
 
-    public BannerGenerateImageResponse generateImageV4ByGemini(User user, GenerateImageV4Request request) {
+    public GenerateImageV4Response generateImageV4ByGemini(User user, GenerateImageV4Request request) {
         Credit lockedCredit = null;
 
         try {
