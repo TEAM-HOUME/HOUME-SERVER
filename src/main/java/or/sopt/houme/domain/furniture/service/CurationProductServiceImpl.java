@@ -102,12 +102,13 @@ public class CurationProductServiceImpl implements CurationProductService {
                 ))
                 .toList();
 
-        Long nextCursor = products.isEmpty() ? null : products.get(products.size() - 1).id();
+        boolean hasNext = productSlice.hasNext();
+        Long nextCursor = hasNext ? products.get(products.size() - 1).id() : null;
         List<CurationProductAppliedFilterResponse> appliedFilters = buildAppliedFilters(typeIds, priceRangeIds, colorIds);
 
         return new CurationProductListResponse(
                 products,
-                new CurationProductMetaResponse(nextCursor, productSlice.hasNext(), appliedFilters)
+                new CurationProductMetaResponse(nextCursor, hasNext, appliedFilters)
         );
     }
 
@@ -144,6 +145,7 @@ public class CurationProductServiceImpl implements CurationProductService {
 
     private List<CurationRawProductRepositoryCustom.PriceRangeFilter> extractPriceFilters(List<String> priceRangeIds) {
         if (priceRangeIds == null || priceRangeIds.isEmpty()) return List.of();
+        if (priceRangeIds.stream().anyMatch(id -> "P0".equalsIgnoreCase(id))) return List.of();
 
         List<PriceRangeFilterResponse> allPriceMetadata = getPriceRangeFilters();
         return priceRangeIds.stream()
@@ -193,6 +195,57 @@ public class CurationProductServiceImpl implements CurationProductService {
         }
 
         return filters;
+    }
+
+    @Override
+    public CurationProductListResponse getProductsV2(
+            String keyword,
+            List<Long> typeIds,
+            List<String> priceRangeIds,
+            List<Long> colorIds,
+            Long cursor,
+            Integer size
+    ) {
+        validatePaginationParams(size);
+
+        Pageable pageable = PageRequest.of(0, size);
+        List<String> colorNames = extractColorNames(colorIds);
+        List<CurationRawProductRepositoryCustom.PriceRangeFilter> priceFilters = extractPriceFilters(priceRangeIds);
+
+        List<Long> filteredTypeIds = preprocessTypeIds(typeIds);
+        if (typeIds != null && typeIds.contains(0L)) {
+            filteredTypeIds = null;
+        }
+
+        Slice<CurationRawProduct> productSlice = curationRawProductRepository.findAllByCurationFiltersV2(
+                keyword, filteredTypeIds, priceFilters, colorNames, cursor, pageable
+        );
+
+        List<CurationProductResponse> products = productSlice.getContent().stream()
+                .map(p -> new CurationProductResponse(
+                        p.getId(),
+                        p.getProductId(),
+                        extractCategoryName(p),
+                        p.getSource(),
+                        p.getBrand(),
+                        p.getProductName(),
+                        p.getProductImageUrl(),
+                        p.getListPrice(),
+                        p.getDiscountRate(),
+                        p.getDiscountPrice(),
+                        p.getProductMallName(),
+                        p.getProductSiteUrl()
+                ))
+                .toList();
+
+        boolean hasNext = productSlice.hasNext();
+        Long nextCursor = hasNext ? products.get(products.size() - 1).id() : null;
+        List<CurationProductAppliedFilterResponse> appliedFilters = buildAppliedFilters(typeIds, priceRangeIds, colorIds);
+
+        return new CurationProductListResponse(
+                products,
+                new CurationProductMetaResponse(nextCursor, hasNext, appliedFilters)
+        );
     }
 
     @Override

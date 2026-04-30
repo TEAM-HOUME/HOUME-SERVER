@@ -75,6 +75,16 @@ public class WhiteListConfig {
         );
     }
 
+    // 상품 탭 관련 인가 설정
+    public static final List<String> curationWhiteList() {
+        return List.of(
+                "/api/v1/curations/products",
+                "/api/v1/curations/products/**",
+                "/api/v2/curations/products",
+                "/api/v2/curations/products/**"
+        );
+    }
+
     public static final List<String> adminWhiteList() {
         return List.of(
                 "/api/v1/admin/register",

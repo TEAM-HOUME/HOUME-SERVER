@@ -52,3 +52,6 @@ src/main/resources/application-prod.yml
 
 ### 로컬 DB 쿼리 무시 ###
 seed_local_houme.sql
+
+### Claude Code ###
+CLAUDE.md

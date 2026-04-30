@@ -47,6 +47,16 @@ public interface CurationRawProductRepository extends JpaRepository<CurationRawP
 
     List<CurationRawProduct> findAllByProductIdIn(List<Long> productIds);
 
+    @Query("""
+            select distinct rp from CurationRawProduct rp
+            left join fetch rp.furnitureTagMappings mapping
+            left join fetch mapping.furnitureTag tag
+            left join fetch tag.furniture furniture
+            left join fetch furniture.furnitureType
+            where rp.id in :ids
+            """)
+    List<CurationRawProduct> findAllByIdWithFurnitureTags(@Param("ids") List<Long> ids);
+
     @Query("select rp from CurationRawProduct rp where (rp.isExposed = true or rp.isExposed is null) order by rp.id desc")
     Page<CurationRawProduct> findAllByIsExposedTrueOrNullOrderByIdDesc(Pageable pageable);
 

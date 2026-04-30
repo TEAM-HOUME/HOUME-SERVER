@@ -29,6 +29,7 @@ import or.sopt.houme.domain.furniture.repository.CurationRawProductFurnitureTagR
 import or.sopt.houme.domain.furniture.repository.CurationRawProductRepository;
 import or.sopt.houme.domain.furniture.repository.FurnitureTagRepository;
 import or.sopt.houme.domain.house.model.taste.entity.Tag;
+import org.springframework.context.ApplicationEventPublisher;
 import or.sopt.houme.global.api.ErrorCode;
 import or.sopt.houme.global.api.GeneralException;
 
@@ -62,6 +63,9 @@ class AdminCurationRawProductServiceImplTest {
 
     @Mock
     private FurnitureTagRepository furnitureTagRepository;
+
+    @Mock
+    private ApplicationEventPublisher eventPublisher;
 
     @InjectMocks
     private AdminCurationRawProductServiceImpl adminCurationRawProductService;

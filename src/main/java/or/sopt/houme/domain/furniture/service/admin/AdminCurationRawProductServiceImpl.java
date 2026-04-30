@@ -19,8 +19,10 @@ import or.sopt.houme.domain.furniture.repository.CurationRawProductColorReposito
 import or.sopt.houme.domain.furniture.repository.CurationRawProductFurnitureTagRepository;
 import or.sopt.houme.domain.furniture.repository.CurationRawProductRepository;
 import or.sopt.houme.domain.furniture.repository.FurnitureTagRepository;
+import or.sopt.houme.domain.furniture.service.event.CurationRawProductTokenRefreshEvent;
 import or.sopt.houme.global.api.ErrorCode;
 import or.sopt.houme.global.api.GeneralException;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -47,6 +49,7 @@ public class AdminCurationRawProductServiceImpl implements AdminCurationRawProdu
     private final CurationRawProductColorRepository curationRawProductColorRepository;
     private final CurationRawProductFurnitureTagRepository curationRawProductFurnitureTagRepository;
     private final FurnitureTagRepository furnitureTagRepository;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Override
     @Transactional(readOnly = true)
@@ -119,6 +122,7 @@ public class AdminCurationRawProductServiceImpl implements AdminCurationRawProdu
 
         try {
             CurationRawProduct saved = curationRawProductRepository.saveAndFlush(rawProduct);
+            eventPublisher.publishEvent(new CurationRawProductTokenRefreshEvent(List.of(saved.getId())));
             return buildResponses(List.of(saved)).get(0);
         } catch (DataIntegrityViolationException e) {
             throw new GeneralException(ErrorCode.DUPLICATE_CURATION_RAW_PRODUCT);
@@ -156,6 +160,7 @@ public class AdminCurationRawProductServiceImpl implements AdminCurationRawProdu
                     request.isExposed()
             );
             CurationRawProduct saved = curationRawProductRepository.saveAndFlush(rawProduct);
+            eventPublisher.publishEvent(new CurationRawProductTokenRefreshEvent(List.of(saved.getId())));
             return buildResponses(List.of(saved)).get(0);
         } catch (DataIntegrityViolationException e) {
             throw new GeneralException(ErrorCode.DUPLICATE_CURATION_RAW_PRODUCT);

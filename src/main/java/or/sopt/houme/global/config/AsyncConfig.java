@@ -1,5 +1,6 @@
 package or.sopt.houme.global.config;
 
+import lombok.extern.slf4j.Slf4j;
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.Gauge;
 import io.micrometer.core.instrument.MeterRegistry;
@@ -19,7 +20,8 @@ import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicInteger;
 
-@EnableAsync    // 비동기 기능 활성화
+@Slf4j
+@EnableAsync
 @Configuration
 public class AsyncConfig {
 
@@ -48,6 +50,20 @@ public class AsyncConfig {
         this.platformMaxSize = platformMaxSize;
         this.platformQueueCapacity = platformQueueCapacity;
         this.virtualConcurrencyLimit = virtualConcurrencyLimit;
+    }
+
+    @Bean(name = "tokenRefreshExecutor")
+    public Executor tokenRefreshExecutor() {
+        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+        executor.setCorePoolSize(2);
+        executor.setMaxPoolSize(4);
+        executor.setQueueCapacity(100);
+        executor.setThreadNamePrefix("TokenRefresh-");
+        executor.setWaitForTasksToCompleteOnShutdown(true);
+        executor.setAwaitTerminationSeconds(10);
+        executor.setRejectedExecutionHandler((r, e) -> log.warn("TokenRefresh 큐 포화 — 토큰 갱신 작업 유실 (active={}, queue={})", e.getActiveCount(), e.getQueue().size()));
+        executor.initialize();
+        return executor;
     }
 
     @Bean(name = "imageGenerationExecutor")

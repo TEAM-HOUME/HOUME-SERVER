@@ -143,6 +143,84 @@ public class CurationRawProductRepositoryImpl implements CurationRawProductRepos
     }
 
     @Override
+    public Slice<CurationRawProduct> findAllByCurationFiltersV2(
+            String keyword,
+            List<Long> typeIds,
+            List<PriceRangeFilter> priceRanges,
+            List<String> colorNames,
+            Long cursor,
+            Pageable pageable
+    ) {
+        QCurationRawProduct rawProduct = QCurationRawProduct.curationRawProduct;
+        QCurationRawProductFurnitureTag mapping = QCurationRawProductFurnitureTag.curationRawProductFurnitureTag;
+        QFurnitureTag fTag = QFurnitureTag.furnitureTag;
+        QFurniture furniture = QFurniture.furniture;
+        QFurnitureType fType = QFurnitureType.furnitureType;
+        QCurationRawProductColor color = QCurationRawProductColor.curationRawProductColor;
+
+        BooleanBuilder finalWhere = new BooleanBuilder();
+
+        finalWhere.and(rawProduct.isExposed.isTrue().or(rawProduct.isExposed.isNull()));
+        if (cursor != null) {
+            finalWhere.and(rawProduct.id.lt(cursor));
+        }
+
+        // v2: search_tokens 기반 검색 (pg_trgm GIN 인덱스 활용, 토큰은 lowercase 저장이므로 contains 사용)
+        if (keyword != null && !keyword.isBlank()) {
+            finalWhere.and(rawProduct.searchTokens.contains(keyword.toLowerCase()));
+        }
+
+        if (typeIds != null && !typeIds.isEmpty()) {
+            finalWhere.and(rawProduct.id.in(
+                    queryFactory.select(mapping.curationRawProduct.id)
+                            .from(mapping)
+                            .join(mapping.furnitureTag, fTag)
+                            .join(fTag.furniture, furniture)
+                            .leftJoin(furniture.furnitureType, fType)
+                            .where(fType.id.in(typeIds).or(furniture.id.in(typeIds)))
+            ));
+        }
+
+        if (priceRanges != null && !priceRanges.isEmpty()) {
+            BooleanBuilder priceGroupBuilder = new BooleanBuilder();
+            for (PriceRangeFilter range : priceRanges) {
+                BooleanBuilder rangeBuilder = new BooleanBuilder();
+                if (range.min() != null) rangeBuilder.and(rawProduct.discountPrice.goe(range.min()));
+                if (range.max() != null) rangeBuilder.and(rawProduct.discountPrice.loe(range.max()));
+                priceGroupBuilder.or(rangeBuilder);
+            }
+            finalWhere.and(priceGroupBuilder);
+        }
+
+        if (colorNames != null && !colorNames.isEmpty()) {
+            BooleanBuilder colorGroupBuilder = new BooleanBuilder();
+            for (String colorName : colorNames) {
+                colorGroupBuilder.or(color.clientColorName.containsIgnoreCase(colorName));
+            }
+            finalWhere.and(rawProduct.id.in(
+                    queryFactory.select(color.curationRawProduct.id)
+                            .from(color)
+                            .where(colorGroupBuilder)
+            ));
+        }
+
+        List<CurationRawProduct> content = queryFactory
+                .selectFrom(rawProduct)
+                .where(finalWhere)
+                .orderBy(rawProduct.id.desc())
+                .limit(pageable.getPageSize() + 1)
+                .fetch();
+
+        boolean hasNext = false;
+        if (content.size() > pageable.getPageSize()) {
+            content.remove(pageable.getPageSize());
+            hasNext = true;
+        }
+
+        return new SliceImpl<>(content, pageable, hasNext);
+    }
+
+    @Override
     public Page<CurationRawProduct> findExposedRawProductsExcludingLikedByUser(Long userId, Pageable pageable) {
         QCurationRawProduct rawProduct = QCurationRawProduct.curationRawProduct;
         QJjym jjym = QJjym.jjym;

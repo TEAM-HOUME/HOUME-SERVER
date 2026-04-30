@@ -15,14 +15,18 @@ import or.sopt.houme.domain.user.model.entity.User;
 import or.sopt.houme.domain.user.repository.BlacklistTokenRepository;
 import or.sopt.houme.global.api.ErrorCode;
 import or.sopt.houme.global.config.JWTConfig;
+import or.sopt.houme.global.config.WhiteListConfig;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
+import org.springframework.util.AntPathMatcher;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.List;
+import java.util.stream.Stream;
 
 
 /**
@@ -34,12 +38,29 @@ import java.io.IOException;
  * */
 @RequiredArgsConstructor
 @Component
-public class JWTFilter extends OncePerRequestFilter{
+public class JWTFilter extends OncePerRequestFilter {
 
     private final JWTUtil jwtUtil;
     private final JWTConfig jwtConfig;
     private final BlacklistTokenRepository blacklistTokenRepository;
     private final CustomUserDetailsService customUserDetailsService;
+
+    private static final AntPathMatcher pathMatcher = new AntPathMatcher();
+    private static final List<String> ALL_WHITELIST = Stream.of(
+            WhiteListConfig.swaggerWhitelist(),
+            WhiteListConfig.oauthWhitelist(),
+            WhiteListConfig.serverWhitelist(),
+            WhiteListConfig.makeHouseWhitelist(),
+            WhiteListConfig.userWhiteList(),
+            WhiteListConfig.exploreWhiteList(),
+            WhiteListConfig.monitoringWhiteList(),
+            WhiteListConfig.adminWhiteList(),
+            WhiteListConfig.curationWhiteList()
+    ).flatMap(List::stream).toList();
+
+    private boolean isWhitelisted(String uri) {
+        return ALL_WHITELIST.stream().anyMatch(pattern -> pathMatcher.match(pattern, uri));
+    }
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
@@ -89,21 +110,30 @@ public class JWTFilter extends OncePerRequestFilter{
             // 블랙리스트 검사
             String jti = jwtUtil.getJti(accessToken);
             if (blacklistTokenRepository.exists(jti)) {
+                if (isWhitelisted(request.getRequestURI())) {
+                    filterChain.doFilter(request, response);
+                    return;
+                }
                 setErrorResponse(response, ErrorCode.ACCESS_TOKEN_BLACKLISTED);
                 return;
             }
 
-
             String category = jwtUtil.getCategory(accessToken);
             if (!"access".equals(category)) {
+                if (isWhitelisted(request.getRequestURI())) {
+                    filterChain.doFilter(request, response);
+                    return;
+                }
                 setErrorResponse(response, ErrorCode.ACCESS_INVALID_TYPE);
-
                 return;
             }
 
         } catch (ExpiredJwtException e) {
+            if (isWhitelisted(request.getRequestURI())) {
+                filterChain.doFilter(request, response);
+                return;
+            }
             setErrorResponse(response, ErrorCode.ACCESS_TOKEN_EXPIRED);
-
             return;
         }
 

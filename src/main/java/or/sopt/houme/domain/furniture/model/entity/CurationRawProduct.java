@@ -117,6 +117,10 @@ public class CurationRawProduct {
     @Comment("노출 여부")
     private Boolean isExposed = true;
 
+    @Column(name = "search_tokens", columnDefinition = "text")
+    @Comment("검색용 사전 토큰화 데이터 (상품명/브랜드/가구유형/커스텀 키워드 공백 구분)")
+    private String searchTokens;
+
     @OneToMany(mappedBy = "curationRawProduct", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     @Comment("수동 매핑된 가구 태그(다중 매핑)")
@@ -253,6 +257,10 @@ public class CurationRawProduct {
 
     public void updateExposure(boolean isExposed) {
         this.isExposed = isExposed;
+    }
+
+    public void updateSearchTokens(String searchTokens) {
+        this.searchTokens = searchTokens;
     }
 
     private static String normalizeSource(String source) {
