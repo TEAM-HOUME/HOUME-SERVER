@@ -9,6 +9,7 @@ import or.sopt.houme.domain.generateImage.presentation.dto.request.GenerateImage
 import or.sopt.houme.domain.generateImage.presentation.dto.request.GenerateImageV4Request;
 import or.sopt.houme.domain.generateImage.presentation.dto.request.OtherStyleGenerateImageRequest;
 import or.sopt.houme.domain.generateImage.presentation.dto.response.BannerGenerateImageResponse;
+import or.sopt.houme.domain.generateImage.presentation.dto.response.GenerateImageV4Response;
 import or.sopt.houme.domain.generateImage.presentation.dto.response.ImageInfoListResponse;
 import or.sopt.houme.domain.generateImage.presentation.dto.response.ImageInfoResponse;
 import or.sopt.houme.domain.generateImage.presentation.dto.response.OtherStyleGenerateImageResponse;
@@ -111,11 +112,11 @@ public class GenerateImageController {
     @Operation(summary = "V4 이미지 생성 API",
             description = "도면/뷰, 무드보드, 주요활동, 가구를 기반으로 Gemini 모델로 이미지 1장을 생성합니다.")
     @PostMapping("/v4/generated-images/generate")
-    public ResponseEntity<ApiResponse<BannerGenerateImageResponse>> generateImageV4ByGemini(
+    public ResponseEntity<ApiResponse<GenerateImageV4Response>> generateImageV4ByGemini(
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @RequestBody @Valid GenerateImageV4Request request
     ) {
-        BannerGenerateImageResponse response =
+        GenerateImageV4Response response =
                 generateImageFacade.generateImageV4ByGemini(userDetails.getUser(), request);
         return ResponseEntity.ok(ApiResponse.ok(response));
     }
