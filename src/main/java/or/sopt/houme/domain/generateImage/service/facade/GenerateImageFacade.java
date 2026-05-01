@@ -472,7 +472,7 @@ public class GenerateImageFacade {
                     imageUploadResponseDTO
             );
             log.info("스타일 템플릿 기반 인테리어 이미지 생성 저장 완료 imageId={}", response.imageId());
-            return OtherStyleGenerateImageResponse.of(response.imageId());
+            return OtherStyleGenerateImageResponse.of(response.imageId(), response.imageUrl(), response.isMirror());
         } catch (ValidException validException) {
             if (lockedCredit != null && lockedCredit.getStatus() == CreditStatus.PENDING) {
                 creditService.rollbackCreditPending(lockedCredit);

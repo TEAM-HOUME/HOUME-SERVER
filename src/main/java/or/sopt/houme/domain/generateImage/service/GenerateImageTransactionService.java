@@ -146,7 +146,7 @@ public class GenerateImageTransactionService {
 
         creditService.commitCreditDeletion(lockedCredit);
         userService.updateHasGeneratedImage(user);
-        return BannerGenerateImageResponse.of(generateImage.getId());
+        return BannerGenerateImageResponse.of(generateImage.getId(), generateImage.getUrl(), isMirror);
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
@@ -179,7 +179,7 @@ public class GenerateImageTransactionService {
 
         creditService.commitCreditDeletion(lockedCredit);
         userService.updateHasGeneratedImage(user);
-        return GenerateImageV4Response.of(generateImage.getId(), generateImage.getUrl());
+        return GenerateImageV4Response.of(generateImage.getId(), generateImage.getUrl(), isMirror);
     }
 
     private FloorPlan getFloorPlanOrThrow(House house) {
