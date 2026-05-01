@@ -69,7 +69,6 @@ public class GenerateImageResultServiceImpl implements GenerateImageResultServic
         GenerateImage generateImage = generateImageService.findGenerateImage(imageId);
         validateListResultAccessible(generateImage);
 
-        boolean isMirror = resolveIsMirror(generateImage);
         List<CurationRawProduct> selectedProducts = resolveSelectedRawProducts(generateImage);
         Map<Long, List<ProductColorResponse>> colorsByRawProductId = buildColorsByRawProductId(selectedProducts);
         Set<Long> likedRawProductIds = resolveLikedRawProductIds(user, selectedProducts);
@@ -84,8 +83,6 @@ public class GenerateImageResultServiceImpl implements GenerateImageResultServic
 
         return GenerateImageResultResponse.of(
                 generateImage.getId(),
-                generateImage.getUrl(),
-                isMirror,
                 products
         );
     }
