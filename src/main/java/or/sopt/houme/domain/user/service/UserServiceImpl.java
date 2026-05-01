@@ -71,7 +71,7 @@ import java.util.stream.IntStream;
 @Transactional
 public class UserServiceImpl implements UserService {
 
-    private static final int SIGN_UP_CREDIT_COUNT = 1;
+    private static final int SIGN_UP_CREDIT_COUNT = 5;
     private static final String USER_NICKNAME_TAG_UNIQUE_CONSTRAINT = "uk_user_nickname_nickname_tag";
 
     private final UserRepository userRepository;
