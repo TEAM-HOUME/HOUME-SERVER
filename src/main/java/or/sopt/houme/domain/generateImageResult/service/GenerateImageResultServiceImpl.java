@@ -22,6 +22,7 @@ import or.sopt.houme.domain.generateImage.repository.GenerateImageRepository;
 import or.sopt.houme.domain.generateImage.service.GenerateImageService;
 import or.sopt.houme.domain.generateImageResult.presentation.dto.response.GenerateImageResultProductResponse;
 import or.sopt.houme.domain.generateImageResult.presentation.dto.response.GenerateImageResultResponse;
+import or.sopt.houme.domain.generateImageResult.presentation.dto.response.GeneratedImageMetaResponse;
 import or.sopt.houme.domain.generateImageResult.presentation.dto.response.RelatedImageResponse;
 import or.sopt.houme.domain.generateImageResult.presentation.dto.response.RelatedImagesResponse;
 import or.sopt.houme.domain.generateImageResult.presentation.dto.response.SimilarItemResponse;
@@ -84,6 +85,22 @@ public class GenerateImageResultServiceImpl implements GenerateImageResultServic
         return GenerateImageResultResponse.of(
                 generateImage.getId(),
                 products
+        );
+    }
+
+    @Override
+    public GeneratedImageMetaResponse getGeneratedImageMeta(User user, Long imageId) {
+        if (user == null) {
+            throw new GenerateImageException(ErrorCode.INVALID_GENERATE_IMAGE_RESULT_REQUEST);
+        }
+
+        GenerateImage generateImage = generateImageService.findGenerateImage(imageId);
+        boolean isMirror = resolveIsMirror(generateImage);
+
+        return GeneratedImageMetaResponse.of(
+                generateImage.getId(),
+                generateImage.getUrl(),
+                isMirror
         );
     }
 
