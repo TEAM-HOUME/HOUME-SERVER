@@ -167,8 +167,6 @@ class GenerateImageResultServiceImplTest {
         GenerateImageResultResponse response = generateImageResultService.getListResultItems(user, 1L);
 
         assertThat(response.imageId()).isEqualTo(1L);
-        assertThat(response.imageUrl()).isEqualTo("https://generated-image");
-        assertThat(response.isMirror()).isFalse();
         assertThat(response.products()).hasSize(1);
         assertThat(response.products().getFirst().id()).isEqualTo(101L);
         assertThat(response.products().getFirst().name()).isEqualTo("테스트 상품");

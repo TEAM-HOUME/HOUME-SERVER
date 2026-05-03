@@ -85,6 +85,8 @@ class GenerateImageTransactionServiceTest {
         );
 
         assertThat(response.imageId()).isEqualTo(101L);
+        assertThat(response.imageUrl()).isEqualTo("https://cdn.example.com/file.jpg");
+        assertThat(response.isMirror()).isTrue();
         verify(houseService).createTemplateHouse(user, banner, finalPrompt, floorPlanId, isMirror);
         verify(generateImageService).createGenerateImage(imageResponse, house, GenerateImageType.LIST);
         verify(creditService).commitCreditDeletion(lockedCredit);

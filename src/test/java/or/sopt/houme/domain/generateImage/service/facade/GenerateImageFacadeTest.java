@@ -428,11 +428,13 @@ class GenerateImageFacadeTest {
                 eq(false),
                 any(),
                 eq(imageUploadResponseDTO)
-        )).thenReturn(BannerGenerateImageResponse.of(999L));
+        )).thenReturn(BannerGenerateImageResponse.of(999L, "https://generated-image", false));
 
         BannerGenerateImageResponse response = generateImageFacade.generateBannerImageByGemini(user, request);
 
         assertThat(response.imageId()).isEqualTo(999L);
+        assertThat(response.imageUrl()).isEqualTo("https://generated-image");
+        assertThat(response.isMirror()).isFalse();
         verify(generateImageTransactionService).saveBannerImageAndConfirmCredit(
                 eq(user),
                 eq(lockedCredit),
@@ -536,12 +538,13 @@ class GenerateImageFacadeTest {
                 eq(Activity.REMOTE_WORK),
                 eq(List.of(7L, 8L)),
                 eq(List.of(1L, 2L))
-        )).thenReturn(GenerateImageV4Response.of(999L, "https://generated-image"));
+        )).thenReturn(GenerateImageV4Response.of(999L, "https://generated-image", true));
 
         GenerateImageV4Response response = generateImageFacade.generateImageV4ByGemini(user, request);
 
         assertThat(response.imageId()).isEqualTo(999L);
         assertThat(response.imageUrl()).isEqualTo("https://generated-image");
+        assertThat(response.isMirror()).isTrue();
         verify(geminiImageService).createImageWithReferences(
                 any(),
                 argThat(urls -> urls.size() == 3
