@@ -3,7 +3,7 @@ package or.sopt.houme.domain.user.service;
 import or.sopt.houme.domain.user.presentation.controller.dto.ImageHistoriesResultPageResponse;
 import or.sopt.houme.domain.user.presentation.controller.dto.MyPageInfoResponse;
 import or.sopt.houme.domain.user.presentation.controller.dto.MyPageGeneratedImageV2Response;
-import or.sopt.houme.domain.user.presentation.controller.dto.UpdateMyPageProfileResponse;
+import or.sopt.houme.domain.user.presentation.controller.dto.MyPageProfileResponse;
 import or.sopt.houme.domain.user.presentation.controller.dto.UserImageHistoryListResponse;
 import or.sopt.houme.domain.user.model.entity.Gender;
 import or.sopt.houme.domain.user.model.entity.User;
@@ -21,13 +21,15 @@ public interface UserService {
      */
     MyPageGeneratedImageV2Response getUserGeneratedImageHistoryListV2(User user);
 
+    MyPageProfileResponse getMyPageProfile(User user);
+
     ImageHistoriesResultPageResponse getImageHistoryResultPage(User user, Long houseId);
 
     String updateUser(User user, String name, Gender gender, LocalDate birthday);
 
     String updateUserV2(User user, String nickname, Gender gender, LocalDate birthday);
 
-    UpdateMyPageProfileResponse updateMyPageProfile(User user, String nickname, Gender gender, LocalDate birthday);
+    MyPageProfileResponse updateMyPageProfile(User user, String nickname, Gender gender, LocalDate birthday);
 
     // 사용자 이미지 생성 여부 저장
     @Transactional

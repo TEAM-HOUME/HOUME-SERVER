@@ -6,7 +6,7 @@ import or.sopt.houme.domain.user.model.entity.Role;
 import or.sopt.houme.domain.user.model.entity.User;
 import or.sopt.houme.domain.user.presentation.controller.dto.CustomUserDetails;
 import or.sopt.houme.domain.user.presentation.controller.dto.CustomUserDetailsService;
-import or.sopt.houme.domain.user.presentation.controller.dto.UpdateMyPageProfileResponse;
+import or.sopt.houme.domain.user.presentation.controller.dto.MyPageProfileResponse;
 import or.sopt.houme.domain.user.repository.BlacklistTokenRepository;
 import or.sopt.houme.domain.user.service.NicknameService;
 import or.sopt.houme.domain.user.service.OAuthService;
@@ -151,6 +151,41 @@ class UserV2ControllerTest {
     }
 
     @Test
+    @DisplayName("GET /api/v2/mypage/user 요청 시 마이페이지 프로필을 조회한다")
+    void getMyPageProfile_success() throws Exception {
+        User user = User.builder()
+                .id(1L)
+                .email("test@example.com")
+                .role(Role.ROLE_USER)
+                .build();
+
+        UsernamePasswordAuthenticationToken requestAuthentication =
+                new UsernamePasswordAuthenticationToken(
+                        new CustomUserDetails(user),
+                        null,
+                        List.of(() -> "ROLE_USER")
+                );
+
+        given(userService.getMyPageProfile(any()))
+                .willReturn(new MyPageProfileResponse(
+                        1L,
+                        "잠자는꾸민성1470",
+                        LocalDate.of(2001, 1, 1),
+                        Gender.FEMALE
+                ));
+
+        mockMvc.perform(get("/api/v2/mypage/user")
+                        .with(authentication(requestAuthentication)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value(200))
+                .andExpect(jsonPath("$.msg").value("응답 성공"))
+                .andExpect(jsonPath("$.data.userId").value(1))
+                .andExpect(jsonPath("$.data.nickname").value("잠자는꾸민성1470"))
+                .andExpect(jsonPath("$.data.birthday").value("2001-01-01"))
+                .andExpect(jsonPath("$.data.gender").value("FEMALE"));
+    }
+
+    @Test
     @DisplayName("PATCH /api/v2/mypage/user 요청 시 마이페이지 프로필을 수정한다")
     void updateMyPageProfile_success() throws Exception {
         User user = User.builder()
@@ -171,7 +206,7 @@ class UserV2ControllerTest {
                 any(String.class),
                 any(Gender.class),
                 any(LocalDate.class)
-        )).willReturn(new UpdateMyPageProfileResponse(
+        )).willReturn(new MyPageProfileResponse(
                 1L,
                 "잠자는꾸민성1470",
                 LocalDate.of(2001, 1, 1),
@@ -218,7 +253,7 @@ class UserV2ControllerTest {
                 any(String.class),
                 any(),
                 any()
-        )).willReturn(new UpdateMyPageProfileResponse(
+        )).willReturn(new MyPageProfileResponse(
                 1L,
                 "새닉네임",
                 LocalDate.of(2001, 1, 1),
