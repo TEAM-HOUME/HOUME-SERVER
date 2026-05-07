@@ -39,6 +39,7 @@ import or.sopt.houme.domain.user.model.entity.User;
 import or.sopt.houme.domain.user.presentation.controller.dto.ImageHistoriesResultPageResponse;
 import or.sopt.houme.domain.user.presentation.controller.dto.MyPageGeneratedImageV2Response;
 import or.sopt.houme.domain.user.presentation.controller.dto.MyPageInfoResponse;
+import or.sopt.houme.domain.user.presentation.controller.dto.UpdateMyPageProfileResponse;
 import or.sopt.houme.domain.user.presentation.controller.dto.UserImageHistoryDTO;
 import or.sopt.houme.domain.user.presentation.controller.dto.UserImageHistoryListResponse;
 import or.sopt.houme.domain.user.repository.UserRepository;
@@ -308,6 +309,33 @@ public class UserServiceImpl implements UserService {
                         gender,
                         birthday
                 );
+            } catch (DataIntegrityViolationException exception) {
+                if (!isNicknameTagConstraintViolation(exception)) {
+                    throw exception;
+                }
+            }
+        }
+
+        throw new UserException(ErrorCode.NICKNAME_TAG_GENERATION_FAILED);
+    }
+
+    @Override
+    @Transactional(propagation = Propagation.NOT_SUPPORTED)
+    public UpdateMyPageProfileResponse updateMyPageProfile(User user, String nickname, Gender gender, LocalDate birthday) {
+        Long userId = user.getId();
+        findUser(user);
+
+        for (int attempt = 0; attempt < NicknameService.NICKNAME_TAG_RETRY_COUNT; attempt++) {
+            String nicknameTag = nicknameService.generateNicknameTag(nickname);
+            try {
+                User updatedUser = userNicknameTagTransactionService.updateMyPageProfile(
+                        userId,
+                        nickname,
+                        nicknameTag,
+                        gender,
+                        birthday
+                );
+                return UpdateMyPageProfileResponse.from(updatedUser);
             } catch (DataIntegrityViolationException exception) {
                 if (!isNicknameTagConstraintViolation(exception)) {
                     throw exception;

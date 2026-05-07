@@ -81,6 +81,14 @@ public class User extends BaseEntity {
         this.gender = gender;
     }
 
+    public void updateMyPageProfile(String nickname, String nicknameTag, LocalDate birthday, Gender gender) {
+        this.nickname = nickname;
+        this.nicknameTag = nicknameTag;
+        this.name = nickname;
+        this.birthday = birthday;
+        this.gender = gender;
+    }
+
     public String getDisplayName() {
         if (nickname != null && !nickname.isBlank()) {
             return nickname;
