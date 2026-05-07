@@ -10,6 +10,7 @@ import or.sopt.houme.domain.credit.model.entity.Credit;
 import or.sopt.houme.domain.credit.model.entity.CreditStatus;
 import or.sopt.houme.domain.credit.service.CreditService;
 import or.sopt.houme.domain.furniture.model.entity.ActivityFurniture;
+import or.sopt.houme.domain.furniture.model.entity.CurationRawProduct;
 import or.sopt.houme.domain.furniture.model.entity.Furniture;
 import or.sopt.houme.domain.furniture.model.entity.FurnitureTag;
 import or.sopt.houme.domain.furniture.repository.ActivityFurnitureRepository;
@@ -20,6 +21,7 @@ import or.sopt.houme.domain.generateImage.infrastructure.gemini.service.GeminiIm
 import or.sopt.houme.domain.generateImage.presentation.dto.request.BannerGenerateImageRequest;
 import or.sopt.houme.domain.generateImage.presentation.dto.request.GenerateImageRequest;
 import or.sopt.houme.domain.generateImage.presentation.dto.request.GenerateImageV4Request;
+import or.sopt.houme.domain.generateImage.presentation.dto.request.ProductGenerateImageRequest;
 import or.sopt.houme.domain.generateImage.presentation.dto.response.BannerGenerateImageResponse;
 import or.sopt.houme.domain.generateImage.presentation.dto.response.GenerateImageV4Response;
 import or.sopt.houme.domain.generateImage.presentation.dto.response.ImageInfoResponse;
@@ -644,6 +646,63 @@ class GenerateImageFacadeTest {
                 any(),
                 any(),
                 any()
+        );
+    }
+
+    @Test
+    @DisplayName("선택 상품 기반 이미지 생성은 도면+상품 이미지로 생성 후 저장한다")
+    void generateImageByProducts_callsGeminiAndSaves() {
+        User user = User.builder().id(1L).name("test_user").build();
+        Credit lockedCredit = Credit.builder().id(10L).status(CreditStatus.PENDING).user(user).build();
+        ProductGenerateImageRequest request = new ProductGenerateImageRequest(
+                11L,
+                "창가 뷰",
+                true,
+                List.of(1L, 2L, 3L)
+        );
+
+        FloorPlan floorPlan = FloorPlan.builder()
+                .id(11L)
+                .floorPlanPrompt("도면 프롬프트")
+                .imagesJson("[]")
+                .build();
+
+        CurationRawProduct p1 = CurationRawProduct.builder().id(1L).productName("소파").productImageUrl("https://p1").build();
+        CurationRawProduct p2 = CurationRawProduct.builder().id(2L).productName("책상").productImageUrl("https://p2").build();
+        CurationRawProduct p3 = CurationRawProduct.builder().id(3L).productName("조명").productImageUrl("https://p3").build();
+
+        ImageUploadResponseDTO imageUploadResponseDTO = ImageUploadResponseDTO.from(
+                "generated.webp",
+                "generated-original.webp",
+                "https://generated-image",
+                "image/webp"
+        );
+
+        when(creditService.tryLockAndGetCredit(user)).thenReturn(lockedCredit);
+        when(floorPlanRepository.findById(11L)).thenReturn(Optional.of(floorPlan));
+        when(curationRawProductRepository.findAllById(List.of(1L, 2L, 3L))).thenReturn(List.of(p1, p2, p3));
+        when(floorPlanImageJsonCodec.read("[]"))
+                .thenReturn(List.of(FloorPlanImageItem.create("https://floorplan-view", "file", "orig", "png", 1, "창가 뷰")));
+        when(geminiImageService.createImageWithReferences(any(), any())).thenReturn(imageUploadResponseDTO);
+        when(generateImageTransactionService.saveProductImageAndConfirmCredit(
+                eq(user), eq(lockedCredit), eq(11L), eq(true), any(), eq(imageUploadResponseDTO)
+        )).thenReturn(GenerateImageV4Response.of(999L, "https://generated-image", true));
+
+        GenerateImageV4Response response = generateImageFacade.generateImageByProducts(user, request);
+
+        assertThat(response.imageId()).isEqualTo(999L);
+        assertThat(response.imageUrl()).isEqualTo("https://generated-image");
+        assertThat(response.isMirror()).isTrue();
+        verify(geminiImageService).createImageWithReferences(
+                any(),
+                argThat(urls -> urls.size() == 4
+                        && urls.get(0).equals("https://floorplan-view")
+                        && urls.contains("https://p1")
+                        && urls.contains("https://p2")
+                        && urls.contains("https://p3"))
+        );
+        verify(generateImageTransactionService).saveProductImageAndConfirmCredit(
+                eq(user), eq(lockedCredit), eq(11L), eq(true), any(), eq(imageUploadResponseDTO)
         );
     }
 }

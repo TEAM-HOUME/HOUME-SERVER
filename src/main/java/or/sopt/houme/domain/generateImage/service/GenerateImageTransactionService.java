@@ -182,6 +182,28 @@ public class GenerateImageTransactionService {
         return GenerateImageV4Response.of(generateImage.getId(), generateImage.getUrl(), isMirror);
     }
 
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public GenerateImageV4Response saveProductImageAndConfirmCredit(
+            User user,
+            Credit lockedCredit,
+            Long floorPlanId,
+            boolean isMirror,
+            String finalPrompt,
+            ImageUploadResponseDTO imageResponse
+    ) {
+        House house = houseService.createTemplateHouse(user, null, finalPrompt, floorPlanId, isMirror);
+
+        GenerateImage generateImage = generateImageService.createGenerateImage(
+                imageResponse,
+                house,
+                GenerateImageType.LIST
+        );
+
+        creditService.commitCreditDeletion(lockedCredit);
+        userService.updateHasGeneratedImage(user);
+        return GenerateImageV4Response.of(generateImage.getId(), generateImage.getUrl(), isMirror);
+    }
+
     private FloorPlan getFloorPlanOrThrow(House house) {
         return houseFloorPlanRepository.findHouseFloorPlanByHouseId(house.getId())
                 .map(HouseFloorPlan::getFloorPlan)

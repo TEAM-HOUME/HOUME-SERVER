@@ -8,6 +8,7 @@ import or.sopt.houme.domain.generateImage.presentation.dto.request.BannerGenerat
 import or.sopt.houme.domain.generateImage.presentation.dto.request.GenerateImageRequest;
 import or.sopt.houme.domain.generateImage.presentation.dto.request.GenerateImageV4Request;
 import or.sopt.houme.domain.generateImage.presentation.dto.request.OtherStyleGenerateImageRequest;
+import or.sopt.houme.domain.generateImage.presentation.dto.request.ProductGenerateImageRequest;
 import or.sopt.houme.domain.generateImage.presentation.dto.response.BannerGenerateImageResponse;
 import or.sopt.houme.domain.generateImage.presentation.dto.response.GenerateImageV4Response;
 import or.sopt.houme.domain.generateImage.presentation.dto.response.ImageInfoListResponse;
@@ -142,6 +143,18 @@ public class GenerateImageController {
     ) {
         OtherStyleGenerateImageResponse response =
                 generateImageFacade.generateOtherStyleImageByGemini(userDetails.getUser(), request);
+        return ResponseEntity.ok(ApiResponse.ok(response));
+    }
+
+    @Operation(summary = "선택한 상품 기반 이미지 생성 API",
+            description = "도면/뷰와 선택한 상품 이미지(최대 6개)를 기반으로 Gemini 모델로 이미지 1장을 생성합니다.")
+    @PostMapping("/v1/generated-images/generate/products")
+    public ResponseEntity<ApiResponse<GenerateImageV4Response>> generateImageByProducts(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @RequestBody @Valid ProductGenerateImageRequest request
+    ) {
+        GenerateImageV4Response response =
+                generateImageFacade.generateImageByProducts(userDetails.getUser(), request);
         return ResponseEntity.ok(ApiResponse.ok(response));
     }
 
