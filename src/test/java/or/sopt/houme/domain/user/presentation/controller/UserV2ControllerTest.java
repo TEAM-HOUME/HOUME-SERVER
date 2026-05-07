@@ -196,4 +196,46 @@ class UserV2ControllerTest {
                 .andExpect(jsonPath("$.data.birthday").value("2001-01-01"))
                 .andExpect(jsonPath("$.data.gender").value("FEMALE"));
     }
+
+    @Test
+    @DisplayName("PATCH /api/v2/mypage/user 요청은 전달된 필드만 수정할 수 있다")
+    void updateMyPageProfile_partialSuccess() throws Exception {
+        User user = User.builder()
+                .id(1L)
+                .email("test@example.com")
+                .role(Role.ROLE_USER)
+                .build();
+
+        UsernamePasswordAuthenticationToken requestAuthentication =
+                new UsernamePasswordAuthenticationToken(
+                        new CustomUserDetails(user),
+                        null,
+                        List.of(() -> "ROLE_USER")
+                );
+
+        given(userService.updateMyPageProfile(
+                any(),
+                any(String.class),
+                any(),
+                any()
+        )).willReturn(new UpdateMyPageProfileResponse(
+                1L,
+                "새닉네임",
+                LocalDate.of(2001, 1, 1),
+                Gender.FEMALE
+        ));
+
+        mockMvc.perform(patch("/api/v2/mypage/user")
+                        .with(authentication(requestAuthentication))
+                        .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "nickname": "새닉네임"
+                                }
+                                """))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value(200))
+                .andExpect(jsonPath("$.msg").value("응답 성공"))
+                .andExpect(jsonPath("$.data.nickname").value("새닉네임"));
+    }
 }

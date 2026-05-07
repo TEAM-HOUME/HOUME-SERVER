@@ -82,11 +82,17 @@ public class User extends BaseEntity {
     }
 
     public void updateMyPageProfile(String nickname, String nicknameTag, LocalDate birthday, Gender gender) {
-        this.nickname = nickname;
-        this.nicknameTag = nicknameTag;
-        this.name = nickname;
-        this.birthday = birthday;
-        this.gender = gender;
+        if (nickname != null) {
+            this.nickname = nickname;
+            this.nicknameTag = nicknameTag;
+            this.name = nickname;
+        }
+        if (birthday != null) {
+            this.birthday = birthday;
+        }
+        if (gender != null) {
+            this.gender = gender;
+        }
     }
 
     public String getDisplayName() {
