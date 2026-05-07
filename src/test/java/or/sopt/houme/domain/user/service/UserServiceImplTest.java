@@ -745,4 +745,41 @@ class UserServiceImplTest {
         then(nicknameService).should(times(2)).generateNicknameTag("새닉네임");
     }
 
+    @Test
+    @DisplayName("마이페이지 프로필 수정은 닉네임이 없으면 닉네임 태그를 생성하지 않는다")
+    void updateMyPageProfile_withoutNickname_doesNotGenerateNicknameTag() {
+        User inputUser = User.builder().id(1L).build();
+        User updatedUser = User.builder()
+                .id(1L)
+                .name("기존닉네임")
+                .nickname("기존닉네임")
+                .nicknameTag("#0001")
+                .birthday(LocalDate.of(1999, 1, 1))
+                .gender(Gender.MALE)
+                .build();
+
+        given(userRepository.findById(1L)).willReturn(Optional.of(updatedUser));
+        given(userNicknameTagTransactionService.updateMyPageProfile(
+                1L,
+                null,
+                null,
+                Gender.FEMALE,
+                null
+        )).willAnswer(invocation -> {
+            updatedUser.updateMyPageProfile(null, null, null, Gender.FEMALE);
+            return updatedUser;
+        });
+
+        UpdateMyPageProfileResponse response = userService.updateMyPageProfile(
+                inputUser,
+                null,
+                Gender.FEMALE,
+                null
+        );
+
+        assertThat(response.nickname()).isEqualTo("기존닉네임");
+        assertThat(response.gender()).isEqualTo(Gender.FEMALE);
+        then(nicknameService).shouldHaveNoInteractions();
+    }
+
 }

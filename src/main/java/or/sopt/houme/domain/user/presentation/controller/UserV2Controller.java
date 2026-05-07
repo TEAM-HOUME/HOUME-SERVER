@@ -87,8 +87,8 @@ public class UserV2Controller {
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @RequestBody @Valid UpdateMyPageProfileRequest request
     ) {
-        Gender gender = parseGender(request.gender());
-        LocalDate birthday = parseBirthday(request.birthday());
+        Gender gender = request.gender() == null ? null : parseGender(request.gender());
+        LocalDate birthday = request.birthday() == null ? null : parseBirthday(request.birthday());
 
         UpdateMyPageProfileResponse response = userService.updateMyPageProfile(
                 userDetails.getUser(),

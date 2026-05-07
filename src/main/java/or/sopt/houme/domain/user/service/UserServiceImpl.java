@@ -64,6 +64,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -299,24 +300,15 @@ public class UserServiceImpl implements UserService {
         Long userId = user.getId();
         findUser(user);
 
-        for (int attempt = 0; attempt < NicknameService.NICKNAME_TAG_RETRY_COUNT; attempt++) {
-            String nicknameTag = nicknameService.generateNicknameTag(nickname);
-            try {
-                return userNicknameTagTransactionService.completeUserSignUpV2(
+        return executeWithNicknameTagRetry(nickname, nicknameTag ->
+                userNicknameTagTransactionService.completeUserSignUpV2(
                         userId,
                         nickname,
                         nicknameTag,
                         gender,
                         birthday
-                );
-            } catch (DataIntegrityViolationException exception) {
-                if (!isNicknameTagConstraintViolation(exception)) {
-                    throw exception;
-                }
-            }
-        }
-
-        throw new UserException(ErrorCode.NICKNAME_TAG_GENERATION_FAILED);
+                )
+        );
     }
 
     @Override
@@ -325,17 +317,34 @@ public class UserServiceImpl implements UserService {
         Long userId = user.getId();
         findUser(user);
 
+        if (nickname == null) {
+            User updatedUser = userNicknameTagTransactionService.updateMyPageProfile(
+                    userId,
+                    null,
+                    null,
+                    gender,
+                    birthday
+            );
+            return UpdateMyPageProfileResponse.from(updatedUser);
+        }
+
+        return executeWithNicknameTagRetry(nickname, nicknameTag -> {
+            User updatedUser = userNicknameTagTransactionService.updateMyPageProfile(
+                    userId,
+                    nickname,
+                    nicknameTag,
+                    gender,
+                    birthday
+            );
+            return UpdateMyPageProfileResponse.from(updatedUser);
+        });
+    }
+
+    private <T> T executeWithNicknameTagRetry(String nickname, Function<String, T> nicknameTagCommand) {
         for (int attempt = 0; attempt < NicknameService.NICKNAME_TAG_RETRY_COUNT; attempt++) {
             String nicknameTag = nicknameService.generateNicknameTag(nickname);
             try {
-                User updatedUser = userNicknameTagTransactionService.updateMyPageProfile(
-                        userId,
-                        nickname,
-                        nicknameTag,
-                        gender,
-                        birthday
-                );
-                return UpdateMyPageProfileResponse.from(updatedUser);
+                return nicknameTagCommand.apply(nicknameTag);
             } catch (DataIntegrityViolationException exception) {
                 if (!isNicknameTagConstraintViolation(exception)) {
                     throw exception;
