@@ -11,7 +11,7 @@ import or.sopt.houme.domain.user.presentation.controller.dto.CustomUserDetails;
 import or.sopt.houme.domain.user.presentation.controller.dto.MyPageGeneratedImageV2Response;
 import or.sopt.houme.domain.user.presentation.controller.dto.SocialSignUpV2Request;
 import or.sopt.houme.domain.user.presentation.controller.dto.UpdateMyPageProfileRequest;
-import or.sopt.houme.domain.user.presentation.controller.dto.UpdateMyPageProfileResponse;
+import or.sopt.houme.domain.user.presentation.controller.dto.MyPageProfileResponse;
 import or.sopt.houme.domain.user.service.NicknameService;
 import or.sopt.houme.domain.user.service.OAuthService;
 import or.sopt.houme.domain.user.service.UserService;
@@ -81,16 +81,26 @@ public class UserV2Controller {
         return ResponseEntity.ok(ApiResponse.ok(nicknameService.rotateNickname()));
     }
 
+    @GetMapping(value = "/mypage/user")
+    @Operation(summary = "마이페이지 프로필 조회 API")
+    public ResponseEntity<ApiResponse<MyPageProfileResponse>> getMyPageProfile(
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        MyPageProfileResponse response = userService.getMyPageProfile(userDetails.getUser());
+
+        return ResponseEntity.ok(ApiResponse.ok(response));
+    }
+
     @PatchMapping(value = "/mypage/user")
     @Operation(summary = "마이페이지 프로필 수정 API")
-    public ResponseEntity<ApiResponse<UpdateMyPageProfileResponse>> updateMyPageProfile(
+    public ResponseEntity<ApiResponse<MyPageProfileResponse>> updateMyPageProfile(
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @RequestBody @Valid UpdateMyPageProfileRequest request
     ) {
         Gender gender = request.gender() == null ? null : parseGender(request.gender());
         LocalDate birthday = request.birthday() == null ? null : parseBirthday(request.birthday());
 
-        UpdateMyPageProfileResponse response = userService.updateMyPageProfile(
+        MyPageProfileResponse response = userService.updateMyPageProfile(
                 userDetails.getUser(),
                 request.nickname(),
                 gender,

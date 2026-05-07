@@ -5,14 +5,14 @@ import or.sopt.houme.domain.user.model.entity.User;
 
 import java.time.LocalDate;
 
-public record UpdateMyPageProfileResponse(
+public record MyPageProfileResponse(
         Long userId,
         String nickname,
         LocalDate birthday,
         Gender gender
 ) {
-    public static UpdateMyPageProfileResponse from(User user) {
-        return new UpdateMyPageProfileResponse(
+    public static MyPageProfileResponse from(User user) {
+        return new MyPageProfileResponse(
                 user.getId(),
                 user.getNickname(),
                 user.getBirthday(),

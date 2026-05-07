@@ -669,6 +669,27 @@ class UserServiceImplTest {
     }
 
     @Test
+    @DisplayName("마이페이지 프로필 조회는 사용자 프로필 수정 화면 정보를 반환한다")
+    void getMyPageProfile_success() {
+        User inputUser = User.builder().id(1L).build();
+        User dbUser = User.builder()
+                .id(1L)
+                .nickname("잠자는꾸민성1470")
+                .birthday(LocalDate.of(2001, 1, 1))
+                .gender(Gender.FEMALE)
+                .build();
+
+        given(userRepository.findById(1L)).willReturn(Optional.of(dbUser));
+
+        MyPageProfileResponse response = userService.getMyPageProfile(inputUser);
+
+        assertThat(response.userId()).isEqualTo(1L);
+        assertThat(response.nickname()).isEqualTo("잠자는꾸민성1470");
+        assertThat(response.birthday()).isEqualTo(LocalDate.of(2001, 1, 1));
+        assertThat(response.gender()).isEqualTo(Gender.FEMALE);
+    }
+
+    @Test
     @DisplayName("마이페이지 프로필 수정은 닉네임 태그를 생성하고 사용자 정보를 업데이트한다")
     void updateMyPageProfile_success() {
         User inputUser = User.builder().id(1L).build();
@@ -694,7 +715,7 @@ class UserServiceImplTest {
             return updatedUser;
         });
 
-        UpdateMyPageProfileResponse response = userService.updateMyPageProfile(
+        MyPageProfileResponse response = userService.updateMyPageProfile(
                 inputUser,
                 "새닉네임",
                 Gender.FEMALE,
@@ -734,7 +755,7 @@ class UserServiceImplTest {
             return updatedUser;
         });
 
-        UpdateMyPageProfileResponse response = userService.updateMyPageProfile(
+        MyPageProfileResponse response = userService.updateMyPageProfile(
                 inputUser,
                 "새닉네임",
                 Gender.FEMALE,
@@ -770,7 +791,7 @@ class UserServiceImplTest {
             return updatedUser;
         });
 
-        UpdateMyPageProfileResponse response = userService.updateMyPageProfile(
+        MyPageProfileResponse response = userService.updateMyPageProfile(
                 inputUser,
                 null,
                 Gender.FEMALE,
