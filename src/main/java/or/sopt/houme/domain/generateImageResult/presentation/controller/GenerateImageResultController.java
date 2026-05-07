@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import or.sopt.houme.domain.generateImageResult.presentation.dto.response.GenerateImageResultResponse;
+import or.sopt.houme.domain.generateImageResult.presentation.dto.response.GeneratedImageMetaResponse;
 import or.sopt.houme.domain.generateImageResult.presentation.dto.response.RelatedImagesResponse;
 import or.sopt.houme.domain.generateImageResult.presentation.dto.response.SimilarItemsResponse;
 import or.sopt.houme.domain.generateImageResult.service.GenerateImageResultService;
@@ -33,6 +34,18 @@ public class GenerateImageResultController {
     ) {
         GenerateImageResultResponse response =
                 generateImageResultService.getListResultItems(userDetails.getUser(), imageId);
+        return ResponseEntity.ok(ApiResponse.ok(response));
+    }
+
+    @Operation(summary = "이미지 URL/좌우반전 여부 조회 API",
+            description = "imageId로 생성 이미지 URL과 좌우반전 여부를 단일 조회합니다.")
+    @GetMapping("/{imageId}/meta")
+    public ResponseEntity<ApiResponse<GeneratedImageMetaResponse>> getGeneratedImageMeta(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @PathVariable Long imageId
+    ) {
+        GeneratedImageMetaResponse response =
+                generateImageResultService.getGeneratedImageMeta(userDetails.getUser(), imageId);
         return ResponseEntity.ok(ApiResponse.ok(response));
     }
 

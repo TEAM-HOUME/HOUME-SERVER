@@ -28,6 +28,7 @@ import or.sopt.houme.domain.generateImage.repository.GenerateImageRepository;
 import or.sopt.houme.domain.generateImage.repository.GenerateImageUsedProductRepository;
 import or.sopt.houme.domain.generateImage.service.GenerateImageService;
 import or.sopt.houme.domain.generateImageResult.presentation.dto.response.GenerateImageResultResponse;
+import or.sopt.houme.domain.generateImageResult.presentation.dto.response.GeneratedImageMetaResponse;
 import or.sopt.houme.domain.generateImageResult.presentation.dto.response.RelatedImagesResponse;
 import or.sopt.houme.domain.generateImageResult.presentation.dto.response.SimilarItemsResponse;
 import or.sopt.houme.domain.house.model.entity.House;
@@ -81,6 +82,27 @@ class GenerateImageResultServiceImplTest {
 
     @Mock
     private HouseService houseService;
+
+    @Test
+    @DisplayName("이미지 메타 조회 시 imageUrl과 isMirror를 반환한다")
+    void getGeneratedImageMeta_returnsImageUrlAndIsMirror() {
+        House house = House.builder().id(100L).build();
+        GenerateImage image = GenerateImage.builder()
+                .id(1L)
+                .url("https://generated-image")
+                .house(house)
+                .build();
+        User user = User.builder().id(1L).build();
+
+        when(generateImageService.findGenerateImage(1L)).thenReturn(image);
+        when(houseService.getIsMirrorByHouseId(100L)).thenReturn(true);
+
+        GeneratedImageMetaResponse response = generateImageResultService.getGeneratedImageMeta(user, 1L);
+
+        assertThat(response.imageId()).isEqualTo(1L);
+        assertThat(response.imageUrl()).isEqualTo("https://generated-image");
+        assertThat(response.isMirror()).isTrue();
+    }
 
     @Test
     @DisplayName("LIST 타입이 아닌 이미지 조회 요청이면 예외가 발생한다")
