@@ -668,4 +668,81 @@ class UserServiceImplTest {
         then(nicknameService).should(times(2)).generateNicknameTag("새닉네임");
     }
 
+    @Test
+    @DisplayName("마이페이지 프로필 수정은 닉네임 태그를 생성하고 사용자 정보를 업데이트한다")
+    void updateMyPageProfile_success() {
+        User inputUser = User.builder().id(1L).build();
+        User updatedUser = User.builder()
+                .id(1L)
+                .name("기존닉네임")
+                .nickname("기존닉네임")
+                .nicknameTag("#0001")
+                .birthday(LocalDate.of(1999, 1, 1))
+                .gender(Gender.MALE)
+                .build();
+
+        given(userRepository.findById(1L)).willReturn(Optional.of(updatedUser));
+        given(nicknameService.generateNicknameTag("새닉네임")).willReturn("#1234");
+        given(userNicknameTagTransactionService.updateMyPageProfile(
+                1L,
+                "새닉네임",
+                "#1234",
+                Gender.FEMALE,
+                LocalDate.of(2001, 1, 1)
+        )).willAnswer(invocation -> {
+            updatedUser.updateMyPageProfile("새닉네임", "#1234", LocalDate.of(2001, 1, 1), Gender.FEMALE);
+            return updatedUser;
+        });
+
+        UpdateMyPageProfileResponse response = userService.updateMyPageProfile(
+                inputUser,
+                "새닉네임",
+                Gender.FEMALE,
+                LocalDate.of(2001, 1, 1)
+        );
+
+        assertThat(response.userId()).isEqualTo(1L);
+        assertThat(response.nickname()).isEqualTo("새닉네임");
+        assertThat(response.birthday()).isEqualTo(LocalDate.of(2001, 1, 1));
+        assertThat(response.gender()).isEqualTo(Gender.FEMALE);
+    }
+
+    @Test
+    @DisplayName("마이페이지 프로필 수정은 닉네임 태그 유니크 충돌이 나면 재시도한다")
+    void updateMyPageProfile_retryOnNicknameTagConstraintViolation() {
+        User inputUser = User.builder().id(1L).build();
+        User updatedUser = User.builder().id(1L).build();
+
+        given(userRepository.findById(1L)).willReturn(Optional.of(updatedUser));
+        given(nicknameService.generateNicknameTag("새닉네임"))
+                .willReturn("#1234", "#5678");
+        given(userNicknameTagTransactionService.updateMyPageProfile(
+                1L,
+                "새닉네임",
+                "#1234",
+                Gender.FEMALE,
+                LocalDate.of(2001, 1, 1)
+        )).willThrow(new DataIntegrityViolationException("uk_user_nickname_nickname_tag"));
+        given(userNicknameTagTransactionService.updateMyPageProfile(
+                1L,
+                "새닉네임",
+                "#5678",
+                Gender.FEMALE,
+                LocalDate.of(2001, 1, 1)
+        )).willAnswer(invocation -> {
+            updatedUser.updateMyPageProfile("새닉네임", "#5678", LocalDate.of(2001, 1, 1), Gender.FEMALE);
+            return updatedUser;
+        });
+
+        UpdateMyPageProfileResponse response = userService.updateMyPageProfile(
+                inputUser,
+                "새닉네임",
+                Gender.FEMALE,
+                LocalDate.of(2001, 1, 1)
+        );
+
+        assertThat(response.nickname()).isEqualTo("새닉네임");
+        then(nicknameService).should(times(2)).generateNicknameTag("새닉네임");
+    }
+
 }

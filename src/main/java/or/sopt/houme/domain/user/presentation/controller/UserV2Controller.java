@@ -10,6 +10,8 @@ import or.sopt.houme.domain.user.presentation.controller.dto.CreateUserV2Request
 import or.sopt.houme.domain.user.presentation.controller.dto.CustomUserDetails;
 import or.sopt.houme.domain.user.presentation.controller.dto.MyPageGeneratedImageV2Response;
 import or.sopt.houme.domain.user.presentation.controller.dto.SocialSignUpV2Request;
+import or.sopt.houme.domain.user.presentation.controller.dto.UpdateMyPageProfileRequest;
+import or.sopt.houme.domain.user.presentation.controller.dto.UpdateMyPageProfileResponse;
 import or.sopt.houme.domain.user.service.NicknameService;
 import or.sopt.houme.domain.user.service.OAuthService;
 import or.sopt.houme.domain.user.service.UserService;
@@ -77,6 +79,25 @@ public class UserV2Controller {
     @Operation(summary = "닉네임 랜덤 생성 API")
     public ResponseEntity<ApiResponse<String>> rotateNickname() {
         return ResponseEntity.ok(ApiResponse.ok(nicknameService.rotateNickname()));
+    }
+
+    @PatchMapping(value = "/mypage/user")
+    @Operation(summary = "마이페이지 프로필 수정 API")
+    public ResponseEntity<ApiResponse<UpdateMyPageProfileResponse>> updateMyPageProfile(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @RequestBody @Valid UpdateMyPageProfileRequest request
+    ) {
+        Gender gender = parseGender(request.gender());
+        LocalDate birthday = parseBirthday(request.birthday());
+
+        UpdateMyPageProfileResponse response = userService.updateMyPageProfile(
+                userDetails.getUser(),
+                request.nickname(),
+                gender,
+                birthday
+        );
+
+        return ResponseEntity.ok(ApiResponse.ok(response));
     }
 
     @GetMapping(value = "/mypage/images")

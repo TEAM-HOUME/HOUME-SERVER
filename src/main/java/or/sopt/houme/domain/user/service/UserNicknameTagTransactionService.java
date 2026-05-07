@@ -76,6 +76,21 @@ public class UserNicknameTagTransactionService {
         return user.getDisplayName();
     }
 
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public User updateMyPageProfile(
+            Long userId,
+            String nickname,
+            String nicknameTag,
+            Gender gender,
+            LocalDate birthday
+    ) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserException(ErrorCode.USER_NOT_FOUND));
+
+        user.updateMyPageProfile(nickname, nicknameTag, birthday, gender);
+        return userRepository.saveAndFlush(user);
+    }
+
     private void createSignUpCredits(User user) {
         try {
             List<Credit> newCredits = IntStream.range(0, SIGN_UP_CREDIT_COUNT)
