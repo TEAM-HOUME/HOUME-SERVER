@@ -26,6 +26,7 @@ import or.sopt.houme.domain.generateImage.presentation.dto.request.BannerGenerat
 import or.sopt.houme.domain.generateImage.presentation.dto.request.GenerateImageRequest;
 import or.sopt.houme.domain.generateImage.presentation.dto.request.GenerateImageV4Request;
 import or.sopt.houme.domain.generateImage.presentation.dto.request.OtherStyleGenerateImageRequest;
+import or.sopt.houme.domain.generateImage.presentation.dto.request.ProductGenerateImageRequest;
 import or.sopt.houme.domain.generateImage.presentation.dto.response.BannerGenerateImageResponse;
 import or.sopt.houme.domain.generateImage.presentation.dto.response.GenerateImageV4Response;
 import or.sopt.houme.domain.generateImage.presentation.dto.response.ImageInfoListResponse;
@@ -582,6 +583,70 @@ public class GenerateImageFacade {
         }
     }
 
+    public GenerateImageV4Response generateImageByProducts(User user, ProductGenerateImageRequest request) {
+        Credit lockedCredit = null;
+
+        try {
+            lockedCredit = creditService.tryLockAndGetCredit(user);
+
+            FloorPlan floorPlan = floorPlanRepository.findById(request.floorPlanId())
+                    .orElseThrow(() -> new HouseException(ErrorCode.NOT_FOUND_FLOOR_PLAN));
+
+            List<Long> productIds = request.productIds().stream()
+                    .filter(Objects::nonNull)
+                    .distinct()
+                    .toList();
+            if (productIds.isEmpty()) {
+                throw new GenerateImageException(ErrorCode.INVALID_GENERATE_IMAGE_REQUEST);
+            }
+
+            List<CurationRawProduct> selectedProducts = curationRawProductRepository.findAllById(productIds);
+            if (selectedProducts.size() != productIds.size()) {
+                throw new FurnitureException(ErrorCode.NOT_FOUND_CURATION_RAW_PRODUCT);
+            }
+
+            String floorPlanImageUrl = resolveFloorPlanImageUrlStrict(floorPlan, request.floorPlanView());
+            List<String> referenceImageUrls = buildProductReferenceImageUrls(floorPlanImageUrl, selectedProducts);
+            String prompt = buildProductBasedPrompt(floorPlan, selectedProducts);
+
+            ImageUploadResponseDTO imageUploadResponseDTO =
+                    geminiImageService.createImageWithReferences(prompt, referenceImageUrls);
+
+            if (imageUploadResponseDTO.getImageLink().equals(S3Constant.FALL_BACK_IMAGE)) {
+                throw new ImageFallbackException(ErrorCode.GENERATED_IMAGE_EXCEPTION, null);
+            }
+
+            return generateImageTransactionService.saveProductImageAndConfirmCredit(
+                    user,
+                    lockedCredit,
+                    request.floorPlanId(),
+                    request.isMirror(),
+                    prompt,
+                    imageUploadResponseDTO
+            );
+        } catch (ValidException validException) {
+            if (lockedCredit != null && lockedCredit.getStatus() == CreditStatus.PENDING) {
+                creditService.rollbackCreditPending(lockedCredit);
+            }
+            throw validException;
+        } catch (GeneralException e) {
+            if (lockedCredit != null && lockedCredit.getStatus() == CreditStatus.PENDING) {
+                creditService.rollbackCreditPending(lockedCredit);
+            }
+            throw e;
+        } catch (Exception e) {
+            log.error("선택 상품 기반 이미지 생성 중 오류 발생: {}", e.getMessage(), e);
+            if (lockedCredit != null && lockedCredit.getStatus() == CreditStatus.PENDING) {
+                creditService.rollbackCreditPending(lockedCredit);
+            }
+            throw new GenerateImageException(ErrorCode.GENERATED_IMAGE_EXCEPTION);
+        } finally {
+            if (lockedCredit != null) {
+                creditService.releaseLock(user);
+            }
+        }
+    }
+
     private ImageInfoListResponse generateImageBy2eaInternal(User user, GenerateImageRequest generateImageRequest, boolean useGemini) {
 
         // finally 블록에서 사용하기 위해 선언
@@ -954,6 +1019,37 @@ public class GenerateImageFacade {
                 .map(FurnitureTag::getFurniturePrompt)
                 .filter(prompt -> prompt != null && !prompt.isBlank())
                 .forEach(parts::add);
+        return String.join("\n\n", parts);
+    }
+
+    private List<String> buildProductReferenceImageUrls(
+            String floorPlanImageUrl,
+            List<CurationRawProduct> selectedProducts
+    ) {
+        LinkedHashSet<String> urls = new LinkedHashSet<>();
+        if (floorPlanImageUrl != null && !floorPlanImageUrl.isBlank()) {
+            urls.add(floorPlanImageUrl);
+        }
+        selectedProducts.stream()
+                .map(CurationRawProduct::getProductImageUrl)
+                .filter(url -> url != null && !url.isBlank())
+                .forEach(urls::add);
+        return List.copyOf(urls);
+    }
+
+    private String buildProductBasedPrompt(FloorPlan floorPlan, List<CurationRawProduct> selectedProducts) {
+        List<String> parts = new ArrayList<>();
+        if (floorPlan.getFloorPlanPrompt() != null && !floorPlan.getFloorPlanPrompt().isBlank()) {
+            parts.add(floorPlan.getFloorPlanPrompt());
+        }
+        parts.add("주어진 도면 구조와 원근을 유지하고, 참고 상품들을 실제 실내 배치처럼 자연스럽게 배치해주세요.");
+        parts.add("동선과 크기 비율을 지키고, 가구 간 간섭 없이 현실적인 인테리어 결과를 생성해주세요.");
+
+        selectedProducts.stream()
+                .map(product -> product.getProductName())
+                .filter(name -> name != null && !name.isBlank())
+                .forEach(name -> parts.add("반영 상품: " + name));
+
         return String.join("\n\n", parts);
     }
 
