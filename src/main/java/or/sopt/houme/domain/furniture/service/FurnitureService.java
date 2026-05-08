@@ -22,6 +22,7 @@ public interface FurnitureService {
     List<FurnitureCategoryGroup> getDashboardCategories();
 
     FurnitureCategoriesResponse getFurnitureCategoriesByStyle(User user, Long imageId, List<String> detectedObjects);
+    FurnitureCategoriesResponse getFurnitureCategoriesByStyleV2(User user, Long imageId);
 
     // 가구 중 침대 ID 조회
     Optional<Long> findBedId(List<Long> furnitureIds);

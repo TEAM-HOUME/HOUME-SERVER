@@ -150,17 +150,21 @@ public class FurnitureServiceImpl implements FurnitureService {
 
         // 5. 교집합으로 산출된 가구들과 스타일 태그에 해당하는 매핑 객체를 furniture_tags에서 조회
         List<FurnitureTag> matchedTags = furnitureTagRepository.findAllByTagIdAndFurnitureIn(tag.getId(), intersectedFurnitures);
+        return buildCategoryResponse(matchedTags);
+    }
 
-        // 6. priority 기준 오름차순 정렬 → 응답 DTO 변환
-        List<FurnitureCategoriesResponse.FurnitureCategoryResponse> categoryResponses = matchedTags.stream()
-                .sorted(Comparator.comparingInt(FurnitureTag::getPriority))
-                .map(ft -> FurnitureCategoriesResponse.FurnitureCategoryResponse.of(
-                        ft.getFurniture().getId(),
-                        ft.getFurniture().getFurnitureNameKr()
-                ))
-                .toList();
+    @Override
+    public FurnitureCategoriesResponse getFurnitureCategoriesByStyleV2(User user, Long imageId) {
 
-        return FurnitureCategoriesResponse.of(categoryResponses);
+        // 1. userId와 imageId로 해당하는 스타일 태그 조회
+        Tag tag = findTag(user, imageId);
+
+        // 2. userId와 imageId로 이미지 생성시 선택했던 가구들을 조회
+        List<Furniture> selectedFurnitures = findSelectedFurnitures(user, imageId);
+
+        // 3. 선택 가구들과 스타일 태그에 해당하는 매핑 객체를 furniture_tags에서 조회
+        List<FurnitureTag> matchedTags = furnitureTagRepository.findAllByTagIdAndFurnitureIn(tag.getId(), selectedFurnitures);
+        return buildCategoryResponse(matchedTags);
     }
 
     @Override
@@ -238,5 +242,17 @@ public class FurnitureServiceImpl implements FurnitureService {
                 .filter(f -> f.getFurnitureNameEng() != null
                         && keywords.contains(f.getFurnitureNameEng().toLowerCase()))
                 .toList();
+    }
+
+    private FurnitureCategoriesResponse buildCategoryResponse(List<FurnitureTag> matchedTags) {
+        List<FurnitureCategoriesResponse.FurnitureCategoryResponse> categoryResponses = matchedTags.stream()
+                .sorted(Comparator.comparingInt(FurnitureTag::getPriority))
+                .map(ft -> FurnitureCategoriesResponse.FurnitureCategoryResponse.of(
+                        ft.getFurniture().getId(),
+                        ft.getFurniture().getFurnitureNameKr()
+                ))
+                .toList();
+
+        return FurnitureCategoriesResponse.of(categoryResponses);
     }
 }
