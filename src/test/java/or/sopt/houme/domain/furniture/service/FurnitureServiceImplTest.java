@@ -372,6 +372,37 @@ class FurnitureServiceImplTest {
                 () -> furnitureService.getFurnitureCategoriesByStyle(user, imageId, List.of("Bed")));
     }
 
+    @Test
+    @DisplayName("V2 카테고리 조회는 detectedObjects 없이 선택 가구 기준으로 정렬 응답한다")
+    void getFurnitureCategoriesByStyleV2_fromSelectedFurnitures_sorted() {
+        Long imageId = 10L;
+
+        Tag tag = Tag.builder().id(100L).build();
+        House house = House.builder().id(200L).build();
+
+        Furniture bed = Furniture.builder().id(1L).furnitureNameKr("침대").build();
+        Furniture chair = Furniture.builder().id(2L).furnitureNameKr("의자").build();
+        Furniture tv = Furniture.builder().id(3L).furnitureNameKr("TV").build();
+        Furniture dining = Furniture.builder().id(4L).furnitureNameKr("식탁").build();
+
+        FurnitureTag ftBed = FurnitureTag.builder().id(11L).tag(tag).furniture(bed).priority(4).build();
+        FurnitureTag ftChair = FurnitureTag.builder().id(12L).tag(tag).furniture(chair).priority(3).build();
+        FurnitureTag ftTv = FurnitureTag.builder().id(14L).tag(tag).furniture(tv).priority(2).build();
+        FurnitureTag ftDining = FurnitureTag.builder().id(13L).tag(tag).furniture(dining).priority(1).build();
+
+        when(tagRepository.findTagByUserIdAndImageId(user.getId(), imageId)).thenReturn(Optional.of(tag));
+        when(houseRepository.findHouseByUserIdAndImageId(user.getId(), imageId)).thenReturn(Optional.of(house));
+        when(furnitureRepository.findAllByHouseId(house.getId())).thenReturn(List.of(bed, chair, tv, dining));
+        when(furnitureTagRepository.findAllByTagIdAndFurnitureIn(tag.getId(), List.of(bed, chair, tv, dining)))
+                .thenReturn(List.of(ftBed, ftChair, ftTv, ftDining));
+
+        FurnitureCategoriesResponse response = furnitureService.getFurnitureCategoriesByStyleV2(user, imageId);
+
+        assertThat(response.categories())
+                .extracting(FurnitureCategoriesResponse.FurnitureCategoryResponse::categoryName)
+                .containsExactly("식탁", "TV", "의자", "침대");
+    }
+
     private Furniture createFurniture(Long id, String eng, String kr, FurnitureType type) {
         return Furniture.builder()
                 .id(id)

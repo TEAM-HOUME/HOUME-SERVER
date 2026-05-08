@@ -91,6 +91,18 @@ public class FurnitureController {
         return ResponseEntity.ok(ApiResponse.ok(response));
     }
 
+    @Operation(summary = "생성된 이미지에서 가구 카테고리 조회 API V2",
+            description = "객체 인식 요청값 없이, 이미지 생성 시 사용자가 선택했던 가구 기준으로 카테고리를 제공합니다.")
+    @GetMapping("/v2/generated-images/{imageId}/curations/categories")
+    public ResponseEntity<ApiResponse<FurnitureCategoriesResponse>> getFurnitureCategoriesV2(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @PathVariable Long imageId
+    ) {
+        FurnitureCategoriesResponse response = furnitureService.getFurnitureCategoriesByStyleV2(userDetails.getUser(), imageId);
+
+        return ResponseEntity.ok(ApiResponse.ok(response));
+    }
+
     @Operation(summary = "가구 카테고리를 클릭하여 가구 제품 조회 API",
             description = "생성된 이미지의 큐레이션 탭에서 가구 카테고리를 클릭하여 네이버 쇼핑 API를 통한 가구 제품들을 검색합니다.")
     @GetMapping("/v1/generated-images/{imageId}/curations/products/{categoryId}")
