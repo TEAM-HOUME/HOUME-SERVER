@@ -9,6 +9,7 @@ import or.sopt.houme.domain.furniture.model.entity.CurationRawProduct;
 import or.sopt.houme.domain.furniture.model.entity.CurationRawProductColor;
 import or.sopt.houme.domain.furniture.model.entity.CurationSource;
 import or.sopt.houme.domain.furniture.model.entity.FurnitureTag;
+import or.sopt.houme.domain.furniture.model.entity.Jjym;
 import or.sopt.houme.domain.furniture.presentation.dto.response.FurnitureProductsInfoResponseV2;
 import or.sopt.houme.domain.furniture.presentation.dto.response.ProductColorResponse;
 import or.sopt.houme.domain.furniture.repository.CurationRawProductColorRepository;
@@ -29,6 +30,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -124,6 +126,7 @@ public class FurnitureFacadeImpl implements FurnitureFacade {
         String categoryName = furnitureTag.getFurniture() != null ? furnitureTag.getFurniture().getFurnitureNameKr() : null;
         Map<Long, CurationRawProduct> rawProductByProductId = findLatestRawProductByProductId(furnitureTag, rawInfos);
         Map<Long, List<ProductColorResponse>> colorsByRawProductId = findColorMapByRawProductId(rawProductByProductId);
+        Set<Long> likedRecommendIds = findLikedRecommendIds(user.getId(), rawInfos);
 
         List<FurnitureProductsInfoResponseV2.ProductWrapper> products = rawInfos.stream()
                 .map(info -> {
@@ -144,13 +147,31 @@ public class FurnitureFacadeImpl implements FurnitureFacade {
                             rawProduct != null ? rawProduct.getProductMallName() : info.furnitureProductMallName(),
                             rawProduct != null ? rawProduct.getProductSiteUrl() : info.furnitureProductSiteUrl(),
                             rawProductId != null ? colorsByRawProductId.getOrDefault(rawProductId, List.of()) : List.of(),
-                            info.id() != null && jjymRepository.existsByUserIdAndRecommendFurnitureId(user.getId(), info.id())
+                            likedRecommendIds.contains(info.id())
                     );
                     return FurnitureProductsInfoResponseV2.ProductWrapper.of(product);
                 })
                 .toList();
 
         return FurnitureProductsInfoResponseV2.of(user.getName(), products);
+    }
+
+    private Set<Long> findLikedRecommendIds(Long userId, List<FurnitureProductsInfoResponse.FurnitureProductInfo> rawInfos) {
+        List<Long> recommendFurnitureIds = rawInfos.stream()
+                .map(FurnitureProductsInfoResponse.FurnitureProductInfo::id)
+                .filter(Objects::nonNull)
+                .distinct()
+                .toList();
+        if (recommendFurnitureIds.isEmpty()) {
+            return Set.of();
+        }
+
+        return jjymRepository.findAllByUserIdAndRecommendFurnitureIdIn(userId, recommendFurnitureIds).stream()
+                .map(Jjym::getRecommendFurniture)
+                .filter(Objects::nonNull)
+                .map(recommendFurniture -> recommendFurniture.getId())
+                .filter(Objects::nonNull)
+                .collect(Collectors.toSet());
     }
 
     private Map<Long, CurationRawProduct> findLatestRawProductByProductId(
