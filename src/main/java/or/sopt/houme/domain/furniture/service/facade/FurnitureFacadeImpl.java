@@ -5,16 +5,9 @@ import lombok.extern.slf4j.Slf4j;
 import or.sopt.houme.domain.furniture.infrastructure.dto.external.naverShop.FurnitureProductsInfoResponse;
 import or.sopt.houme.domain.furniture.infrastructure.dto.external.naverShop.forPlan.FurnitureProductsInfoResponseForPlan;
 import or.sopt.houme.domain.furniture.infrastructure.dto.external.naverShop.NaverFurnitureProductDto;
-import or.sopt.houme.domain.furniture.model.entity.CurationRawProduct;
-import or.sopt.houme.domain.furniture.model.entity.CurationRawProductColor;
 import or.sopt.houme.domain.furniture.model.entity.CurationSource;
 import or.sopt.houme.domain.furniture.model.entity.FurnitureTag;
-import or.sopt.houme.domain.furniture.model.entity.Jjym;
 import or.sopt.houme.domain.furniture.presentation.dto.response.FurnitureProductsInfoResponseV2;
-import or.sopt.houme.domain.furniture.presentation.dto.response.ProductColorResponse;
-import or.sopt.houme.domain.furniture.repository.CurationRawProductColorRepository;
-import or.sopt.houme.domain.furniture.repository.CurationRawProductRepository;
-import or.sopt.houme.domain.furniture.repository.JjymRepository;
 import or.sopt.houme.domain.furniture.service.CurationFurnitureService;
 import or.sopt.houme.domain.furniture.service.CurationRawProductService;
 import or.sopt.houme.domain.furniture.service.FurnitureService;
@@ -27,12 +20,7 @@ import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 import or.sopt.houme.global.config.NaverProperties;
 
@@ -49,9 +37,6 @@ public class FurnitureFacadeImpl implements FurnitureFacade {
     private final FurnitureService furnitureService;
     private final CurationFurnitureService curationFurnitureService;
     private final CurationRawProductService curationRawProductService;
-    private final CurationRawProductRepository curationRawProductRepository;
-    private final CurationRawProductColorRepository curationRawProductColorRepository;
-    private final JjymRepository jjymRepository;
     private final NaverProperties naverProperties;
 
     @Override
@@ -122,150 +107,12 @@ public class FurnitureFacadeImpl implements FurnitureFacade {
         }
 
         log.info("큐레이션 종료:{}",formatted);
-
-        String categoryName = furnitureTag.getFurniture() != null ? furnitureTag.getFurniture().getFurnitureNameKr() : null;
-        Map<Long, CurationRawProduct> rawProductByProductId = findLatestRawProductByProductId(furnitureTag, rawInfos);
-        Map<Long, List<ProductColorResponse>> colorsByRawProductId = findColorMapByRawProductId(rawProductByProductId);
-        Set<Long> likedRecommendIds = findLikedRecommendIds(user.getId(), rawInfos);
-
-        List<FurnitureProductsInfoResponseV2.ProductWrapper> products = rawInfos.stream()
-                .map(info -> {
-                    CurationRawProduct rawProduct = rawProductByProductId.get(info.furnitureProductId());
-                    Long rawProductId = rawProduct != null ? rawProduct.getId() : null;
-
-                    FurnitureProductsInfoResponseV2.ProductInfo product = new FurnitureProductsInfoResponseV2.ProductInfo(
-                            rawProductId,
-                            info.furnitureProductId(),
-                            categoryName,
-                            rawProduct != null ? rawProduct.getSource() : CurationSource.RAW.name().toLowerCase(),
-                            rawProduct != null ? rawProduct.getBrand() : info.brandName(),
-                            rawProduct != null ? rawProduct.getProductName() : info.furnitureProductName(),
-                            rawProduct != null ? rawProduct.getProductImageUrl() : info.furnitureProductImageUrl(),
-                            rawProduct != null ? rawProduct.getListPrice() : info.listPrice(),
-                            rawProduct != null ? rawProduct.getDiscountRate() : info.discountRate(),
-                            rawProduct != null ? rawProduct.getDiscountPrice() : info.discountPrice(),
-                            rawProduct != null ? rawProduct.getProductMallName() : info.furnitureProductMallName(),
-                            rawProduct != null ? rawProduct.getProductSiteUrl() : info.furnitureProductSiteUrl(),
-                            rawProductId != null ? colorsByRawProductId.getOrDefault(rawProductId, List.of()) : List.of(),
-                            likedRecommendIds.contains(info.id())
-                    );
-                    return FurnitureProductsInfoResponseV2.ProductWrapper.of(product);
-                })
-                .toList();
-
-        return FurnitureProductsInfoResponseV2.of(user.getName(), products);
-    }
-
-    private Set<Long> findLikedRecommendIds(Long userId, List<FurnitureProductsInfoResponse.FurnitureProductInfo> rawInfos) {
-        List<Long> recommendFurnitureIds = rawInfos.stream()
-                .map(FurnitureProductsInfoResponse.FurnitureProductInfo::id)
-                .filter(Objects::nonNull)
-                .distinct()
-                .toList();
-        if (recommendFurnitureIds.isEmpty()) {
-            return Set.of();
-        }
-
-        return jjymRepository.findAllByUserIdAndRecommendFurnitureIdIn(userId, recommendFurnitureIds).stream()
-                .map(Jjym::getRecommendFurniture)
-                .filter(Objects::nonNull)
-                .map(recommendFurniture -> recommendFurniture.getId())
-                .filter(Objects::nonNull)
-                .collect(Collectors.toSet());
-    }
-
-    private Map<Long, CurationRawProduct> findLatestRawProductByProductId(
-            FurnitureTag furnitureTag,
-            List<FurnitureProductsInfoResponse.FurnitureProductInfo> rawInfos
-    ) {
-        List<Long> productIds = rawInfos.stream()
-                .map(FurnitureProductsInfoResponse.FurnitureProductInfo::furnitureProductId)
-                .filter(productId -> productId != null)
-                .distinct()
-                .toList();
-        if (productIds.isEmpty()) {
-            return Map.of();
-        }
-
-        return curationRawProductRepository.findAllByFurnitureTagAndProductIdIn(furnitureTag, productIds).stream()
-                .collect(Collectors.toMap(
-                        CurationRawProduct::getProductId,
-                        rawProduct -> rawProduct,
-                        this::selectLatestRawProduct,
-                        LinkedHashMap::new
-                ));
-    }
-
-    private Map<Long, List<ProductColorResponse>> findColorMapByRawProductId(Map<Long, CurationRawProduct> rawProductByProductId) {
-        if (rawProductByProductId.isEmpty()) {
-            return Map.of();
-        }
-
-        List<Long> rawProductIds = rawProductByProductId.values().stream()
-                .map(CurationRawProduct::getId)
-                .toList();
-
-        Map<Long, Set<String>> colorNamesByRawProductId = new LinkedHashMap<>();
-        List<CurationRawProductColor> colorEntities = curationRawProductColorRepository.findAllByCurationRawProductIdIn(rawProductIds);
-        for (CurationRawProductColor colorEntity : colorEntities) {
-            Long rawProductId = colorEntity.getCurationRawProduct().getId();
-            if (rawProductId == null) {
-                continue;
-            }
-
-            String colorName = resolveColorName(colorEntity);
-            if (colorName == null) {
-                continue;
-            }
-            colorNamesByRawProductId.computeIfAbsent(rawProductId, key -> new java.util.LinkedHashSet<>())
-                    .add(colorName);
-        }
-
-        Map<Long, List<ProductColorResponse>> result = new LinkedHashMap<>();
-        for (Map.Entry<Long, Set<String>> entry : colorNamesByRawProductId.entrySet()) {
-            result.put(entry.getKey(), entry.getValue().stream()
-                    .map(ProductColorResponse::fromName)
-                    .toList());
-        }
-        return result;
-    }
-
-    private CurationRawProduct selectLatestRawProduct(CurationRawProduct current, CurationRawProduct candidate) {
-        LocalDateTime currentFetchedAt = current.getFetchedAt();
-        LocalDateTime candidateFetchedAt = candidate.getFetchedAt();
-
-        if (currentFetchedAt == null && candidateFetchedAt == null) {
-            if (candidate.getId() != null && current.getId() != null && candidate.getId() > current.getId()) {
-                return candidate;
-            }
-            return current;
-        }
-        if (currentFetchedAt == null) {
-            return candidate;
-        }
-        if (candidateFetchedAt == null) {
-            return current;
-        }
-        if (candidateFetchedAt.isAfter(currentFetchedAt)) {
-            return candidate;
-        }
-        if (candidateFetchedAt.isEqual(currentFetchedAt)
-                && candidate.getId() != null
-                && current.getId() != null
-                && candidate.getId() > current.getId()) {
-            return candidate;
-        }
-        return current;
-    }
-
-    private String resolveColorName(CurationRawProductColor colorEntity) {
-        if (colorEntity.getClientColorName() != null && !colorEntity.getClientColorName().isBlank()) {
-            return colorEntity.getClientColorName();
-        }
-        if (colorEntity.getRawColorName() != null && !colorEntity.getRawColorName().isBlank()) {
-            return colorEntity.getRawColorName();
-        }
-        return null;
+        return curationFurnitureService.buildProductsInfoResponse(
+                user.getId(),
+                user.getName(),
+                furnitureTag,
+                rawInfos
+        );
     }
 
     // 기획의사결정용
