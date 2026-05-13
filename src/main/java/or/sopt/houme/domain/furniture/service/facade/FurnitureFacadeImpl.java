@@ -7,6 +7,7 @@ import or.sopt.houme.domain.furniture.infrastructure.dto.external.naverShop.forP
 import or.sopt.houme.domain.furniture.infrastructure.dto.external.naverShop.NaverFurnitureProductDto;
 import or.sopt.houme.domain.furniture.model.entity.CurationSource;
 import or.sopt.houme.domain.furniture.model.entity.FurnitureTag;
+import or.sopt.houme.domain.furniture.presentation.dto.response.FurnitureProductsInfoResponseV2;
 import or.sopt.houme.domain.furniture.service.CurationFurnitureService;
 import or.sopt.houme.domain.furniture.service.CurationRawProductService;
 import or.sopt.houme.domain.furniture.service.FurnitureService;
@@ -39,7 +40,7 @@ public class FurnitureFacadeImpl implements FurnitureFacade {
     private final NaverProperties naverProperties;
 
     @Override
-    public FurnitureProductsInfoResponse getFurnitureProductInfoFromNaverApi(User user, Long imageId, Long categoryId) {
+    public FurnitureProductsInfoResponseV2 getFurnitureProductInfoFromNaverApi(User user, Long imageId, Long categoryId) {
 
 
         LocalDateTime now = LocalDateTime.now();
@@ -106,8 +107,12 @@ public class FurnitureFacadeImpl implements FurnitureFacade {
         }
 
         log.info("큐레이션 종료:{}",formatted);
-        // 네이버 큐레이션 비활성화로 RAW 결과만 반환합니다.
-        return FurnitureProductsInfoResponse.of(user.getName(), rawInfos);
+        return curationFurnitureService.buildProductsInfoResponse(
+                user.getId(),
+                user.getName(),
+                furnitureTag,
+                rawInfos
+        );
     }
 
     // 기획의사결정용

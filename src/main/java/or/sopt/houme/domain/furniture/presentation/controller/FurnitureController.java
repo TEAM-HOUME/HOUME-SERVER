@@ -2,12 +2,12 @@ package or.sopt.houme.domain.furniture.presentation.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
-import or.sopt.houme.domain.furniture.infrastructure.dto.external.naverShop.FurnitureProductsInfoResponse;
 import or.sopt.houme.domain.furniture.presentation.dto.response.ActivityFurnitureMappingsResponse;
 import or.sopt.houme.domain.furniture.presentation.dto.response.ActivityWithFurnitureResponse;
 import or.sopt.houme.domain.furniture.presentation.dto.response.DashboardCategoriesResponse;
 import or.sopt.houme.domain.furniture.presentation.dto.response.FurnitureAndActivityResponse;
 import or.sopt.houme.domain.furniture.presentation.dto.response.FurnitureCategoriesResponse;
+import or.sopt.houme.domain.furniture.presentation.dto.response.FurnitureProductsInfoResponseV2;
 import or.sopt.houme.domain.furniture.infrastructure.dto.external.naverShop.forPlan.FurnitureProductsInfoResponseForPlan;
 import or.sopt.houme.domain.furniture.service.facade.FurnitureFacade;
 import or.sopt.houme.domain.furniture.service.FurnitureService;
@@ -104,10 +104,10 @@ public class FurnitureController {
     }
 
     @Operation(summary = "가구 카테고리를 클릭하여 가구 제품 조회 API",
-            description = "생성된 이미지의 큐레이션 탭에서 가구 카테고리를 클릭하여 네이버 쇼핑 API를 통한 가구 제품들을 검색합니다.")
+            description = "생성된 이미지의 큐레이션 탭에서 가구 카테고리를 클릭하여 curation_raw_product 기반으로 가구 제품들을 조회합니다.")
     @GetMapping("/v1/generated-images/{imageId}/curations/products/{categoryId}")
-    public ResponseEntity<ApiResponse<FurnitureProductsInfoResponse>> getFurnitureProductInfoFromNaverApi(@AuthenticationPrincipal CustomUserDetails userDetails, @PathVariable Long imageId, @PathVariable Long categoryId) {
-        FurnitureProductsInfoResponse response = furnitureFacade.getFurnitureProductInfoFromNaverApi(userDetails.getUser(), imageId, categoryId);
+    public ResponseEntity<ApiResponse<FurnitureProductsInfoResponseV2>> getFurnitureProductInfoFromNaverApi(@AuthenticationPrincipal CustomUserDetails userDetails, @PathVariable Long imageId, @PathVariable Long categoryId) {
+        FurnitureProductsInfoResponseV2 response = furnitureFacade.getFurnitureProductInfoFromNaverApi(userDetails.getUser(), imageId, categoryId);
 
         return ResponseEntity.ok(ApiResponse.ok(response));
     }
