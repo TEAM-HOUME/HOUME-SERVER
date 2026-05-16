@@ -360,34 +360,34 @@ public class CurationProductServiceImpl implements CurationProductService {
 
         return List.of(
                 new FurnitureTypeFilterResponse(0L, "전체", "ALL"),
-                findType(types, "BED", "침대/프레임"),
-                findFurniture(furnitures, "OFFICE_DESK", "업무용 책상"),
-                findFurniture(furnitures, "DINING_TABLE", "식탁"),
-                findFurniture(furnitures, "SITTING_TABLE", "좌식 테이블"),
-                findFurniture(furnitures, "CLOSET", "옷장"),
-                findType(types, "STORAGE", "수납/장식장"),
-                findType(types, "SOFA", "소파"),
+                findType(types, "BED", "침대/프레임", -10L),
+                findFurniture(furnitures, "OFFICE_DESK", "업무용 책상", -11L),
+                findFurniture(furnitures, "DINING_TABLE", "식탁", -12L),
+                findFurniture(furnitures, "SITTING_TABLE", "좌식 테이블", -13L),
+                findFurniture(furnitures, "CLOSET", "옷장", -14L),
+                findType(types, "STORAGE", "수납/장식장", -15L),
+                findType(types, "SOFA", "소파", -16L),
                 new FurnitureTypeFilterResponse(-1L, "의자/스툴", "CHAIR"),
                 new FurnitureTypeFilterResponse(-2L, "화장대/협탁", "DRESSER"),
                 new FurnitureTypeFilterResponse(-3L, "조명", "LIGHTING"),
-                findType(types, "ETC", "기타")
+                findType(types, "ETC", "기타", -17L)
         );
     }
 
-    private FurnitureTypeFilterResponse findType(List<FurnitureType> types, String nameEng, String labelKr) {
+    private FurnitureTypeFilterResponse findType(List<FurnitureType> types, String nameEng, String labelKr, Long fallbackId) {
         return types.stream()
                 .filter(t -> t.getNameEng() != null && t.getNameEng().trim().equalsIgnoreCase(nameEng))
                 .findFirst()
                 .map(t -> new FurnitureTypeFilterResponse(t.getId(), labelKr, t.getNameEng().trim()))
-                .orElse(new FurnitureTypeFilterResponse(-1L, labelKr, nameEng));
+                .orElse(new FurnitureTypeFilterResponse(fallbackId, labelKr, nameEng));
     }
 
-    private FurnitureTypeFilterResponse findFurniture(List<Furniture> furnitures, String nameEng, String labelKr) {
+    private FurnitureTypeFilterResponse findFurniture(List<Furniture> furnitures, String nameEng, String labelKr, Long fallbackId) {
         return furnitures.stream()
                 .filter(f -> f.getFurnitureNameEng() != null && f.getFurnitureNameEng().trim().equalsIgnoreCase(nameEng))
                 .findFirst()
                 .map(f -> new FurnitureTypeFilterResponse(f.getId(), labelKr, f.getFurnitureNameEng().trim()))
-                .orElse(new FurnitureTypeFilterResponse(-1L, labelKr, nameEng));
+                .orElse(new FurnitureTypeFilterResponse(fallbackId, labelKr, nameEng));
     }
 
 
