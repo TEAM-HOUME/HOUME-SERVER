@@ -1240,6 +1240,11 @@
                             <input type="text" class="form-control" id="rawCreateBrand">
                         </div>
                         <div class="raw-form-field">
+                            <label for="rawCreateColors">Colors</label>
+                            <input type="text" class="form-control" id="rawCreateColors" placeholder="예: 우드, 화이트, 블랙">
+                            <small class="text-muted">쉼표 또는 줄바꿈으로 여러 색상을 입력합니다.</small>
+                        </div>
+                        <div class="raw-form-field">
                             <label for="rawCreateIsExposed">Exposure Status</label>
                             <select class="form-select" id="rawCreateIsExposed">
                                 <option value="true" selected>노출</option>
@@ -1395,6 +1400,15 @@
                                 <div class="raw-form-field">
                                     <label for="rawUpdateBrand">Brand</label>
                                     <input type="text" class="form-control" id="rawUpdateBrand">
+                                </div>
+                                <div class="raw-form-field">
+                                    <label for="rawUpdateColors">Colors</label>
+                                    <input type="text" class="form-control" id="rawUpdateColors" placeholder="예: 우드, 화이트, 블랙">
+                                    <div class="form-check mt-2">
+                                        <input class="form-check-input" type="checkbox" id="rawUpdateColorsEnabled">
+                                        <label class="form-check-label small" for="rawUpdateColorsEnabled">색상 수정 반영</label>
+                                    </div>
+                                    <small class="text-muted">체크 후 비워서 저장하면 색상이 전체 삭제됩니다.</small>
                                 </div>
                                 <div class="raw-form-field">
                                     <label for="rawUpdateIsExposed">Exposure Status</label>
@@ -4954,6 +4968,8 @@
         document.getElementById('rawUpdateFreeShippingCondition').value = product.freeShippingCondition ?? '';
         document.getElementById('rawUpdateIsExposed').value = product.isExposed == null ? '' : String(product.isExposed);
         document.getElementById('rawUpdateFetchedAt').value = formatDateTimeLocalValue(product.fetchedAt);
+        document.getElementById('rawUpdateColors').value = formatRawProductColorsForInput(product.colors);
+        document.getElementById('rawUpdateColorsEnabled').checked = true;
     }
 
     function populateRawProductFurnitureTagForm(product) {
@@ -5500,7 +5516,8 @@
             baseShippingFee: parseNumberValue(document.getElementById('rawCreateBaseShippingFee').value),
             freeShippingCondition: parseNumberValue(getOptionalInputValue('rawCreateFreeShippingCondition')),
             isExposed: parseBooleanValue(document.getElementById('rawCreateIsExposed').value),
-            fetchedAt: parseStringValue(getOptionalInputValue('rawCreateFetchedAt'))
+            fetchedAt: parseStringValue(getOptionalInputValue('rawCreateFetchedAt')),
+            colors: parseRawProductColorRequests(document.getElementById('rawCreateColors').value)
         };
     }
 
@@ -5521,6 +5538,7 @@
         const freeShippingCondition = parseNumberValue(document.getElementById('rawUpdateFreeShippingCondition').value);
         const isExposed = parseBooleanValue(document.getElementById('rawUpdateIsExposed').value);
         const fetchedAt = parseStringValue(document.getElementById('rawUpdateFetchedAt').value);
+        const colorsEnabled = document.getElementById('rawUpdateColorsEnabled').checked;
 
         if (source !== null) payload.source = source;
         if (category !== null) payload.category = category;
@@ -5537,8 +5555,35 @@
         if (freeShippingCondition !== null) payload.freeShippingCondition = freeShippingCondition;
         if (isExposed !== null) payload.isExposed = isExposed;
         if (fetchedAt !== null) payload.fetchedAt = fetchedAt;
+        if (colorsEnabled) payload.colors = parseRawProductColorRequests(document.getElementById('rawUpdateColors').value);
 
         return payload;
+    }
+
+    function formatRawProductColorsForInput(colors) {
+        if (!Array.isArray(colors) || colors.length === 0) {
+            return '';
+        }
+        return colors
+            .map(color => color.clientColorName || color.rawColorName || '')
+            .filter(Boolean)
+            .join(', ');
+    }
+
+    function parseRawProductColorRequests(value) {
+        const normalized = parseStringValue(value);
+        if (normalized === null) {
+            return [];
+        }
+
+        return normalized
+            .split(/[,\n]/)
+            .map(color => color.trim())
+            .filter(Boolean)
+            .map(colorName => ({
+                rawColorName: colorName,
+                clientColorName: colorName
+            }));
     }
 
     // --- Loading helpers (skeleton UI) and loader-aware API call ---
