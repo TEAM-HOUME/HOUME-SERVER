@@ -8,6 +8,7 @@ import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.PositiveOrZero;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 public record AdminCurationRawProductUpdateRequest(
         @Pattern(regexp = "^[a-zA-Z0-9][a-zA-Z0-9_-]{0,49}$", message = "source 형식이 올바르지 않습니다.")
@@ -32,6 +33,7 @@ public record AdminCurationRawProductUpdateRequest(
         @PositiveOrZero(message = "freeShippingCondition는 0 이상이어야 합니다.")
         Long freeShippingCondition,
         Boolean isExposed,
-        LocalDateTime fetchedAt
+        LocalDateTime fetchedAt,
+        List<AdminCurationRawProductColorRequest> colors
 ) {
 }

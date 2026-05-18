@@ -10,6 +10,7 @@ import jakarta.validation.constraints.PositiveOrZero;
 import or.sopt.houme.domain.furniture.model.entity.SoozipCategory;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 public record AdminCurationRawProductCreateRequest(
         @NotBlank(message = "source는 필수 입력값입니다.")
@@ -50,6 +51,7 @@ public record AdminCurationRawProductCreateRequest(
         @PositiveOrZero(message = "freeShippingCondition는 0 이상이어야 합니다.")
         Long freeShippingCondition,
         Boolean isExposed,
-        LocalDateTime fetchedAt
+        LocalDateTime fetchedAt,
+        List<AdminCurationRawProductColorRequest> colors
 ) {
 }

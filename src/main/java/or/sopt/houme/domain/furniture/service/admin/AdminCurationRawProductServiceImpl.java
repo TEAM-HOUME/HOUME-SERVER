@@ -7,6 +7,7 @@ import or.sopt.houme.domain.furniture.model.entity.CurationRawProductFurnitureTa
 import or.sopt.houme.domain.furniture.model.entity.FurnitureTag;
 import or.sopt.houme.domain.furniture.model.entity.SoozipCategory;
 import or.sopt.houme.domain.furniture.presentation.dto.request.AdminCurationRawProductCreateRequest;
+import or.sopt.houme.domain.furniture.presentation.dto.request.AdminCurationRawProductColorRequest;
 import or.sopt.houme.domain.furniture.presentation.dto.request.AdminCurationRawProductExposureUpdateRequest;
 import or.sopt.houme.domain.furniture.presentation.dto.request.AdminCurationRawProductFurnitureTagCreateRequest;
 import or.sopt.houme.domain.furniture.presentation.dto.request.AdminCurationRawProductFurnitureTagUpdateRequest;
@@ -122,6 +123,7 @@ public class AdminCurationRawProductServiceImpl implements AdminCurationRawProdu
 
         try {
             CurationRawProduct saved = curationRawProductRepository.saveAndFlush(rawProduct);
+            saveColors(saved, request.colors());
             eventPublisher.publishEvent(new CurationRawProductTokenRefreshEvent(List.of(saved.getId())));
             return buildResponses(List.of(saved)).get(0);
         } catch (DataIntegrityViolationException e) {
@@ -160,6 +162,9 @@ public class AdminCurationRawProductServiceImpl implements AdminCurationRawProdu
                     request.isExposed()
             );
             CurationRawProduct saved = curationRawProductRepository.saveAndFlush(rawProduct);
+            if (request.colors() != null) {
+                replaceColors(saved, request.colors());
+            }
             eventPublisher.publishEvent(new CurationRawProductTokenRefreshEvent(List.of(saved.getId())));
             return buildResponses(List.of(saved)).get(0);
         } catch (DataIntegrityViolationException e) {
@@ -280,6 +285,49 @@ public class AdminCurationRawProductServiceImpl implements AdminCurationRawProdu
     private CurationRawProduct getRawProductOrThrow(Long curationRawProductId) {
         return curationRawProductRepository.findById(curationRawProductId)
                 .orElseThrow(() -> new GeneralException(ErrorCode.NOT_FOUND_CURATION_RAW_PRODUCT));
+    }
+
+    private void replaceColors(CurationRawProduct rawProduct, List<AdminCurationRawProductColorRequest> colorRequests) {
+        curationRawProductColorRepository.deleteAllByCurationRawProduct(rawProduct);
+        curationRawProductColorRepository.flush();
+        saveColors(rawProduct, colorRequests);
+    }
+
+    private void saveColors(CurationRawProduct rawProduct, List<AdminCurationRawProductColorRequest> colorRequests) {
+        List<CurationRawProductColor> colors = buildColors(rawProduct, colorRequests);
+        if (!colors.isEmpty()) {
+            curationRawProductColorRepository.saveAll(colors);
+        }
+    }
+
+    private List<CurationRawProductColor> buildColors(
+            CurationRawProduct rawProduct,
+            List<AdminCurationRawProductColorRequest> colorRequests
+    ) {
+        if (colorRequests == null || colorRequests.isEmpty()) {
+            return List.of();
+        }
+
+        Map<String, CurationRawProductColor> colorsByKey = new LinkedHashMap<>();
+        for (AdminCurationRawProductColorRequest request : colorRequests) {
+            if (request == null) {
+                continue;
+            }
+
+            String rawColorName = normalizeNullable(request.rawColorName());
+            String clientColorName = normalizeNullable(request.clientColorName());
+            if (rawColorName == null && clientColorName == null) {
+                throw new GeneralException(ErrorCode.NOT_VALID_EXCEPTION);
+            }
+
+            // raw_color_name에 unique 제약이 있어 같은 원본 색상은 하나만 저장한다.
+            String uniqueKey = rawColorName != null ? rawColorName : "client:" + clientColorName;
+            colorsByKey.putIfAbsent(
+                    uniqueKey,
+                    CurationRawProductColor.of(rawProduct, rawColorName, clientColorName)
+            );
+        }
+        return new ArrayList<>(colorsByKey.values());
     }
 
     private FurnitureTag getFurnitureTagOrThrow(Long furnitureTagId) {
