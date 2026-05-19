@@ -1,6 +1,7 @@
 package or.sopt.houme.domain.furniture.service;
 
 import lombok.RequiredArgsConstructor;
+import java.util.Optional;
 import or.sopt.houme.domain.furniture.model.entity.CurationRawProduct;
 import or.sopt.houme.domain.furniture.model.entity.CurationRawProductColor;
 import or.sopt.houme.domain.furniture.model.entity.CurationRawProductFurnitureTag;
@@ -8,6 +9,7 @@ import or.sopt.houme.domain.furniture.model.entity.CurationSource;
 import or.sopt.houme.domain.furniture.model.entity.Furniture;
 import or.sopt.houme.domain.furniture.model.entity.FurnitureTag;
 import or.sopt.houme.domain.furniture.model.entity.FurnitureType;
+import or.sopt.houme.domain.furniture.model.entity.RecommendFurniture;
 import or.sopt.houme.domain.furniture.presentation.dto.response.ColorFilterResponse;
 import or.sopt.houme.domain.furniture.presentation.dto.response.CurationProductAppliedFilterResponse;
 import or.sopt.houme.domain.furniture.presentation.dto.response.CurationProductDetailResponse;
@@ -255,7 +257,16 @@ public class CurationProductServiceImpl implements CurationProductService {
 
         String categoryName = extractCategoryName(product);
         List<CurationProductDetailResponse.ProductColorDetail> colors = extractColorDetails(id);
-        boolean isLiked = checkIsLiked(product, user);
+
+        Optional<RecommendFurniture> recommendFurniture = recommendFurnitureRepository
+                .findBySourceAndFurnitureProductId(CurationSource.RAW, product.getProductId());
+
+        boolean isLiked = recommendFurniture
+                .map(rf -> user != null && jjymRepository.existsByUserIdAndRecommendFurnitureId(user.getId(), rf.getId()))
+                .orElse(false);
+        long jjymCount = recommendFurniture
+                .map(rf -> jjymRepository.countByRecommendFurnitureId(rf.getId()))
+                .orElse(0L);
 
         return new CurationProductDetailResponse(
                 new CurationProductDetailResponse.ProductDetail(
@@ -272,18 +283,10 @@ public class CurationProductServiceImpl implements CurationProductService {
                         product.getProductMallName(),
                         product.getProductSiteUrl(),
                         colors,
-                        isLiked
+                        isLiked,
+                        jjymCount
                 )
         );
-    }
-
-    private boolean checkIsLiked(CurationRawProduct product, User user) {
-        if (user == null) {
-            return false;
-        }
-        return recommendFurnitureRepository.findBySourceAndFurnitureProductId(CurationSource.RAW, product.getProductId())
-                .map(recommend -> jjymRepository.existsByUserIdAndRecommendFurnitureId(user.getId(), recommend.getId()))
-                .orElse(false);
     }
 
     private List<CurationProductDetailResponse.ProductColorDetail> extractColorDetails(Long productId) {

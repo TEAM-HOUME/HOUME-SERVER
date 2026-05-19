@@ -10,5 +10,7 @@ public interface JjymRepository extends JpaRepository<Jjym, Long>, JjymRepositor
 
     boolean existsByUserIdAndRecommendFurnitureId(Long userId, Long recommendFurnitureId);
 
+    long countByRecommendFurnitureId(Long recommendFurnitureId);
+
     List<Jjym> findAllByUserIdAndRecommendFurnitureIdIn(Long userId, List<Long> recommendFurnitureIds);
 }
