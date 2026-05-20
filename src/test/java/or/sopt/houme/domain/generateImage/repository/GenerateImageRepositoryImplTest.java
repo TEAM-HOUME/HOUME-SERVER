@@ -22,6 +22,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -198,7 +199,7 @@ class GenerateImageRepositoryImplTest {
                 List.of(targetRawProduct.getId()),
                 current.getId(),
                 10,
-                GenerateImageType.LIST
+                Set.of(GenerateImageType.BANNER, GenerateImageType.STYLE, GenerateImageType.PRODUCT)
         );
 
         assertThat(result).extracting(GenerateImage::getId).doesNotContain(current.getId());

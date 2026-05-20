@@ -16,8 +16,10 @@ import or.sopt.houme.domain.furniture.repository.CurationRawProductColorReposito
 import or.sopt.houme.domain.furniture.repository.JjymRepository;
 import or.sopt.houme.domain.furniture.repository.RecommendFurnitureRepository;
 import or.sopt.houme.domain.generateImage.model.entity.GenerateImage;
+import or.sopt.houme.domain.generateImage.model.entity.GenerateImageRawProduct;
 import or.sopt.houme.domain.generateImage.model.entity.GenerateImageType;
 import or.sopt.houme.domain.generateImage.model.entity.GenerateImageUsedProduct;
+import or.sopt.houme.domain.generateImage.repository.GenerateImageRawProductRepository;
 import or.sopt.houme.domain.generateImage.repository.GenerateImageRepository;
 import or.sopt.houme.domain.generateImage.repository.GenerateImageUsedProductRepository;
 import or.sopt.houme.domain.house.model.entity.House;
@@ -74,6 +76,7 @@ class UserServiceImplTest {
     private final PreferenceRepository preferenceRepository = mock(PreferenceRepository.class);
     private final PreferenceFactorRepository preferenceFactorRepository = mock(PreferenceFactorRepository.class);
     private final BannerRepository bannerRepository = mock(BannerRepository.class);
+    private final GenerateImageRawProductRepository generateImageRawProductRepository = mock(GenerateImageRawProductRepository.class);
     private final GenerateImageUsedProductRepository generateImageUsedProductRepository = mock(GenerateImageUsedProductRepository.class);
     private final RecommendFurnitureRepository recommendFurnitureRepository = mock(RecommendFurnitureRepository.class);
     private final JjymRepository jjymRepository = mock(JjymRepository.class);
@@ -93,6 +96,7 @@ class UserServiceImplTest {
             preferenceRepository,
             preferenceFactorRepository,
             bannerRepository,
+            generateImageRawProductRepository,
             generateImageUsedProductRepository,
             recommendFurnitureRepository,
             jjymRepository,
@@ -126,6 +130,7 @@ class UserServiceImplTest {
                 .id(100L)
                 .url("https://cdn.com/image.png")
                 .house(house)
+                .generationType(GenerateImageType.FULL_FUNNEL)
                 .build();
         ReflectionTestUtils.setField(generateImage, "createdAt", LocalDateTime.of(2026, 3, 24, 10, 0));
     }
@@ -241,12 +246,14 @@ class UserServiceImplTest {
                 .id(1L)
                 .url("https://example.com/image1.png")
                 .house(house)
+                .generationType(GenerateImageType.FULL_FUNNEL)
                 .build();
 
         GenerateImage generateImage2 = GenerateImage.builder()
                 .id(2L)
                 .url("https://example.com/image2.png")
                 .house(house)
+                .generationType(GenerateImageType.FULL_FUNNEL)
                 .build();
 
         GenerateImagePreference generateImagePreference1 = GenerateImagePreference.builder()
@@ -394,7 +401,7 @@ class UserServiceImplTest {
                 .id(201L)
                 .url("https://cdn.com/banner-image.png")
                 .house(houseWithBanner)
-                .generationType(GenerateImageType.LIST)
+                .generationType(GenerateImageType.BANNER)
                 .build();
         ReflectionTestUtils.setField(bannerImage, "createdAt", LocalDateTime.of(2026, 3, 24, 11, 0));
 
@@ -412,20 +419,20 @@ class UserServiceImplTest {
                 .fetchedAt(LocalDateTime.of(2026, 3, 24, 9, 30))
                 .build();
 
-        GenerateImage regularImage = GenerateImage.builder()
+        GenerateImage productImage = GenerateImage.builder()
                 .id(202L)
                 .url("https://cdn.com/regular-image.png")
                 .house(house)
-                .generationType(GenerateImageType.RECOMMEND)
+                .generationType(GenerateImageType.PRODUCT)
                 .build();
-        ReflectionTestUtils.setField(regularImage, "createdAt", LocalDateTime.of(2026, 3, 24, 10, 0));
+        ReflectionTestUtils.setField(productImage, "createdAt", LocalDateTime.of(2026, 3, 24, 10, 0));
 
         given(generateImageRepository.findAllByUserIdWithHouseAndBanner(user.getId()))
-                .willReturn(List.of(bannerImage, regularImage));
+                .willReturn(List.of(bannerImage, productImage));
         given(bannerRepository.findAllByIdInWithRawProducts(List.of(11L)))
                 .willReturn(List.of(banner));
-        given(generateImageUsedProductRepository.findAllByGenerateImageIdInWithRawProduct(List.of(202L)))
-                .willReturn(List.of(GenerateImageUsedProduct.of(regularImage, regularRawProduct, 1)));
+        given(generateImageRawProductRepository.findAllByGenerateImageIdInWithRawProduct(List.of(202L)))
+                .willReturn(List.of(GenerateImageRawProduct.of(productImage, regularRawProduct, 1)));
 
         CurationRawProductColor bannerColor = CurationRawProductColor.builder()
                 .id(1L)
@@ -473,14 +480,14 @@ class UserServiceImplTest {
         assertThat(group.items()).hasSize(2);
 
         MyPageGeneratedImageV2Response.ItemResponse firstItem = group.items().get(0);
-        assertThat(firstItem.viewType()).isEqualTo(MyPageGeneratedImageV2Response.ViewType.LIST);
+        assertThat(firstItem.viewType()).isEqualTo(MyPageGeneratedImageV2Response.ViewType.LIST); // BANNER 계열
         assertThat(firstItem.bannerTitle()).isEqualTo("테스트 배너");
         assertThat(firstItem.productSummaryText()).isEqualTo("배너 가구로 생성된 이미지");
         assertThat(firstItem.usedProducts()).hasSize(1);
         assertThat(firstItem.usedProducts().get(0).isJjym()).isFalse();
 
         MyPageGeneratedImageV2Response.ItemResponse secondItem = group.items().get(1);
-        assertThat(secondItem.viewType()).isEqualTo(MyPageGeneratedImageV2Response.ViewType.RECOMMEND);
+        assertThat(secondItem.viewType()).isEqualTo(MyPageGeneratedImageV2Response.ViewType.LIST); // PRODUCT 계열
         assertThat(secondItem.bannerTitle()).isNull();
         assertThat(secondItem.productSummaryText()).isEqualTo("일반 가구로 생성된 이미지");
         assertThat(secondItem.usedProducts()).hasSize(1);
