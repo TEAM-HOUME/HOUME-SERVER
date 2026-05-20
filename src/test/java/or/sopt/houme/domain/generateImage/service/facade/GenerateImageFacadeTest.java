@@ -232,7 +232,7 @@ class GenerateImageFacadeTest {
         when(generateImageService.createGenerateImage(
                 imageUploadResponseDTO,
                 house,
-                GenerateImageType.RECOMMEND
+                GenerateImageType.FULL_FUNNEL
         )).thenReturn(generateImage);
 
         // When
@@ -355,7 +355,7 @@ class GenerateImageFacadeTest {
                 imageUploadResponseDTO,
                 tag,
                 Activity.valueOf(generateImageRequest.activity()),
-                GenerateImageType.RECOMMEND
+                GenerateImageType.FULL_FUNNEL
         )).thenReturn(tempImageInfoResponse);
 
         // When
