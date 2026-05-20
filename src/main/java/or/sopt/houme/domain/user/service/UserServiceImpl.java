@@ -226,6 +226,15 @@ public class UserServiceImpl implements UserService {
             throw new GenerateImageException(ErrorCode.NOT_FOUND_GENERATE_IMAGE_ENTITY);
         }
 
+        // 추천형 결과 페이지는 FULL_FUNNEL 타입만 허용합니다.
+        // LEGACY 포함 비허용 타입은 기존 컨벤션대로 INVALID_GENERATE_IMAGE_TYPE(40030)로 처리합니다.
+        List<GenerateImage> fullFunnelImages = generateImages.stream()
+                .filter(generateImage -> generateImage.getGenerationType() == GenerateImageType.FULL_FUNNEL)
+                .toList();
+        if (fullFunnelImages.isEmpty()) {
+            throw new GenerateImageException(ErrorCode.INVALID_GENERATE_IMAGE_TYPE);
+        }
+
         List<Boolean> likes = new ArrayList<>();
         List<Tag> tags = new ArrayList<>();
         // 선택했던 factor 조회
@@ -235,7 +244,7 @@ public class UserServiceImpl implements UserService {
         Optional<Preference> preference;
 
         // 3. 최신 GenerateImagePreference 조회 (선호 여부)
-        for (GenerateImage generateImage : generateImages) {
+        for (GenerateImage generateImage : fullFunnelImages) {
             Optional<GenerateImagePreference> optionalGenerateImagePreference =
                     generateImagePreferenceRepository.findFirstByGenerateImageIdOrderByIdDesc(generateImage.getId());
 
@@ -269,9 +278,9 @@ public class UserServiceImpl implements UserService {
 
         // 4. GenerateImage 리스트와 likes 리스트를 함께 사용하여 DTO 변환
         List<ImageHistoriesResultPageResponse.ImageHistoryResultPageResponse> histories =
-                IntStream.range(0, generateImages.size()) // 인덱스를 활용하여 스트림 생성
+                IntStream.range(0, fullFunnelImages.size()) // 인덱스를 활용하여 스트림 생성
                         .mapToObj(i -> {
-                            GenerateImage generateImage = generateImages.get(i);
+                            GenerateImage generateImage = fullFunnelImages.get(i);
                             Boolean isLike = likes.get(i); // likes 리스트에서 해당 인덱스의 값 가져오기
                             Tag tag = tags.get(i);
                             Factor factor = factors.get(i);
