@@ -190,7 +190,7 @@ public class GenerateImageFacade {
                 generateImage = generateImageService.createGenerateImage(
                         imageUploadResponseDTO,
                         house,
-                        GenerateImageType.RECOMMEND
+                        GenerateImageType.FULL_FUNNEL
                 );
 
             } catch (Exception e) {
@@ -304,7 +304,7 @@ public class GenerateImageFacade {
                     imageUploadResponseDTO,
                     priorityTag,
                     activity,
-                    GenerateImageType.RECOMMEND
+                    GenerateImageType.FULL_FUNNEL
             );
 
             // 만약 Fallback 이미지라면, 예외처리
@@ -622,7 +622,8 @@ public class GenerateImageFacade {
                     request.floorPlanId(),
                     request.isMirror(),
                     prompt,
-                    imageUploadResponseDTO
+                    imageUploadResponseDTO,
+                    selectedProducts
             );
         } catch (ValidException validException) {
             if (lockedCredit != null && lockedCredit.getStatus() == CreditStatus.PENDING) {
@@ -750,7 +751,7 @@ public class GenerateImageFacade {
                         generateImageRequest,
                         priorityIdList,
                         lockedCredit,
-                        GenerateImageType.RECOMMEND
+                        GenerateImageType.FULL_FUNNEL
                 );
 
 
