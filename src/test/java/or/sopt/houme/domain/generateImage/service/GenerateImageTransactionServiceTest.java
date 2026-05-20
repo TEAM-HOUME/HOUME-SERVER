@@ -15,6 +15,8 @@ import or.sopt.houme.domain.house.service.HouseService;
 import or.sopt.houme.domain.house.repository.HouseFloorPlanRepository;
 import or.sopt.houme.domain.user.model.entity.User;
 import or.sopt.houme.domain.user.service.UserService;
+import or.sopt.houme.global.api.ErrorCode;
+import or.sopt.houme.global.api.handler.GenerateImageException;
 import or.sopt.houme.global.dto.ImageUploadResponseDTO;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -214,5 +216,46 @@ class GenerateImageTransactionServiceTest {
         verify(generateImageService).createGenerateImage(imageResponse, house, GenerateImageType.FULL_FUNNEL);
         verify(creditService).commitCreditDeletion(lockedCredit);
         verify(userService).updateHasGeneratedImage(user);
+    }
+
+    @Test
+    @DisplayName("PRODUCT 이미지 저장 시 선택 상품이 비어있으면 예외를 던진다")
+    void saveProductImageAndConfirmCredit_throwsWhenSelectedProductsMissing() {
+        User user = mock(User.class);
+        Credit lockedCredit = mock(Credit.class);
+        House house = mock(House.class);
+        ImageUploadResponseDTO imageResponse = ImageUploadResponseDTO.from(
+                "file.jpg",
+                "origin.jpg",
+                "https://cdn.example.com/file.jpg",
+                "image/jpeg"
+        );
+
+        GenerateImage generateImage = GenerateImage.builder()
+                .id(777L)
+                .url("https://cdn.example.com/file.jpg")
+                .house(house)
+                .generationType(GenerateImageType.PRODUCT)
+                .build();
+
+        when(houseService.createTemplateHouse(user, null, "prompt", 1L, false)).thenReturn(house);
+        when(generateImageService.createGenerateImage(imageResponse, house, GenerateImageType.PRODUCT))
+                .thenReturn(generateImage);
+
+        assertThatThrownBy(() -> generateImageTransactionService.saveProductImageAndConfirmCredit(
+                user,
+                lockedCredit,
+                1L,
+                false,
+                "prompt",
+                imageResponse,
+                List.of()
+        ))
+                .isInstanceOf(GenerateImageException.class)
+                .extracting(exception -> ((GenerateImageException) exception).getErrorCode())
+                .isEqualTo(ErrorCode.MISSING_SELECTED_PRODUCTS);
+
+        verify(creditService, never()).commitCreditDeletion(any());
+        verify(userService, never()).updateHasGeneratedImage(any());
     }
 }

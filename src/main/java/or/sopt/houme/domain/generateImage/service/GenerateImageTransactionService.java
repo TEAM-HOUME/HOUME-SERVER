@@ -25,6 +25,7 @@ import or.sopt.houme.domain.house.model.taste.entity.Tag;
 import or.sopt.houme.domain.user.model.entity.User;
 import or.sopt.houme.domain.user.service.UserService;
 import or.sopt.houme.global.api.ErrorCode;
+import or.sopt.houme.global.api.handler.GenerateImageException;
 import or.sopt.houme.global.api.handler.HouseException;
 import or.sopt.houme.global.dto.ImageUploadResponseDTO;
 import org.springframework.stereotype.Service;
@@ -225,7 +226,14 @@ public class GenerateImageTransactionService {
     }
 
     private void saveGenerateImageRawProducts(GenerateImage generateImage, List<CurationRawProduct> selectedProducts) {
-        if (generateImage == null || selectedProducts == null || selectedProducts.isEmpty()) {
+        if (generateImage == null) {
+            return;
+        }
+        if (generateImage.getGenerationType() == GenerateImageType.PRODUCT
+                && (selectedProducts == null || selectedProducts.isEmpty())) {
+            throw new GenerateImageException(ErrorCode.MISSING_SELECTED_PRODUCTS);
+        }
+        if (selectedProducts == null || selectedProducts.isEmpty()) {
             return;
         }
 
