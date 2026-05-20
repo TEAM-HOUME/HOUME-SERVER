@@ -129,7 +129,7 @@ class GenerateImageRepositoryImplTest {
                 .originalFilename("current-origin.png")
                 .fileExtension("png")
                 .house(house)
-                .generationType(GenerateImageType.LIST)
+                .generationType(GenerateImageType.BANNER)
                 .build();
         em.persist(current);
 
@@ -139,7 +139,7 @@ class GenerateImageRepositoryImplTest {
                 .originalFilename("related1-origin.png")
                 .fileExtension("png")
                 .house(house)
-                .generationType(GenerateImageType.LIST)
+                .generationType(GenerateImageType.BANNER)
                 .build();
         em.persist(related1);
 
@@ -149,7 +149,7 @@ class GenerateImageRepositoryImplTest {
                 .originalFilename("related2-origin.png")
                 .fileExtension("png")
                 .house(house)
-                .generationType(GenerateImageType.RECOMMEND)
+                .generationType(GenerateImageType.FULL_FUNNEL)
                 .build();
         em.persist(related2);
 
@@ -166,7 +166,7 @@ class GenerateImageRepositoryImplTest {
                 .originalFilename("non-matched-origin.png")
                 .fileExtension("png")
                 .house(nonMatchedHouse)
-                .generationType(GenerateImageType.LIST)
+                .generationType(GenerateImageType.BANNER)
                 .build();
         em.persist(nonMatched);
 
@@ -205,5 +205,14 @@ class GenerateImageRepositoryImplTest {
         assertThat(result).extracting(GenerateImage::getId).doesNotContain(current.getId());
         assertThat(result).extracting(GenerateImage::getId).doesNotHaveDuplicates();
         assertThat(result).extracting(GenerateImage::getId).containsExactly(related1.getId());
+
+        List<GenerateImage> emptyTypeResult = generateImageRepositoryImpl.findRelatedImagesByRawProductIds(
+                List.of(targetRawProduct.getId()),
+                current.getId(),
+                10,
+                Set.of()
+        );
+
+        assertThat(emptyTypeResult).isEmpty();
     }
 }

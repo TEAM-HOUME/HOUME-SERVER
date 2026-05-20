@@ -148,8 +148,12 @@ public class GenerateImageRepositoryImpl implements GenerateImageRepositoryCusto
             QGenerateImage generateImage,
             Set<GenerateImageType> generationTypes
     ) {
-        if (generationTypes == null || generationTypes.isEmpty()) {
+        if (generationTypes == null) {
             return null;
+        }
+        if (generationTypes.isEmpty()) {
+            // empty set means "allow no generation type"
+            return generateImage.id.isNull();
         }
         return generateImage.generationType.in(generationTypes);
     }
