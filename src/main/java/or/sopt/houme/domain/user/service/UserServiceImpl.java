@@ -15,8 +15,10 @@ import or.sopt.houme.domain.furniture.repository.CurationRawProductColorReposito
 import or.sopt.houme.domain.furniture.repository.JjymRepository;
 import or.sopt.houme.domain.furniture.repository.RecommendFurnitureRepository;
 import or.sopt.houme.domain.generateImage.model.entity.GenerateImage;
+import or.sopt.houme.domain.generateImage.model.entity.GenerateImageRawProduct;
 import or.sopt.houme.domain.generateImage.model.entity.GenerateImageType;
 import or.sopt.houme.domain.generateImage.model.entity.GenerateImageUsedProduct;
+import or.sopt.houme.domain.generateImage.repository.GenerateImageRawProductRepository;
 import or.sopt.houme.domain.generateImage.repository.GenerateImageRepository;
 import or.sopt.houme.domain.generateImage.repository.GenerateImageUsedProductRepository;
 import or.sopt.houme.domain.house.model.entity.House;
@@ -87,6 +89,7 @@ public class UserServiceImpl implements UserService {
     private final PreferenceRepository preferenceRepository;
     private final PreferenceFactorRepository preferenceFactorRepository;
     private final BannerRepository bannerRepository;
+    private final GenerateImageRawProductRepository generateImageRawProductRepository;
     private final GenerateImageUsedProductRepository generateImageUsedProductRepository;
     private final RecommendFurnitureRepository recommendFurnitureRepository;
     private final JjymRepository jjymRepository;
@@ -457,16 +460,38 @@ public class UserServiceImpl implements UserService {
         }
 
         if (!mappedProductImageIds.isEmpty()) {
-            List<GenerateImageUsedProduct> mappings = generateImageUsedProductRepository.findAllByGenerateImageIdInWithRawProduct(mappedProductImageIds);
-            Map<Long, List<CurationRawProduct>> mappedProductsByImageId = mappings.stream()
+            List<GenerateImageRawProduct> rawMappings =
+                    generateImageRawProductRepository.findAllByGenerateImageIdInWithRawProduct(mappedProductImageIds);
+            Map<Long, List<CurationRawProduct>> rawMappedProductsByImageId = rawMappings.stream()
                     .collect(Collectors.groupingBy(
                             mapping -> mapping.getGenerateImage().getId(),
                             LinkedHashMap::new,
-                            Collectors.mapping(GenerateImageUsedProduct::getCurationRawProduct, Collectors.toList())
+                            Collectors.mapping(GenerateImageRawProduct::getCurationRawProduct, Collectors.toList())
                     ));
 
+            List<Long> fallbackImageIds = mappedProductImageIds.stream()
+                    .filter(imageId -> !rawMappedProductsByImageId.containsKey(imageId))
+                    .toList();
+
+            Map<Long, List<CurationRawProduct>> usedMappedProductsByImageId = Map.of();
+            if (!fallbackImageIds.isEmpty()) {
+                List<GenerateImageUsedProduct> usedMappings =
+                        generateImageUsedProductRepository.findAllByGenerateImageIdInWithRawProduct(fallbackImageIds);
+                usedMappedProductsByImageId = usedMappings.stream()
+                        .collect(Collectors.groupingBy(
+                                mapping -> mapping.getGenerateImage().getId(),
+                                LinkedHashMap::new,
+                                Collectors.mapping(GenerateImageUsedProduct::getCurationRawProduct, Collectors.toList())
+                        ));
+            }
+
             for (Long imageId : mappedProductImageIds) {
-                rawProductsByImageId.put(imageId, mappedProductsByImageId.getOrDefault(imageId, List.of()));
+                List<CurationRawProduct> rawMapped = rawMappedProductsByImageId.get(imageId);
+                if (rawMapped != null) {
+                    rawProductsByImageId.put(imageId, rawMapped);
+                    continue;
+                }
+                rawProductsByImageId.put(imageId, usedMappedProductsByImageId.getOrDefault(imageId, List.of()));
             }
         }
 
