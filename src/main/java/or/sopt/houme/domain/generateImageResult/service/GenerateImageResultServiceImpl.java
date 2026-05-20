@@ -103,7 +103,8 @@ public class GenerateImageResultServiceImpl implements GenerateImageResultServic
         return GeneratedImageMetaResponse.of(
                 generateImage.getId(),
                 generateImage.getUrl(),
-                isMirror
+                isMirror,
+                resolveApiGenerationType(generateImage)
         );
     }
 
@@ -223,6 +224,17 @@ public class GenerateImageResultServiceImpl implements GenerateImageResultServic
             return false;
         }
         return houseService.getIsMirrorByHouseId(generateImage.getHouse().getId());
+    }
+
+    private String resolveApiGenerationType(GenerateImage generateImage) {
+        GenerateImageType generationType = generateImage.getGenerationType();
+        if (generationType == null || generationType == GenerateImageType.LIST) {
+            return GenerateImageType.LEGACY.name();
+        }
+        if (generationType == GenerateImageType.RECOMMEND) {
+            return GenerateImageType.FULL_FUNNEL.name();
+        }
+        return generationType.name();
     }
 
     private void validateListResultAccessible(GenerateImage generateImage) {

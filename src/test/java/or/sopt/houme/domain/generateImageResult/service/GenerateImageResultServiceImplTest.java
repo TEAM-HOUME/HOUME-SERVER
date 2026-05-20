@@ -89,12 +89,13 @@ class GenerateImageResultServiceImplTest {
     private HouseService houseService;
 
     @Test
-    @DisplayName("이미지 메타 조회 시 imageUrl과 isMirror를 반환한다")
-    void getGeneratedImageMeta_returnsImageUrlAndIsMirror() {
+    @DisplayName("이미지 메타 조회 시 imageUrl/isMirror/generationType을 반환한다")
+    void getGeneratedImageMeta_returnsImageUrlAndIsMirrorAndGenerationType() {
         House house = House.builder().id(100L).build();
         GenerateImage image = GenerateImage.builder()
                 .id(1L)
                 .url("https://generated-image")
+                .generationType(GenerateImageType.PRODUCT)
                 .house(house)
                 .build();
         User user = User.builder().id(1L).build();
@@ -107,6 +108,7 @@ class GenerateImageResultServiceImplTest {
         assertThat(response.imageId()).isEqualTo(1L);
         assertThat(response.imageUrl()).isEqualTo("https://generated-image");
         assertThat(response.isMirror()).isTrue();
+        assertThat(response.generationType()).isEqualTo("PRODUCT");
     }
 
     @Test
