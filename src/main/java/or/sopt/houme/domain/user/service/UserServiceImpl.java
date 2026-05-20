@@ -192,7 +192,7 @@ public class UserServiceImpl implements UserService {
             Banner banner = resolveBanner(generateImage, bannersById);
             MyPageGeneratedImageV2Response.ItemResponse item = MyPageGeneratedImageV2Response.ItemResponse.of(
                     generateImage.getId(),
-                    MyPageGeneratedImageV2Response.ViewType.valueOf(generationType.name()),
+                    resolveMyPageViewType(generationType),
                     generateImage.getUrl(),
                     generateImage.getCreatedAt(),
                     banner != null ? banner.getBannerTitle() : null,
@@ -209,6 +209,19 @@ public class UserServiceImpl implements UserService {
                 .toList();
 
         return MyPageGeneratedImageV2Response.of(groups);
+    }
+
+    private MyPageGeneratedImageV2Response.ViewType resolveMyPageViewType(GenerateImageType generationType) {
+        if (generationType == null) {
+            return MyPageGeneratedImageV2Response.ViewType.LEGACY;
+        }
+        if (generationType == GenerateImageType.RECOMMEND) {
+            return MyPageGeneratedImageV2Response.ViewType.FULL_FUNNEL;
+        }
+        if (generationType == GenerateImageType.LIST) {
+            return MyPageGeneratedImageV2Response.ViewType.LEGACY;
+        }
+        return MyPageGeneratedImageV2Response.ViewType.valueOf(generationType.name());
     }
 
     @Override
