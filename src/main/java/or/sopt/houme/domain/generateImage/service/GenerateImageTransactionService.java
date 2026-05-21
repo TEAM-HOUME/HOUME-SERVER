@@ -2,14 +2,18 @@ package or.sopt.houme.domain.generateImage.service;
 
 import lombok.RequiredArgsConstructor;
 import or.sopt.houme.domain.banner.model.entity.Banner;
+import or.sopt.houme.domain.banner.model.entity.BannerType;
 import or.sopt.houme.domain.credit.model.entity.Credit;
 import or.sopt.houme.domain.credit.service.CreditService;
+import or.sopt.houme.domain.furniture.model.entity.CurationRawProduct;
 import or.sopt.houme.domain.generateImage.presentation.dto.request.GenerateImageRequest;
 import or.sopt.houme.domain.generateImage.presentation.dto.response.BannerGenerateImageResponse;
 import or.sopt.houme.domain.generateImage.presentation.dto.response.GenerateImageV4Response;
 import or.sopt.houme.domain.generateImage.presentation.dto.response.ImageInfoResponse;
 import or.sopt.houme.domain.generateImage.model.entity.GenerateImage;
+import or.sopt.houme.domain.generateImage.model.entity.GenerateImageRawProduct;
 import or.sopt.houme.domain.generateImage.model.entity.GenerateImageType;
+import or.sopt.houme.domain.generateImage.repository.GenerateImageRawProductRepository;
 import or.sopt.houme.domain.house.model.entity.House;
 import or.sopt.houme.domain.house.model.entity.enums.Activity;
 import or.sopt.houme.domain.house.model.entity.mapping.HouseFloorPlan;
@@ -21,6 +25,7 @@ import or.sopt.houme.domain.house.model.taste.entity.Tag;
 import or.sopt.houme.domain.user.model.entity.User;
 import or.sopt.houme.domain.user.service.UserService;
 import or.sopt.houme.global.api.ErrorCode;
+import or.sopt.houme.global.api.handler.GenerateImageException;
 import or.sopt.houme.global.api.handler.HouseException;
 import or.sopt.houme.global.dto.ImageUploadResponseDTO;
 import org.springframework.stereotype.Service;
@@ -38,6 +43,7 @@ public class GenerateImageTransactionService {
     private final HouseService houseService;
     private final HouseFloorPlanRepository houseFloorPlanRepository;
     private final GenerateImageService generateImageService;
+    private final GenerateImageRawProductRepository generateImageRawProductRepository;
     private final UserService userService;
 
     // DB 관련 로직을 위한 별도의 @Transactional 메서드 생성
@@ -141,7 +147,7 @@ public class GenerateImageTransactionService {
         GenerateImage generateImage = generateImageService.createGenerateImage(
                 imageResponse,
                 house,
-                GenerateImageType.LIST
+                resolveListGenerationType(banner)
         );
 
         creditService.commitCreditDeletion(lockedCredit);
@@ -174,7 +180,7 @@ public class GenerateImageTransactionService {
         GenerateImage generateImage = generateImageService.createGenerateImage(
                 imageResponse,
                 house,
-                GenerateImageType.LIST
+                GenerateImageType.FULL_FUNNEL
         );
 
         creditService.commitCreditDeletion(lockedCredit);
@@ -189,19 +195,60 @@ public class GenerateImageTransactionService {
             Long floorPlanId,
             boolean isMirror,
             String finalPrompt,
-            ImageUploadResponseDTO imageResponse
+            ImageUploadResponseDTO imageResponse,
+            List<CurationRawProduct> selectedProducts
     ) {
         House house = houseService.createTemplateHouse(user, null, finalPrompt, floorPlanId, isMirror);
 
         GenerateImage generateImage = generateImageService.createGenerateImage(
                 imageResponse,
                 house,
-                GenerateImageType.LIST
+                GenerateImageType.PRODUCT
         );
+        saveGenerateImageRawProducts(generateImage, selectedProducts);
 
         creditService.commitCreditDeletion(lockedCredit);
         userService.updateHasGeneratedImage(user);
         return GenerateImageV4Response.of(generateImage.getId(), generateImage.getUrl(), isMirror);
+    }
+
+    private GenerateImageType resolveListGenerationType(Banner banner) {
+        if (banner == null || banner.getBannerType() == null) {
+            return GenerateImageType.LEGACY;
+        }
+        if (banner.getBannerType() == BannerType.BANNER) {
+            return GenerateImageType.BANNER;
+        }
+        if (banner.getBannerType() == BannerType.STYLE) {
+            return GenerateImageType.STYLE;
+        }
+        return GenerateImageType.LEGACY;
+    }
+
+    private void saveGenerateImageRawProducts(GenerateImage generateImage, List<CurationRawProduct> selectedProducts) {
+        if (generateImage == null) {
+            return;
+        }
+        if (generateImage.getGenerationType() == GenerateImageType.PRODUCT
+                && (selectedProducts == null || selectedProducts.isEmpty())) {
+            throw new GenerateImageException(ErrorCode.MISSING_SELECTED_PRODUCTS);
+        }
+        if (selectedProducts == null || selectedProducts.isEmpty()) {
+            return;
+        }
+
+        List<GenerateImageRawProduct> mappings = new ArrayList<>();
+        int sortOrder = 1;
+        for (CurationRawProduct selectedProduct : selectedProducts) {
+            if (selectedProduct == null) {
+                continue;
+            }
+            mappings.add(GenerateImageRawProduct.of(generateImage, selectedProduct, sortOrder));
+            sortOrder++;
+        }
+        if (!mappings.isEmpty()) {
+            generateImageRawProductRepository.saveAll(mappings);
+        }
     }
 
     private FloorPlan getFloorPlanOrThrow(House house) {

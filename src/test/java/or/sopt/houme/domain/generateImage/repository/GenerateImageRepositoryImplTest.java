@@ -22,6 +22,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -128,7 +129,7 @@ class GenerateImageRepositoryImplTest {
                 .originalFilename("current-origin.png")
                 .fileExtension("png")
                 .house(house)
-                .generationType(GenerateImageType.LIST)
+                .generationType(GenerateImageType.BANNER)
                 .build();
         em.persist(current);
 
@@ -138,7 +139,7 @@ class GenerateImageRepositoryImplTest {
                 .originalFilename("related1-origin.png")
                 .fileExtension("png")
                 .house(house)
-                .generationType(GenerateImageType.LIST)
+                .generationType(GenerateImageType.BANNER)
                 .build();
         em.persist(related1);
 
@@ -148,7 +149,7 @@ class GenerateImageRepositoryImplTest {
                 .originalFilename("related2-origin.png")
                 .fileExtension("png")
                 .house(house)
-                .generationType(GenerateImageType.RECOMMEND)
+                .generationType(GenerateImageType.FULL_FUNNEL)
                 .build();
         em.persist(related2);
 
@@ -165,7 +166,7 @@ class GenerateImageRepositoryImplTest {
                 .originalFilename("non-matched-origin.png")
                 .fileExtension("png")
                 .house(nonMatchedHouse)
-                .generationType(GenerateImageType.LIST)
+                .generationType(GenerateImageType.BANNER)
                 .build();
         em.persist(nonMatched);
 
@@ -198,11 +199,20 @@ class GenerateImageRepositoryImplTest {
                 List.of(targetRawProduct.getId()),
                 current.getId(),
                 10,
-                GenerateImageType.LIST
+                Set.of(GenerateImageType.BANNER, GenerateImageType.STYLE, GenerateImageType.PRODUCT)
         );
 
         assertThat(result).extracting(GenerateImage::getId).doesNotContain(current.getId());
         assertThat(result).extracting(GenerateImage::getId).doesNotHaveDuplicates();
         assertThat(result).extracting(GenerateImage::getId).containsExactly(related1.getId());
+
+        List<GenerateImage> emptyTypeResult = generateImageRepositoryImpl.findRelatedImagesByRawProductIds(
+                List.of(targetRawProduct.getId()),
+                current.getId(),
+                10,
+                Set.of()
+        );
+
+        assertThat(emptyTypeResult).isEmpty();
     }
 }

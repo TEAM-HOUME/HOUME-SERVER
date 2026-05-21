@@ -23,8 +23,10 @@ import or.sopt.houme.domain.furniture.repository.CurationRawProductRepository;
 import or.sopt.houme.domain.furniture.repository.JjymRepository;
 import or.sopt.houme.domain.furniture.repository.RecommendFurnitureRepository;
 import or.sopt.houme.domain.generateImage.model.entity.GenerateImage;
+import or.sopt.houme.domain.generateImage.model.entity.GenerateImageRawProduct;
 import or.sopt.houme.domain.generateImage.model.entity.GenerateImageType;
 import or.sopt.houme.domain.generateImage.repository.GenerateImageRepository;
+import or.sopt.houme.domain.generateImage.repository.GenerateImageRawProductRepository;
 import or.sopt.houme.domain.generateImage.repository.GenerateImageUsedProductRepository;
 import or.sopt.houme.domain.generateImage.service.GenerateImageService;
 import or.sopt.houme.domain.generateImageResult.presentation.dto.response.GenerateImageResultResponse;
@@ -39,6 +41,7 @@ import or.sopt.houme.global.api.handler.GenerateImageException;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -64,6 +67,8 @@ class GenerateImageResultServiceImplTest {
 
     @Mock
     private GenerateImageUsedProductRepository generateImageUsedProductRepository;
+    @Mock
+    private GenerateImageRawProductRepository generateImageRawProductRepository;
 
     @Mock
     private CurationRawProductColorRepository curationRawProductColorRepository;
@@ -84,12 +89,13 @@ class GenerateImageResultServiceImplTest {
     private HouseService houseService;
 
     @Test
-    @DisplayName("이미지 메타 조회 시 imageUrl과 isMirror를 반환한다")
-    void getGeneratedImageMeta_returnsImageUrlAndIsMirror() {
+    @DisplayName("이미지 메타 조회 시 imageUrl/isMirror/generationType을 반환한다")
+    void getGeneratedImageMeta_returnsImageUrlAndIsMirrorAndGenerationType() {
         House house = House.builder().id(100L).build();
         GenerateImage image = GenerateImage.builder()
                 .id(1L)
                 .url("https://generated-image")
+                .generationType(GenerateImageType.PRODUCT)
                 .house(house)
                 .build();
         User user = User.builder().id(1L).build();
@@ -102,15 +108,16 @@ class GenerateImageResultServiceImplTest {
         assertThat(response.imageId()).isEqualTo(1L);
         assertThat(response.imageUrl()).isEqualTo("https://generated-image");
         assertThat(response.isMirror()).isTrue();
+        assertThat(response.generationType()).isEqualTo("PRODUCT");
     }
 
     @Test
-    @DisplayName("LIST 타입이 아닌 이미지 조회 요청이면 예외가 발생한다")
-    void getListResultItems_throws_whenGenerationTypeIsNotList() {
+    @DisplayName("목록형 지원 타입(BANNER/STYLE/PRODUCT)이 아닌 이미지 조회 요청이면 예외가 발생한다")
+    void getListResultItems_throws_whenGenerationTypeIsNotListFamily() {
         GenerateImage recommendImage = GenerateImage.builder()
                 .id(1L)
                 .url("https://image")
-                .generationType(GenerateImageType.RECOMMEND)
+                .generationType(GenerateImageType.FULL_FUNNEL)
                 .build();
 
         when(generateImageService.findGenerateImage(1L)).thenReturn(recommendImage);
@@ -122,7 +129,7 @@ class GenerateImageResultServiceImplTest {
     }
 
     @Test
-    @DisplayName("LIST 타입 이미지 조회 시 배너에 매핑된 raw product 목록을 응답한다")
+    @DisplayName("BANNER 타입 이미지 조회 시 배너에 매핑된 raw product 목록을 응답한다")
     void getListResultItems_returnsProductsFromBanner() {
         Banner bannerRef = Banner.builder()
                 .id(10L)
@@ -136,7 +143,7 @@ class GenerateImageResultServiceImplTest {
         GenerateImage listImage = GenerateImage.builder()
                 .id(1L)
                 .url("https://generated-image")
-                .generationType(GenerateImageType.LIST)
+                .generationType(GenerateImageType.BANNER)
                 .house(house)
                 .build();
 
@@ -198,17 +205,11 @@ class GenerateImageResultServiceImplTest {
     }
 
     @Test
-    @DisplayName("유사 상품 조회는 가구타입 우선 후보를 먼저 채우고 최대 4개를 반환한다")
-    void getSimilarItems_prioritizesFurnitureTypeAndLimitsToFour() {
-        Banner bannerRef = Banner.builder().id(10L).build();
-        House house = House.builder()
-                .id(100L)
-                .banner(bannerRef)
-                .build();
-        GenerateImage listImage = GenerateImage.builder()
+    @DisplayName("PRODUCT 타입 유사 상품 조회는 선택상품 기준으로 후보를 채우고 최대 4개를 반환한다")
+    void getSimilarItems_productType_prioritizesFurnitureTypeAndLimitsToFour() {
+        GenerateImage productImage = GenerateImage.builder()
                 .id(1L)
-                .generationType(GenerateImageType.LIST)
-                .house(house)
+                .generationType(GenerateImageType.PRODUCT)
                 .build();
 
         CurationRawProduct selected = CurationRawProduct.builder()
@@ -218,14 +219,7 @@ class GenerateImageResultServiceImplTest {
                 .productName("선택 상품")
                 .build();
 
-        BannerCurationRawProduct mapping = BannerCurationRawProduct.builder()
-                .id(1L)
-                .curationRawProduct(selected)
-                .build();
-        Banner bannerWithRawProducts = Banner.builder()
-                .id(10L)
-                .bannerRawProducts(List.of(mapping))
-                .build();
+        GenerateImageRawProduct mapping = GenerateImageRawProduct.of(productImage, selected, 1);
 
         FurnitureType furnitureType = FurnitureType.builder().id(1L).build();
         Furniture furniture = Furniture.builder().id(1L).furnitureType(furnitureType).build();
@@ -241,8 +235,9 @@ class GenerateImageResultServiceImplTest {
         CurationRawProduct c3 = CurationRawProduct.builder().id(203L).productId(2003L).productName("furniture-type-3").build();
         CurationRawProduct c4 = CurationRawProduct.builder().id(204L).productId(2004L).productName("furniture-type-4").build();
 
-        when(generateImageService.findGenerateImage(1L)).thenReturn(listImage);
-        when(bannerRepository.findAllByIdInWithRawProducts(List.of(10L))).thenReturn(List.of(bannerWithRawProducts));
+        when(generateImageService.findGenerateImage(1L)).thenReturn(productImage);
+        when(generateImageRawProductRepository.findAllByGenerateImageIdWithRawProduct(1L))
+                .thenReturn(List.of(mapping));
         when(curationRawProductFurnitureTagRepository.findAllByCurationRawProductIdInWithFurnitureTag(List.of(101L)))
                 .thenReturn(List.of(selectedProductMapping));
         when(curationRawProductRepository.findAllSimilarByFurnitureTypeIds(eq(List.of(1L)), eq(List.of(101L)), any()))
@@ -287,46 +282,34 @@ class GenerateImageResultServiceImplTest {
     }
 
     @Test
-    @DisplayName("related-images는 LIST 타입 기준으로 현재 이미지를 제외하고 최신순/중복제거 결과를 반환한다")
+    @DisplayName("related-images는 PRODUCT 타입 기준으로 현재 이미지를 제외하고 최신순/중복제거 결과를 반환한다")
     void getRelatedImages_returnsLatestDistinctImagesExcludingCurrent() {
-        Banner bannerRef = Banner.builder().id(10L).build();
-        House house = House.builder()
-                .id(100L)
-                .banner(bannerRef)
-                .build();
         GenerateImage current = GenerateImage.builder()
                 .id(1L)
-                .generationType(GenerateImageType.LIST)
-                .house(house)
+                .generationType(GenerateImageType.PRODUCT)
                 .build();
 
         CurationRawProduct selected = CurationRawProduct.builder()
                 .id(101L)
                 .productName("선택 상품")
                 .build();
-        BannerCurationRawProduct mapping = BannerCurationRawProduct.builder()
-                .id(1L)
-                .curationRawProduct(selected)
-                .build();
-        Banner bannerWithRawProducts = Banner.builder()
-                .id(10L)
-                .bannerRawProducts(List.of(mapping))
-                .build();
+        GenerateImageRawProduct mapping = GenerateImageRawProduct.of(current, selected, 1);
 
         GenerateImage related1 = GenerateImage.builder()
                 .id(200L)
                 .url("https://image-200")
-                .generationType(GenerateImageType.LIST)
-                .build();
-        GenerateImage related2 = GenerateImage.builder()
-                .id(199L)
-                .url("https://image-199")
-                .generationType(GenerateImageType.RECOMMEND)
+                .generationType(GenerateImageType.STYLE)
                 .build();
 
         when(generateImageService.findGenerateImage(1L)).thenReturn(current);
-        when(bannerRepository.findAllByIdInWithRawProducts(List.of(10L))).thenReturn(List.of(bannerWithRawProducts));
-        when(generateImageRepository.findRelatedImagesByRawProductIds(List.of(101L), 1L, 10, GenerateImageType.LIST))
+        when(generateImageRawProductRepository.findAllByGenerateImageIdWithRawProduct(1L))
+                .thenReturn(List.of(mapping));
+        when(generateImageRepository.findRelatedImagesByRawProductIds(
+                List.of(101L),
+                1L,
+                10,
+                Set.of(GenerateImageType.BANNER, GenerateImageType.STYLE, GenerateImageType.PRODUCT)
+        ))
                 .thenReturn(List.of(related1));
 
         User user = mock(User.class);
@@ -337,6 +320,6 @@ class GenerateImageResultServiceImplTest {
         assertThat(response.name()).isEqualTo("최윤하");
         assertThat(response.images()).hasSize(1);
         assertThat(response.images().get(0).id()).isEqualTo(200L);
-        assertThat(response.images().get(0).resultType()).isEqualTo("LIST");
+        assertThat(response.images().get(0).resultType()).isEqualTo("STYLE");
     }
 }

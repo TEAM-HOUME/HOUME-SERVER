@@ -5,6 +5,7 @@ import or.sopt.houme.domain.generateImage.model.entity.GenerateImageType;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 public interface GenerateImageRepositoryCustom {
 
@@ -23,6 +24,6 @@ public interface GenerateImageRepositoryCustom {
             List<Long> rawProductIds,
             Long excludeImageId,
             int limit,
-            GenerateImageType generationType
+            Set<GenerateImageType> generationTypes
     );
 }
