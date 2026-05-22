@@ -4589,7 +4589,7 @@
                     ? '선택한 가구 타입에 연결된 furniture_tag가 없습니다.'
                     : '가구명, 태그명, furnitureTag ID로 검색하세요.';
                 datalistElement.innerHTML = rawFurnitureTagLookup
-                    .map(option => `<option value="${formatRawFurnitureTagOptionLabel(option)}"></option>`)
+                    .map(option => `<option value="${escapeHtml(formatRawFurnitureTagOptionLabel(option))}"></option>`)
                     .join('');
 
                 if (preselectedFurnitureTagId) {
@@ -4665,7 +4665,7 @@
                     ? '<option value="" selected>선택 가능한 하위가구가 없습니다</option>'
                     : '<option value="" selected disabled>하위가구 선택...</option>' + furnitures.map(furniture => `
                         <option value="${furniture.furnitureId}">
-                            ${furniture.furnitureNameKr} (ID: ${furniture.furnitureId})
+                            ${escapeHtml(furniture.furnitureNameKr)} (ID: ${furniture.furnitureId})
                         </option>
                     `).join('');
             })
@@ -4714,7 +4714,7 @@
         container.classList.remove('is-empty');
         container.innerHTML = state.selectedFurnitures.map(furniture => `
             <span class="raw-tag-selected-chip">
-                ${furniture.furnitureNameKr || '-'}
+                ${escapeHtml(furniture.furnitureNameKr || '-')}
                 <small>#${furniture.furnitureId}</small>
                 <button type="button" class="btn-close btn-close-white ms-2" aria-label="삭제" onclick="removeSelectedRawFurniture('${mode}', ${furniture.furnitureId})"></button>
             </span>
@@ -4757,7 +4757,7 @@
                     ? '선택한 가구 타입에 연결된 furniture_tag가 없습니다.'
                     : '가구명, 태그명, furnitureTag ID로 검색하세요.';
                 datalistElement.innerHTML = furnitureTags
-                    .map(option => `<option value="${formatRawFurnitureTagOptionLabel(option)}"></option>`)
+                    .map(option => `<option value="${escapeHtml(formatRawFurnitureTagOptionLabel(option))}"></option>`)
                     .join('');
             })
             .catch(error => {
@@ -4832,6 +4832,32 @@
         }
     }
 
+    function resetInlineRawMappingInputs(mode) {
+        const state = getInlineRawMappingState(mode);
+
+        state.setFurnitureLookup([]);
+        state.setFurnitureTagLookup([]);
+
+        const furnitureTypeSelect = document.getElementById(mode === 'create' ? 'rawCreateFurnitureTypeId' : 'rawUpdateFurnitureTypeId');
+        const furnitureSelect = document.getElementById(state.furnitureSelectId);
+        const furnitureTagTypeSelect = document.getElementById(mode === 'create' ? 'rawCreateFurnitureTagTypeId' : 'rawUpdateFurnitureTagTypeId');
+        const keywordInput = document.getElementById(state.furnitureTagKeywordId);
+        const datalistElement = document.getElementById(state.furnitureTagDatalistId);
+
+        if (furnitureTypeSelect) furnitureTypeSelect.value = '';
+        if (furnitureSelect) {
+            furnitureSelect.disabled = true;
+            furnitureSelect.innerHTML = '<option value="" selected>상위가구를 먼저 선택하세요</option>';
+        }
+        if (furnitureTagTypeSelect) furnitureTagTypeSelect.value = '';
+        if (keywordInput) {
+            keywordInput.value = '';
+            keywordInput.disabled = true;
+            keywordInput.placeholder = '가구 타입을 먼저 선택하세요';
+        }
+        if (datalistElement) datalistElement.innerHTML = '';
+    }
+
     function renderInlineRawSelectedFurnitureTags(mode) {
         const state = getInlineRawMappingState(mode);
         const container = document.getElementById(state.furnitureTagListId);
@@ -4846,7 +4872,7 @@
         container.classList.remove('is-empty');
         container.innerHTML = state.selectedFurnitureTags.map(tag => `
             <span class="raw-tag-selected-chip">
-                ${tag.furnitureNameKr || '-'} / ${getRawFurnitureTagDisplayName(tag)}
+                ${escapeHtml(tag.furnitureNameKr || '-')} / ${escapeHtml(getRawFurnitureTagDisplayName(tag))}
                 <small>#${tag.furnitureTagId}</small>
                 <button type="button" class="btn-close btn-close-white ms-2" aria-label="삭제" onclick="removeSelectedRawFurnitureTag('${mode}', ${tag.furnitureTagId})"></button>
             </span>
@@ -4942,8 +4968,8 @@
         };
 
         const chips = labels.length === 0
-            ? `<span class="raw-chip raw-chip--muted">${emptyText}</span>`
-            : labels.map(item => `<span class="raw-chip">${getDotHtml(item)}${item}</span>`).join('');
+            ? `<span class="raw-chip raw-chip--muted">${escapeHtml(emptyText)}</span>`
+            : labels.map(item => `<span class="raw-chip">${getDotHtml(item)}${escapeHtml(item)}</span>`).join('');
             
         const toggleButton = collapsed
             ? `<button type="button" class="btn btn-sm btn-link p-0 ms-2 text-decoration-none" onclick="toggleRawChipSection('${sectionId}', this)">더보기</button>`
@@ -4952,7 +4978,7 @@
         return `
             <div class="raw-chip-section">
                 <div class="raw-chip-header d-flex align-items-center mb-2">
-                    <span class="raw-chip-title fw-bold small text-muted text-uppercase letter-spacing-1">${title}</span>
+                    <span class="raw-chip-title fw-bold small text-muted text-uppercase letter-spacing-1">${escapeHtml(title)}</span>
                     ${toggleButton}
                 </div>
                 <div id="${sectionId}" class="raw-chip-stack ${collapsed ? 'is-collapsed' : ''}">
@@ -5419,6 +5445,7 @@
                 furnitureTypeNameKr: tag.furnitureTypeNameKr
             }))
             : [];
+        resetInlineRawMappingInputs('update');
         document.getElementById('rawUpdateFurnitureMappingEnabled').checked = false;
         document.getElementById('rawUpdateFurnitureTagMappingEnabled').checked = false;
         renderInlineRawSelectedFurnitures('update');
@@ -5454,10 +5481,10 @@
                 ${furnitureTags.map(tag => `
                     <div class="raw-mapping-item">
                         <div>
-                            <div class="raw-mapping-item__title">${tag.furnitureTypeNameKr || '-'} / ${tag.furnitureNameKr || '-'} / ${getRawFurnitureTagDisplayName(tag)}</div>
+                            <div class="raw-mapping-item__title">${escapeHtml(tag.furnitureTypeNameKr || '-')} / ${escapeHtml(tag.furnitureNameKr || '-')} / ${escapeHtml(getRawFurnitureTagDisplayName(tag))}</div>
                             <div class="raw-mapping-item__meta">
                                 mapping #${tag.mappingId} · furnitureTag #${tag.furnitureTagId} · priority ${tag.priority ?? '-'}<br>
-                                searchKeyword: ${tag.searchKeyword || '-'}
+                                searchKeyword: ${escapeHtml(tag.searchKeyword || '-')}
                             </div>
                         </div>
                         <div class="raw-mapping-item__actions">
@@ -5658,10 +5685,10 @@
         preview.classList.remove('is-empty');
         preview.innerHTML = `
             <span class="raw-tag-selected-chip">
-                ${tag.furnitureNameKr || '-'} / ${getRawFurnitureTagDisplayName(tag)}
+                ${escapeHtml(tag.furnitureNameKr || '-')} / ${escapeHtml(getRawFurnitureTagDisplayName(tag))}
                 <small>#${tag.furnitureTagId}</small>
             </span>
-            <span>${tag.furnitureTypeNameKr ? `가구 타입: ${tag.furnitureTypeNameKr}` : '선택 완료'}</span>
+            <span>${tag.furnitureTypeNameKr ? `가구 타입: ${escapeHtml(tag.furnitureTypeNameKr)}` : '선택 완료'}</span>
         `;
     }
 

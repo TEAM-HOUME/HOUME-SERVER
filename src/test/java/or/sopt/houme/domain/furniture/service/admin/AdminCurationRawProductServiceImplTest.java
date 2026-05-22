@@ -155,10 +155,10 @@ class AdminCurationRawProductServiceImplTest {
                     CurationRawProduct saved = invocation.getArgument(0);
                     ReflectionTestUtils.setField(saved, "id", 10L);
                     return saved;
-                });
+        });
         when(curationRawProductColorRepository.findAllByCurationRawProductIdIn(anyList())).thenReturn(List.of());
-        when(furnitureRepository.findAllById(List.of(5L))).thenReturn(List.of(furniture(5L, "싱글 침대")));
-        when(furnitureTagRepository.findAllById(List.of(11L))).thenReturn(List.of(furnitureTag(11L)));
+        when(furnitureRepository.findAllById(any())).thenReturn(List.of(furniture(5L, "싱글 침대")));
+        when(furnitureTagRepository.findAllById(any())).thenReturn(List.of(furnitureTag(11L)));
         when(curationRawProductFurnitureRepository.findAllByCurationRawProductIdInWithFurniture(anyList()))
                 .thenReturn(List.of());
         when(curationRawProductFurnitureTagRepository.findAllByCurationRawProductIdInWithFurnitureTag(anyList()))
@@ -173,14 +173,10 @@ class AdminCurationRawProductServiceImplTest {
         assertFalse(response.isExposed());
         verify(curationRawProductRepository).saveAndFlush(any(CurationRawProduct.class));
         verify(curationRawProductFurnitureRepository).saveAll(argThat(mappings ->
-                mappings instanceof List<?>
-                        && ((List<?>) mappings).size() == 1
-                        && ((List<?>) mappings).stream().allMatch(CurationRawProductFurniture.class::isInstance)
+                iterableHasOnlyInstances(mappings, CurationRawProductFurniture.class, 1)
         ));
         verify(curationRawProductFurnitureTagRepository).saveAll(argThat(mappings ->
-                mappings instanceof List<?>
-                        && ((List<?>) mappings).size() == 1
-                        && ((List<?>) mappings).stream().allMatch(CurationRawProductFurnitureTag.class::isInstance)
+                iterableHasOnlyInstances(mappings, CurationRawProductFurnitureTag.class, 1)
         ));
         verify(curationRawProductColorRepository).saveAll(argThat(colors ->
                 colors instanceof List<?>
@@ -469,5 +465,16 @@ class AdminCurationRawProductServiceImplTest {
                 .build();
         ReflectionTestUtils.setField(furniture, "id", furnitureId);
         return furniture;
+    }
+
+    private boolean iterableHasOnlyInstances(Iterable<?> values, Class<?> type, int expectedSize) {
+        int count = 0;
+        for (Object value : values) {
+            if (!type.isInstance(value)) {
+                return false;
+            }
+            count++;
+        }
+        return count == expectedSize;
     }
 }

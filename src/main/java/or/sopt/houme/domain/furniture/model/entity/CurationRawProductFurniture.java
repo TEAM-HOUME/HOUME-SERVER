@@ -15,6 +15,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.Comment;
 
+import java.util.Objects;
+
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Getter
@@ -41,5 +43,39 @@ public class CurationRawProductFurniture {
                 .curationRawProduct(rawProduct)
                 .furniture(furniture)
                 .build();
+    }
+
+    @Override
+    public boolean equals(Object object) {
+        if (this == object) {
+            return true;
+        }
+        if (!(object instanceof CurationRawProductFurniture other)) {
+            return false;
+        }
+
+        Long rawProductId = getCurationRawProductId();
+        Long furnitureId = getFurnitureId();
+        Long otherRawProductId = other.getCurationRawProductId();
+        Long otherFurnitureId = other.getFurnitureId();
+
+        if (rawProductId == null || furnitureId == null || otherRawProductId == null || otherFurnitureId == null) {
+            return false;
+        }
+        return Objects.equals(rawProductId, otherRawProductId)
+                && Objects.equals(furnitureId, otherFurnitureId);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getCurationRawProductId(), getFurnitureId());
+    }
+
+    private Long getCurationRawProductId() {
+        return curationRawProduct != null ? curationRawProduct.getId() : null;
+    }
+
+    private Long getFurnitureId() {
+        return furniture != null ? furniture.getId() : null;
     }
 }

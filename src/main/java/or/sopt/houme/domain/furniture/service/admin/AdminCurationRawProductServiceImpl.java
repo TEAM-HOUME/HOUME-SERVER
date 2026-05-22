@@ -28,6 +28,7 @@ import or.sopt.houme.domain.furniture.repository.FurnitureTagRepository;
 import or.sopt.houme.domain.furniture.service.event.CurationRawProductTokenRefreshEvent;
 import or.sopt.houme.global.api.ErrorCode;
 import or.sopt.houme.global.api.GeneralException;
+import org.hibernate.exception.ConstraintViolationException;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
@@ -463,6 +464,10 @@ public class AdminCurationRawProductServiceImpl implements AdminCurationRawProdu
     private boolean hasConstraintName(Throwable throwable, String constraintName) {
         Throwable current = throwable;
         while (current != null) {
+            if (current instanceof ConstraintViolationException constraintViolationException
+                    && constraintName.equals(constraintViolationException.getConstraintName())) {
+                return true;
+            }
             String message = current.getMessage();
             if (message != null && message.contains(constraintName)) {
                 return true;
