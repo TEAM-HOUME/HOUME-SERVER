@@ -44,20 +44,20 @@ public class CarouselController {
 
     @GetMapping("/api/v2/carousels")
     @Operation(summary = "캐러셀 조회 API v2",
-            description = "실제 상품을 응답합니다. 한 번 조회 시, 다섯개의 캐러셀을 반환합니다. <br><br>" +
-                    "**page는 0부터** 넣어주세요 (null일시 0이 기본)")
+            description = "실제 상품을 응답합니다. 한 번 조회 시, 10개의 상품을 반환합니다. <br><br>" +
+                    "cursor가 없으면 랜덤 시작점에서 조회하고, cursor가 있으면 해당 id 미만을 이어서 조회합니다.")
     public ResponseEntity<ApiResponse<GetCarouselV2ListResponseDTO>> getCarouselsV2(
             @AuthenticationPrincipal CustomUserDetails userDetails,
-            @RequestParam(value = "page", required = false, defaultValue = "0")
-            @Min(value = 0, message = "page는 0 이상이어야 합니다.")
-            Integer page) {
+            @RequestParam(value = "cursor", required = false)
+            @Min(value = 1, message = "cursor는 1 이상이어야 합니다.")
+            Long cursor) {
 
-        GetCarouselListResponseDTO carousels = carouselService.getCarouselV2(
-                page,
+        GetCarouselV2ListResponseDTO carousels = carouselService.getCarouselV2(
+                cursor,
                 userDetails.getUser()
         );
 
-        return ResponseEntity.ok(ApiResponse.ok(GetCarouselV2ListResponseDTO.of(carousels.carouselResponseDTOS())));
+        return ResponseEntity.ok(ApiResponse.ok(carousels));
     }
 
 
