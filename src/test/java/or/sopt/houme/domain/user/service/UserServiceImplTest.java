@@ -18,7 +18,6 @@ import or.sopt.houme.domain.furniture.repository.RecommendFurnitureRepository;
 import or.sopt.houme.domain.generateImage.model.entity.GenerateImage;
 import or.sopt.houme.domain.generateImage.model.entity.GenerateImageRawProduct;
 import or.sopt.houme.domain.generateImage.model.entity.GenerateImageType;
-import or.sopt.houme.domain.generateImage.model.entity.GenerateImageUsedProduct;
 import or.sopt.houme.domain.generateImage.repository.GenerateImageRawProductRepository;
 import or.sopt.houme.domain.generateImage.repository.GenerateImageRepository;
 import or.sopt.houme.domain.generateImage.repository.GenerateImageUsedProductRepository;
@@ -390,7 +389,7 @@ class UserServiceImplTest {
         banner.getBannerRawProducts().add(BannerCurationRawProduct.of(banner, bannerRawProduct));
 
         House houseWithBanner = House.builder()
-                .id(house.getId())
+                .id(21L)
                 .activity(house.getActivity())
                 .user(user)
                 .banner(banner)
@@ -433,6 +432,11 @@ class UserServiceImplTest {
                 .willReturn(List.of(banner));
         given(generateImageRawProductRepository.findAllByGenerateImageIdInWithRawProduct(List.of(202L)))
                 .willReturn(List.of(GenerateImageRawProduct.of(productImage, regularRawProduct, 1)));
+        given(houseFloorPlanRepository.findAllByHouseIdIn(List.of(21L, house.getId())))
+                .willReturn(List.of(
+                        HouseFloorPlan.builder().house(houseWithBanner).isReverse(true).build(),
+                        HouseFloorPlan.builder().house(house).isReverse(false).build()
+                ));
 
         CurationRawProductColor bannerColor = CurationRawProductColor.builder()
                 .id(1L)
@@ -483,6 +487,7 @@ class UserServiceImplTest {
         assertThat(firstItem.viewType()).isEqualTo(MyPageGeneratedImageV2Response.ViewType.BANNER);
         assertThat(firstItem.bannerTitle()).isEqualTo("테스트 배너");
         assertThat(firstItem.productSummaryText()).isEqualTo("배너 가구로 생성된 이미지");
+        assertThat(firstItem.isMirror()).isTrue();
         assertThat(firstItem.usedProducts()).hasSize(1);
         assertThat(firstItem.usedProducts().get(0).isJjym()).isFalse();
 
@@ -490,6 +495,7 @@ class UserServiceImplTest {
         assertThat(secondItem.viewType()).isEqualTo(MyPageGeneratedImageV2Response.ViewType.PRODUCT);
         assertThat(secondItem.bannerTitle()).isNull();
         assertThat(secondItem.productSummaryText()).isEqualTo("일반 가구로 생성된 이미지");
+        assertThat(secondItem.isMirror()).isFalse();
         assertThat(secondItem.usedProducts()).hasSize(1);
         assertThat(secondItem.usedProducts().get(0).isJjym()).isTrue();
         assertThat(secondItem.usedProducts().get(0).colors()).containsExactly("우드");

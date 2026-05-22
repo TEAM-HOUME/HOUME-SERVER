@@ -170,6 +170,7 @@ public class UserServiceImpl implements UserService {
         Map<Long, List<CurationRawProduct>> rawProductsByImageId = buildRawProductsByImageId(generateImages, bannersById);
         Map<Long, List<String>> colorsByRawProductId = buildColorsByRawProductId(rawProductsByImageId);
         Map<Long, Boolean> jjymByRawProductId = buildJjymByRawProductId(findUser.getId(), rawProductsByImageId);
+        Map<Long, Boolean> mirrorByHouseId = buildMirrorByHouseId(generateImages);
 
         Map<LocalDate, List<MyPageGeneratedImageV2Response.ItemResponse>> grouped = new LinkedHashMap<>();
         for (GenerateImage generateImage : generateImages) {
@@ -197,6 +198,7 @@ public class UserServiceImpl implements UserService {
                     generateImage.getCreatedAt(),
                     banner != null ? banner.getBannerTitle() : null,
                     buildProductSummaryText(rawProducts),
+                    resolveIsMirror(generateImage, mirrorByHouseId),
                     usedProducts
             );
 
@@ -518,6 +520,40 @@ public class UserServiceImpl implements UserService {
         }
 
         return rawProductsByImageId;
+    }
+
+    /**
+     * 생성 이미지의 house별 도면 반전 여부를 조회합니다.
+     */
+    private Map<Long, Boolean> buildMirrorByHouseId(List<GenerateImage> generateImages) {
+        List<Long> houseIds = generateImages.stream()
+                .map(GenerateImage::getHouse)
+                .filter(Objects::nonNull)
+                .map(House::getId)
+                .filter(Objects::nonNull)
+                .distinct()
+                .toList();
+
+        if (houseIds.isEmpty()) {
+            return Map.of();
+        }
+
+        return houseFloorPlanRepository.findAllByHouseIdIn(houseIds).stream()
+                .filter(houseFloorPlan -> houseFloorPlan.getHouse() != null && houseFloorPlan.getHouse().getId() != null)
+                .collect(Collectors.toMap(
+                        houseFloorPlan -> houseFloorPlan.getHouse().getId(),
+                        HouseFloorPlan::isReverse,
+                        (left, right) -> left,
+                        LinkedHashMap::new
+                ));
+    }
+
+    private boolean resolveIsMirror(GenerateImage generateImage, Map<Long, Boolean> mirrorByHouseId) {
+        House house = generateImage.getHouse();
+        if (house == null || house.getId() == null) {
+            return false;
+        }
+        return mirrorByHouseId.getOrDefault(house.getId(), false);
     }
 
     /**
