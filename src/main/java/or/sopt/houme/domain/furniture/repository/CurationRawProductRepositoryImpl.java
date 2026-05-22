@@ -25,6 +25,7 @@ import org.springframework.data.domain.SliceImpl;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Objects;
 
 @Repository
 @RequiredArgsConstructor
@@ -258,6 +259,73 @@ public class CurationRawProductRepositoryImpl implements CurationRawProductRepos
                 .fetchOne();
 
         return new PageImpl<>(content, pageable, total == null ? 0 : total);
+    }
+
+    @Override
+    public Long findMaxExposedRawProductIdExcludingLikedByUser(Long userId) {
+        QCurationRawProduct rawProduct = QCurationRawProduct.curationRawProduct;
+        QJjym jjym = QJjym.jjym;
+        QRecommendFurniture recommendFurniture = QRecommendFurniture.recommendFurniture;
+
+        BooleanExpression isNotLikedByUser = JPAExpressions
+                .selectOne()
+                .from(jjym)
+                .join(jjym.recommendFurniture, recommendFurniture)
+                .where(
+                        jjym.user.id.eq(userId),
+                        recommendFurniture.source.eq(CurationSource.RAW),
+                        recommendFurniture.furnitureProductId.eq(rawProduct.productId)
+                )
+                .notExists();
+
+        return queryFactory
+                .select(rawProduct.id.max())
+                .from(rawProduct)
+                .where(
+                        rawProduct.isExposed.isTrue().or(rawProduct.isExposed.isNull()),
+                        isNotLikedByUser
+                )
+                .fetchOne();
+    }
+
+    @Override
+    public List<CurationRawProduct> findExposedRawProductsExcludingLikedByUserWithCursor(
+            Long userId,
+            Long cursor,
+            int size,
+            List<Long> excludedIds
+    ) {
+        QCurationRawProduct rawProduct = QCurationRawProduct.curationRawProduct;
+        QJjym jjym = QJjym.jjym;
+        QRecommendFurniture recommendFurniture = QRecommendFurniture.recommendFurniture;
+
+        BooleanExpression isNotLikedByUser = JPAExpressions
+                .selectOne()
+                .from(jjym)
+                .join(jjym.recommendFurniture, recommendFurniture)
+                .where(
+                        jjym.user.id.eq(userId),
+                        recommendFurniture.source.eq(CurationSource.RAW),
+                        recommendFurniture.furnitureProductId.eq(rawProduct.productId)
+                )
+                .notExists();
+
+        BooleanBuilder where = new BooleanBuilder();
+        where.and(rawProduct.isExposed.isTrue().or(rawProduct.isExposed.isNull()));
+        where.and(isNotLikedByUser);
+        if (cursor != null) {
+            where.and(rawProduct.id.lt(cursor));
+        }
+        if (excludedIds != null && !excludedIds.isEmpty()) {
+            where.and(rawProduct.id.notIn(excludedIds.stream().filter(Objects::nonNull).toList()));
+        }
+
+        return queryFactory
+                .selectFrom(rawProduct)
+                .where(where)
+                .orderBy(rawProduct.id.desc())
+                .limit(size)
+                .fetch();
     }
 
     @Override

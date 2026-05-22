@@ -17,7 +17,8 @@ public record CurationProductDetailResponse(ProductDetail product) {
             String mallName,
             String linkUrl,
             List<ProductColorDetail> colors,
-            Boolean isLiked
+            Boolean isLiked,
+            Long jjymCount
     ) {}
 
     public record ProductColorDetail(

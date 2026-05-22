@@ -3,9 +3,11 @@ package or.sopt.houme.domain.furniture.service;
 import or.sopt.houme.domain.furniture.model.entity.CurationRawProduct;
 import or.sopt.houme.domain.furniture.model.entity.CurationRawProductColor;
 import or.sopt.houme.domain.furniture.model.entity.CurationRawProductFurnitureTag;
+import or.sopt.houme.domain.furniture.model.entity.CurationSource;
 import or.sopt.houme.domain.furniture.model.entity.Furniture;
 import or.sopt.houme.domain.furniture.model.entity.FurnitureTag;
 import or.sopt.houme.domain.furniture.model.entity.FurnitureType;
+import or.sopt.houme.domain.furniture.model.entity.RecommendFurniture;
 import or.sopt.houme.domain.furniture.presentation.dto.response.CurationProductDetailResponse;
 import or.sopt.houme.domain.furniture.presentation.dto.response.CurationProductFilterResponse;
 import or.sopt.houme.domain.furniture.presentation.dto.response.CurationProductListResponse;
@@ -196,5 +198,61 @@ class CurationProductServiceImplTest {
 
         // then
         assertThat(response.product().categoryName()).isEqualTo("소파");
+    }
+
+    @Test
+    @DisplayName("getProductDetail()은 RecommendFurniture가 존재하면 jjymCount를 함께 반환한다")
+    void getProductDetail_withJjymCount() {
+        // given
+        Long id = 1L;
+        User user = User.builder().id(1L).build();
+
+        CurationRawProduct product = CurationRawProduct.builder()
+                .id(id)
+                .productId(3003L)
+                .isExposed(true)
+                .furnitureTagMappings(new HashSet<>())
+                .build();
+
+        RecommendFurniture recommendFurniture = RecommendFurniture.builder().id(10L).build();
+
+        given(curationRawProductRepository.findByIdAndIsExposedTrueOrNull(id)).willReturn(Optional.of(product));
+        given(curationRawProductColorRepository.findAllByCurationRawProductId(id)).willReturn(List.of());
+        given(recommendFurnitureRepository.findBySourceAndFurnitureProductId(eq(CurationSource.RAW), eq(3003L)))
+                .willReturn(Optional.of(recommendFurniture));
+        given(jjymRepository.existsByUserIdAndRecommendFurnitureId(1L, 10L)).willReturn(true);
+        given(jjymRepository.countByRecommendFurnitureId(10L)).willReturn(5L);
+
+        // when
+        CurationProductDetailResponse response = curationProductService.getProductDetail(id, user);
+
+        // then
+        assertThat(response.product().isLiked()).isTrue();
+        assertThat(response.product().jjymCount()).isEqualTo(5L);
+    }
+
+    @Test
+    @DisplayName("getProductDetail()은 RecommendFurniture가 없으면 jjymCount를 0으로 반환한다")
+    void getProductDetail_withNoRecommendFurniture() {
+        // given
+        Long id = 2L;
+
+        CurationRawProduct product = CurationRawProduct.builder()
+                .id(id)
+                .productId(9999L)
+                .isExposed(true)
+                .furnitureTagMappings(new HashSet<>())
+                .build();
+
+        given(curationRawProductRepository.findByIdAndIsExposedTrueOrNull(id)).willReturn(Optional.of(product));
+        given(curationRawProductColorRepository.findAllByCurationRawProductId(id)).willReturn(List.of());
+        given(recommendFurnitureRepository.findBySourceAndFurnitureProductId(any(), any())).willReturn(Optional.empty());
+
+        // when
+        CurationProductDetailResponse response = curationProductService.getProductDetail(id, null);
+
+        // then
+        assertThat(response.product().isLiked()).isFalse();
+        assertThat(response.product().jjymCount()).isEqualTo(0L);
     }
 }

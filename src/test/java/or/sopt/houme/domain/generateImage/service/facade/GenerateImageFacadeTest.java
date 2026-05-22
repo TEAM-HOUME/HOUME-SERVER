@@ -232,7 +232,7 @@ class GenerateImageFacadeTest {
         when(generateImageService.createGenerateImage(
                 imageUploadResponseDTO,
                 house,
-                GenerateImageType.RECOMMEND
+                GenerateImageType.FULL_FUNNEL
         )).thenReturn(generateImage);
 
         // When
@@ -355,7 +355,7 @@ class GenerateImageFacadeTest {
                 imageUploadResponseDTO,
                 tag,
                 Activity.valueOf(generateImageRequest.activity()),
-                GenerateImageType.RECOMMEND
+                GenerateImageType.FULL_FUNNEL
         )).thenReturn(tempImageInfoResponse);
 
         // When
@@ -685,7 +685,7 @@ class GenerateImageFacadeTest {
                 .thenReturn(List.of(FloorPlanImageItem.create("https://floorplan-view", "file", "orig", "png", 1, "창가 뷰")));
         when(geminiImageService.createImageWithReferences(any(), any())).thenReturn(imageUploadResponseDTO);
         when(generateImageTransactionService.saveProductImageAndConfirmCredit(
-                eq(user), eq(lockedCredit), eq(11L), eq(true), any(), eq(imageUploadResponseDTO)
+                eq(user), eq(lockedCredit), eq(11L), eq(true), any(), eq(imageUploadResponseDTO), eq(List.of(p1, p2, p3))
         )).thenReturn(GenerateImageV4Response.of(999L, "https://generated-image", true));
 
         GenerateImageV4Response response = generateImageFacade.generateImageByProducts(user, request);
@@ -702,7 +702,7 @@ class GenerateImageFacadeTest {
                         && urls.contains("https://p3"))
         );
         verify(generateImageTransactionService).saveProductImageAndConfirmCredit(
-                eq(user), eq(lockedCredit), eq(11L), eq(true), any(), eq(imageUploadResponseDTO)
+                eq(user), eq(lockedCredit), eq(11L), eq(true), any(), eq(imageUploadResponseDTO), eq(List.of(p1, p2, p3))
         );
     }
 }

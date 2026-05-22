@@ -15,8 +15,10 @@ import or.sopt.houme.domain.furniture.repository.CurationRawProductColorReposito
 import or.sopt.houme.domain.furniture.repository.JjymRepository;
 import or.sopt.houme.domain.furniture.repository.RecommendFurnitureRepository;
 import or.sopt.houme.domain.generateImage.model.entity.GenerateImage;
+import or.sopt.houme.domain.generateImage.model.entity.GenerateImageRawProduct;
 import or.sopt.houme.domain.generateImage.model.entity.GenerateImageType;
 import or.sopt.houme.domain.generateImage.model.entity.GenerateImageUsedProduct;
+import or.sopt.houme.domain.generateImage.repository.GenerateImageRawProductRepository;
 import or.sopt.houme.domain.generateImage.repository.GenerateImageRepository;
 import or.sopt.houme.domain.generateImage.repository.GenerateImageUsedProductRepository;
 import or.sopt.houme.domain.house.model.entity.House;
@@ -87,6 +89,7 @@ public class UserServiceImpl implements UserService {
     private final PreferenceRepository preferenceRepository;
     private final PreferenceFactorRepository preferenceFactorRepository;
     private final BannerRepository bannerRepository;
+    private final GenerateImageRawProductRepository generateImageRawProductRepository;
     private final GenerateImageUsedProductRepository generateImageUsedProductRepository;
     private final RecommendFurnitureRepository recommendFurnitureRepository;
     private final JjymRepository jjymRepository;
@@ -190,7 +193,7 @@ public class UserServiceImpl implements UserService {
             Banner banner = resolveBanner(generateImage, bannersById);
             MyPageGeneratedImageV2Response.ItemResponse item = MyPageGeneratedImageV2Response.ItemResponse.of(
                     generateImage.getId(),
-                    MyPageGeneratedImageV2Response.ViewType.valueOf(generationType.name()),
+                    resolveMyPageViewType(generationType),
                     generateImage.getUrl(),
                     generateImage.getCreatedAt(),
                     banner != null ? banner.getBannerTitle() : null,
@@ -210,6 +213,19 @@ public class UserServiceImpl implements UserService {
         return MyPageGeneratedImageV2Response.of(groups);
     }
 
+    private MyPageGeneratedImageV2Response.ViewType resolveMyPageViewType(GenerateImageType generationType) {
+        if (generationType == null) {
+            return MyPageGeneratedImageV2Response.ViewType.LEGACY;
+        }
+        if (generationType == GenerateImageType.RECOMMEND) {
+            return MyPageGeneratedImageV2Response.ViewType.FULL_FUNNEL;
+        }
+        if (generationType == GenerateImageType.LIST) {
+            return MyPageGeneratedImageV2Response.ViewType.LEGACY;
+        }
+        return MyPageGeneratedImageV2Response.ViewType.valueOf(generationType.name());
+    }
+
     @Override
     @Transactional(readOnly = true)
     public ImageHistoriesResultPageResponse getImageHistoryResultPage(User user, Long houseId) {
@@ -225,6 +241,15 @@ public class UserServiceImpl implements UserService {
             throw new GenerateImageException(ErrorCode.NOT_FOUND_GENERATE_IMAGE_ENTITY);
         }
 
+        // 추천형 결과 페이지는 FULL_FUNNEL 타입만 허용합니다.
+        // LEGACY 포함 비허용 타입은 기존 컨벤션대로 INVALID_GENERATE_IMAGE_TYPE(40030)로 처리합니다.
+        List<GenerateImage> fullFunnelImages = generateImages.stream()
+                .filter(generateImage -> generateImage.getGenerationType() == GenerateImageType.FULL_FUNNEL)
+                .toList();
+        if (fullFunnelImages.isEmpty()) {
+            throw new GenerateImageException(ErrorCode.INVALID_GENERATE_IMAGE_TYPE);
+        }
+
         List<Boolean> likes = new ArrayList<>();
         List<Tag> tags = new ArrayList<>();
         // 선택했던 factor 조회
@@ -234,7 +259,7 @@ public class UserServiceImpl implements UserService {
         Optional<Preference> preference;
 
         // 3. 최신 GenerateImagePreference 조회 (선호 여부)
-        for (GenerateImage generateImage : generateImages) {
+        for (GenerateImage generateImage : fullFunnelImages) {
             Optional<GenerateImagePreference> optionalGenerateImagePreference =
                     generateImagePreferenceRepository.findFirstByGenerateImageIdOrderByIdDesc(generateImage.getId());
 
@@ -268,9 +293,9 @@ public class UserServiceImpl implements UserService {
 
         // 4. GenerateImage 리스트와 likes 리스트를 함께 사용하여 DTO 변환
         List<ImageHistoriesResultPageResponse.ImageHistoryResultPageResponse> histories =
-                IntStream.range(0, generateImages.size()) // 인덱스를 활용하여 스트림 생성
+                IntStream.range(0, fullFunnelImages.size()) // 인덱스를 활용하여 스트림 생성
                         .mapToObj(i -> {
-                            GenerateImage generateImage = generateImages.get(i);
+                            GenerateImage generateImage = fullFunnelImages.get(i);
                             Boolean isLike = likes.get(i); // likes 리스트에서 해당 인덱스의 값 가져오기
                             Tag tag = tags.get(i);
                             Factor factor = factors.get(i);
@@ -459,16 +484,38 @@ public class UserServiceImpl implements UserService {
         }
 
         if (!mappedProductImageIds.isEmpty()) {
-            List<GenerateImageUsedProduct> mappings = generateImageUsedProductRepository.findAllByGenerateImageIdInWithRawProduct(mappedProductImageIds);
-            Map<Long, List<CurationRawProduct>> mappedProductsByImageId = mappings.stream()
+            List<GenerateImageRawProduct> rawMappings =
+                    generateImageRawProductRepository.findAllByGenerateImageIdInWithRawProduct(mappedProductImageIds);
+            Map<Long, List<CurationRawProduct>> rawMappedProductsByImageId = rawMappings.stream()
                     .collect(Collectors.groupingBy(
                             mapping -> mapping.getGenerateImage().getId(),
                             LinkedHashMap::new,
-                            Collectors.mapping(GenerateImageUsedProduct::getCurationRawProduct, Collectors.toList())
+                            Collectors.mapping(GenerateImageRawProduct::getCurationRawProduct, Collectors.toList())
                     ));
 
+            List<Long> fallbackImageIds = mappedProductImageIds.stream()
+                    .filter(imageId -> !rawMappedProductsByImageId.containsKey(imageId))
+                    .toList();
+
+            Map<Long, List<CurationRawProduct>> usedMappedProductsByImageId = Map.of();
+            if (!fallbackImageIds.isEmpty()) {
+                List<GenerateImageUsedProduct> usedMappings =
+                        generateImageUsedProductRepository.findAllByGenerateImageIdInWithRawProduct(fallbackImageIds);
+                usedMappedProductsByImageId = usedMappings.stream()
+                        .collect(Collectors.groupingBy(
+                                mapping -> mapping.getGenerateImage().getId(),
+                                LinkedHashMap::new,
+                                Collectors.mapping(GenerateImageUsedProduct::getCurationRawProduct, Collectors.toList())
+                        ));
+            }
+
             for (Long imageId : mappedProductImageIds) {
-                rawProductsByImageId.put(imageId, mappedProductsByImageId.getOrDefault(imageId, List.of()));
+                List<CurationRawProduct> rawMapped = rawMappedProductsByImageId.get(imageId);
+                if (rawMapped != null) {
+                    rawProductsByImageId.put(imageId, rawMapped);
+                    continue;
+                }
+                rawProductsByImageId.put(imageId, usedMappedProductsByImageId.getOrDefault(imageId, List.of()));
             }
         }
 
@@ -491,14 +538,14 @@ public class UserServiceImpl implements UserService {
             return Map.of();
         }
 
-        Map<Long, Boolean> mirrorByHouseId = new LinkedHashMap<>();
-        for (Long houseId : houseIds) {
-            boolean isMirror = houseFloorPlanRepository.findHouseFloorPlanByHouseId(houseId)
-                    .map(HouseFloorPlan::isReverse)
-                    .orElse(false);
-            mirrorByHouseId.put(houseId, isMirror);
-        }
-        return mirrorByHouseId;
+        return houseFloorPlanRepository.findAllByHouseIdIn(houseIds).stream()
+                .filter(houseFloorPlan -> houseFloorPlan.getHouse() != null && houseFloorPlan.getHouse().getId() != null)
+                .collect(Collectors.toMap(
+                        houseFloorPlan -> houseFloorPlan.getHouse().getId(),
+                        HouseFloorPlan::isReverse,
+                        (left, right) -> left,
+                        LinkedHashMap::new
+                ));
     }
 
     private boolean resolveIsMirror(GenerateImage generateImage, Map<Long, Boolean> mirrorByHouseId) {

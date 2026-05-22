@@ -5,6 +5,7 @@ import or.sopt.houme.domain.furniture.repository.CurationRawProductRepository;
 import or.sopt.houme.domain.furniture.service.JjymService;
 import or.sopt.houme.domain.house.presentation.carousel.controller.dto.GetCarouselListResponseDTO;
 import or.sopt.houme.domain.house.presentation.carousel.controller.dto.GetCarouselResponseDTO;
+import or.sopt.houme.domain.house.presentation.carousel.controller.dto.GetCarouselV2ListResponseDTO;
 import or.sopt.houme.domain.house.model.carousel.entity.Carousel;
 import or.sopt.houme.domain.house.model.carousel.entity.CarouselType;
 import or.sopt.houme.domain.house.repository.carousel.CarouselRepository;
@@ -22,8 +23,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
 
 import java.util.List;
 import java.util.Optional;
@@ -113,16 +112,19 @@ class CarouselServiceImplTest {
                 .productImageUrl("image-102")
                 .build();
 
-        when(curationRawProductRepository.findExposedRawProductsExcludingLikedByUser(1L, PageRequest.of(0, 5)))
-                .thenReturn(new PageImpl<>(List.of(rawProduct1, rawProduct2), PageRequest.of(0, 5), 2));
+        when(curationRawProductRepository.findMaxExposedRawProductIdExcludingLikedByUser(1L)).thenReturn(200L);
+        when(curationRawProductRepository.findExposedRawProductsExcludingLikedByUserWithCursor(
+                eq(1L), anyLong(), eq(10), eq(List.of())
+        )).thenReturn(List.of(rawProduct1, rawProduct2));
 
-        GetCarouselListResponseDTO result = carouselService.getCarouselV2(0, user);
+        GetCarouselV2ListResponseDTO result = carouselService.getCarouselV2(null, user);
 
-        assertThat(result.carouselResponseDTOS()).hasSize(2);
-        assertThat(result.carouselResponseDTOS().get(0).carouselId()).isEqualTo(101L);
-        assertThat(result.carouselResponseDTOS().get(1).carouselId()).isEqualTo(102L);
+        assertThat(result.carousels()).hasSize(2);
+        assertThat(result.carousels().get(0).carouselId()).isEqualTo(101L);
+        assertThat(result.carousels().get(1).carouselId()).isEqualTo(102L);
+        assertThat(result.nextCursor()).isNull();
         verify(curationRawProductRepository, times(1))
-                .findExposedRawProductsExcludingLikedByUser(1L, PageRequest.of(0, 5));
+                .findExposedRawProductsExcludingLikedByUserWithCursor(eq(1L), anyLong(), eq(10), eq(List.of()));
         verifyNoInteractions(jjymService);
     }
 

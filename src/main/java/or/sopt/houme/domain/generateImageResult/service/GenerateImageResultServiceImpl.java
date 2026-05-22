@@ -18,7 +18,9 @@ import or.sopt.houme.domain.furniture.repository.JjymRepository;
 import or.sopt.houme.domain.furniture.repository.RecommendFurnitureRepository;
 import or.sopt.houme.domain.generateImage.model.entity.GenerateImage;
 import or.sopt.houme.domain.generateImage.model.entity.GenerateImageType;
+import or.sopt.houme.domain.generateImage.model.entity.GenerateImageRawProduct;
 import or.sopt.houme.domain.generateImage.repository.GenerateImageRepository;
+import or.sopt.houme.domain.generateImage.repository.GenerateImageRawProductRepository;
 import or.sopt.houme.domain.generateImage.service.GenerateImageService;
 import or.sopt.houme.domain.generateImageResult.presentation.dto.response.GenerateImageResultProductResponse;
 import or.sopt.houme.domain.generateImageResult.presentation.dto.response.GenerateImageResultResponse;
@@ -51,6 +53,7 @@ public class GenerateImageResultServiceImpl implements GenerateImageResultServic
 
     private final GenerateImageService generateImageService;
     private final GenerateImageRepository generateImageRepository;
+    private final GenerateImageRawProductRepository generateImageRawProductRepository;
     private final BannerRepository bannerRepository;
     private final CurationRawProductColorRepository curationRawProductColorRepository;
     private final CurationRawProductRepository curationRawProductRepository;
@@ -100,7 +103,8 @@ public class GenerateImageResultServiceImpl implements GenerateImageResultServic
         return GeneratedImageMetaResponse.of(
                 generateImage.getId(),
                 generateImage.getUrl(),
-                isMirror
+                isMirror,
+                resolveApiGenerationType(generateImage)
         );
     }
 
@@ -198,7 +202,11 @@ public class GenerateImageResultServiceImpl implements GenerateImageResultServic
                         selectedRawProductIds,
                         generateImage.getId(),
                         RELATED_IMAGE_LIMIT,
-                        GenerateImageType.LIST
+                        Set.of(
+                                GenerateImageType.BANNER,
+                                GenerateImageType.STYLE,
+                                GenerateImageType.PRODUCT
+                        )
                 )
                 .stream()
                 .map(related -> RelatedImageResponse.of(
@@ -218,15 +226,39 @@ public class GenerateImageResultServiceImpl implements GenerateImageResultServic
         return houseService.getIsMirrorByHouseId(generateImage.getHouse().getId());
     }
 
+    private String resolveApiGenerationType(GenerateImage generateImage) {
+        GenerateImageType generationType = generateImage.getGenerationType();
+        if (generationType == null || generationType == GenerateImageType.LIST) {
+            return GenerateImageType.LEGACY.name();
+        }
+        if (generationType == GenerateImageType.RECOMMEND) {
+            return GenerateImageType.FULL_FUNNEL.name();
+        }
+        return generationType.name();
+    }
+
     private void validateListResultAccessible(GenerateImage generateImage) {
-        boolean hasBanner = generateImage.getHouse() != null && generateImage.getHouse().getBanner() != null;
-        boolean isListType = generateImage.getGenerationType() == GenerateImageType.LIST;
-        if (!hasBanner || !isListType) {
+        GenerateImageType type = generateImage.getGenerationType();
+        boolean supportedType = type == GenerateImageType.BANNER
+                || type == GenerateImageType.STYLE
+                || type == GenerateImageType.PRODUCT;
+        if (!supportedType) {
             throw new GenerateImageException(ErrorCode.INVALID_GENERATE_IMAGE_TYPE);
         }
     }
 
     private List<CurationRawProduct> resolveSelectedRawProducts(GenerateImage generateImage) {
+        GenerateImageType type = generateImage.getGenerationType();
+
+        if (type == GenerateImageType.PRODUCT) {
+            List<GenerateImageRawProduct> mappings =
+                    generateImageRawProductRepository.findAllByGenerateImageIdWithRawProduct(generateImage.getId());
+            return mappings.stream()
+                    .map(GenerateImageRawProduct::getCurationRawProduct)
+                    .filter(Objects::nonNull)
+                    .toList();
+        }
+
         Banner banner = generateImage.getHouse() != null ? generateImage.getHouse().getBanner() : null;
         if (banner == null) {
             throw new GenerateImageException(ErrorCode.INVALID_GENERATE_IMAGE_TYPE);

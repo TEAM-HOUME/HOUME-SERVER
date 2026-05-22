@@ -12,10 +12,12 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.test.util.ReflectionTestUtils;
 import or.sopt.houme.domain.furniture.model.entity.CurationRawProduct;
+import or.sopt.houme.domain.furniture.model.entity.CurationRawProductColor;
 import or.sopt.houme.domain.furniture.model.entity.CurationRawProductFurnitureTag;
 import or.sopt.houme.domain.furniture.model.entity.Furniture;
 import or.sopt.houme.domain.furniture.model.entity.FurnitureTag;
 import or.sopt.houme.domain.furniture.model.entity.SoozipCategory;
+import or.sopt.houme.domain.furniture.presentation.dto.request.AdminCurationRawProductColorRequest;
 import or.sopt.houme.domain.furniture.presentation.dto.request.AdminCurationRawProductCreateRequest;
 import or.sopt.houme.domain.furniture.presentation.dto.request.AdminCurationRawProductExposureUpdateRequest;
 import or.sopt.houme.domain.furniture.presentation.dto.request.AdminCurationRawProductFurnitureTagCreateRequest;
@@ -43,6 +45,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -124,7 +127,11 @@ class AdminCurationRawProductServiceImplTest {
                 3000L,
                 50000L,
                 false,
-                LocalDateTime.of(2026, 2, 1, 10, 0)
+                LocalDateTime.of(2026, 2, 1, 10, 0),
+                List.of(
+                        new AdminCurationRawProductColorRequest("우드", "우드"),
+                        new AdminCurationRawProductColorRequest("화이트", "화이트")
+                )
         );
 
         when(curationRawProductRepository.findBySourceAndCategoryAndProductId("soozip", SoozipCategory.FURNITURE, 1001L))
@@ -147,6 +154,11 @@ class AdminCurationRawProductServiceImplTest {
         assertEquals("테스트 침대", response.productName());
         assertFalse(response.isExposed());
         verify(curationRawProductRepository).saveAndFlush(any(CurationRawProduct.class));
+        verify(curationRawProductColorRepository).saveAll(argThat(colors ->
+                colors instanceof List<?>
+                        && ((List<?>) colors).size() == 2
+                        && ((List<?>) colors).stream().allMatch(CurationRawProductColor.class::isInstance)
+        ));
     }
 
     @Test
@@ -160,6 +172,7 @@ class AdminCurationRawProductServiceImplTest {
                 "https://soozip.co.kr/product/1001",
                 "테스트 침대",
                 "SOOZIP",
+                null,
                 null,
                 null,
                 null,
@@ -201,6 +214,7 @@ class AdminCurationRawProductServiceImplTest {
                 null,
                 null,
                 null,
+                null,
                 null
         );
 
@@ -216,6 +230,53 @@ class AdminCurationRawProductServiceImplTest {
         );
 
         assertEquals(ErrorCode.DUPLICATE_CURATION_RAW_PRODUCT, exception.getErrorCode());
+    }
+
+    @Test
+    @DisplayName("update()는 colors가 전달되면 기존 색상을 삭제하고 새 색상으로 교체한다")
+    void update_replaceColors_success() {
+        CurationRawProduct rawProduct = rawProduct(10L, "수정 대상 상품", true);
+        AdminCurationRawProductUpdateRequest request = new AdminCurationRawProductUpdateRequest(
+                null,
+                null,
+                null,
+                null,
+                null,
+                "수정된 상품명",
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                List.of(
+                        new AdminCurationRawProductColorRequest("블랙", "블랙"),
+                        new AdminCurationRawProductColorRequest("베이지", "베이지")
+                )
+        );
+
+        when(curationRawProductRepository.findById(10L)).thenReturn(Optional.of(rawProduct));
+        when(curationRawProductRepository.findBySourceAndCategoryAndProductId("soozip", SoozipCategory.FURNITURE, 3003L))
+                .thenReturn(Optional.of(rawProduct));
+        when(curationRawProductRepository.saveAndFlush(rawProduct)).thenReturn(rawProduct);
+        when(curationRawProductColorRepository.findAllByCurationRawProductIdIn(anyList())).thenReturn(List.of());
+        when(curationRawProductFurnitureTagRepository.findAllByCurationRawProductIdInWithFurnitureTag(anyList()))
+                .thenReturn(List.of());
+
+        adminCurationRawProductService.update(10L, request);
+
+        InOrder inOrder = inOrder(curationRawProductRepository, curationRawProductColorRepository);
+        inOrder.verify(curationRawProductRepository).saveAndFlush(rawProduct);
+        inOrder.verify(curationRawProductColorRepository).deleteAllByCurationRawProduct(rawProduct);
+        inOrder.verify(curationRawProductColorRepository).flush();
+        inOrder.verify(curationRawProductColorRepository).saveAll(argThat(colors ->
+                colors instanceof List<?>
+                        && ((List<?>) colors).size() == 2
+                        && ((List<?>) colors).stream().allMatch(CurationRawProductColor.class::isInstance)
+        ));
     }
 
     @Test

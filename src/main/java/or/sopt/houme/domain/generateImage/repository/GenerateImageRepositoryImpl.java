@@ -8,7 +8,7 @@ import or.sopt.houme.domain.banner.model.entity.QBannerCurationRawProduct;
 import or.sopt.houme.domain.generateImage.model.entity.GenerateImage;
 import or.sopt.houme.domain.generateImage.model.entity.GenerateImageType;
 import or.sopt.houme.domain.generateImage.model.entity.QGenerateImage;
-import or.sopt.houme.domain.generateImage.model.entity.QGenerateImageUsedProduct;
+import or.sopt.houme.domain.generateImage.model.entity.QGenerateImageRawProduct;
 import or.sopt.houme.domain.banner.model.entity.QBanner;
 import or.sopt.houme.domain.house.model.entity.QHouse;
 import org.springframework.stereotype.Repository;
@@ -16,6 +16,7 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -102,7 +103,7 @@ public class GenerateImageRepositoryImpl implements GenerateImageRepositoryCusto
             List<Long> rawProductIds,
             Long excludeImageId,
             int limit,
-            GenerateImageType generationType
+            Set<GenerateImageType> generationTypes
     ) {
         if (rawProductIds == null || rawProductIds.isEmpty() || limit < 1) {
             return List.of();
@@ -110,16 +111,16 @@ public class GenerateImageRepositoryImpl implements GenerateImageRepositoryCusto
 
         QGenerateImage generateImage = QGenerateImage.generateImage;
         QBannerCurationRawProduct bannerRawMapping = QBannerCurationRawProduct.bannerCurationRawProduct;
-        QGenerateImageUsedProduct usedProductMapping = QGenerateImageUsedProduct.generateImageUsedProduct;
+        QGenerateImageRawProduct rawProductMapping = QGenerateImageRawProduct.generateImageRawProduct;
 
         List<Long> imageIds = queryFactory
                 .select(generateImage.id)
                 .from(generateImage)
                 .where(
                         generateImage.id.ne(excludeImageId),
-                        resolvedGenerationTypeCondition(generateImage, generationType),
+                        resolvedGenerationTypeCondition(generateImage, generationTypes),
                         hasBannerMappedRawProducts(generateImage, bannerRawMapping, rawProductIds)
-                                .or(hasUsedRawProducts(generateImage, usedProductMapping, rawProductIds))
+                                .or(hasRawProductMappings(generateImage, rawProductMapping, rawProductIds))
                 )
                 .orderBy(generateImage.createdAt.desc(), generateImage.id.desc())
                 .limit(limit)
@@ -145,17 +146,16 @@ public class GenerateImageRepositoryImpl implements GenerateImageRepositoryCusto
 
     private BooleanExpression resolvedGenerationTypeCondition(
             QGenerateImage generateImage,
-            GenerateImageType generationType
+            Set<GenerateImageType> generationTypes
     ) {
-        if (generationType == null) {
+        if (generationTypes == null) {
             return null;
         }
-        if (generationType == GenerateImageType.LIST) {
-            return generateImage.generationType.eq(GenerateImageType.LIST)
-                    .or(generateImage.generationType.isNull().and(generateImage.house.banner.isNotNull()));
+        if (generationTypes.isEmpty()) {
+            // empty set means "allow no generation type"
+            return generateImage.id.isNull();
         }
-        return generateImage.generationType.eq(GenerateImageType.RECOMMEND)
-                .or(generateImage.generationType.isNull().and(generateImage.house.banner.isNull()));
+        return generateImage.generationType.in(generationTypes);
     }
 
     private BooleanExpression hasBannerMappedRawProducts(
@@ -174,16 +174,16 @@ public class GenerateImageRepositoryImpl implements GenerateImageRepositoryCusto
         return mappedByHouseBanner;
     }
 
-    private BooleanExpression hasUsedRawProducts(
+    private BooleanExpression hasRawProductMappings(
             QGenerateImage generateImage,
-            QGenerateImageUsedProduct usedProductMapping,
+            QGenerateImageRawProduct rawProductMapping,
             List<Long> rawProductIds
     ) {
         return JPAExpressions.selectOne()
-                .from(usedProductMapping)
+                .from(rawProductMapping)
                 .where(
-                        usedProductMapping.generateImage.id.eq(generateImage.id),
-                        usedProductMapping.curationRawProduct.id.in(rawProductIds)
+                        rawProductMapping.generateImage.id.eq(generateImage.id),
+                        rawProductMapping.curationRawProduct.id.in(rawProductIds)
                 )
                 .exists();
     }

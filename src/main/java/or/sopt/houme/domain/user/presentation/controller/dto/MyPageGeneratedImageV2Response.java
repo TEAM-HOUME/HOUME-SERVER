@@ -94,7 +94,10 @@ public record MyPageGeneratedImageV2Response(
     }
 
     public enum ViewType {
-        LIST,
-        RECOMMEND
+        BANNER,
+        STYLE,
+        PRODUCT,
+        FULL_FUNNEL,
+        LEGACY
     }
 }

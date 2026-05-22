@@ -29,6 +29,13 @@ public interface CurationRawProductRepositoryCustom {
     );
 
     Page<CurationRawProduct> findExposedRawProductsExcludingLikedByUser(Long userId, Pageable pageable);
+    Long findMaxExposedRawProductIdExcludingLikedByUser(Long userId);
+    List<CurationRawProduct> findExposedRawProductsExcludingLikedByUserWithCursor(
+            Long userId,
+            Long cursor,
+            int size,
+            List<Long> excludedIds
+    );
 
     List<CurationRawProduct> findAllSimilarByFurnitureTypeIds(
             List<Long> furnitureTypeIds,
