@@ -7,6 +7,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.PositiveOrZero;
+import jakarta.validation.constraints.Size;
 import or.sopt.houme.domain.furniture.model.entity.SoozipCategory;
 
 import java.time.LocalDateTime;
@@ -25,9 +26,11 @@ public record AdminCurationRawProductCreateRequest(
         Long productId,
 
         @NotBlank(message = "productImageUrl은 필수 입력값입니다.")
+        @Size(max = 2048, message = "productImageUrl은 2048자 이하여야 합니다.")
         String productImageUrl,
 
         @NotBlank(message = "productSiteUrl은 필수 입력값입니다.")
+        @Size(max = 2048, message = "productSiteUrl은 2048자 이하여야 합니다.")
         String productSiteUrl,
 
         @NotBlank(message = "productName은 필수 입력값입니다.")
@@ -52,6 +55,8 @@ public record AdminCurationRawProductCreateRequest(
         Long freeShippingCondition,
         Boolean isExposed,
         LocalDateTime fetchedAt,
-        List<AdminCurationRawProductColorRequest> colors
+        List<AdminCurationRawProductColorRequest> colors,
+        List<@Positive(message = "furnitureId는 1 이상이어야 합니다.") Long> furnitureIds,
+        List<@Positive(message = "furnitureTagId는 1 이상이어야 합니다.") Long> furnitureTagIds
 ) {
 }

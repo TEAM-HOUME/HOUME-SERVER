@@ -6,6 +6,7 @@ import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.PositiveOrZero;
+import jakarta.validation.constraints.Size;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -16,7 +17,9 @@ public record AdminCurationRawProductUpdateRequest(
         SoozipCategory category,
         @Positive(message = "productId는 1 이상이어야 합니다.")
         Long productId,
+        @Size(max = 2048, message = "productImageUrl은 2048자 이하여야 합니다.")
         String productImageUrl,
+        @Size(max = 2048, message = "productSiteUrl은 2048자 이하여야 합니다.")
         String productSiteUrl,
         String productName,
         String productMallName,
@@ -34,6 +37,8 @@ public record AdminCurationRawProductUpdateRequest(
         Long freeShippingCondition,
         Boolean isExposed,
         LocalDateTime fetchedAt,
-        List<AdminCurationRawProductColorRequest> colors
+        List<AdminCurationRawProductColorRequest> colors,
+        List<@Positive(message = "furnitureId는 1 이상이어야 합니다.") Long> furnitureIds,
+        List<@Positive(message = "furnitureTagId는 1 이상이어야 합니다.") Long> furnitureTagIds
 ) {
 }
