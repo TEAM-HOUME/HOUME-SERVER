@@ -7,6 +7,7 @@ import or.sopt.houme.domain.furniture.service.JjymService;
 import or.sopt.houme.domain.house.model.carousel.entity.Carousel;
 import or.sopt.houme.domain.house.presentation.carousel.controller.dto.GetCarouselListResponseDTO;
 import or.sopt.houme.domain.house.presentation.carousel.controller.dto.GetCarouselResponseDTO;
+import or.sopt.houme.domain.house.presentation.carousel.controller.dto.GetCarouselV2ListResponseDTO;
 import or.sopt.houme.domain.house.repository.carousel.CarouselRepository;
 import or.sopt.houme.domain.preference.model.entity.CarouselPreference;
 import or.sopt.houme.domain.preference.model.entity.Preference;
@@ -15,11 +16,10 @@ import or.sopt.houme.domain.preference.repository.PreferenceRepository;
 import or.sopt.houme.domain.user.model.entity.User;
 import or.sopt.houme.global.api.ErrorCode;
 import or.sopt.houme.global.api.handler.CarouselException;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -27,6 +27,7 @@ import java.util.Optional;
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class CarouselServiceImpl implements CarouselService {
+    private static final int CAROUSEL_V2_SIZE = 10;
 
     private final CarouselCacheService carouselCacheService;
     private final CarouselRepository carouselRepository;
@@ -54,14 +55,45 @@ public class CarouselServiceImpl implements CarouselService {
     }
 
     @Override
-    public GetCarouselListResponseDTO getCarouselV2(int page, User user) {
-        int pageSize = 5;
-        List<GetCarouselResponseDTO> result = findExposedRawProductsExcludingJjym(user.getId(), page, pageSize)
-                .stream()
+    public GetCarouselV2ListResponseDTO getCarouselV2(Long cursor, User user) {
+        Long userId = user.getId();
+        List<CurationRawProduct> selected = new ArrayList<>();
+
+        Long effectiveCursor = cursor;
+        if (effectiveCursor == null) {
+            Long maxId = curationRawProductRepository.findMaxExposedRawProductIdExcludingLikedByUser(userId);
+            if (maxId == null) {
+                return GetCarouselV2ListResponseDTO.of(List.of(), null);
+            }
+            long randomStartId = resolveRandomStartId(userId, maxId);
+            effectiveCursor = randomStartId + 1L;
+        }
+
+        selected.addAll(curationRawProductRepository.findExposedRawProductsExcludingLikedByUserWithCursor(
+                userId,
+                effectiveCursor,
+                CAROUSEL_V2_SIZE,
+                List.of()
+        ));
+
+        if (cursor == null && selected.size() < CAROUSEL_V2_SIZE) {
+            List<Long> excludedIds = selected.stream().map(CurationRawProduct::getId).toList();
+            selected.addAll(curationRawProductRepository.findExposedRawProductsExcludingLikedByUserWithCursor(
+                    userId,
+                    null,
+                    CAROUSEL_V2_SIZE - selected.size(),
+                    excludedIds
+            ));
+        }
+
+        List<GetCarouselResponseDTO> result = selected.stream()
                 .map(rawProduct -> GetCarouselResponseDTO.of(rawProduct.getId(), rawProduct.getProductImageUrl()))
                 .toList();
+        Long nextCursor = selected.size() < CAROUSEL_V2_SIZE
+                ? null
+                : selected.get(selected.size() - 1).getId();
 
-        return GetCarouselListResponseDTO.of(result);
+        return GetCarouselV2ListResponseDTO.of(result, nextCursor);
     }
     @Override
     @Transactional
@@ -81,15 +113,10 @@ public class CarouselServiceImpl implements CarouselService {
         carouselLikeLogService.createLikeLog(user, rawProductId);
     }
 
-    private Page<CurationRawProduct> findExposedRawProductsExcludingJjym(
-            Long userId,
-            int page,
-            int pageSize
-    ) {
-        return curationRawProductRepository.findExposedRawProductsExcludingLikedByUser(
-                userId,
-                PageRequest.of(page, pageSize)
-        );
+    private long resolveRandomStartId(Long userId, Long maxId) {
+        long seed = java.time.LocalDate.now().toEpochDay() ^ userId;
+        long positive = Math.abs(seed == Long.MIN_VALUE ? 0L : seed);
+        return (positive % maxId) + 1L;
     }
 
     private void updateLike(Long userId, Long carouselId, boolean isLike) {
