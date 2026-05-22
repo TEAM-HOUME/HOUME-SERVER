@@ -31,6 +31,7 @@ public record MyPageGeneratedImageV2Response(
             String bannerTitle,
             @Schema(nullable = true)
             String productSummaryText,
+            boolean isMirror,
             List<UsedProductResponse> usedProducts
     ) {
         public static ItemResponse of(
@@ -40,6 +41,7 @@ public record MyPageGeneratedImageV2Response(
                 LocalDateTime generatedAt,
                 String bannerTitle,
                 String productSummaryText,
+                boolean isMirror,
                 List<UsedProductResponse> usedProducts
         ) {
             return new ItemResponse(
@@ -49,6 +51,7 @@ public record MyPageGeneratedImageV2Response(
                     generatedAt,
                     bannerTitle,
                     productSummaryText,
+                    isMirror,
                     usedProducts
             );
         }
