@@ -3,7 +3,9 @@ package or.sopt.houme.domain.furniture.service.admin;
 import lombok.RequiredArgsConstructor;
 import or.sopt.houme.domain.furniture.model.entity.CurationRawProduct;
 import or.sopt.houme.domain.furniture.model.entity.CurationRawProductColor;
+import or.sopt.houme.domain.furniture.model.entity.CurationRawProductFurniture;
 import or.sopt.houme.domain.furniture.model.entity.CurationRawProductFurnitureTag;
+import or.sopt.houme.domain.furniture.model.entity.Furniture;
 import or.sopt.houme.domain.furniture.model.entity.FurnitureTag;
 import or.sopt.houme.domain.furniture.model.entity.SoozipCategory;
 import or.sopt.houme.domain.furniture.presentation.dto.request.AdminCurationRawProductCreateRequest;
@@ -13,16 +15,20 @@ import or.sopt.houme.domain.furniture.presentation.dto.request.AdminCurationRawP
 import or.sopt.houme.domain.furniture.presentation.dto.request.AdminCurationRawProductFurnitureTagUpdateRequest;
 import or.sopt.houme.domain.furniture.presentation.dto.request.AdminCurationRawProductUpdateRequest;
 import or.sopt.houme.domain.furniture.presentation.dto.response.AdminCurationRawProductColorResponse;
+import or.sopt.houme.domain.furniture.presentation.dto.response.AdminCurationRawProductFurnitureResponse;
 import or.sopt.houme.domain.furniture.presentation.dto.response.AdminCurationRawProductFurnitureTagResponse;
 import or.sopt.houme.domain.furniture.presentation.dto.response.AdminCurationRawProductListResponse;
 import or.sopt.houme.domain.furniture.presentation.dto.response.AdminCurationRawProductResponse;
 import or.sopt.houme.domain.furniture.repository.CurationRawProductColorRepository;
+import or.sopt.houme.domain.furniture.repository.CurationRawProductFurnitureRepository;
 import or.sopt.houme.domain.furniture.repository.CurationRawProductFurnitureTagRepository;
 import or.sopt.houme.domain.furniture.repository.CurationRawProductRepository;
+import or.sopt.houme.domain.furniture.repository.FurnitureRepository;
 import or.sopt.houme.domain.furniture.repository.FurnitureTagRepository;
 import or.sopt.houme.domain.furniture.service.event.CurationRawProductTokenRefreshEvent;
 import or.sopt.houme.global.api.ErrorCode;
 import or.sopt.houme.global.api.GeneralException;
+import org.hibernate.exception.ConstraintViolationException;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
@@ -44,11 +50,14 @@ import java.util.regex.Pattern;
 public class AdminCurationRawProductServiceImpl implements AdminCurationRawProductService {
 
     private static final int MAX_PAGE_SIZE = 100;
+    private static final String RAW_PRODUCT_UNIQUE_CONSTRAINT = "uk_raw_source_category_product_id";
     private static final Pattern SOURCE_PATTERN = Pattern.compile("^[a-z0-9][a-z0-9_-]{0,49}$");
 
     private final CurationRawProductRepository curationRawProductRepository;
     private final CurationRawProductColorRepository curationRawProductColorRepository;
+    private final CurationRawProductFurnitureRepository curationRawProductFurnitureRepository;
     private final CurationRawProductFurnitureTagRepository curationRawProductFurnitureTagRepository;
+    private final FurnitureRepository furnitureRepository;
     private final FurnitureTagRepository furnitureTagRepository;
     private final ApplicationEventPublisher eventPublisher;
 
@@ -124,10 +133,12 @@ public class AdminCurationRawProductServiceImpl implements AdminCurationRawProdu
         try {
             CurationRawProduct saved = curationRawProductRepository.saveAndFlush(rawProduct);
             saveColors(saved, request.colors());
+            saveFurnitureMappings(saved, request.furnitureIds());
+            saveFurnitureTagMappings(saved, request.furnitureTagIds());
             eventPublisher.publishEvent(new CurationRawProductTokenRefreshEvent(List.of(saved.getId())));
             return buildResponses(List.of(saved)).get(0);
         } catch (DataIntegrityViolationException e) {
-            throw new GeneralException(ErrorCode.DUPLICATE_CURATION_RAW_PRODUCT);
+            throw toRawProductIntegrityException(e);
         }
     }
 
@@ -165,10 +176,16 @@ public class AdminCurationRawProductServiceImpl implements AdminCurationRawProdu
             if (request.colors() != null) {
                 replaceColors(saved, request.colors());
             }
+            if (request.furnitureIds() != null) {
+                replaceFurnitureMappings(saved, request.furnitureIds());
+            }
+            if (request.furnitureTagIds() != null) {
+                replaceFurnitureTagMappings(saved, request.furnitureTagIds());
+            }
             eventPublisher.publishEvent(new CurationRawProductTokenRefreshEvent(List.of(saved.getId())));
             return buildResponses(List.of(saved)).get(0);
         } catch (DataIntegrityViolationException e) {
-            throw new GeneralException(ErrorCode.DUPLICATE_CURATION_RAW_PRODUCT);
+            throw toRawProductIntegrityException(e);
         }
     }
 
@@ -242,6 +259,7 @@ public class AdminCurationRawProductServiceImpl implements AdminCurationRawProdu
         try {
             curationRawProductColorRepository.deleteAllByCurationRawProduct(rawProduct);
             rawProduct.clearFurnitureTags();
+            rawProduct.clearFurnitures();
             curationRawProductRepository.delete(rawProduct);
             curationRawProductRepository.flush();
         } catch (DataIntegrityViolationException e) {
@@ -265,6 +283,14 @@ public class AdminCurationRawProductServiceImpl implements AdminCurationRawProdu
                     .add(AdminCurationRawProductColorResponse.of(color));
         }
 
+        Map<Long, List<AdminCurationRawProductFurnitureResponse>> furnituresByRawProductId = new LinkedHashMap<>();
+        List<CurationRawProductFurniture> furnitureMappings =
+                curationRawProductFurnitureRepository.findAllByCurationRawProductIdInWithFurniture(rawProductIds);
+        for (CurationRawProductFurniture mapping : furnitureMappings) {
+            furnituresByRawProductId.computeIfAbsent(mapping.getCurationRawProduct().getId(), key -> new ArrayList<>())
+                    .add(AdminCurationRawProductFurnitureResponse.of(mapping));
+        }
+
         Map<Long, List<AdminCurationRawProductFurnitureTagResponse>> furnitureTagsByRawProductId = new LinkedHashMap<>();
         List<CurationRawProductFurnitureTag> mappings =
                 curationRawProductFurnitureTagRepository.findAllByCurationRawProductIdInWithFurnitureTag(rawProductIds);
@@ -277,6 +303,7 @@ public class AdminCurationRawProductServiceImpl implements AdminCurationRawProdu
                 .map(rawProduct -> AdminCurationRawProductResponse.of(
                         rawProduct,
                         colorsByRawProductId.getOrDefault(rawProduct.getId(), List.of()),
+                        furnituresByRawProductId.getOrDefault(rawProduct.getId(), List.of()),
                         furnitureTagsByRawProductId.getOrDefault(rawProduct.getId(), List.of())
                 ))
                 .toList();
@@ -330,6 +357,90 @@ public class AdminCurationRawProductServiceImpl implements AdminCurationRawProdu
         return new ArrayList<>(colorsByKey.values());
     }
 
+    private void replaceFurnitureMappings(CurationRawProduct rawProduct, List<Long> furnitureIds) {
+        curationRawProductFurnitureRepository.deleteAllByCurationRawProduct(rawProduct);
+        curationRawProductFurnitureRepository.flush();
+        saveFurnitureMappings(rawProduct, furnitureIds);
+    }
+
+    private void saveFurnitureMappings(CurationRawProduct rawProduct, List<Long> furnitureIds) {
+        List<CurationRawProductFurniture> mappings = buildFurnitureMappings(rawProduct, furnitureIds);
+        if (!mappings.isEmpty()) {
+            curationRawProductFurnitureRepository.saveAll(mappings);
+        }
+    }
+
+    private List<CurationRawProductFurniture> buildFurnitureMappings(
+            CurationRawProduct rawProduct,
+            List<Long> furnitureIds
+    ) {
+        if (furnitureIds == null || furnitureIds.isEmpty()) {
+            return List.of();
+        }
+
+        List<Long> distinctFurnitureIds = furnitureIds.stream()
+                .distinct()
+                .toList();
+        if (distinctFurnitureIds.stream().anyMatch(id -> id == null || id <= 0)) {
+            throw new GeneralException(ErrorCode.NOT_VALID_EXCEPTION);
+        }
+
+        List<Furniture> furnitures = furnitureRepository.findAllById(distinctFurnitureIds);
+        if (furnitures.size() != distinctFurnitureIds.size()) {
+            throw new GeneralException(ErrorCode.NOT_FOUND_FURNITURE);
+        }
+
+        Map<Long, Furniture> furnitureById = furnitures.stream()
+                .collect(java.util.stream.Collectors.toMap(Furniture::getId, furniture -> furniture));
+
+        return distinctFurnitureIds.stream()
+                .map(furnitureById::get)
+                .map(furniture -> CurationRawProductFurniture.of(rawProduct, furniture))
+                .toList();
+    }
+
+    private void replaceFurnitureTagMappings(CurationRawProduct rawProduct, List<Long> furnitureTagIds) {
+        rawProduct.clearFurnitureTags();
+        curationRawProductRepository.flush();
+        saveFurnitureTagMappings(rawProduct, furnitureTagIds);
+    }
+
+    private void saveFurnitureTagMappings(CurationRawProduct rawProduct, List<Long> furnitureTagIds) {
+        List<CurationRawProductFurnitureTag> mappings = buildFurnitureTagMappings(rawProduct, furnitureTagIds);
+        if (!mappings.isEmpty()) {
+            curationRawProductFurnitureTagRepository.saveAll(mappings);
+        }
+    }
+
+    private List<CurationRawProductFurnitureTag> buildFurnitureTagMappings(
+            CurationRawProduct rawProduct,
+            List<Long> furnitureTagIds
+    ) {
+        if (furnitureTagIds == null || furnitureTagIds.isEmpty()) {
+            return List.of();
+        }
+
+        List<Long> distinctFurnitureTagIds = furnitureTagIds.stream()
+                .distinct()
+                .toList();
+        if (distinctFurnitureTagIds.stream().anyMatch(id -> id == null || id <= 0)) {
+            throw new GeneralException(ErrorCode.NOT_VALID_EXCEPTION);
+        }
+
+        List<FurnitureTag> furnitureTags = furnitureTagRepository.findAllById(distinctFurnitureTagIds);
+        if (furnitureTags.size() != distinctFurnitureTagIds.size()) {
+            throw new GeneralException(ErrorCode.NOT_FOUND_FURNITURE_TAG);
+        }
+
+        Map<Long, FurnitureTag> furnitureTagById = furnitureTags.stream()
+                .collect(java.util.stream.Collectors.toMap(FurnitureTag::getId, furnitureTag -> furnitureTag));
+
+        return distinctFurnitureTagIds.stream()
+                .map(furnitureTagById::get)
+                .map(furnitureTag -> CurationRawProductFurnitureTag.of(rawProduct, furnitureTag))
+                .toList();
+    }
+
     private FurnitureTag getFurnitureTagOrThrow(Long furnitureTagId) {
         return furnitureTagRepository.findById(furnitureTagId)
                 .orElseThrow(() -> new GeneralException(ErrorCode.NOT_FOUND_FURNITURE_TAG));
@@ -341,6 +452,29 @@ public class AdminCurationRawProductServiceImpl implements AdminCurationRawProdu
                 .ifPresent(existing -> {
                     throw new GeneralException(ErrorCode.DUPLICATE_CURATION_RAW_PRODUCT);
                 });
+    }
+
+    private GeneralException toRawProductIntegrityException(DataIntegrityViolationException exception) {
+        if (hasConstraintName(exception, RAW_PRODUCT_UNIQUE_CONSTRAINT)) {
+            return new GeneralException(ErrorCode.DUPLICATE_CURATION_RAW_PRODUCT);
+        }
+        return new GeneralException(ErrorCode.NOT_VALID_EXCEPTION);
+    }
+
+    private boolean hasConstraintName(Throwable throwable, String constraintName) {
+        Throwable current = throwable;
+        while (current != null) {
+            if (current instanceof ConstraintViolationException constraintViolationException
+                    && constraintName.equals(constraintViolationException.getConstraintName())) {
+                return true;
+            }
+            String message = current.getMessage();
+            if (message != null && message.contains(constraintName)) {
+                return true;
+            }
+            current = current.getCause();
+        }
+        return false;
     }
 
     private String normalize(String value) {

@@ -176,6 +176,20 @@ public class AdminFurnitureServiceImpl implements AdminFurnitureService {
         return new AdminFurnitureTagOptionListResponse(furnitureTags);
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public AdminFurnitureOptionListResponse getFurnituresByType(Long furnitureTypeId) {
+        FurnitureType furnitureType = furnitureTypeRepository.findById(furnitureTypeId)
+                .orElseThrow(() -> new AdminException(ErrorCode.NOT_FOUND_FURNITURE_TYPE));
+
+        List<AdminFurnitureOptionResponse> furnitures = furnitureRepository
+                .findAllByFurnitureTypeIdOrderByPriorityAscIdAsc(furnitureType.getId()).stream()
+                .map(AdminFurnitureOptionResponse::of)
+                .toList();
+
+        return AdminFurnitureOptionListResponse.of(furnitures);
+    }
+
 
     /**
      * 가구 정보를 업데이트하는 메서드입니다

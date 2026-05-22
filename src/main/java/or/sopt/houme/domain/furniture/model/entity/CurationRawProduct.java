@@ -126,6 +126,11 @@ public class CurationRawProduct {
     @Comment("수동 매핑된 가구 태그(다중 매핑)")
     private Set<CurationRawProductFurnitureTag> furnitureTagMappings = new LinkedHashSet<>();
 
+    @OneToMany(mappedBy = "curationRawProduct", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    @Comment("수동 매핑된 하위 가구(다중 매핑)")
+    private Set<CurationRawProductFurniture> furnitureMappings = new LinkedHashSet<>();
+
     public static CurationRawProduct of(
             String source,
             SoozipCategory category,
@@ -253,6 +258,10 @@ public class CurationRawProduct {
 
     public void clearFurnitureTags() {
         furnitureTagMappings.clear();
+    }
+
+    public void clearFurnitures() {
+        furnitureMappings.clear();
     }
 
     public void updateExposure(boolean isExposed) {

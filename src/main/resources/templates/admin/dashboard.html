@@ -1267,6 +1267,53 @@
                             <label for="rawCreateBaseShippingFee">Shipping Fee</label>
                             <input type="number" class="form-control" id="rawCreateBaseShippingFee">
                         </div>
+                        <div class="raw-form-field raw-form-field--full">
+                            <div class="border rounded-3 p-3 bg-light">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <div>
+                                        <h5 class="mb-1 fw-bold"><i class="fas fa-tags me-2"></i>가구 매핑</h5>
+                                        <p class="text-muted small mb-0">세부가구 기준 또는 Furniture Tag 기준으로 RAW 상품 등록과 동시에 매핑합니다.</p>
+                                    </div>
+                                </div>
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <label for="rawCreateFurnitureTypeId" class="form-label fw-bold small">상위가구 타입</label>
+                                        <select class="form-select" id="rawCreateFurnitureTypeId">
+                                            <option value="" selected disabled>가구 타입 선택...</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="rawCreateFurnitureId" class="form-label fw-bold small">하위가구</label>
+                                        <div class="input-group">
+                                            <select class="form-select" id="rawCreateFurnitureId" disabled>
+                                                <option value="" selected>상위가구를 먼저 선택하세요</option>
+                                            </select>
+                                            <button class="btn btn-outline-primary" type="button" id="rawCreateFurnitureAddButton">추가</button>
+                                        </div>
+                                    </div>
+                                    <div class="col-12">
+                                        <div id="rawCreateSelectedFurnitureList" class="raw-tag-picker-preview is-empty">선택된 하위가구가 없습니다.</div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="rawCreateFurnitureTagTypeId" class="form-label fw-bold small">Furniture Tag용 가구 타입</label>
+                                        <select class="form-select" id="rawCreateFurnitureTagTypeId">
+                                            <option value="" selected disabled>가구 타입 선택...</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="rawCreateFurnitureTagKeyword" class="form-label fw-bold small">Furniture Tag</label>
+                                        <div class="input-group">
+                                            <input type="text" class="form-control" id="rawCreateFurnitureTagKeyword" list="rawCreateFurnitureTagOptions" placeholder="가구 타입을 먼저 선택하세요" disabled>
+                                            <datalist id="rawCreateFurnitureTagOptions"></datalist>
+                                            <button class="btn btn-outline-primary" type="button" id="rawCreateFurnitureTagAddButton">추가</button>
+                                        </div>
+                                    </div>
+                                    <div class="col-12">
+                                        <div id="rawCreateSelectedFurnitureTagList" class="raw-tag-picker-preview is-empty">선택된 Furniture Tag가 없습니다.</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                         <div class="raw-form-actions">
                             <button type="button" class="btn btn-outline-secondary" data-bs-toggle="collapse" data-bs-target="#rawRegistrationCollapse">취소</button>
                             <button type="submit" class="btn btn-primary">상품 등록 완료</button>
@@ -1441,6 +1488,65 @@
                                 <div class="raw-form-field raw-form-field--quarter">
                                     <label for="rawUpdateFreeShippingCondition">Free Shipping Condition</label>
                                     <input type="number" class="form-control" id="rawUpdateFreeShippingCondition">
+                                </div>
+                                <div class="raw-form-field raw-form-field--full">
+                                    <div class="border rounded-3 p-3 bg-light">
+                                        <div class="d-flex justify-content-between align-items-center mb-3">
+                                            <div>
+                                                <h5 class="mb-1 fw-bold"><i class="fas fa-tags me-2"></i>가구 매핑 교체</h5>
+                                                <p class="text-muted small mb-0">체크한 항목만 저장 시 전체 교체됩니다. 체크 후 비워서 저장하면 해당 매핑이 전체 삭제됩니다.</p>
+                                            </div>
+                                        </div>
+                                        <div class="row g-3">
+                                            <div class="col-12">
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" id="rawUpdateFurnitureMappingEnabled">
+                                                    <label class="form-check-label fw-semibold" for="rawUpdateFurnitureMappingEnabled">하위가구 매핑 수정 반영</label>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label for="rawUpdateFurnitureTypeId" class="form-label fw-bold small">상위가구 타입</label>
+                                                <select class="form-select" id="rawUpdateFurnitureTypeId">
+                                                    <option value="" selected disabled>가구 타입 선택...</option>
+                                                </select>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label for="rawUpdateFurnitureId" class="form-label fw-bold small">하위가구</label>
+                                                <div class="input-group">
+                                                    <select class="form-select" id="rawUpdateFurnitureId" disabled>
+                                                        <option value="" selected>상위가구를 먼저 선택하세요</option>
+                                                    </select>
+                                                    <button class="btn btn-outline-primary" type="button" id="rawUpdateFurnitureAddButton">추가</button>
+                                                </div>
+                                            </div>
+                                            <div class="col-12">
+                                                <div id="rawUpdateSelectedFurnitureList" class="raw-tag-picker-preview is-empty">선택된 하위가구가 없습니다.</div>
+                                            </div>
+                                            <div class="col-12">
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" id="rawUpdateFurnitureTagMappingEnabled">
+                                                    <label class="form-check-label fw-semibold" for="rawUpdateFurnitureTagMappingEnabled">Furniture Tag 매핑 수정 반영</label>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label for="rawUpdateFurnitureTagTypeId" class="form-label fw-bold small">Furniture Tag용 가구 타입</label>
+                                                <select class="form-select" id="rawUpdateFurnitureTagTypeId">
+                                                    <option value="" selected disabled>가구 타입 선택...</option>
+                                                </select>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label for="rawUpdateFurnitureTagKeyword" class="form-label fw-bold small">Furniture Tag</label>
+                                                <div class="input-group">
+                                                    <input type="text" class="form-control" id="rawUpdateFurnitureTagKeyword" list="rawUpdateFurnitureTagOptions" placeholder="가구 타입을 먼저 선택하세요" disabled>
+                                                    <datalist id="rawUpdateFurnitureTagOptions"></datalist>
+                                                    <button class="btn btn-outline-primary" type="button" id="rawUpdateFurnitureTagAddButton">추가</button>
+                                                </div>
+                                            </div>
+                                            <div class="col-12">
+                                                <div id="rawUpdateSelectedFurnitureTagList" class="raw-tag-picker-preview is-empty">선택된 Furniture Tag가 없습니다.</div>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                                 <div class="raw-form-actions">
                                     <button type="submit" class="btn btn-warning px-4">정보 수정 저장</button>
@@ -1903,6 +2009,14 @@
     };
     let rawFurnitureTagLookup = [];
     let rawFurnitureTypeLookup = [];
+    let rawCreateFurnitureLookup = [];
+    let rawUpdateFurnitureLookup = [];
+    let rawCreateFurnitureTagLookup = [];
+    let rawUpdateFurnitureTagLookup = [];
+    let rawCreateSelectedFurnitures = [];
+    let rawCreateSelectedFurnitureTags = [];
+    let rawUpdateSelectedFurnitures = [];
+    let rawUpdateSelectedFurnitureTags = [];
     let rawProductsFilterState = {
         category: null,
         minListPrice: null,
@@ -2394,8 +2508,16 @@
             event.preventDefault();
             const accessToken = localStorage.getItem('accessToken');
             const resultDiv = document.getElementById('raw-product-create-result');
+            collectPendingRawMappingSelections('create');
             const payload = buildRawProductCreatePayload();
-            testApiCall(accessToken, resultDiv, '/api/v1/admin/curation-raw-products', 'POST', payload);
+            testApiCall(accessToken, resultDiv, '/api/v1/admin/curation-raw-products', 'POST', payload, (data, target) => {
+                target.innerHTML = '<div class="alert alert-success">RAW 상품과 가구 매핑이 함께 등록되었습니다.</div>';
+                rawCreateSelectedFurnitures = [];
+                rawCreateSelectedFurnitureTags = [];
+                renderInlineRawSelectedFurnitures('create');
+                renderInlineRawSelectedFurnitureTags('create');
+                fetchRawProducts(rawProductsPageState.page, rawProductsPageState.size);
+            });
         });
 
         document.getElementById('raw-product-update-form').addEventListener('submit', function(event) {
@@ -2408,6 +2530,7 @@
                 return;
             }
 
+            collectPendingRawMappingSelections('update');
             const payload = buildRawProductUpdatePayload();
             if (Object.keys(payload).length === 0) {
                 resultDiv.innerHTML = '<div class="alert alert-danger">수정할 값을 최소 1개 이상 입력해주세요.</div>';
@@ -2455,6 +2578,46 @@
 
         document.getElementById('rawFurnitureTagKeyword').addEventListener('blur', function(event) {
             resolveRawFurnitureTagSelection(event.target.value);
+        });
+
+        document.getElementById('rawCreateFurnitureTypeId').addEventListener('change', function(event) {
+            loadRawFurnitureOptionsByType(event.target.value, 'create');
+        });
+
+        document.getElementById('rawUpdateFurnitureTypeId').addEventListener('change', function(event) {
+            loadRawFurnitureOptionsByType(event.target.value, 'update');
+        });
+
+        document.getElementById('rawCreateFurnitureAddButton').addEventListener('click', function() {
+            addSelectedRawFurniture('create');
+        });
+
+        document.getElementById('rawUpdateFurnitureAddButton').addEventListener('click', function() {
+            addSelectedRawFurniture('update');
+        });
+
+        document.getElementById('rawCreateFurnitureTagTypeId').addEventListener('change', function(event) {
+            loadInlineRawFurnitureTagOptionsByType(event.target.value, 'create');
+        });
+
+        document.getElementById('rawUpdateFurnitureTagTypeId').addEventListener('change', function(event) {
+            loadInlineRawFurnitureTagOptionsByType(event.target.value, 'update');
+        });
+
+        document.getElementById('rawCreateFurnitureTagKeyword').addEventListener('change', function(event) {
+            resolveInlineRawFurnitureTagSelection(event.target.value, 'create');
+        });
+
+        document.getElementById('rawUpdateFurnitureTagKeyword').addEventListener('change', function(event) {
+            resolveInlineRawFurnitureTagSelection(event.target.value, 'update');
+        });
+
+        document.getElementById('rawCreateFurnitureTagAddButton').addEventListener('click', function() {
+            addSelectedRawFurnitureTag('create');
+        });
+
+        document.getElementById('rawUpdateFurnitureTagAddButton').addEventListener('click', function() {
+            addSelectedRawFurnitureTag('update');
         });
 
         document.getElementById('get-landings-button').addEventListener('click', function() {
@@ -4372,12 +4535,22 @@
                 }
 
                 rawFurnitureTypeLookup = responseData.furnitureTypeList;
-                selectElement.innerHTML = '<option value="" selected disabled>먼저 가구 타입을 선택하세요...</option>' +
+                const furnitureTypeOptions = '<option value="" selected disabled>먼저 가구 타입을 선택하세요...</option>' +
                     rawFurnitureTypeLookup.map(type => `
                         <option value="${type.furnitureTypeId}">
                             ${type.furnitureTypeNameKr} (ID: ${type.furnitureTypeId})
                         </option>
                     `).join('');
+                selectElement.innerHTML = furnitureTypeOptions;
+                [
+                    'rawCreateFurnitureTypeId',
+                    'rawUpdateFurnitureTypeId',
+                    'rawCreateFurnitureTagTypeId',
+                    'rawUpdateFurnitureTagTypeId'
+                ].forEach(id => {
+                    const target = document.getElementById(id);
+                    if (target) target.innerHTML = furnitureTypeOptions;
+                });
             })
             .catch(error => console.error('Error populating raw furniture type dropdown:', error));
     }
@@ -4416,7 +4589,7 @@
                     ? '선택한 가구 타입에 연결된 furniture_tag가 없습니다.'
                     : '가구명, 태그명, furnitureTag ID로 검색하세요.';
                 datalistElement.innerHTML = rawFurnitureTagLookup
-                    .map(option => `<option value="${formatRawFurnitureTagOptionLabel(option)}"></option>`)
+                    .map(option => `<option value="${escapeHtml(formatRawFurnitureTagOptionLabel(option))}"></option>`)
                     .join('');
 
                 if (preselectedFurnitureTagId) {
@@ -4427,6 +4600,283 @@
                 }
             })
             .catch(error => console.error('Error loading raw furniture tag options by type:', error));
+    }
+
+    function getInlineRawMappingState(mode) {
+        return {
+            furnitureLookup: mode === 'create' ? rawCreateFurnitureLookup : rawUpdateFurnitureLookup,
+            setFurnitureLookup: value => {
+                if (mode === 'create') rawCreateFurnitureLookup = value;
+                else rawUpdateFurnitureLookup = value;
+            },
+            furnitureTagLookup: mode === 'create' ? rawCreateFurnitureTagLookup : rawUpdateFurnitureTagLookup,
+            setFurnitureTagLookup: value => {
+                if (mode === 'create') rawCreateFurnitureTagLookup = value;
+                else rawUpdateFurnitureTagLookup = value;
+            },
+            selectedFurnitures: mode === 'create' ? rawCreateSelectedFurnitures : rawUpdateSelectedFurnitures,
+            setSelectedFurnitures: value => {
+                if (mode === 'create') rawCreateSelectedFurnitures = value;
+                else rawUpdateSelectedFurnitures = value;
+            },
+            selectedFurnitureTags: mode === 'create' ? rawCreateSelectedFurnitureTags : rawUpdateSelectedFurnitureTags,
+            setSelectedFurnitureTags: value => {
+                if (mode === 'create') rawCreateSelectedFurnitureTags = value;
+                else rawUpdateSelectedFurnitureTags = value;
+            },
+            furnitureSelectId: mode === 'create' ? 'rawCreateFurnitureId' : 'rawUpdateFurnitureId',
+            furnitureListId: mode === 'create' ? 'rawCreateSelectedFurnitureList' : 'rawUpdateSelectedFurnitureList',
+            furnitureTagKeywordId: mode === 'create' ? 'rawCreateFurnitureTagKeyword' : 'rawUpdateFurnitureTagKeyword',
+            furnitureTagDatalistId: mode === 'create' ? 'rawCreateFurnitureTagOptions' : 'rawUpdateFurnitureTagOptions',
+            furnitureTagListId: mode === 'create' ? 'rawCreateSelectedFurnitureTagList' : 'rawUpdateSelectedFurnitureTagList'
+        };
+    }
+
+    function loadRawFurnitureOptionsByType(furnitureTypeId, mode) {
+        const accessToken = localStorage.getItem('accessToken');
+        const state = getInlineRawMappingState(mode);
+        const selectElement = document.getElementById(state.furnitureSelectId);
+        if (!selectElement) return;
+
+        state.setFurnitureLookup([]);
+        selectElement.disabled = true;
+        selectElement.innerHTML = '<option value="" selected>하위가구를 불러오는 중...</option>';
+
+        if (!accessToken || !furnitureTypeId) {
+            selectElement.innerHTML = '<option value="" selected>상위가구를 먼저 선택하세요</option>';
+            return;
+        }
+
+        fetch(`/api/v1/admin/furniture/types/${furnitureTypeId}/furnitures`, {
+            method: 'GET',
+            headers: {'Authorization': 'Bearer ' + accessToken, 'Content-Type': 'application/json'}
+        })
+            .then(response => response.json())
+            .then(data => {
+                const furnitures = data?.data?.furnitures;
+                if (!Array.isArray(furnitures)) {
+                    selectElement.innerHTML = '<option value="" selected>하위가구를 불러오지 못했습니다</option>';
+                    return;
+                }
+
+                state.setFurnitureLookup(furnitures);
+                selectElement.disabled = furnitures.length === 0;
+                selectElement.innerHTML = furnitures.length === 0
+                    ? '<option value="" selected>선택 가능한 하위가구가 없습니다</option>'
+                    : '<option value="" selected disabled>하위가구 선택...</option>' + furnitures.map(furniture => `
+                        <option value="${furniture.furnitureId}">
+                            ${escapeHtml(furniture.furnitureNameKr)} (ID: ${furniture.furnitureId})
+                        </option>
+                    `).join('');
+            })
+            .catch(error => {
+                console.error('Error loading raw furniture options by type:', error);
+                selectElement.innerHTML = '<option value="" selected>하위가구 로딩 실패</option>';
+            });
+    }
+
+    function addSelectedRawFurniture(mode) {
+        const state = getInlineRawMappingState(mode);
+        const selectElement = document.getElementById(state.furnitureSelectId);
+        const furnitureId = parseNumberValue(selectElement?.value);
+        if (!furnitureId) return;
+
+        const furniture = state.furnitureLookup.find(item => Number(item.furnitureId) === furnitureId);
+        if (!furniture) return;
+
+        const next = [...state.selectedFurnitures];
+        if (!next.some(item => Number(item.furnitureId) === furnitureId)) {
+            next.push(furniture);
+        }
+        state.setSelectedFurnitures(next);
+        markRawMappingChanged(mode, 'furniture');
+        renderInlineRawSelectedFurnitures(mode);
+    }
+
+    function removeSelectedRawFurniture(mode, furnitureId) {
+        const state = getInlineRawMappingState(mode);
+        state.setSelectedFurnitures(state.selectedFurnitures.filter(item => Number(item.furnitureId) !== Number(furnitureId)));
+        markRawMappingChanged(mode, 'furniture');
+        renderInlineRawSelectedFurnitures(mode);
+    }
+
+    function renderInlineRawSelectedFurnitures(mode) {
+        const state = getInlineRawMappingState(mode);
+        const container = document.getElementById(state.furnitureListId);
+        if (!container) return;
+
+        if (state.selectedFurnitures.length === 0) {
+            container.classList.add('is-empty');
+            container.innerHTML = '선택된 하위가구가 없습니다.';
+            return;
+        }
+
+        container.classList.remove('is-empty');
+        container.innerHTML = state.selectedFurnitures.map(furniture => `
+            <span class="raw-tag-selected-chip">
+                ${escapeHtml(furniture.furnitureNameKr || '-')}
+                <small>#${furniture.furnitureId}</small>
+                <button type="button" class="btn-close btn-close-white ms-2" aria-label="삭제" onclick="removeSelectedRawFurniture('${mode}', ${furniture.furnitureId})"></button>
+            </span>
+        `).join('');
+    }
+
+    function loadInlineRawFurnitureTagOptionsByType(furnitureTypeId, mode) {
+        const accessToken = localStorage.getItem('accessToken');
+        const state = getInlineRawMappingState(mode);
+        const keywordInput = document.getElementById(state.furnitureTagKeywordId);
+        const datalistElement = document.getElementById(state.furnitureTagDatalistId);
+        if (!keywordInput || !datalistElement) return;
+
+        state.setFurnitureTagLookup([]);
+        keywordInput.value = '';
+        keywordInput.disabled = true;
+        keywordInput.placeholder = 'Furniture Tag를 불러오는 중...';
+        datalistElement.innerHTML = '';
+
+        if (!accessToken || !furnitureTypeId) {
+            keywordInput.placeholder = '가구 타입을 먼저 선택하세요';
+            return;
+        }
+
+        fetch(`/api/v1/admin/furniture/types/${furnitureTypeId}/tags`, {
+            method: 'GET',
+            headers: {'Authorization': 'Bearer ' + accessToken, 'Content-Type': 'application/json'}
+        })
+            .then(response => response.json())
+            .then(data => {
+                const furnitureTags = data?.data?.furnitureTags;
+                if (!Array.isArray(furnitureTags)) {
+                    keywordInput.placeholder = 'Furniture Tag를 불러오지 못했습니다.';
+                    return;
+                }
+
+                state.setFurnitureTagLookup(furnitureTags);
+                keywordInput.disabled = furnitureTags.length === 0;
+                keywordInput.placeholder = furnitureTags.length === 0
+                    ? '선택한 가구 타입에 연결된 furniture_tag가 없습니다.'
+                    : '가구명, 태그명, furnitureTag ID로 검색하세요.';
+                datalistElement.innerHTML = furnitureTags
+                    .map(option => `<option value="${escapeHtml(formatRawFurnitureTagOptionLabel(option))}"></option>`)
+                    .join('');
+            })
+            .catch(error => {
+                console.error('Error loading inline raw furniture tag options:', error);
+                keywordInput.placeholder = 'Furniture Tag 로딩 실패';
+            });
+    }
+
+    function resolveInlineRawFurnitureTagSelection(value, mode) {
+        const state = getInlineRawMappingState(mode);
+        const normalizedValue = (value || '').trim();
+        if (!normalizedValue) return null;
+
+        const matchedByLabel = state.furnitureTagLookup.find(tag => formatRawFurnitureTagOptionLabel(tag) === normalizedValue);
+        if (matchedByLabel) return matchedByLabel;
+
+        const matchedById = state.furnitureTagLookup.find(tag => String(tag.furnitureTagId) === normalizedValue);
+        if (matchedById) return matchedById;
+
+        const normalizedKeyword = normalizedValue.toLowerCase();
+        return state.furnitureTagLookup.find(tag =>
+            (tag.furnitureNameKr || '').toLowerCase() === normalizedKeyword
+            || (tag.tagNameKr || '').toLowerCase() === normalizedKeyword
+            || (tag.searchKeyword || '').toLowerCase() === normalizedKeyword
+            || (`${tag.furnitureNameKr || ''} / ${getRawFurnitureTagDisplayName(tag)}`).toLowerCase() === normalizedKeyword
+        ) || null;
+    }
+
+    function addSelectedRawFurnitureTag(mode) {
+        const state = getInlineRawMappingState(mode);
+        const keywordInput = document.getElementById(state.furnitureTagKeywordId);
+        const selectedTag = resolveInlineRawFurnitureTagSelection(keywordInput?.value, mode);
+        if (!selectedTag) return;
+
+        const next = [...state.selectedFurnitureTags];
+        if (!next.some(item => Number(item.furnitureTagId) === Number(selectedTag.furnitureTagId))) {
+            next.push(selectedTag);
+        }
+        state.setSelectedFurnitureTags(next);
+        markRawMappingChanged(mode, 'furnitureTag');
+        if (keywordInput) keywordInput.value = '';
+        renderInlineRawSelectedFurnitureTags(mode);
+    }
+
+    function removeSelectedRawFurnitureTag(mode, furnitureTagId) {
+        const state = getInlineRawMappingState(mode);
+        state.setSelectedFurnitureTags(state.selectedFurnitureTags.filter(item => Number(item.furnitureTagId) !== Number(furnitureTagId)));
+        markRawMappingChanged(mode, 'furnitureTag');
+        renderInlineRawSelectedFurnitureTags(mode);
+    }
+
+    function markRawMappingChanged(mode, mappingType) {
+        if (mode !== 'update') return;
+
+        const checkboxId = mappingType === 'furniture'
+            ? 'rawUpdateFurnitureMappingEnabled'
+            : 'rawUpdateFurnitureTagMappingEnabled';
+        const checkbox = document.getElementById(checkboxId);
+        if (checkbox) checkbox.checked = true;
+    }
+
+    function collectPendingRawMappingSelections(mode) {
+        const state = getInlineRawMappingState(mode);
+        const furnitureSelect = document.getElementById(state.furnitureSelectId);
+        if (parseNumberValue(furnitureSelect?.value)) {
+            addSelectedRawFurniture(mode);
+        }
+
+        const keywordInput = document.getElementById(state.furnitureTagKeywordId);
+        if (parseStringValue(keywordInput?.value)) {
+            addSelectedRawFurnitureTag(mode);
+        }
+    }
+
+    function resetInlineRawMappingInputs(mode) {
+        const state = getInlineRawMappingState(mode);
+
+        state.setFurnitureLookup([]);
+        state.setFurnitureTagLookup([]);
+
+        const furnitureTypeSelect = document.getElementById(mode === 'create' ? 'rawCreateFurnitureTypeId' : 'rawUpdateFurnitureTypeId');
+        const furnitureSelect = document.getElementById(state.furnitureSelectId);
+        const furnitureTagTypeSelect = document.getElementById(mode === 'create' ? 'rawCreateFurnitureTagTypeId' : 'rawUpdateFurnitureTagTypeId');
+        const keywordInput = document.getElementById(state.furnitureTagKeywordId);
+        const datalistElement = document.getElementById(state.furnitureTagDatalistId);
+
+        if (furnitureTypeSelect) furnitureTypeSelect.value = '';
+        if (furnitureSelect) {
+            furnitureSelect.disabled = true;
+            furnitureSelect.innerHTML = '<option value="" selected>상위가구를 먼저 선택하세요</option>';
+        }
+        if (furnitureTagTypeSelect) furnitureTagTypeSelect.value = '';
+        if (keywordInput) {
+            keywordInput.value = '';
+            keywordInput.disabled = true;
+            keywordInput.placeholder = '가구 타입을 먼저 선택하세요';
+        }
+        if (datalistElement) datalistElement.innerHTML = '';
+    }
+
+    function renderInlineRawSelectedFurnitureTags(mode) {
+        const state = getInlineRawMappingState(mode);
+        const container = document.getElementById(state.furnitureTagListId);
+        if (!container) return;
+
+        if (state.selectedFurnitureTags.length === 0) {
+            container.classList.add('is-empty');
+            container.innerHTML = '선택된 Furniture Tag가 없습니다.';
+            return;
+        }
+
+        container.classList.remove('is-empty');
+        container.innerHTML = state.selectedFurnitureTags.map(tag => `
+            <span class="raw-tag-selected-chip">
+                ${escapeHtml(tag.furnitureNameKr || '-')} / ${escapeHtml(getRawFurnitureTagDisplayName(tag))}
+                <small>#${tag.furnitureTagId}</small>
+                <button type="button" class="btn-close btn-close-white ms-2" aria-label="삭제" onclick="removeSelectedRawFurnitureTag('${mode}', ${tag.furnitureTagId})"></button>
+            </span>
+        `).join('');
     }
 
     function displayFurnituresAsTable(data, resultDiv) {
@@ -4467,8 +4917,12 @@
             return '-';
         }
         return furnitureTags
-            .map(tag => `${tag.furnitureNameKr || '-'} / ${tag.tagNameKr || '-'} (#${tag.furnitureTagId})`)
+            .map(tag => `${tag.furnitureNameKr || '-'} / ${getRawFurnitureTagDisplayName(tag)} (#${tag.furnitureTagId})`)
             .join('\n');
+    }
+
+    function getRawFurnitureTagDisplayName(tag) {
+        return tag?.tagNameKr || tag?.searchKeyword || `FurnitureTag #${tag?.furnitureTagId ?? '-'}`;
     }
 
     function toggleRawChipSection(sectionId, button) {
@@ -4514,8 +4968,8 @@
         };
 
         const chips = labels.length === 0
-            ? `<span class="raw-chip raw-chip--muted">${emptyText}</span>`
-            : labels.map(item => `<span class="raw-chip">${getDotHtml(item)}${item}</span>`).join('');
+            ? `<span class="raw-chip raw-chip--muted">${escapeHtml(emptyText)}</span>`
+            : labels.map(item => `<span class="raw-chip">${getDotHtml(item)}${escapeHtml(item)}</span>`).join('');
             
         const toggleButton = collapsed
             ? `<button type="button" class="btn btn-sm btn-link p-0 ms-2 text-decoration-none" onclick="toggleRawChipSection('${sectionId}', this)">더보기</button>`
@@ -4524,7 +4978,7 @@
         return `
             <div class="raw-chip-section">
                 <div class="raw-chip-header d-flex align-items-center mb-2">
-                    <span class="raw-chip-title fw-bold small text-muted text-uppercase letter-spacing-1">${title}</span>
+                    <span class="raw-chip-title fw-bold small text-muted text-uppercase letter-spacing-1">${escapeHtml(title)}</span>
                     ${toggleButton}
                 </div>
                 <div id="${sectionId}" class="raw-chip-stack ${collapsed ? 'is-collapsed' : ''}">
@@ -4555,8 +5009,12 @@
             ? product.colors.map(color => color.clientColorName || color.rawColorName || `ID:${color.id}`)
             : [];
         const tagLabels = Array.isArray(product.furnitureTags)
-            ? product.furnitureTags.map(tag => `${tag.furnitureNameKr || '-'} / ${tag.tagNameKr || '-'} (#${tag.furnitureTagId})`)
+            ? product.furnitureTags.map(tag => `${tag.furnitureNameKr || '-'} / ${getRawFurnitureTagDisplayName(tag)} (#${tag.furnitureTagId})`)
             : [];
+        const furnitureLabels = Array.isArray(product.furnitures)
+            ? product.furnitures.map(furniture => `${furniture.furnitureTypeNameKr || '-'} / ${furniture.furnitureNameKr || '-'} (#${furniture.furnitureId})`)
+            : [];
+        const cardTagLabels = tagLabels.length > 0 ? tagLabels : furnitureLabels;
 
         return `
             <article class="raw-product-card">
@@ -4605,7 +5063,7 @@
                             ${buildRawChipSection('Colors', colorLabels, '없음', `raw-colors-${product.id}`)}
                         </div>
                         <div class="col-6">
-                            ${buildRawChipSection('Tags', tagLabels, '없음', `raw-tags-${product.id}`)}
+                            ${buildRawChipSection('Tags', cardTagLabels, '없음', `raw-tags-${product.id}`)}
                         </div>
                     </div>
                 </div>
@@ -4970,6 +5428,28 @@
         document.getElementById('rawUpdateFetchedAt').value = formatDateTimeLocalValue(product.fetchedAt);
         document.getElementById('rawUpdateColors').value = formatRawProductColorsForInput(product.colors);
         document.getElementById('rawUpdateColorsEnabled').checked = true;
+        rawUpdateSelectedFurnitures = Array.isArray(product.furnitures)
+            ? product.furnitures.map(furniture => ({
+                furnitureId: furniture.furnitureId,
+                furnitureNameKr: furniture.furnitureNameKr,
+                furnitureNameEng: furniture.furnitureNameEng
+            }))
+            : [];
+        rawUpdateSelectedFurnitureTags = Array.isArray(product.furnitureTags)
+            ? product.furnitureTags.map(tag => ({
+                furnitureTagId: tag.furnitureTagId,
+                furnitureNameKr: tag.furnitureNameKr,
+                tagNameKr: tag.tagNameKr,
+                searchKeyword: tag.searchKeyword,
+                furnitureTypeId: tag.furnitureTypeId,
+                furnitureTypeNameKr: tag.furnitureTypeNameKr
+            }))
+            : [];
+        resetInlineRawMappingInputs('update');
+        document.getElementById('rawUpdateFurnitureMappingEnabled').checked = false;
+        document.getElementById('rawUpdateFurnitureTagMappingEnabled').checked = false;
+        renderInlineRawSelectedFurnitures('update');
+        renderInlineRawSelectedFurnitureTags('update');
     }
 
     function populateRawProductFurnitureTagForm(product) {
@@ -5001,14 +5481,14 @@
                 ${furnitureTags.map(tag => `
                     <div class="raw-mapping-item">
                         <div>
-                            <div class="raw-mapping-item__title">${tag.furnitureTypeNameKr || '-'} / ${tag.furnitureNameKr || '-'} / ${tag.tagNameKr || '-'}</div>
+                            <div class="raw-mapping-item__title">${escapeHtml(tag.furnitureTypeNameKr || '-')} / ${escapeHtml(tag.furnitureNameKr || '-')} / ${escapeHtml(getRawFurnitureTagDisplayName(tag))}</div>
                             <div class="raw-mapping-item__meta">
                                 mapping #${tag.mappingId} · furnitureTag #${tag.furnitureTagId} · priority ${tag.priority ?? '-'}<br>
-                                searchKeyword: ${tag.searchKeyword || '-'}
+                                searchKeyword: ${escapeHtml(tag.searchKeyword || '-')}
                             </div>
                         </div>
                         <div class="raw-mapping-item__actions">
-                            <button type="button" class="btn btn-sm btn-outline-warning" onclick="fillRawProductFurnitureTagUpdate(${product.id}, ${tag.mappingId}, ${tag.furnitureTagId}, ${tag.furnitureTypeId ?? 'null'}, '${escapeSingleQuotedString(tag.furnitureTypeNameKr || '')}', '${escapeSingleQuotedString(tag.furnitureNameKr || '')}', '${escapeSingleQuotedString(tag.tagNameKr || '')}')">수정 대상으로 선택</button>
+                            <button type="button" class="btn btn-sm btn-outline-warning" onclick="fillRawProductFurnitureTagUpdate(${product.id}, ${tag.mappingId}, ${tag.furnitureTagId}, ${tag.furnitureTypeId ?? 'null'}, '${escapeSingleQuotedString(tag.furnitureTypeNameKr || '')}', '${escapeSingleQuotedString(tag.furnitureNameKr || '')}', '${escapeSingleQuotedString(getRawFurnitureTagDisplayName(tag))}')">수정 대상으로 선택</button>
                             <button type="button" class="btn btn-sm btn-outline-danger" onclick="deleteRawProductFurnitureTagById(${product.id}, ${tag.mappingId})">삭제</button>
                         </div>
                     </div>
@@ -5025,7 +5505,10 @@
             ? product.colors.map(color => color.clientColorName || color.rawColorName || `ID:${color.id}`)
             : [];
         const tagLabels = Array.isArray(product.furnitureTags)
-            ? product.furnitureTags.map(tag => `${tag.furnitureNameKr || '-'} / ${tag.tagNameKr || '-'} (#${tag.furnitureTagId})`)
+            ? product.furnitureTags.map(tag => `${tag.furnitureNameKr || '-'} / ${getRawFurnitureTagDisplayName(tag)} (#${tag.furnitureTagId})`)
+            : [];
+        const furnitureLabels = Array.isArray(product.furnitures)
+            ? product.furnitures.map(furniture => `${furniture.furnitureTypeNameKr || '-'} / ${furniture.furnitureNameKr || '-'} (#${furniture.furnitureId})`)
             : [];
 
         return `
@@ -5122,6 +5605,9 @@
                             <div class="mb-4">
                                 ${buildRawChipSection('보유 컬러 속성', colorLabels, '매핑된 컬러 없음', `raw-detail-colors-${product.id}`)}
                             </div>
+                            <div class="mb-4">
+                                ${buildRawChipSection('연결된 하위가구', furnitureLabels, '매핑된 하위가구 없음', `raw-detail-furnitures-${product.id}`)}
+                            </div>
                             <div>
                                 ${buildRawChipSection('연결된 가구 태그', tagLabels, '매핑된 태그 없음', `raw-detail-tags-${product.id}`)}
                             </div>
@@ -5199,15 +5685,15 @@
         preview.classList.remove('is-empty');
         preview.innerHTML = `
             <span class="raw-tag-selected-chip">
-                ${tag.furnitureNameKr} / ${tag.tagNameKr}
+                ${escapeHtml(tag.furnitureNameKr || '-')} / ${escapeHtml(getRawFurnitureTagDisplayName(tag))}
                 <small>#${tag.furnitureTagId}</small>
             </span>
-            <span>${tag.furnitureTypeNameKr ? `가구 타입: ${tag.furnitureTypeNameKr}` : '선택 완료'}</span>
+            <span>${tag.furnitureTypeNameKr ? `가구 타입: ${escapeHtml(tag.furnitureTypeNameKr)}` : '선택 완료'}</span>
         `;
     }
 
     function formatRawFurnitureTagOptionLabel(tag) {
-        return `${tag.furnitureNameKr} / ${tag.tagNameKr} (FT#${tag.furnitureTagId})`;
+        return `${tag.furnitureNameKr || '-'} / ${getRawFurnitureTagDisplayName(tag)} (FT#${tag.furnitureTagId})`;
     }
 
     function resolveRawFurnitureTagSelection(value) {
@@ -5233,7 +5719,8 @@
         const matchedByKeyword = rawFurnitureTagLookup.find(tag =>
             (tag.furnitureNameKr || '').toLowerCase() === normalizedKeyword
             || (tag.tagNameKr || '').toLowerCase() === normalizedKeyword
-            || (`${tag.furnitureNameKr || ''} / ${tag.tagNameKr || ''}`).toLowerCase() === normalizedKeyword
+            || (tag.searchKeyword || '').toLowerCase() === normalizedKeyword
+            || (`${tag.furnitureNameKr || ''} / ${getRawFurnitureTagDisplayName(tag)}`).toLowerCase() === normalizedKeyword
         );
         if (matchedByKeyword) {
             setRawFurnitureTagSelection(matchedByKeyword);
@@ -5517,7 +6004,9 @@
             freeShippingCondition: parseNumberValue(getOptionalInputValue('rawCreateFreeShippingCondition')),
             isExposed: parseBooleanValue(document.getElementById('rawCreateIsExposed').value),
             fetchedAt: parseStringValue(getOptionalInputValue('rawCreateFetchedAt')),
-            colors: parseRawProductColorRequests(document.getElementById('rawCreateColors').value)
+            colors: parseRawProductColorRequests(document.getElementById('rawCreateColors').value),
+            furnitureIds: rawCreateSelectedFurnitures.map(furniture => furniture.furnitureId),
+            furnitureTagIds: rawCreateSelectedFurnitureTags.map(tag => tag.furnitureTagId)
         };
     }
 
@@ -5539,6 +6028,8 @@
         const isExposed = parseBooleanValue(document.getElementById('rawUpdateIsExposed').value);
         const fetchedAt = parseStringValue(document.getElementById('rawUpdateFetchedAt').value);
         const colorsEnabled = document.getElementById('rawUpdateColorsEnabled').checked;
+        const furnitureMappingEnabled = document.getElementById('rawUpdateFurnitureMappingEnabled').checked;
+        const furnitureTagMappingEnabled = document.getElementById('rawUpdateFurnitureTagMappingEnabled').checked;
 
         if (source !== null) payload.source = source;
         if (category !== null) payload.category = category;
@@ -5556,6 +6047,8 @@
         if (isExposed !== null) payload.isExposed = isExposed;
         if (fetchedAt !== null) payload.fetchedAt = fetchedAt;
         if (colorsEnabled) payload.colors = parseRawProductColorRequests(document.getElementById('rawUpdateColors').value);
+        if (furnitureMappingEnabled) payload.furnitureIds = rawUpdateSelectedFurnitures.map(furniture => furniture.furnitureId);
+        if (furnitureTagMappingEnabled) payload.furnitureTagIds = rawUpdateSelectedFurnitureTags.map(tag => tag.furnitureTagId);
 
         return payload;
     }

@@ -43,7 +43,7 @@ public class FurnitureTagRepositoryImpl implements FurnitureTagRepositoryCustom 
                 .selectFrom(furnitureTag)
                 .join(furnitureTag.furniture, furniture).fetchJoin()
                 .join(furniture.furnitureType, furnitureType).fetchJoin()
-                .join(furnitureTag.tag, tag).fetchJoin()
+                .leftJoin(furnitureTag.tag, tag).fetchJoin()
                 .where(furnitureType.id.eq(furnitureTypeId))
                 .orderBy(
                         furniture.furnitureNameKr.asc(),

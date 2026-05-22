@@ -24,11 +24,13 @@ public record AdminCurationRawProductResponse(
         LocalDateTime fetchedAt,
         Boolean isExposed,
         List<AdminCurationRawProductColorResponse> colors,
+        List<AdminCurationRawProductFurnitureResponse> furnitures,
         List<AdminCurationRawProductFurnitureTagResponse> furnitureTags
 ) {
     public static AdminCurationRawProductResponse of(
             CurationRawProduct rawProduct,
             List<AdminCurationRawProductColorResponse> colors,
+            List<AdminCurationRawProductFurnitureResponse> furnitures,
             List<AdminCurationRawProductFurnitureTagResponse> furnitureTags
     ) {
         return new AdminCurationRawProductResponse(
@@ -49,6 +51,7 @@ public record AdminCurationRawProductResponse(
                 rawProduct.getFetchedAt(),
                 rawProduct.getIsExposed(),
                 colors,
+                furnitures,
                 furnitureTags
         );
     }

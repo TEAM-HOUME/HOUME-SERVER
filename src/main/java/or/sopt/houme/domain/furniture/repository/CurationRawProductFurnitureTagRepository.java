@@ -19,7 +19,7 @@ public interface CurationRawProductFurnitureTagRepository extends JpaRepository<
             from CurationRawProductFurnitureTag mapping
             join fetch mapping.furnitureTag furnitureTag
             join fetch furnitureTag.furniture furniture
-            join fetch furnitureTag.tag tag
+            left join fetch furnitureTag.tag tag
             where mapping.curationRawProduct.id in :rawProductIds
             """)
     List<CurationRawProductFurnitureTag> findAllByCurationRawProductIdInWithFurnitureTag(

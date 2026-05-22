@@ -13,9 +13,11 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.test.util.ReflectionTestUtils;
 import or.sopt.houme.domain.furniture.model.entity.CurationRawProduct;
 import or.sopt.houme.domain.furniture.model.entity.CurationRawProductColor;
+import or.sopt.houme.domain.furniture.model.entity.CurationRawProductFurniture;
 import or.sopt.houme.domain.furniture.model.entity.CurationRawProductFurnitureTag;
 import or.sopt.houme.domain.furniture.model.entity.Furniture;
 import or.sopt.houme.domain.furniture.model.entity.FurnitureTag;
+import or.sopt.houme.domain.furniture.model.entity.FurnitureType;
 import or.sopt.houme.domain.furniture.model.entity.SoozipCategory;
 import or.sopt.houme.domain.furniture.presentation.dto.request.AdminCurationRawProductColorRequest;
 import or.sopt.houme.domain.furniture.presentation.dto.request.AdminCurationRawProductCreateRequest;
@@ -27,8 +29,10 @@ import or.sopt.houme.domain.furniture.presentation.dto.response.AdminCurationRaw
 import or.sopt.houme.domain.furniture.presentation.dto.response.AdminCurationRawProductListResponse;
 import or.sopt.houme.domain.furniture.presentation.dto.response.AdminCurationRawProductResponse;
 import or.sopt.houme.domain.furniture.repository.CurationRawProductColorRepository;
+import or.sopt.houme.domain.furniture.repository.CurationRawProductFurnitureRepository;
 import or.sopt.houme.domain.furniture.repository.CurationRawProductFurnitureTagRepository;
 import or.sopt.houme.domain.furniture.repository.CurationRawProductRepository;
+import or.sopt.houme.domain.furniture.repository.FurnitureRepository;
 import or.sopt.houme.domain.furniture.repository.FurnitureTagRepository;
 import or.sopt.houme.domain.house.model.taste.entity.Tag;
 import org.springframework.context.ApplicationEventPublisher;
@@ -62,7 +66,13 @@ class AdminCurationRawProductServiceImplTest {
     private CurationRawProductColorRepository curationRawProductColorRepository;
 
     @Mock
+    private CurationRawProductFurnitureRepository curationRawProductFurnitureRepository;
+
+    @Mock
     private CurationRawProductFurnitureTagRepository curationRawProductFurnitureTagRepository;
+
+    @Mock
+    private FurnitureRepository furnitureRepository;
 
     @Mock
     private FurnitureTagRepository furnitureTagRepository;
@@ -81,6 +91,8 @@ class AdminCurationRawProductServiceImplTest {
         when(curationRawProductRepository.findAllByFilters(any(), any(), any(), any(Pageable.class)))
                 .thenReturn(new PageImpl<>(List.of(rawProduct)));
         when(curationRawProductColorRepository.findAllByCurationRawProductIdIn(anyList())).thenReturn(List.of());
+        when(curationRawProductFurnitureRepository.findAllByCurationRawProductIdInWithFurniture(anyList()))
+                .thenReturn(List.of());
         when(curationRawProductFurnitureTagRepository.findAllByCurationRawProductIdInWithFurnitureTag(anyList()))
                 .thenReturn(List.of());
 
@@ -131,7 +143,9 @@ class AdminCurationRawProductServiceImplTest {
                 List.of(
                         new AdminCurationRawProductColorRequest("우드", "우드"),
                         new AdminCurationRawProductColorRequest("화이트", "화이트")
-                )
+                ),
+                List.of(5L),
+                List.of(11L)
         );
 
         when(curationRawProductRepository.findBySourceAndCategoryAndProductId("soozip", SoozipCategory.FURNITURE, 1001L))
@@ -141,8 +155,12 @@ class AdminCurationRawProductServiceImplTest {
                     CurationRawProduct saved = invocation.getArgument(0);
                     ReflectionTestUtils.setField(saved, "id", 10L);
                     return saved;
-                });
+        });
         when(curationRawProductColorRepository.findAllByCurationRawProductIdIn(anyList())).thenReturn(List.of());
+        when(furnitureRepository.findAllById(any())).thenReturn(List.of(furniture(5L, "싱글 침대")));
+        when(furnitureTagRepository.findAllById(any())).thenReturn(List.of(furnitureTag(11L)));
+        when(curationRawProductFurnitureRepository.findAllByCurationRawProductIdInWithFurniture(anyList()))
+                .thenReturn(List.of());
         when(curationRawProductFurnitureTagRepository.findAllByCurationRawProductIdInWithFurnitureTag(anyList()))
                 .thenReturn(List.of());
 
@@ -154,6 +172,12 @@ class AdminCurationRawProductServiceImplTest {
         assertEquals("테스트 침대", response.productName());
         assertFalse(response.isExposed());
         verify(curationRawProductRepository).saveAndFlush(any(CurationRawProduct.class));
+        verify(curationRawProductFurnitureRepository).saveAll(argThat(mappings ->
+                iterableHasOnlyInstances(mappings, CurationRawProductFurniture.class, 1)
+        ));
+        verify(curationRawProductFurnitureTagRepository).saveAll(argThat(mappings ->
+                iterableHasOnlyInstances(mappings, CurationRawProductFurnitureTag.class, 1)
+        ));
         verify(curationRawProductColorRepository).saveAll(argThat(colors ->
                 colors instanceof List<?>
                         && ((List<?>) colors).size() == 2
@@ -172,6 +196,8 @@ class AdminCurationRawProductServiceImplTest {
                 "https://soozip.co.kr/product/1001",
                 "테스트 침대",
                 "SOOZIP",
+                null,
+                null,
                 null,
                 null,
                 null,
@@ -215,6 +241,8 @@ class AdminCurationRawProductServiceImplTest {
                 null,
                 null,
                 null,
+                null,
+                null,
                 null
         );
 
@@ -222,7 +250,7 @@ class AdminCurationRawProductServiceImplTest {
         when(curationRawProductRepository.findBySourceAndCategoryAndProductId("soozip", SoozipCategory.FURNITURE, 4004L))
                 .thenReturn(Optional.empty());
         when(curationRawProductRepository.saveAndFlush(rawProduct))
-                .thenThrow(new DataIntegrityViolationException("duplicate"));
+                .thenThrow(new DataIntegrityViolationException("constraint [uk_raw_source_category_product_id]"));
 
         GeneralException exception = assertThrows(
                 GeneralException.class,
@@ -255,7 +283,9 @@ class AdminCurationRawProductServiceImplTest {
                 List.of(
                         new AdminCurationRawProductColorRequest("블랙", "블랙"),
                         new AdminCurationRawProductColorRequest("베이지", "베이지")
-                )
+                ),
+                null,
+                null
         );
 
         when(curationRawProductRepository.findById(10L)).thenReturn(Optional.of(rawProduct));
@@ -263,6 +293,8 @@ class AdminCurationRawProductServiceImplTest {
                 .thenReturn(Optional.of(rawProduct));
         when(curationRawProductRepository.saveAndFlush(rawProduct)).thenReturn(rawProduct);
         when(curationRawProductColorRepository.findAllByCurationRawProductIdIn(anyList())).thenReturn(List.of());
+        when(curationRawProductFurnitureRepository.findAllByCurationRawProductIdInWithFurniture(anyList()))
+                .thenReturn(List.of());
         when(curationRawProductFurnitureTagRepository.findAllByCurationRawProductIdInWithFurnitureTag(anyList()))
                 .thenReturn(List.of());
 
@@ -417,5 +449,32 @@ class AdminCurationRawProductServiceImplTest {
                 .build();
         ReflectionTestUtils.setField(furnitureTag, "id", furnitureTagId);
         return furnitureTag;
+    }
+
+    private Furniture furniture(Long furnitureId, String furnitureNameKr) {
+        FurnitureType furnitureType = FurnitureType.builder()
+                .nameKr("침대")
+                .nameEng("BED")
+                .build();
+        ReflectionTestUtils.setField(furnitureType, "id", 3L);
+
+        Furniture furniture = Furniture.builder()
+                .furnitureNameKr(furnitureNameKr)
+                .furnitureNameEng("SINGLE_BED")
+                .furnitureType(furnitureType)
+                .build();
+        ReflectionTestUtils.setField(furniture, "id", furnitureId);
+        return furniture;
+    }
+
+    private boolean iterableHasOnlyInstances(Iterable<?> values, Class<?> type, int expectedSize) {
+        int count = 0;
+        for (Object value : values) {
+            if (!type.isInstance(value)) {
+                return false;
+            }
+            count++;
+        }
+        return count == expectedSize;
     }
 }
