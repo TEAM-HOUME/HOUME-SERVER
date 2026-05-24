@@ -727,6 +727,26 @@
             border: 1px dashed #cbd5e1;
             font-style: italic;
         }
+        .raw-color-selected-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 10px;
+            border-radius: 999px;
+            background: #f8fafc;
+            border: 1px solid #cbd5e1;
+            color: #334155;
+            font-size: 0.85rem;
+            font-weight: 700;
+        }
+        .raw-color-selected-chip .btn-close {
+            width: 0.55rem;
+            height: 0.55rem;
+            padding: 0.15rem;
+        }
+        .raw-color-option-error {
+            display: none;
+        }
         .floor-plan-image-stack {
             display: grid;
             gap: 12px;
@@ -1240,9 +1260,16 @@
                             <input type="text" class="form-control" id="rawCreateBrand">
                         </div>
                         <div class="raw-form-field">
-                            <label for="rawCreateColors">Colors</label>
-                            <input type="text" class="form-control" id="rawCreateColors" placeholder="예: 우드, 화이트, 블랙">
-                            <small class="text-muted">쉼표 또는 줄바꿈으로 여러 색상을 입력합니다.</small>
+                            <label for="rawCreateColorSelect">Colors</label>
+                            <div class="input-group">
+                                <select class="form-select" id="rawCreateColorSelect">
+                                    <option value="" selected>색상 선택...</option>
+                                </select>
+                                <button class="btn btn-outline-primary" type="button" id="rawCreateColorAddButton">추가</button>
+                            </div>
+                            <div id="rawCreateSelectedColorList" class="raw-chip-stack mt-2"></div>
+                            <small id="rawCreateColorOptionError" class="text-danger raw-color-option-error">색상 옵션을 불러올 수 없습니다.</small>
+                            <small class="text-muted">표준 색상을 선택하면 RAW 상품 등록과 동시에 색상이 저장됩니다.</small>
                         </div>
                         <div class="raw-form-field">
                             <label for="rawCreateIsExposed">Exposure Status</label>
@@ -1449,13 +1476,20 @@
                                     <input type="text" class="form-control" id="rawUpdateBrand">
                                 </div>
                                 <div class="raw-form-field">
-                                    <label for="rawUpdateColors">Colors</label>
-                                    <input type="text" class="form-control" id="rawUpdateColors" placeholder="예: 우드, 화이트, 블랙">
+                                    <label for="rawUpdateColorSelect">Colors</label>
+                                    <div class="input-group">
+                                        <select class="form-select" id="rawUpdateColorSelect">
+                                            <option value="" selected>색상 선택...</option>
+                                        </select>
+                                        <button class="btn btn-outline-primary" type="button" id="rawUpdateColorAddButton">추가</button>
+                                    </div>
+                                    <div id="rawUpdateSelectedColorList" class="raw-chip-stack mt-2"></div>
+                                    <small id="rawUpdateColorOptionError" class="text-danger raw-color-option-error">색상 옵션을 불러올 수 없습니다.</small>
                                     <div class="form-check mt-2">
                                         <input class="form-check-input" type="checkbox" id="rawUpdateColorsEnabled">
                                         <label class="form-check-label small" for="rawUpdateColorsEnabled">색상 수정 반영</label>
                                     </div>
-                                    <small class="text-muted">체크 후 비워서 저장하면 색상이 전체 삭제됩니다.</small>
+                                    <small class="text-muted">체크 후 선택된 색상이 없으면 색상이 전체 삭제됩니다.</small>
                                 </div>
                                 <div class="raw-form-field">
                                     <label for="rawUpdateIsExposed">Exposure Status</label>
@@ -2017,6 +2051,10 @@
     let rawCreateSelectedFurnitureTags = [];
     let rawUpdateSelectedFurnitures = [];
     let rawUpdateSelectedFurnitureTags = [];
+    let rawColorOptions = [];
+    let rawCreateSelectedColors = [];
+    let rawUpdateSelectedColors = [];
+    let rawColorOptionsLoadFailed = false;
     let rawProductsFilterState = {
         category: null,
         minListPrice: null,
@@ -2073,6 +2111,7 @@
         initializeStyleManagement();
         initializeFloorPlanManagement();
         populateRawFurnitureTypeDropdownForRawMapping();
+        loadRawColorOptions();
 
         // Sidebar navigation
         document.querySelectorAll('#sidebar .nav-link').forEach(link => {
@@ -2602,6 +2641,16 @@
 
         document.getElementById('rawUpdateFurnitureTagTypeId').addEventListener('change', function(event) {
             loadInlineRawFurnitureTagOptionsByType(event.target.value, 'update');
+        });
+
+        document.getElementById('rawCreateColorAddButton').addEventListener('click', function() {
+            addSelectedRawColor('create');
+        });
+
+        document.getElementById('rawUpdateColorAddButton').addEventListener('click', function() {
+            if (addSelectedRawColor('update')) {
+                document.getElementById('rawUpdateColorsEnabled').checked = true;
+            }
         });
 
         document.getElementById('rawCreateFurnitureTagKeyword').addEventListener('change', function(event) {
@@ -4555,6 +4604,182 @@
             .catch(error => console.error('Error populating raw furniture type dropdown:', error));
     }
 
+    function loadRawColorOptions() {
+        const accessToken = localStorage.getItem('accessToken');
+        if (!accessToken) return;
+
+        fetch('/api/v1/admin/curation-raw-products/color-options', {
+            method: 'GET',
+            headers: {'Authorization': 'Bearer ' + accessToken, 'Content-Type': 'application/json'}
+        })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('색상 옵션 조회 실패');
+                }
+                return response.json();
+            })
+            .then(data => {
+                rawColorOptions = Array.isArray(data.data) ? data.data : [];
+                rawColorOptionsLoadFailed = false;
+                setRawColorOptionErrorState(false);
+                renderRawColorOptions('create');
+                renderRawColorOptions('update');
+                renderSelectedRawColors('create');
+                renderSelectedRawColors('update');
+            })
+            .catch(error => {
+                console.error('Error loading raw color options:', error);
+                rawColorOptions = [];
+                rawColorOptionsLoadFailed = true;
+                setRawColorOptionErrorState(true);
+                renderSelectedRawColors('create');
+                renderSelectedRawColors('update');
+            });
+    }
+
+    function renderRawColorOptions(mode) {
+        const select = document.getElementById(`raw${capitalizeMode(mode)}ColorSelect`);
+        if (!select) return;
+
+        if (rawColorOptionsLoadFailed) {
+            select.innerHTML = '<option value="" selected>색상 옵션 로딩 실패</option>';
+            select.disabled = true;
+            return;
+        }
+
+        const selectedColors = getSelectedRawColors(mode);
+        const selectedLabels = new Set(selectedColors.map(color => color.label));
+        const options = rawColorOptions
+            .map(color => {
+                const disabled = selectedLabels.has(color.label) ? ' disabled' : '';
+                return `<option value="${escapeHtml(color.label)}"${disabled}>${escapeHtml(color.label)}</option>`;
+            })
+            .join('');
+
+        select.innerHTML = `<option value="" selected>색상 선택...</option>${options}`;
+        select.disabled = false;
+    }
+
+    function addSelectedRawColor(mode) {
+        const select = document.getElementById(`raw${capitalizeMode(mode)}ColorSelect`);
+        if (!select || !select.value) return false;
+
+        const color = rawColorOptions.find(option => option.label === select.value) || {
+            label: select.value,
+            value: null
+        };
+        const selectedColors = getSelectedRawColors(mode);
+        if (selectedColors.some(selected => selected.label === color.label)) {
+            select.value = '';
+            return false;
+        }
+
+        selectedColors.push(color);
+        select.value = '';
+        renderRawColorOptions(mode);
+        renderSelectedRawColors(mode);
+        return true;
+    }
+
+    function removeSelectedRawColor(mode, colorLabel) {
+        if (mode === 'create') {
+            rawCreateSelectedColors = rawCreateSelectedColors.filter(color => color.label !== colorLabel);
+        } else {
+            rawUpdateSelectedColors = rawUpdateSelectedColors.filter(color => color.label !== colorLabel);
+            document.getElementById('rawUpdateColorsEnabled').checked = true;
+        }
+        renderRawColorOptions(mode);
+        renderSelectedRawColors(mode);
+    }
+
+    function renderSelectedRawColors(mode) {
+        const container = document.getElementById(`raw${capitalizeMode(mode)}SelectedColorList`);
+        if (!container) return;
+
+        const selectedColors = getSelectedRawColors(mode);
+        if (selectedColors.length === 0) {
+            container.innerHTML = '<span class="raw-chip raw-chip--muted">선택된 색상이 없습니다.</span>';
+            return;
+        }
+
+        container.innerHTML = selectedColors.map(color => `
+            <span class="raw-color-selected-chip">
+                ${buildRawColorDotHtml(color.value)}
+                ${escapeHtml(color.label)}
+                <button type="button" class="btn-close" aria-label="삭제" onclick="removeSelectedRawColor('${mode}', decodeURIComponent('${encodeURIComponent(color.label)}'))"></button>
+            </span>
+        `).join('');
+    }
+
+    function getSelectedRawColors(mode) {
+        return mode === 'create' ? rawCreateSelectedColors : rawUpdateSelectedColors;
+    }
+
+    function setRawColorOptionErrorState(hasError) {
+        ['Create', 'Update'].forEach(modeName => {
+            const select = document.getElementById(`raw${modeName}ColorSelect`);
+            const button = document.getElementById(`raw${modeName}ColorAddButton`);
+            const error = document.getElementById(`raw${modeName}ColorOptionError`);
+            if (select) select.disabled = hasError;
+            if (button) button.disabled = hasError;
+            if (error) error.style.display = hasError ? 'block' : 'none';
+        });
+    }
+
+    function setSelectedRawColors(mode, colors) {
+        const normalizedColors = Array.isArray(colors)
+            ? colors
+                .map(color => normalizeRawColorSelection(color))
+                .filter(color => color.label)
+            : [];
+
+        const uniqueColors = [];
+        const labels = new Set();
+        normalizedColors.forEach(color => {
+            if (!labels.has(color.label)) {
+                labels.add(color.label);
+                uniqueColors.push(color);
+            }
+        });
+
+        if (mode === 'create') {
+            rawCreateSelectedColors = uniqueColors;
+        } else {
+            rawUpdateSelectedColors = uniqueColors;
+        }
+        renderRawColorOptions(mode);
+        renderSelectedRawColors(mode);
+    }
+
+    function normalizeRawColorSelection(color) {
+        const label = parseStringValue(color?.clientColorName || color?.rawColorName || color?.label);
+        const option = rawColorOptions.find(rawColorOption => rawColorOption.label === label);
+        return {
+            label,
+            value: option?.value || color?.value || null
+        };
+    }
+
+    function buildRawProductColorRequests(colors) {
+        return (Array.isArray(colors) ? colors : [])
+            .map(color => parseStringValue(color.label))
+            .filter(Boolean)
+            .map(colorName => ({
+                rawColorName: colorName,
+                clientColorName: colorName
+            }));
+    }
+
+    function buildRawColorDotHtml(hex) {
+        if (!hex) return '';
+        const borderColor = String(hex).toLowerCase() === '#ffffff' ? '#cbd5e1' : 'transparent';
+        return `<span class="raw-color-dot" style="background-color: ${escapeHtml(hex)}; border: 1px solid ${borderColor};"></span>`;
+    }
+
+    function capitalizeMode(mode) {
+        return mode === 'create' ? 'Create' : 'Update';
+    }
+
     function loadRawFurnitureTagOptionsByType(furnitureTypeId, preselectedFurnitureTagId = null) {
         const accessToken = localStorage.getItem('accessToken');
         const keywordInput = document.getElementById('rawFurnitureTagKeyword');
@@ -5426,8 +5651,8 @@
         document.getElementById('rawUpdateFreeShippingCondition').value = product.freeShippingCondition ?? '';
         document.getElementById('rawUpdateIsExposed').value = product.isExposed == null ? '' : String(product.isExposed);
         document.getElementById('rawUpdateFetchedAt').value = formatDateTimeLocalValue(product.fetchedAt);
-        document.getElementById('rawUpdateColors').value = formatRawProductColorsForInput(product.colors);
-        document.getElementById('rawUpdateColorsEnabled').checked = true;
+        setSelectedRawColors('update', product.colors);
+        document.getElementById('rawUpdateColorsEnabled').checked = false;
         rawUpdateSelectedFurnitures = Array.isArray(product.furnitures)
             ? product.furnitures.map(furniture => ({
                 furnitureId: furniture.furnitureId,
@@ -6004,7 +6229,7 @@
             freeShippingCondition: parseNumberValue(getOptionalInputValue('rawCreateFreeShippingCondition')),
             isExposed: parseBooleanValue(document.getElementById('rawCreateIsExposed').value),
             fetchedAt: parseStringValue(getOptionalInputValue('rawCreateFetchedAt')),
-            colors: parseRawProductColorRequests(document.getElementById('rawCreateColors').value),
+            colors: buildRawProductColorRequests(rawCreateSelectedColors),
             furnitureIds: rawCreateSelectedFurnitures.map(furniture => furniture.furnitureId),
             furnitureTagIds: rawCreateSelectedFurnitureTags.map(tag => tag.furnitureTagId)
         };
@@ -6046,37 +6271,11 @@
         if (freeShippingCondition !== null) payload.freeShippingCondition = freeShippingCondition;
         if (isExposed !== null) payload.isExposed = isExposed;
         if (fetchedAt !== null) payload.fetchedAt = fetchedAt;
-        if (colorsEnabled) payload.colors = parseRawProductColorRequests(document.getElementById('rawUpdateColors').value);
+        if (colorsEnabled) payload.colors = buildRawProductColorRequests(rawUpdateSelectedColors);
         if (furnitureMappingEnabled) payload.furnitureIds = rawUpdateSelectedFurnitures.map(furniture => furniture.furnitureId);
         if (furnitureTagMappingEnabled) payload.furnitureTagIds = rawUpdateSelectedFurnitureTags.map(tag => tag.furnitureTagId);
 
         return payload;
-    }
-
-    function formatRawProductColorsForInput(colors) {
-        if (!Array.isArray(colors) || colors.length === 0) {
-            return '';
-        }
-        return colors
-            .map(color => color.clientColorName || color.rawColorName || '')
-            .filter(Boolean)
-            .join(', ');
-    }
-
-    function parseRawProductColorRequests(value) {
-        const normalized = parseStringValue(value);
-        if (normalized === null) {
-            return [];
-        }
-
-        return normalized
-            .split(/[,\n]/)
-            .map(color => color.trim())
-            .filter(Boolean)
-            .map(colorName => ({
-                rawColorName: colorName,
-                clientColorName: colorName
-            }));
     }
 
     // --- Loading helpers (skeleton UI) and loader-aware API call ---

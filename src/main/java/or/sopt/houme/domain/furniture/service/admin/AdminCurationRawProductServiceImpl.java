@@ -14,6 +14,7 @@ import or.sopt.houme.domain.furniture.presentation.dto.request.AdminCurationRawP
 import or.sopt.houme.domain.furniture.presentation.dto.request.AdminCurationRawProductFurnitureTagCreateRequest;
 import or.sopt.houme.domain.furniture.presentation.dto.request.AdminCurationRawProductFurnitureTagUpdateRequest;
 import or.sopt.houme.domain.furniture.presentation.dto.request.AdminCurationRawProductUpdateRequest;
+import or.sopt.houme.domain.furniture.presentation.dto.response.AdminCurationRawProductColorOptionResponse;
 import or.sopt.houme.domain.furniture.presentation.dto.response.AdminCurationRawProductColorResponse;
 import or.sopt.houme.domain.furniture.presentation.dto.response.AdminCurationRawProductFurnitureResponse;
 import or.sopt.houme.domain.furniture.presentation.dto.response.AdminCurationRawProductFurnitureTagResponse;
@@ -25,6 +26,7 @@ import or.sopt.houme.domain.furniture.repository.CurationRawProductFurnitureTagR
 import or.sopt.houme.domain.furniture.repository.CurationRawProductRepository;
 import or.sopt.houme.domain.furniture.repository.FurnitureRepository;
 import or.sopt.houme.domain.furniture.repository.FurnitureTagRepository;
+import or.sopt.houme.domain.furniture.service.ColorHexMapper;
 import or.sopt.houme.domain.furniture.service.event.CurationRawProductTokenRefreshEvent;
 import or.sopt.houme.global.api.ErrorCode;
 import or.sopt.houme.global.api.GeneralException;
@@ -99,6 +101,14 @@ public class AdminCurationRawProductServiceImpl implements AdminCurationRawProdu
     public AdminCurationRawProductResponse getById(Long curationRawProductId) {
         CurationRawProduct rawProduct = getRawProductOrThrow(curationRawProductId);
         return buildResponses(List.of(rawProduct)).get(0);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<AdminCurationRawProductColorOptionResponse> getColorOptions() {
+        return ColorHexMapper.getStandardColorFilters().entrySet().stream()
+                .map(entry -> AdminCurationRawProductColorOptionResponse.of(entry.getKey(), entry.getValue()))
+                .toList();
     }
 
     @Override
