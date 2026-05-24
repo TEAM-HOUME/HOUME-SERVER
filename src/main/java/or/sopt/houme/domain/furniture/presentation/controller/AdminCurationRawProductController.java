@@ -10,6 +10,7 @@ import or.sopt.houme.domain.furniture.presentation.dto.request.AdminCurationRawP
 import or.sopt.houme.domain.furniture.presentation.dto.request.AdminCurationRawProductFurnitureTagCreateRequest;
 import or.sopt.houme.domain.furniture.presentation.dto.request.AdminCurationRawProductFurnitureTagUpdateRequest;
 import or.sopt.houme.domain.furniture.presentation.dto.request.AdminCurationRawProductUpdateRequest;
+import or.sopt.houme.domain.furniture.presentation.dto.response.AdminCurationRawProductColorOptionResponse;
 import or.sopt.houme.domain.furniture.presentation.dto.response.AdminCurationRawProductFurnitureTagResponse;
 import or.sopt.houme.domain.furniture.presentation.dto.response.AdminCurationRawProductListResponse;
 import or.sopt.houme.domain.furniture.presentation.dto.response.AdminCurationRawProductResponse;
@@ -25,6 +26,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -46,6 +49,12 @@ public class AdminCurationRawProductController {
         return ResponseEntity.ok(ApiResponse.ok(
                 adminCurationRawProductService.getAll(page, size, category, minListPrice, maxListPrice)
         ));
+    }
+
+    @GetMapping("/color-options")
+    @Operation(summary = "curation_raw_product 색상 옵션 조회 API")
+    public ResponseEntity<ApiResponse<List<AdminCurationRawProductColorOptionResponse>>> getColorOptions() {
+        return ResponseEntity.ok(ApiResponse.ok(adminCurationRawProductService.getColorOptions()));
     }
 
     @GetMapping("/{curationRawProductId}")

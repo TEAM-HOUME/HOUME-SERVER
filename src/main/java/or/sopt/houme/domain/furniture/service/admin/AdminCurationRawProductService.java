@@ -6,9 +6,12 @@ import or.sopt.houme.domain.furniture.presentation.dto.request.AdminCurationRawP
 import or.sopt.houme.domain.furniture.presentation.dto.request.AdminCurationRawProductFurnitureTagCreateRequest;
 import or.sopt.houme.domain.furniture.presentation.dto.request.AdminCurationRawProductFurnitureTagUpdateRequest;
 import or.sopt.houme.domain.furniture.presentation.dto.request.AdminCurationRawProductUpdateRequest;
+import or.sopt.houme.domain.furniture.presentation.dto.response.AdminCurationRawProductColorOptionResponse;
 import or.sopt.houme.domain.furniture.presentation.dto.response.AdminCurationRawProductListResponse;
 import or.sopt.houme.domain.furniture.presentation.dto.response.AdminCurationRawProductFurnitureTagResponse;
 import or.sopt.houme.domain.furniture.presentation.dto.response.AdminCurationRawProductResponse;
+
+import java.util.List;
 
 public interface AdminCurationRawProductService {
 
@@ -21,6 +24,8 @@ public interface AdminCurationRawProductService {
     );
 
     AdminCurationRawProductResponse getById(Long curationRawProductId);
+
+    List<AdminCurationRawProductColorOptionResponse> getColorOptions();
 
     AdminCurationRawProductResponse create(AdminCurationRawProductCreateRequest request);
 

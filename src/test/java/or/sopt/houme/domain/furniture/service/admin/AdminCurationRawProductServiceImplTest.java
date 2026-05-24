@@ -25,6 +25,7 @@ import or.sopt.houme.domain.furniture.presentation.dto.request.AdminCurationRawP
 import or.sopt.houme.domain.furniture.presentation.dto.request.AdminCurationRawProductFurnitureTagCreateRequest;
 import or.sopt.houme.domain.furniture.presentation.dto.request.AdminCurationRawProductFurnitureTagUpdateRequest;
 import or.sopt.houme.domain.furniture.presentation.dto.request.AdminCurationRawProductUpdateRequest;
+import or.sopt.houme.domain.furniture.presentation.dto.response.AdminCurationRawProductColorOptionResponse;
 import or.sopt.houme.domain.furniture.presentation.dto.response.AdminCurationRawProductFurnitureTagResponse;
 import or.sopt.houme.domain.furniture.presentation.dto.response.AdminCurationRawProductListResponse;
 import or.sopt.houme.domain.furniture.presentation.dto.response.AdminCurationRawProductResponse;
@@ -119,6 +120,16 @@ class AdminCurationRawProductServiceImplTest {
         );
 
         assertEquals(ErrorCode.NOT_VALID_EXCEPTION, exception.getErrorCode());
+    }
+
+    @Test
+    @DisplayName("getColorOptions()는 RAW 상품 등록용 표준 색상 옵션을 반환한다")
+    void getColorOptions_success() {
+        List<AdminCurationRawProductColorOptionResponse> response = adminCurationRawProductService.getColorOptions();
+
+        assertFalse(response.isEmpty());
+        assertTrue(response.stream().anyMatch(color -> "화이트".equals(color.label()) && "#FFFFFF".equals(color.value())));
+        assertTrue(response.stream().anyMatch(color -> "블랙".equals(color.label()) && "#000000".equals(color.value())));
     }
 
     @Test
