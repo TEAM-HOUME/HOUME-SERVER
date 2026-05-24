@@ -28,6 +28,14 @@ public interface CurationRawProductRepositoryCustom {
             Pageable pageable
     );
 
+    Slice<CurationRawProduct> findAllByCurationFiltersRecommend(
+            List<Long> typeIds,
+            List<PriceRangeFilter> priceRanges,
+            List<String> colorNames,
+            Long cursor,
+            Pageable pageable
+    );
+
     Page<CurationRawProduct> findExposedRawProductsExcludingLikedByUser(Long userId, Pageable pageable);
     Long findMaxExposedRawProductIdExcludingLikedByUser(Long userId);
     List<CurationRawProduct> findExposedRawProductsExcludingLikedByUserWithCursor(

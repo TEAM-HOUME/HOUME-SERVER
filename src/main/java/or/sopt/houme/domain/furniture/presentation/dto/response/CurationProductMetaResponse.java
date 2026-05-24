@@ -5,6 +5,7 @@ import java.util.List;
 public record CurationProductMetaResponse(
         Long nextCursor,
         Boolean hasNext,
-        List<CurationProductAppliedFilterResponse> appliedFilters
+        List<CurationProductAppliedFilterResponse> appliedFilters,
+        Boolean isRecommended
 ) {
 }

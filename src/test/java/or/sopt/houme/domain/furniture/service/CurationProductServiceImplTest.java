@@ -13,6 +13,7 @@ import or.sopt.houme.domain.furniture.presentation.dto.response.CurationProductF
 import or.sopt.houme.domain.furniture.presentation.dto.response.CurationProductListResponse;
 import or.sopt.houme.domain.furniture.repository.CurationRawProductColorRepository;
 import or.sopt.houme.domain.furniture.repository.CurationRawProductRepository;
+import or.sopt.houme.domain.furniture.repository.CurationRawProductRepositoryCustom;
 import or.sopt.houme.domain.furniture.repository.FurnitureRepository;
 import or.sopt.houme.domain.furniture.repository.FurnitureTypeRepository;
 import or.sopt.houme.domain.furniture.repository.JjymRepository;
@@ -161,6 +162,126 @@ class CurationProductServiceImplTest {
         assertThat(response.products()).hasSize(1);
         assertThat(response.products().get(0).name()).isEqualTo("SS매트리스 침대");
         assertThat(response.meta().hasNext()).isFalse();
+    }
+
+    @Test
+    @DisplayName("getProducts()는 AND 필터 결과가 없고 필터가 있으면 OR 추천 쿼리를 호출하고 isRecommended=true를 반환한다")
+    void getProducts_withEmptyResultAndFilter_returnsRecommended() {
+        // given
+        List<Long> typeIds = List.of(1L);
+        List<String> priceRangeIds = List.of("P1");
+        Integer size = 20;
+
+        FurnitureType bedType = FurnitureType.builder().id(1L).nameKr("침대").nameEng("BED").build();
+        given(furnitureTypeRepository.findAll()).willReturn(List.of(bedType));
+        given(furnitureRepository.findAll()).willReturn(List.of());
+
+        Slice<CurationRawProduct> emptySlice = new SliceImpl<>(List.of(), PageRequest.of(0, size), false);
+        CurationRawProduct recommended = CurationRawProduct.builder()
+                .id(10L).productId(1000L).productName("추천 침대").discountPrice(80000L)
+                .isExposed(true).furnitureTagMappings(new HashSet<>()).build();
+        Slice<CurationRawProduct> recommendSlice = new SliceImpl<>(List.of(recommended), PageRequest.of(0, size), false);
+
+        given(curationRawProductRepository.findAllByCurationFilters(any(), any(), any(), any(), any(), any()))
+                .willReturn(emptySlice);
+        given(curationRawProductRepository.findAllByCurationFiltersRecommend(any(), any(), any(), any(), any()))
+                .willReturn(recommendSlice);
+
+        // when
+        CurationProductListResponse response = curationProductService.getProducts(
+                null, typeIds, priceRangeIds, null, null, size
+        );
+
+        // then
+        assertThat(response.products()).hasSize(1);
+        assertThat(response.meta().isRecommended()).isTrue();
+    }
+
+    @Test
+    @DisplayName("getProducts()는 AND 필터 결과가 없고 필터도 없으면 전체 상품 fallback으로 isRecommended=true를 반환한다")
+    void getProducts_withEmptyResultAndNoFilter_returnsFallback() {
+        // given
+        String keyword = "없는상품xyz";
+        Integer size = 20;
+
+        CurationRawProduct fallback = CurationRawProduct.builder()
+                .id(5L).productId(500L).productName("전체 상품").discountPrice(30000L)
+                .isExposed(true).furnitureTagMappings(new HashSet<>()).build();
+        Slice<CurationRawProduct> emptySlice = new SliceImpl<>(List.of(), PageRequest.of(0, size), false);
+        Slice<CurationRawProduct> fallbackSlice = new SliceImpl<>(List.of(fallback), PageRequest.of(0, size), false);
+
+        given(curationRawProductRepository.findAllByCurationFilters(any(), any(), any(), any(), any(), any()))
+                .willReturn(emptySlice)
+                .willReturn(fallbackSlice);
+
+        // when
+        CurationProductListResponse response = curationProductService.getProducts(
+                keyword, null, null, null, null, size
+        );
+
+        // then
+        assertThat(response.products()).hasSize(1);
+        assertThat(response.meta().isRecommended()).isTrue();
+    }
+
+    @Test
+    @DisplayName("getProductsV2()는 AND 필터 결과가 없고 필터가 있으면 OR 추천 쿼리를 호출하고 isRecommended=true를 반환한다")
+    void getProductsV2_withEmptyResultAndFilter_returnsRecommended() {
+        // given
+        List<Long> typeIds = List.of(1L);
+        List<String> priceRangeIds = List.of("P1");
+        Integer size = 20;
+
+        FurnitureType bedType = FurnitureType.builder().id(1L).nameKr("침대").nameEng("BED").build();
+        given(furnitureTypeRepository.findAll()).willReturn(List.of(bedType));
+        given(furnitureRepository.findAll()).willReturn(List.of());
+
+        Slice<CurationRawProduct> emptySlice = new SliceImpl<>(List.of(), PageRequest.of(0, size), false);
+        CurationRawProduct recommended = CurationRawProduct.builder()
+                .id(10L).productId(1000L).productName("추천 침대").discountPrice(80000L)
+                .isExposed(true).furnitureTagMappings(new HashSet<>()).build();
+        Slice<CurationRawProduct> recommendSlice = new SliceImpl<>(List.of(recommended), PageRequest.of(0, size), false);
+
+        given(curationRawProductRepository.findAllByCurationFiltersV2(any(), any(), any(), any(), any(), any()))
+                .willReturn(emptySlice);
+        given(curationRawProductRepository.findAllByCurationFiltersRecommend(any(), any(), any(), any(), any()))
+                .willReturn(recommendSlice);
+
+        // when
+        CurationProductListResponse response = curationProductService.getProductsV2(
+                null, typeIds, priceRangeIds, null, null, size
+        );
+
+        // then
+        assertThat(response.products()).hasSize(1);
+        assertThat(response.meta().isRecommended()).isTrue();
+    }
+
+    @Test
+    @DisplayName("getProductsV2()는 AND 필터 결과가 없고 필터도 없으면 전체 상품 fallback으로 isRecommended=true를 반환한다")
+    void getProductsV2_withEmptyResultAndNoFilter_returnsFallback() {
+        // given
+        String keyword = "없는상품xyz";
+        Integer size = 20;
+
+        CurationRawProduct fallback = CurationRawProduct.builder()
+                .id(5L).productId(500L).productName("전체 상품").discountPrice(30000L)
+                .isExposed(true).furnitureTagMappings(new HashSet<>()).build();
+        Slice<CurationRawProduct> emptySlice = new SliceImpl<>(List.of(), PageRequest.of(0, size), false);
+        Slice<CurationRawProduct> fallbackSlice = new SliceImpl<>(List.of(fallback), PageRequest.of(0, size), false);
+
+        given(curationRawProductRepository.findAllByCurationFiltersV2(any(), any(), any(), any(), any(), any()))
+                .willReturn(emptySlice)
+                .willReturn(fallbackSlice);
+
+        // when
+        CurationProductListResponse response = curationProductService.getProductsV2(
+                keyword, null, null, null, null, size
+        );
+
+        // then
+        assertThat(response.products()).hasSize(1);
+        assertThat(response.meta().isRecommended()).isTrue();
     }
 
     @Test

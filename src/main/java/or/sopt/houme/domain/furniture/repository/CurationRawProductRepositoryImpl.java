@@ -2,6 +2,9 @@ package or.sopt.houme.domain.furniture.repository;
 
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.CaseBuilder;
+import com.querydsl.core.types.dsl.NumberExpression;
+import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
@@ -408,6 +411,93 @@ public class CurationRawProductRepositoryImpl implements CurationRawProductRepos
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
                 .fetch();
+    }
+
+    @Override
+    public Slice<CurationRawProduct> findAllByCurationFiltersRecommend(
+            List<Long> typeIds,
+            List<PriceRangeFilter> priceRanges,
+            List<String> colorNames,
+            Long cursor,
+            Pageable pageable
+    ) {
+        QCurationRawProduct rawProduct = QCurationRawProduct.curationRawProduct;
+        QCurationRawProductFurnitureTag mapping = QCurationRawProductFurnitureTag.curationRawProductFurnitureTag;
+        QFurnitureTag fTag = QFurnitureTag.furnitureTag;
+        QFurniture furniture = QFurniture.furniture;
+        QFurnitureType fType = QFurnitureType.furnitureType;
+        QCurationRawProductColor color = QCurationRawProductColor.curationRawProductColor;
+
+        BooleanBuilder baseWhere = new BooleanBuilder();
+        baseWhere.and(rawProduct.isExposed.isTrue().or(rawProduct.isExposed.isNull()));
+        if (cursor != null) {
+            baseWhere.and(rawProduct.id.lt(cursor));
+        }
+
+        NumberExpression<Integer> matchScore = Expressions.asNumber(0);
+        BooleanBuilder atLeastOne = new BooleanBuilder();
+
+        if (typeIds != null && !typeIds.isEmpty()) {
+            var typeSubquery = JPAExpressions
+                    .select(mapping.curationRawProduct.id)
+                    .from(mapping)
+                    .join(mapping.furnitureTag, fTag)
+                    .join(fTag.furniture, furniture)
+                    .leftJoin(furniture.furnitureType, fType)
+                    .where(fType.id.in(typeIds).or(furniture.id.in(typeIds)));
+
+            matchScore = matchScore.add(
+                    new CaseBuilder().when(rawProduct.id.in(typeSubquery)).then(1).otherwise(0)
+            );
+            atLeastOne.or(rawProduct.id.in(typeSubquery));
+        }
+
+        if (priceRanges != null && !priceRanges.isEmpty()) {
+            BooleanBuilder priceCondition = new BooleanBuilder();
+            for (PriceRangeFilter range : priceRanges) {
+                BooleanBuilder rangeBuilder = new BooleanBuilder();
+                if (range.min() != null) rangeBuilder.and(rawProduct.discountPrice.goe(range.min()));
+                if (range.max() != null) rangeBuilder.and(rawProduct.discountPrice.loe(range.max()));
+                priceCondition.or(rangeBuilder);
+            }
+            matchScore = matchScore.add(
+                    new CaseBuilder().when(priceCondition).then(1).otherwise(0)
+            );
+            atLeastOne.or(priceCondition);
+        }
+
+        if (colorNames != null && !colorNames.isEmpty()) {
+            BooleanBuilder colorCondition = new BooleanBuilder();
+            for (String colorName : colorNames) {
+                colorCondition.or(color.clientColorName.containsIgnoreCase(colorName));
+            }
+            var colorSubquery = JPAExpressions
+                    .select(color.curationRawProduct.id)
+                    .from(color)
+                    .where(colorCondition);
+
+            matchScore = matchScore.add(
+                    new CaseBuilder().when(rawProduct.id.in(colorSubquery)).then(1).otherwise(0)
+            );
+            atLeastOne.or(rawProduct.id.in(colorSubquery));
+        }
+
+        baseWhere.and(atLeastOne);
+
+        List<CurationRawProduct> content = queryFactory
+                .selectFrom(rawProduct)
+                .where(baseWhere)
+                .orderBy(matchScore.desc(), rawProduct.id.desc())
+                .limit(pageable.getPageSize() + 1)
+                .fetch();
+
+        boolean hasNext = false;
+        if (content.size() > pageable.getPageSize()) {
+            content.remove(pageable.getPageSize());
+            hasNext = true;
+        }
+
+        return new SliceImpl<>(content, pageable, hasNext);
     }
 
     private BooleanExpression containsIgnoreCase(com.querydsl.core.types.dsl.StringPath path, String keyword) {
