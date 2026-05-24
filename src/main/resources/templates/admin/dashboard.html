@@ -744,6 +744,9 @@
             height: 0.55rem;
             padding: 0.15rem;
         }
+        .raw-color-option-error {
+            display: none;
+        }
         .floor-plan-image-stack {
             display: grid;
             gap: 12px;
@@ -1265,6 +1268,7 @@
                                 <button class="btn btn-outline-primary" type="button" id="rawCreateColorAddButton">추가</button>
                             </div>
                             <div id="rawCreateSelectedColorList" class="raw-chip-stack mt-2"></div>
+                            <small id="rawCreateColorOptionError" class="text-danger raw-color-option-error">색상 옵션을 불러올 수 없습니다.</small>
                             <small class="text-muted">표준 색상을 선택하면 RAW 상품 등록과 동시에 색상이 저장됩니다.</small>
                         </div>
                         <div class="raw-form-field">
@@ -1480,6 +1484,7 @@
                                         <button class="btn btn-outline-primary" type="button" id="rawUpdateColorAddButton">추가</button>
                                     </div>
                                     <div id="rawUpdateSelectedColorList" class="raw-chip-stack mt-2"></div>
+                                    <small id="rawUpdateColorOptionError" class="text-danger raw-color-option-error">색상 옵션을 불러올 수 없습니다.</small>
                                     <div class="form-check mt-2">
                                         <input class="form-check-input" type="checkbox" id="rawUpdateColorsEnabled">
                                         <label class="form-check-label small" for="rawUpdateColorsEnabled">색상 수정 반영</label>
@@ -2049,6 +2054,7 @@
     let rawColorOptions = [];
     let rawCreateSelectedColors = [];
     let rawUpdateSelectedColors = [];
+    let rawColorOptionsLoadFailed = false;
     let rawProductsFilterState = {
         category: null,
         minListPrice: null,
@@ -2642,8 +2648,9 @@
         });
 
         document.getElementById('rawUpdateColorAddButton').addEventListener('click', function() {
-            addSelectedRawColor('update');
-            document.getElementById('rawUpdateColorsEnabled').checked = true;
+            if (addSelectedRawColor('update')) {
+                document.getElementById('rawUpdateColorsEnabled').checked = true;
+            }
         });
 
         document.getElementById('rawCreateFurnitureTagKeyword').addEventListener('change', function(event) {
@@ -4613,17 +4620,32 @@
             })
             .then(data => {
                 rawColorOptions = Array.isArray(data.data) ? data.data : [];
+                rawColorOptionsLoadFailed = false;
+                setRawColorOptionErrorState(false);
                 renderRawColorOptions('create');
                 renderRawColorOptions('update');
                 renderSelectedRawColors('create');
                 renderSelectedRawColors('update');
             })
-            .catch(error => console.error('Error loading raw color options:', error));
+            .catch(error => {
+                console.error('Error loading raw color options:', error);
+                rawColorOptions = [];
+                rawColorOptionsLoadFailed = true;
+                setRawColorOptionErrorState(true);
+                renderSelectedRawColors('create');
+                renderSelectedRawColors('update');
+            });
     }
 
     function renderRawColorOptions(mode) {
         const select = document.getElementById(`raw${capitalizeMode(mode)}ColorSelect`);
         if (!select) return;
+
+        if (rawColorOptionsLoadFailed) {
+            select.innerHTML = '<option value="" selected>색상 옵션 로딩 실패</option>';
+            select.disabled = true;
+            return;
+        }
 
         const selectedColors = getSelectedRawColors(mode);
         const selectedLabels = new Set(selectedColors.map(color => color.label));
@@ -4635,24 +4657,28 @@
             .join('');
 
         select.innerHTML = `<option value="" selected>색상 선택...</option>${options}`;
+        select.disabled = false;
     }
 
     function addSelectedRawColor(mode) {
         const select = document.getElementById(`raw${capitalizeMode(mode)}ColorSelect`);
-        if (!select || !select.value) return;
+        if (!select || !select.value) return false;
 
         const color = rawColorOptions.find(option => option.label === select.value) || {
             label: select.value,
             value: null
         };
         const selectedColors = getSelectedRawColors(mode);
-        if (!selectedColors.some(selected => selected.label === color.label)) {
-            selectedColors.push(color);
+        if (selectedColors.some(selected => selected.label === color.label)) {
+            select.value = '';
+            return false;
         }
 
+        selectedColors.push(color);
         select.value = '';
         renderRawColorOptions(mode);
         renderSelectedRawColors(mode);
+        return true;
     }
 
     function removeSelectedRawColor(mode, colorLabel) {
@@ -4687,6 +4713,17 @@
 
     function getSelectedRawColors(mode) {
         return mode === 'create' ? rawCreateSelectedColors : rawUpdateSelectedColors;
+    }
+
+    function setRawColorOptionErrorState(hasError) {
+        ['Create', 'Update'].forEach(modeName => {
+            const select = document.getElementById(`raw${modeName}ColorSelect`);
+            const button = document.getElementById(`raw${modeName}ColorAddButton`);
+            const error = document.getElementById(`raw${modeName}ColorOptionError`);
+            if (select) select.disabled = hasError;
+            if (button) button.disabled = hasError;
+            if (error) error.style.display = hasError ? 'block' : 'none';
+        });
     }
 
     function setSelectedRawColors(mode, colors) {
@@ -5615,7 +5652,7 @@
         document.getElementById('rawUpdateIsExposed').value = product.isExposed == null ? '' : String(product.isExposed);
         document.getElementById('rawUpdateFetchedAt').value = formatDateTimeLocalValue(product.fetchedAt);
         setSelectedRawColors('update', product.colors);
-        document.getElementById('rawUpdateColorsEnabled').checked = true;
+        document.getElementById('rawUpdateColorsEnabled').checked = false;
         rawUpdateSelectedFurnitures = Array.isArray(product.furnitures)
             ? product.furnitures.map(furniture => ({
                 furnitureId: furniture.furnitureId,

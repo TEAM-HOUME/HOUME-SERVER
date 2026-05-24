@@ -127,7 +127,11 @@ class AdminCurationRawProductServiceImplTest {
     void getColorOptions_success() {
         List<AdminCurationRawProductColorOptionResponse> response = adminCurationRawProductService.getColorOptions();
 
-        assertFalse(response.isEmpty());
+        assertEquals(15, response.size());
+        assertEquals("화이트", response.get(0).label());
+        assertEquals("#FFFFFF", response.get(0).value());
+        assertEquals("블랙", response.get(2).label());
+        assertEquals("#000000", response.get(2).value());
         assertTrue(response.stream().anyMatch(color -> "화이트".equals(color.label()) && "#FFFFFF".equals(color.value())));
         assertTrue(response.stream().anyMatch(color -> "블랙".equals(color.label()) && "#000000".equals(color.value())));
     }
