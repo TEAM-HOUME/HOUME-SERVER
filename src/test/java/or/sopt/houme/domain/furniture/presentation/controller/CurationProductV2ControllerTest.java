@@ -51,7 +51,7 @@ class CurationProductV2ControllerTest {
         // given
         CurationProductListResponse mockResponse = new CurationProductListResponse(
                 List.of(),
-                new CurationProductMetaResponse(null, false, List.of())
+                new CurationProductMetaResponse(null, false, List.of(), false)
         );
         given(curationProductService.getProductsV2(any(), any(), any(), any(), any(), any()))
                 .willReturn(mockResponse);
@@ -74,7 +74,7 @@ class CurationProductV2ControllerTest {
         // given
         CurationProductListResponse mockResponse = new CurationProductListResponse(
                 List.of(),
-                new CurationProductMetaResponse(null, false, List.of())
+                new CurationProductMetaResponse(null, false, List.of(), false)
         );
         given(curationProductService.getProductsV2(eq("매트리스"), any(), any(), any(), any(), any()))
                 .willReturn(mockResponse);

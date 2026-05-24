@@ -87,6 +87,22 @@ public class CurationProductServiceImpl implements CurationProductService {
                 keyword, filteredTypeIds, priceFilters, colorNames, cursor, pageable
         );
 
+        boolean isRecommended = false;
+        if (productSlice.isEmpty()) {
+            boolean hasFilter = hasAnyFilter(filteredTypeIds, priceFilters, colorNames);
+            if (hasFilter) {
+                productSlice = curationRawProductRepository.findAllByCurationFiltersRecommend(
+                        filteredTypeIds, priceFilters, colorNames, cursor, pageable
+                );
+            }
+            if (productSlice.isEmpty()) {
+                productSlice = curationRawProductRepository.findAllByCurationFilters(
+                        null, null, null, null, cursor, pageable
+                );
+            }
+            isRecommended = true;
+        }
+
         List<CurationProductResponse> products = productSlice.getContent().stream()
                 .map(p -> new CurationProductResponse(
                         p.getId(),
@@ -110,8 +126,18 @@ public class CurationProductServiceImpl implements CurationProductService {
 
         return new CurationProductListResponse(
                 products,
-                new CurationProductMetaResponse(nextCursor, hasNext, appliedFilters)
+                new CurationProductMetaResponse(nextCursor, hasNext, appliedFilters, isRecommended)
         );
+    }
+
+    private boolean hasAnyFilter(
+            List<Long> typeIds,
+            List<CurationRawProductRepositoryCustom.PriceRangeFilter> priceFilters,
+            List<String> colorNames
+    ) {
+        return (typeIds != null && !typeIds.isEmpty())
+                || (priceFilters != null && !priceFilters.isEmpty())
+                || (colorNames != null && !colorNames.isEmpty());
     }
 
     private void validatePaginationParams(Integer size) {
@@ -223,6 +249,22 @@ public class CurationProductServiceImpl implements CurationProductService {
                 keyword, filteredTypeIds, priceFilters, colorNames, cursor, pageable
         );
 
+        boolean isRecommended = false;
+        if (productSlice.isEmpty()) {
+            boolean hasFilter = hasAnyFilter(filteredTypeIds, priceFilters, colorNames);
+            if (hasFilter) {
+                productSlice = curationRawProductRepository.findAllByCurationFiltersRecommend(
+                        filteredTypeIds, priceFilters, colorNames, cursor, pageable
+                );
+            }
+            if (productSlice.isEmpty()) {
+                productSlice = curationRawProductRepository.findAllByCurationFiltersV2(
+                        null, null, null, null, cursor, pageable
+                );
+            }
+            isRecommended = true;
+        }
+
         List<CurationProductResponse> products = productSlice.getContent().stream()
                 .map(p -> new CurationProductResponse(
                         p.getId(),
@@ -246,7 +288,7 @@ public class CurationProductServiceImpl implements CurationProductService {
 
         return new CurationProductListResponse(
                 products,
-                new CurationProductMetaResponse(nextCursor, hasNext, appliedFilters)
+                new CurationProductMetaResponse(nextCursor, hasNext, appliedFilters, isRecommended)
         );
     }
 
