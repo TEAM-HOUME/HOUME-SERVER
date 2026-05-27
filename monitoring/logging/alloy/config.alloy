@@ -1,0 +1,75 @@
+logging {
+  level  = "info"
+  format = "logfmt"
+}
+
+loki.write "default" {
+  endpoint {
+    url = "http://loki:3100/loki/api/v1/push"
+  }
+}
+
+discovery.docker "containers" {
+  host = "unix:///var/run/docker.sock"
+}
+
+discovery.relabel "docker_logs" {
+  targets = discovery.docker.containers.targets
+
+  rule {
+    source_labels = ["__meta_docker_container_name"]
+    regex         = "/(.*)"
+    target_label  = "container"
+  }
+
+  rule {
+    source_labels = ["__meta_docker_container_name"]
+    regex         = "/(blue|green|houme)"
+    target_label  = "service"
+    replacement   = "spring"
+  }
+
+  rule {
+    source_labels = ["__meta_docker_container_name"]
+    regex         = "/(grafana|prometheus|loki|alloy|metabase|redis)"
+    target_label  = "service"
+    replacement   = "$1"
+  }
+
+  rule {
+    target_label = "env"
+    replacement  = env("DEPLOY_ENV")
+  }
+
+  rule {
+    target_label = "host"
+    replacement  = env("HOST_LABEL")
+  }
+}
+
+loki.source.docker "containers" {
+  host       = "unix:///var/run/docker.sock"
+  targets    = discovery.relabel.docker_logs.output
+  forward_to = [loki.write.default.receiver]
+}
+
+loki.source.file "nginx" {
+  targets = [
+    {
+      __path__  = "/var/log/nginx/access.log",
+      service   = "nginx",
+      log_type  = "access",
+      env       = env("DEPLOY_ENV"),
+      host      = env("HOST_LABEL"),
+    },
+    {
+      __path__  = "/var/log/nginx/error.log",
+      service   = "nginx",
+      log_type  = "error",
+      env       = env("DEPLOY_ENV"),
+      host      = env("HOST_LABEL"),
+    },
+  ]
+
+  forward_to = [loki.write.default.receiver]
+}
