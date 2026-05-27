@@ -53,7 +53,7 @@ public class S3PresignedUtil {
     public S3PresignedUrlResponseDTO createPresignedUrl(String imageExtension, String dirName, String contentType) {
 
         if (!isValidImageExtension(imageExtension)) {
-            log.warn("지원하지 않는 이미지 확장자 요청: {}", imageExtension);
+            log.warn("event=s3.presigned_url.invalid_extension imageExtension={} dirName={}", imageExtension, dirName);
             throw new GeneralException(ErrorCode.IMAGE_UPLOAD_AMAZON_EXCEPTION);
         }
 
@@ -78,8 +78,7 @@ public class S3PresignedUtil {
 
         String publicUrl = bucketDomain + "/" + keyName;
 
-        log.info("Generated presigned URL for key: {}, directory: {}", keyName, sanitizedDirName);
-        log.debug("Upload URL: {}", uploadUrl);  // 민감한 정보이므로 DEBUG 레벨로 기록
+        log.info("event=s3.presigned_url.created key={} directory={} contentType={}", keyName, sanitizedDirName, contentType);
 
         return new S3PresignedUrlResponseDTO(
                 uploadUrl,           // 클라이언트 업로드용 URL
