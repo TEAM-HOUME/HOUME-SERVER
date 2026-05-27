@@ -1,22 +1,22 @@
-# Alloy 자체 로그 출력 형식입니다.
+// Alloy 자체 로그 출력 형식입니다.
 logging {
   level  = "info"
   format = "logfmt"
 }
 
-# 수집한 로그를 Loki로 전송합니다.
+// 수집한 로그를 Loki로 전송합니다.
 loki.write "default" {
   endpoint {
     url = "http://loki:3100/loki/api/v1/push"
   }
 }
 
-# Docker 컨테이너 목록과 메타데이터를 조회합니다.
+// Docker 컨테이너 목록과 메타데이터를 조회합니다.
 discovery.docker "containers" {
   host = "unix:///var/run/docker.sock"
 }
 
-# 컨테이너 이름을 Loki label로 변환합니다.
+// 컨테이너 이름을 Loki label로 변환합니다.
 discovery.relabel "docker_logs" {
   targets = discovery.docker.containers.targets
 
@@ -51,14 +51,14 @@ discovery.relabel "docker_logs" {
   }
 }
 
-# Docker stdout/stderr 로그를 수집합니다.
+// Docker stdout/stderr 로그를 수집합니다.
 loki.source.docker "containers" {
   host       = "unix:///var/run/docker.sock"
   targets    = discovery.relabel.docker_logs.output
   forward_to = [loki.write.default.receiver]
 }
 
-# nginx access/error 파일 로그를 수집합니다.
+// nginx access/error 파일 로그를 수집합니다.
 loki.source.file "nginx" {
   targets = [
     {
