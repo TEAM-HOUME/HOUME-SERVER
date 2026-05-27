@@ -28,11 +28,11 @@
         "showLabels": false,
         "showTime": true,
         "sortOrder": "Descending",
-        "wrapLogMessage": true
+        "wrapLogMessage": false
       },
       "targets": [
         {
-          "expr": "{service=\"spring\"} | json | event=~\"exception.*\" | line_format \"{{.level}} {{.event}} {{.method}} {{.uri}} status={{.status}} code={{.errorCode}} msg={{.errorMessage}}\"",
+          "expr": "{service=\"spring\"} | json | event=~\"exception.*\" | line_format \"{{.level}} | {{.event}} | {{.method}} {{.uri}} | status={{.status}} | code={{.errorCode}} | type={{.exceptionType}}\"",
           "refId": "A"
         }
       ],
@@ -59,11 +59,11 @@
         "showLabels": false,
         "showTime": true,
         "sortOrder": "Descending",
-        "wrapLogMessage": true
+        "wrapLogMessage": false
       },
       "targets": [
         {
-          "expr": "{service=\"spring\"} | json | event=\"auth.failed\" | line_format \"{{.level}} {{.event}} {{.method}} {{.uri}} status={{.status}} code={{.errorCode}} reason={{.reason}}\"",
+          "expr": "{service=\"spring\"} | json | event=\"auth.failed\" | line_format \"{{.level}} | {{.event}} | {{.method}} {{.uri}} | status={{.status}} | code={{.errorCode}} | reason={{.reason}}\"",
           "refId": "A"
         }
       ],
@@ -90,11 +90,11 @@
         "showLabels": false,
         "showTime": true,
         "sortOrder": "Descending",
-        "wrapLogMessage": true
+        "wrapLogMessage": false
       },
       "targets": [
         {
-          "expr": "{service=\"spring\"} | json | event=~\"image.*\" | line_format \"{{.level}} {{.event}} provider={{.provider}} flow={{.flow}} userId={{.userId}} durationMs={{.durationMs}} msg={{.message}}\"",
+          "expr": "{service=\"spring\"} | json | event=~\"image.*\" | line_format \"{{.level}} | {{.event}} | provider={{.provider}} | flow={{.flow}} | userId={{.userId}} | durationMs={{.durationMs}}\"",
           "refId": "A"
         }
       ],
