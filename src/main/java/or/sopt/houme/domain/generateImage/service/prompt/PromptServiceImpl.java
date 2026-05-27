@@ -78,7 +78,7 @@ public class PromptServiceImpl implements PromptService {
                 + tastePrompt + "\n"
                 + joinedFurniturePrompt;
 
-        log.info("입력 프롬프트: {}", finalPrompt);
+        log.info("event=image.prompt.created promptLength={}", finalPrompt.length());
 
         return finalPrompt;
     }

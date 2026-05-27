@@ -17,6 +17,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.Base64;
+import java.util.concurrent.TimeUnit;
 
 @Service
 @RequiredArgsConstructor
@@ -39,6 +40,7 @@ public class OpenAiServiceImpl implements OpenAiService {
      * */
     @Override
     public ImageUploadResponseDTO createImage(String prompt) {
+        long startTime = System.nanoTime();
 
         // 요청을 위한 객체를 생성
         OpenAiRequest request = OpenAiRequest.of(
@@ -52,16 +54,37 @@ public class OpenAiServiceImpl implements OpenAiService {
         );
 
         try {
+            log.info(
+                    "event=image.ai.request.started provider=openai model={} promptLength={} size={} quality={}",
+                    openAiImageConfig.getModel(),
+                    prompt.length(),
+                    openAiImageConfig.getSize(),
+                    openAiImageConfig.getQuality()
+            );
             byte[] image = getGptImage(request);
 
             // S3에 이미지 저장하고 메타데이터를 반환
             ImageUploadResponseDTO responseDTO = s3Util.uploadByByte(S3Constant.CHAT_GPT_DIRNAME, image);
             responseDTO.setPullPrompt(prompt);
 
+            log.info(
+                    "event=image.ai.request.succeeded provider=openai model={} durationMs={} imageBytes={}",
+                    openAiImageConfig.getModel(),
+                    elapsedMillis(startTime),
+                    image.length
+            );
             return responseDTO;
 
         } catch (FeignException e) {
-            log.info(e.getMessage());
+            log.error(
+                    "event=image.ai.request.failed provider=openai model={} durationMs={} status={} exceptionType={} message={}",
+                    openAiImageConfig.getModel(),
+                    elapsedMillis(startTime),
+                    e.status(),
+                    e.getClass().getSimpleName(),
+                    e.getMessage(),
+                    e
+            );
             throw new ChatGptException(ErrorCode.CHAT_GPT_CALL_EXCEPTION);
         }
     }
@@ -83,8 +106,18 @@ public class OpenAiServiceImpl implements OpenAiService {
             String b64 = response.getData().get(0).getB64_json();
             return Base64.getDecoder().decode(b64);
         }catch (IllegalArgumentException e){
+            log.error(
+                    "event=image.ai.response.decode_failed provider=openai exceptionType={} message={}",
+                    e.getClass().getSimpleName(),
+                    e.getMessage(),
+                    e
+            );
             throw new S3Exception(ErrorCode.INCODING_EXCEPTION);
         }
+    }
+
+    private long elapsedMillis(long startTime) {
+        return TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - startTime);
     }
 
 }

@@ -51,9 +51,16 @@ public class AsyncGenerateImageServiceImpl implements AsyncGenerateImageService{
         try {
             ImageUploadResponseDTO response = supplier.get();
             success = true;
+            log.info("event=image.async.succeeded provider={}", provider);
             return CompletableFuture.completedFuture(response);
         } catch (Exception e) {
-            log.error("이미지 생성 중 예외발생: {}", e.getMessage());
+            log.error(
+                    "event=image.async.failed provider={} exceptionType={} message={}",
+                    provider,
+                    e.getClass().getSimpleName(),
+                    e.getMessage(),
+                    e
+            );
             return CompletableFuture.failedFuture(e);
         } finally {
             recordAsyncMetric(provider, success, startTime);

@@ -123,6 +123,15 @@ public class GenerateImageFacade {
     }
 
     private ImageInfoResponse generateImageInternal(User user, GenerateImageRequest generateImageRequest, boolean useGemini) {
+        log.info(
+                "event=image.generation.started flow=legacy provider={} userId={} houseId={} floorPlanId={} moodBoardCount={} furnitureCount={}",
+                useGemini ? "gemini" : "openai",
+                user.getId(),
+                generateImageRequest.houseId(),
+                generateImageRequest.floorPlan().floorPlanId(),
+                generateImageRequest.moodBoardIds().size(),
+                generateImageRequest.selectiveIds().size()
+        );
 
         /**
          * redis 저장 (user랑 상태값)
@@ -206,7 +215,13 @@ public class GenerateImageFacade {
 
             // 만약 Fallback 이미지라면, 예외처리
             if (generateImage.getUrl().equals(S3Constant.FALL_BACK_IMAGE)) {
-                log.error("폴백 이미지가 생성되었습니다.");
+                log.error(
+                        "event=image.generation.fallback flow=legacy provider={} userId={} houseId={} imageId={}",
+                        useGemini ? "gemini" : "openai",
+                        user.getId(),
+                        generateImageRequest.houseId(),
+                        generateImage.getId()
+                );
                 throw new ImageFallbackException(ErrorCode.GENERATED_IMAGE_EXCEPTION, imageInfoResponse);
             }
 
@@ -214,16 +229,38 @@ public class GenerateImageFacade {
             // 이미지 생성 여부 업데이트
             userService.updateHasGeneratedImage(user);
 
+            log.info(
+                    "event=image.generation.succeeded flow=legacy provider={} userId={} houseId={} imageId={}",
+                    useGemini ? "gemini" : "openai",
+                    user.getId(),
+                    generateImageRequest.houseId(),
+                    generateImage.getId()
+            );
             return imageInfoResponse;
 
         } catch (ValidException validException) {
             // 유효값 검증 실패시
-            log.error("유효값 검증 실패: {}", validException.getMessage(), validException);
+            log.warn(
+                    "event=image.generation.validation_failed flow=legacy provider={} userId={} houseId={} exceptionType={} message={}",
+                    useGemini ? "gemini" : "openai",
+                    user.getId(),
+                    generateImageRequest.houseId(),
+                    validException.getClass().getSimpleName(),
+                    validException.getMessage()
+            );
             throw new GenerateImageException(ErrorCode.INVALID_GENERATE_IMAGE_REQUEST);
         } catch (GenerateImageException e) {
             throw e;
         } catch (Exception e) {
-            log.info("Image 생성 중 오류 발생 {}", e.getMessage());
+            log.error(
+                    "event=image.generation.failed flow=legacy provider={} userId={} houseId={} exceptionType={} message={}",
+                    useGemini ? "gemini" : "openai",
+                    user.getId(),
+                    generateImageRequest.houseId(),
+                    e.getClass().getSimpleName(),
+                    e.getMessage(),
+                    e
+            );
             throw new GenerateImageException(ErrorCode.GENERATED_IMAGE_EXCEPTION);
         }
     
@@ -238,6 +275,15 @@ public class GenerateImageFacade {
     }
 
     private ImageInfoResponse generateImageByFastApiInternal(User user, GenerateImageRequest generateImageRequest, boolean useGemini) {
+        log.info(
+                "event=image.generation.started flow=fastapi provider={} userId={} houseId={} floorPlanId={} moodBoardCount={} furnitureCount={}",
+                useGemini ? "gemini" : "fastapi",
+                user.getId(),
+                generateImageRequest.houseId(),
+                generateImageRequest.floorPlan().floorPlanId(),
+                generateImageRequest.moodBoardIds().size(),
+                generateImageRequest.selectiveIds().size()
+        );
 
         /**
          * [짧은 트랜잭션이 일어나는 부분] (하나의 로직으로 처리)
@@ -309,7 +355,12 @@ public class GenerateImageFacade {
 
             // 만약 Fallback 이미지라면, 예외처리
             if (imageInfoResponse.imageUrl().equals(S3Constant.FALL_BACK_IMAGE)) {
-                log.error("폴백 이미지가 생성되었습니다.");
+                log.error(
+                        "event=image.generation.fallback flow=fastapi provider={} userId={} houseId={}",
+                        useGemini ? "gemini" : "fastapi",
+                        user.getId(),
+                        generateImageRequest.houseId()
+                );
                 throw new ImageFallbackException(ErrorCode.GENERATED_IMAGE_EXCEPTION, imageInfoResponse);
             }
 
@@ -319,10 +370,24 @@ public class GenerateImageFacade {
             String type = "B";
             saveLog(user.getId(), type, generateImageRequest.moodBoardIds(), List.of(imageInfoResponse));
 
+            log.info(
+                    "event=image.generation.succeeded flow=fastapi provider={} userId={} houseId={} imageId={}",
+                    useGemini ? "gemini" : "fastapi",
+                    user.getId(),
+                    generateImageRequest.houseId(),
+                    imageInfoResponse.imageId()
+            );
             return imageInfoResponse;
         } catch (ValidException validException) {
             // 유효값 검증 실패시
-            log.error("유효값 검증 실패: {}", validException.getMessage(), validException);
+            log.warn(
+                    "event=image.generation.validation_failed flow=fastapi provider={} userId={} houseId={} exceptionType={} message={}",
+                    useGemini ? "gemini" : "fastapi",
+                    user.getId(),
+                    generateImageRequest.houseId(),
+                    validException.getClass().getSimpleName(),
+                    validException.getMessage()
+            );
             if (lockedCredit != null && lockedCredit.getStatus() == CreditStatus.PENDING) {
                 creditService.rollbackCreditPending(lockedCredit);
             }
@@ -334,7 +399,15 @@ public class GenerateImageFacade {
             }
             throw e;
         } catch (Exception e) {
-            log.info("Image 생성 중 오류 발생 {}", e.getMessage());
+            log.error(
+                    "event=image.generation.failed flow=fastapi provider={} userId={} houseId={} exceptionType={} message={}",
+                    useGemini ? "gemini" : "fastapi",
+                    user.getId(),
+                    generateImageRequest.houseId(),
+                    e.getClass().getSimpleName(),
+                    e.getMessage(),
+                    e
+            );
             if (lockedCredit != null && lockedCredit.getStatus() == CreditStatus.PENDING) {
                 creditService.rollbackCreditPending(lockedCredit);
             }
@@ -379,11 +452,12 @@ public class GenerateImageFacade {
             List<String> referenceImageUrls = buildReferenceImageUrls(banner, selectedChip, floorPlanImageUrl);
             String prompt = buildBannerPrompt(banner, selectedChip, floorPlan);
             log.info(
-                    "배너 템플릿 이미지 생성 프롬프트/참고이미지 bannerId={}, answerId={}, prompt={}, referenceImageUrls={}",
+                    "event=image.generation.reference_prepared flow=banner userId={} bannerId={} answerId={} promptLength={} referenceImageCount={}",
+                    user.getId(),
                     banner.getId(),
                     selectedChip.id(),
-                    prompt,
-                    referenceImageUrls
+                    prompt.length(),
+                    referenceImageUrls.size()
             );
             log.info("AI 호출 준비 완료 bannerId={}, answerId={}, referenceImageCount={}", banner.getId(), selectedChip.id(), referenceImageUrls.size());
 
@@ -392,7 +466,7 @@ public class GenerateImageFacade {
             log.info("AI 호출 완료 bannerId={}, generatedUrl={}", banner.getId(), imageUploadResponseDTO.getImageLink());
 
             if (imageUploadResponseDTO.getImageLink().equals(S3Constant.FALL_BACK_IMAGE)) {
-                log.error("배너 템플릿 기반 인테리어 이미지 생성 중 폴백 이미지가 생성되었습니다. bannerId={}", banner.getId());
+                log.error("event=image.generation.fallback flow=banner userId={} bannerId={}", user.getId(), banner.getId());
                 throw new ImageFallbackException(ErrorCode.GENERATED_IMAGE_EXCEPTION, null);
             }
 
@@ -447,10 +521,11 @@ public class GenerateImageFacade {
             List<String> referenceImageUrls = buildStyleReferenceImageUrls(style, floorPlanImageUrl);
             String prompt = buildStylePrompt(style, floorPlan);
             log.info(
-                    "스타일 템플릿 이미지 생성 프롬프트/참고이미지 bannerId={}, prompt={}, referenceImageUrls={}",
+                    "event=image.generation.reference_prepared flow=style userId={} bannerId={} promptLength={} referenceImageCount={}",
+                    user.getId(),
                     style.getId(),
-                    prompt,
-                    referenceImageUrls
+                    prompt.length(),
+                    referenceImageUrls.size()
             );
             log.info("AI 호출 준비 완료 bannerId={}, referenceImageCount={}", style.getId(), referenceImageUrls.size());
 
@@ -459,7 +534,7 @@ public class GenerateImageFacade {
             log.info("AI 호출 완료 bannerId={}, generatedUrl={}", style.getId(), imageUploadResponseDTO.getImageLink());
 
             if (imageUploadResponseDTO.getImageLink().equals(S3Constant.FALL_BACK_IMAGE)) {
-                log.error("스타일 템플릿 기반 인테리어 이미지 생성 중 폴백 이미지가 생성되었습니다. bannerId={}", style.getId());
+                log.error("event=image.generation.fallback flow=style userId={} bannerId={}", user.getId(), style.getId());
                 throw new ImageFallbackException(ErrorCode.GENERATED_IMAGE_EXCEPTION, null);
             }
 
@@ -535,9 +610,10 @@ public class GenerateImageFacade {
             String prompt = buildV4Prompt(floorPlan, selectedTag, matchedFurnitureTags);
 
             log.info(
-                    "V4 이미지 생성 프롬프트/참고이미지 tagId={}, prompt={}, referenceImageCount={}",
+                    "event=image.generation.reference_prepared flow=v4 userId={} tagId={} promptLength={} referenceImageCount={}",
+                    user.getId(),
                     selectedTag.getId(),
-                    prompt,
+                    prompt.length(),
                     referenceImageUrls.size()
             );
 
@@ -545,7 +621,7 @@ public class GenerateImageFacade {
                     geminiImageService.createImageWithReferences(prompt, referenceImageUrls);
 
             if (imageUploadResponseDTO.getImageLink().equals(S3Constant.FALL_BACK_IMAGE)) {
-                log.error("V4 이미지 생성 중 폴백 이미지가 생성되었습니다.");
+                log.error("event=image.generation.fallback flow=v4 userId={} floorPlanId={}", user.getId(), request.floorPlanId());
                 throw new ImageFallbackException(ErrorCode.GENERATED_IMAGE_EXCEPTION, null);
             }
 
@@ -613,6 +689,7 @@ public class GenerateImageFacade {
                     geminiImageService.createImageWithReferences(prompt, referenceImageUrls);
 
             if (imageUploadResponseDTO.getImageLink().equals(S3Constant.FALL_BACK_IMAGE)) {
+                log.error("event=image.generation.fallback flow=product userId={} floorPlanId={}", user.getId(), request.floorPlanId());
                 throw new ImageFallbackException(ErrorCode.GENERATED_IMAGE_EXCEPTION, null);
             }
 
@@ -739,7 +816,13 @@ public class GenerateImageFacade {
                 }
                 // fallback 이미지가 포함되어 있다면 예외처리
                 if (!fallbackResponses.isEmpty()) {
-                    log.error("폴백 이미지가 생성되었습니다.");
+                    log.error(
+                            "event=image.generation.fallback flow=async provider={} userId={} houseId={} fallbackCount={}",
+                            useGemini ? "gemini" : "fastapi",
+                            user.getId(),
+                            generateImageRequest.houseId(),
+                            fallbackResponses.size()
+                    );
                     throw new ImageFallbackException(ErrorCode.GENERATED_IMAGE_EXCEPTION, fallbackResponses);
                 }
 
@@ -777,17 +860,39 @@ public class GenerateImageFacade {
 
                 if (cause instanceof TimeoutException) {
                     // 원인이 TimeoutException일 경우
-                    log.error("이미지 생성 작업 시간 초과: {}", cause.getMessage());
+                    log.error(
+                            "event=image.generation.timeout flow=async provider={} userId={} houseId={} timeoutSeconds={} message={}",
+                            useGemini ? "gemini" : "fastapi",
+                            user.getId(),
+                            generateImageRequest.houseId(),
+                            200,
+                            cause.getMessage()
+                    );
                     throw new GenerateImageException(ErrorCode.GENERATED_IMAGE_TIMEOUT);
                 } else {
                     // 그 외 다른 예외일 경우 (AI API 오류 등)
-                    log.error("비동기 이미지 생성 작업 중 오류 발생: {}", cause != null ? cause.getMessage() : e.getMessage());
+                    log.error(
+                            "event=image.generation.failed flow=async provider={} userId={} houseId={} exceptionType={} message={}",
+                            useGemini ? "gemini" : "fastapi",
+                            user.getId(),
+                            generateImageRequest.houseId(),
+                            cause != null ? cause.getClass().getSimpleName() : e.getClass().getSimpleName(),
+                            cause != null ? cause.getMessage() : e.getMessage(),
+                            e
+                    );
                     throw new GenerateImageException(ErrorCode.GENERATED_IMAGE_EXCEPTION);
                 }
             }
         } catch (ValidException validException) {
             // 유효값 검증 실패시
-            log.error("유효값 검증 실패: {}", validException.getMessage(), validException);
+            log.warn(
+                    "event=image.generation.validation_failed flow=async provider={} userId={} houseId={} exceptionType={} message={}",
+                    useGemini ? "gemini" : "fastapi",
+                    user.getId(),
+                    generateImageRequest.houseId(),
+                    validException.getClass().getSimpleName(),
+                    validException.getMessage()
+            );
             if (lockedCredit != null && lockedCredit.getStatus() == CreditStatus.PENDING) {
                 creditService.rollbackCreditPending(lockedCredit);
             }

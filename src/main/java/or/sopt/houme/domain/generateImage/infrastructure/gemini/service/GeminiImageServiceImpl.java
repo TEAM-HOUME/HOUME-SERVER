@@ -26,6 +26,7 @@ import java.time.Duration;
 import java.util.Base64;
 import java.util.List;
 import java.util.Locale;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @Service
@@ -55,6 +56,11 @@ public class GeminiImageServiceImpl implements GeminiImageService {
     public ImageUploadResponseDTO createImageWithReferences(String prompt, List<String> referenceImageUrls) {
         String promptWithSize = applySizeHint(prompt, geminiImageConfig.getSize());
         List<GeminiImageRequest.Part> referenceParts = toReferenceImageParts(referenceImageUrls);
+        log.info(
+                "event=image.gemini.reference_prepared referenceImageCount={} usableReferenceImageCount={}",
+                referenceImageUrls == null ? 0 : referenceImageUrls.size(),
+                referenceParts.size()
+        );
         GeminiImageRequest request = GeminiImageRequest.of(promptWithSize, referenceParts);
         return executeGeminiRequest(promptWithSize, request, defaultModel(geminiImageConfig.getModel()));
     }
@@ -64,16 +70,40 @@ public class GeminiImageServiceImpl implements GeminiImageService {
             GeminiImageRequest request,
             String model
     ) {
+        long startTime = System.nanoTime();
+        log.info("event=image.ai.request.started provider=gemini model={} promptLength={}", model, prompt.length());
         try {
             GeminiImageResponse response = geminiImageClient.generateImage(model, apiKey, request);
             byte[] image = decodeBase64(extractBase64(response));
             ImageUploadResponseDTO responseDTO = s3Util.uploadByByte(S3Constant.CHAT_GPT_DIRNAME, image);
             responseDTO.setPullPrompt(prompt);
+            log.info(
+                    "event=image.ai.request.succeeded provider=gemini model={} durationMs={} imageBytes={}",
+                    model,
+                    elapsedMillis(startTime),
+                    image.length
+            );
             return responseDTO;
         } catch (FeignException e) {
-            log.info(e.getMessage());
+            log.error(
+                    "event=image.ai.request.failed provider=gemini model={} durationMs={} status={} exceptionType={} message={}",
+                    model,
+                    elapsedMillis(startTime),
+                    e.status(),
+                    e.getClass().getSimpleName(),
+                    e.getMessage(),
+                    e
+            );
             throw new ChatGptException(ErrorCode.CHAT_GPT_CALL_EXCEPTION);
         } catch (IllegalArgumentException e) {
+            log.error(
+                    "event=image.ai.response.decode_failed provider=gemini model={} durationMs={} exceptionType={} message={}",
+                    model,
+                    elapsedMillis(startTime),
+                    e.getClass().getSimpleName(),
+                    e.getMessage(),
+                    e
+            );
             throw new S3Exception(ErrorCode.INCODING_EXCEPTION);
         }
     }
@@ -91,7 +121,7 @@ public class GeminiImageServiceImpl implements GeminiImageService {
                 DownloadedImageData imageData = downloadImage(url);
                 referenceParts.add(GeminiImageRequest.Part.inlineData(imageData.mimeType(), imageData.base64Data()));
             } catch (ChatGptException e) {
-                log.warn("참조 이미지 다운로드 실패. 해당 URL은 건너뜁니다. url={}", url);
+                log.warn("event=image.reference.download_failed provider=gemini exceptionType={}", e.getClass().getSimpleName());
             }
         }
         return referenceParts.stream().collect(Collectors.toList());
@@ -192,6 +222,10 @@ public class GeminiImageServiceImpl implements GeminiImageService {
             return trimmed;
         }
         return null;
+    }
+
+    private long elapsedMillis(long startTime) {
+        return TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - startTime);
     }
 
     private record DownloadedImageData(String mimeType, String base64Data) {
