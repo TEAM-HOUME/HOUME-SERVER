@@ -22,6 +22,7 @@ import java.util.UUID;
 
 import static or.sopt.houme.global.util.constant.S3ExtensionConstant.EXTENSION_PNG;
 import static or.sopt.houme.global.util.constant.S3ExtensionConstant.EXTENSION_WEBP;
+import static or.sopt.houme.global.logging.LogMarkers.fields;
 
 @Component
 @RequiredArgsConstructor
@@ -59,35 +60,56 @@ public class S3UtilImpl implements S3Util {
 
             // 이미지를 저장합니다
             amazonS3.putObject(new PutObjectRequest(bucket, fileName, file.getInputStream(), metadata));
-            log.info("event=s3.upload.succeeded bucket={} key={} contentType={} size={}", bucket, fileName, contentType, file.getSize());
+            log.info(
+                    fields(
+                            "event", "s3.upload.succeeded",
+                            "bucket", bucket,
+                            "key", fileName,
+                            "contentType", contentType,
+                            "size", file.getSize()
+                    ),
+                    "s3 upload succeeded"
+            );
 
         } catch (AmazonServiceException e) {
             log.error(
-                    "event=s3.upload.failed reason=service bucket={} key={} statusCode={} errorCode={} requestId={} message={}",
-                    bucket,
-                    fileName,
-                    e.getStatusCode(),
-                    e.getErrorCode(),
-                    e.getRequestId(),
-                    e.getErrorMessage(),
+                    fields(
+                            "event", "s3.upload.failed",
+                            "reason", "service",
+                            "bucket", bucket,
+                            "key", fileName,
+                            "statusCode", e.getStatusCode(),
+                            "errorCode", e.getErrorCode(),
+                            "requestId", e.getRequestId(),
+                            "errorMessage", e.getErrorMessage()
+                    ),
+                    "s3 upload failed",
                     e
             );
             throw new S3Exception(ErrorCode.IMAGE_UPLOAD_AMAZON_EXCEPTION);
         } catch (SdkClientException e) {
             log.error(
-                    "event=s3.upload.failed reason=client bucket={} key={} message={}",
-                    bucket,
-                    fileName,
-                    e.getMessage(),
+                    fields(
+                            "event", "s3.upload.failed",
+                            "reason", "client",
+                            "bucket", bucket,
+                            "key", fileName,
+                            "errorMessage", e.getMessage()
+                    ),
+                    "s3 upload failed",
                     e
             );
             throw new S3Exception(ErrorCode.IMAGE_UPLOAD_AMAZON_EXCEPTION);
         } catch (IOException e) {
             log.error(
-                    "event=s3.upload.failed reason=io bucket={} key={} message={}",
-                    bucket,
-                    fileName,
-                    e.getMessage(),
+                    fields(
+                            "event", "s3.upload.failed",
+                            "reason", "io",
+                            "bucket", bucket,
+                            "key", fileName,
+                            "errorMessage", e.getMessage()
+                    ),
+                    "s3 upload failed",
                     e
             );
             throw new S3Exception(ErrorCode.IMAGE_UPLOAD_IO_EXCEPTION);
@@ -119,34 +141,55 @@ public class S3UtilImpl implements S3Util {
         try {
             ByteArrayInputStream inputStream = new ByteArrayInputStream(imageBytes);
             amazonS3.putObject(new PutObjectRequest(bucket, fileName, inputStream, metadata));
-            log.info("event=s3.upload_by_byte.succeeded bucket={} key={} contentType={} size={}", bucket, fileName, contentType, imageBytes.length);
+            log.info(
+                    fields(
+                            "event", "s3.upload_by_byte.succeeded",
+                            "bucket", bucket,
+                            "key", fileName,
+                            "contentType", contentType,
+                            "size", imageBytes.length
+                    ),
+                    "s3 byte upload succeeded"
+            );
         } catch (AmazonServiceException e) {
             log.error(
-                    "event=s3.upload_by_byte.failed reason=service bucket={} key={} statusCode={} errorCode={} requestId={} message={}",
-                    bucket,
-                    fileName,
-                    e.getStatusCode(),
-                    e.getErrorCode(),
-                    e.getRequestId(),
-                    e.getErrorMessage(),
+                    fields(
+                            "event", "s3.upload_by_byte.failed",
+                            "reason", "service",
+                            "bucket", bucket,
+                            "key", fileName,
+                            "statusCode", e.getStatusCode(),
+                            "errorCode", e.getErrorCode(),
+                            "requestId", e.getRequestId(),
+                            "errorMessage", e.getErrorMessage()
+                    ),
+                    "s3 byte upload failed",
                     e
             );
             throw new S3Exception(ErrorCode.IMAGE_UPLOAD_AMAZON_EXCEPTION);
         } catch (SdkClientException e) {
             log.error(
-                    "event=s3.upload_by_byte.failed reason=client bucket={} key={} message={}",
-                    bucket,
-                    fileName,
-                    e.getMessage(),
+                    fields(
+                            "event", "s3.upload_by_byte.failed",
+                            "reason", "client",
+                            "bucket", bucket,
+                            "key", fileName,
+                            "errorMessage", e.getMessage()
+                    ),
+                    "s3 byte upload failed",
                     e
             );
             throw new S3Exception(ErrorCode.IMAGE_UPLOAD_AMAZON_EXCEPTION);
         } catch (Exception e) {
             log.error(
-                    "event=s3.upload_by_byte.failed reason=other bucket={} key={} message={}",
-                    bucket,
-                    fileName,
-                    e.getMessage(),
+                    fields(
+                            "event", "s3.upload_by_byte.failed",
+                            "reason", "other",
+                            "bucket", bucket,
+                            "key", fileName,
+                            "errorMessage", e.getMessage()
+                    ),
+                    "s3 byte upload failed",
                     e
             );
             throw new S3Exception(ErrorCode.IMAGE_UPLOAD_IO_EXCEPTION);
@@ -179,13 +222,16 @@ public class S3UtilImpl implements S3Util {
 
         } catch (AmazonServiceException e) {
             log.error(
-                    "event=s3.delete.failed bucket={} key={} statusCode={} errorCode={} requestId={} message={}",
-                    bucket,
-                    filename,
-                    e.getStatusCode(),
-                    e.getErrorCode(),
-                    e.getRequestId(),
-                    e.getErrorMessage(),
+                    fields(
+                            "event", "s3.delete.failed",
+                            "bucket", bucket,
+                            "key", filename,
+                            "statusCode", e.getStatusCode(),
+                            "errorCode", e.getErrorCode(),
+                            "requestId", e.getRequestId(),
+                            "errorMessage", e.getErrorMessage()
+                    ),
+                    "s3 delete failed",
                     e
             );
             throw new S3Exception(ErrorCode.IMAGE_DELETE_EXCEPTION);

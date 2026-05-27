@@ -29,6 +29,8 @@ import java.io.IOException;
 import java.util.List;
 import java.util.stream.Stream;
 
+import static or.sopt.houme.global.logging.LogMarkers.fields;
+
 
 /**
  * 토큰을 검증하는 클래스 입니다
@@ -172,7 +174,15 @@ public class JWTFilter extends OncePerRequestFilter {
 
         MDC.put("userId", String.valueOf(id));
         try {
-            log.debug("event=auth.success method={} uri={} userId={}", request.getMethod(), request.getRequestURI(), id);
+            log.debug(
+                    fields(
+                            "event", "auth.success",
+                            "method", request.getMethod(),
+                            "uri", request.getRequestURI(),
+                            "userId", id
+                    ),
+                    "authentication succeeded"
+            );
             filterChain.doFilter(request, response);
         } finally {
             MDC.remove("userId");
@@ -195,12 +205,15 @@ public class JWTFilter extends OncePerRequestFilter {
 
     private void logAuthFailure(HttpServletRequest request, ErrorCode errorCode) {
         log.warn(
-                "event=auth.failed method={} uri={} status={} errorCode={} reason={}",
-                request.getMethod(),
-                request.getRequestURI(),
-                errorCode.getStatus().value(),
-                errorCode.getCode(),
-                errorCode.name()
+                fields(
+                        "event", "auth.failed",
+                        "method", request.getMethod(),
+                        "uri", request.getRequestURI(),
+                        "status", errorCode.getStatus().value(),
+                        "errorCode", errorCode.getCode(),
+                        "reason", errorCode.name()
+                ),
+                "authentication failed"
         );
     }
 

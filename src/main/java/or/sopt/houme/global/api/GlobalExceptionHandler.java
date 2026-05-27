@@ -22,6 +22,8 @@ import org.springframework.web.servlet.NoHandlerFoundException;
 
 import java.util.concurrent.RejectedExecutionException;
 
+import static or.sopt.houme.global.logging.LogMarkers.fields;
+
 @RestControllerAdvice
 @Slf4j
 public class GlobalExceptionHandler {
@@ -199,27 +201,31 @@ public class GlobalExceptionHandler {
 
         if (withStackTrace) {
             log.error(
-                    "event={} method={} uri={} status={} errorCode={} exceptionType={} message={}",
-                    event,
-                    method,
-                    uri,
-                    errorCode.getStatus().value(),
-                    errorCode.getCode(),
-                    e.getClass().getSimpleName(),
-                    e.getMessage(),
+                    fields(
+                            "event", event,
+                            "method", method,
+                            "uri", uri,
+                            "status", errorCode.getStatus().value(),
+                            "errorCode", errorCode.getCode(),
+                            "exceptionType", e.getClass().getSimpleName(),
+                            "errorMessage", e.getMessage()
+                    ),
+                    "handled server exception",
                     e
             );
             return;
         }
         log.warn(
-                "event={} method={} uri={} status={} errorCode={} exceptionType={} message={}",
-                event,
-                method,
-                uri,
-                errorCode.getStatus().value(),
-                errorCode.getCode(),
-                e.getClass().getSimpleName(),
-                e.getMessage()
+                fields(
+                        "event", event,
+                        "method", method,
+                        "uri", uri,
+                        "status", errorCode.getStatus().value(),
+                        "errorCode", errorCode.getCode(),
+                        "exceptionType", e.getClass().getSimpleName(),
+                        "errorMessage", e.getMessage()
+                ),
+                "handled client exception"
         );
     }
 
@@ -229,12 +235,15 @@ public class GlobalExceptionHandler {
         String uri = attributes == null ? "N/A" : attributes.getRequest().getRequestURI();
 
         log.error(
-                "event=exception.unhandled method={} uri={} status={} exceptionType={} message={}",
-                method,
-                uri,
-                HttpStatus.INTERNAL_SERVER_ERROR.value(),
-                e.getClass().getSimpleName(),
-                e.getMessage(),
+                fields(
+                        "event", "exception.unhandled",
+                        "method", method,
+                        "uri", uri,
+                        "status", HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                        "exceptionType", e.getClass().getSimpleName(),
+                        "errorMessage", e.getMessage()
+                ),
+                "unhandled exception",
                 e
         );
     }

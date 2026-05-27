@@ -16,6 +16,8 @@ import java.time.Duration;
 import java.util.Map;
 import java.util.UUID;
 
+import static or.sopt.houme.global.logging.LogMarkers.fields;
+
 
 
 @Component
@@ -53,7 +55,14 @@ public class S3PresignedUtil {
     public S3PresignedUrlResponseDTO createPresignedUrl(String imageExtension, String dirName, String contentType) {
 
         if (!isValidImageExtension(imageExtension)) {
-            log.warn("event=s3.presigned_url.invalid_extension imageExtension={} dirName={}", imageExtension, dirName);
+            log.warn(
+                    fields(
+                            "event", "s3.presigned_url.invalid_extension",
+                            "imageExtension", imageExtension,
+                            "dirName", dirName
+                    ),
+                    "invalid image extension for presigned url"
+            );
             throw new GeneralException(ErrorCode.IMAGE_UPLOAD_AMAZON_EXCEPTION);
         }
 
@@ -78,7 +87,15 @@ public class S3PresignedUtil {
 
         String publicUrl = bucketDomain + "/" + keyName;
 
-        log.info("event=s3.presigned_url.created key={} directory={} contentType={}", keyName, sanitizedDirName, contentType);
+        log.info(
+                fields(
+                        "event", "s3.presigned_url.created",
+                        "key", keyName,
+                        "directory", sanitizedDirName,
+                        "contentType", contentType
+                ),
+                "s3 presigned url created"
+        );
 
         return new S3PresignedUrlResponseDTO(
                 uploadUrl,           // 클라이언트 업로드용 URL

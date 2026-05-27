@@ -19,6 +19,8 @@ import org.springframework.stereotype.Service;
 import java.util.Base64;
 import java.util.concurrent.TimeUnit;
 
+import static or.sopt.houme.global.logging.LogMarkers.fields;
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -55,11 +57,15 @@ public class OpenAiServiceImpl implements OpenAiService {
 
         try {
             log.info(
-                    "event=image.ai.request.started provider=openai model={} promptLength={} size={} quality={}",
-                    openAiImageConfig.getModel(),
-                    prompt.length(),
-                    openAiImageConfig.getSize(),
-                    openAiImageConfig.getQuality()
+                    fields(
+                            "event", "image.ai.request.started",
+                            "provider", "openai",
+                            "model", openAiImageConfig.getModel(),
+                            "promptLength", prompt.length(),
+                            "size", openAiImageConfig.getSize(),
+                            "quality", openAiImageConfig.getQuality()
+                    ),
+                    "image ai request started"
             );
             byte[] image = getGptImage(request);
 
@@ -68,21 +74,29 @@ public class OpenAiServiceImpl implements OpenAiService {
             responseDTO.setPullPrompt(prompt);
 
             log.info(
-                    "event=image.ai.request.succeeded provider=openai model={} durationMs={} imageBytes={}",
-                    openAiImageConfig.getModel(),
-                    elapsedMillis(startTime),
-                    image.length
+                    fields(
+                            "event", "image.ai.request.succeeded",
+                            "provider", "openai",
+                            "model", openAiImageConfig.getModel(),
+                            "durationMs", elapsedMillis(startTime),
+                            "imageBytes", image.length
+                    ),
+                    "image ai request succeeded"
             );
             return responseDTO;
 
         } catch (FeignException e) {
             log.error(
-                    "event=image.ai.request.failed provider=openai model={} durationMs={} status={} exceptionType={} message={}",
-                    openAiImageConfig.getModel(),
-                    elapsedMillis(startTime),
-                    e.status(),
-                    e.getClass().getSimpleName(),
-                    e.getMessage(),
+                    fields(
+                            "event", "image.ai.request.failed",
+                            "provider", "openai",
+                            "model", openAiImageConfig.getModel(),
+                            "durationMs", elapsedMillis(startTime),
+                            "status", e.status(),
+                            "exceptionType", e.getClass().getSimpleName(),
+                            "errorMessage", e.getMessage()
+                    ),
+                    "image ai request failed",
                     e
             );
             throw new ChatGptException(ErrorCode.CHAT_GPT_CALL_EXCEPTION);
@@ -107,9 +121,13 @@ public class OpenAiServiceImpl implements OpenAiService {
             return Base64.getDecoder().decode(b64);
         }catch (IllegalArgumentException e){
             log.error(
-                    "event=image.ai.response.decode_failed provider=openai exceptionType={} message={}",
-                    e.getClass().getSimpleName(),
-                    e.getMessage(),
+                    fields(
+                            "event", "image.ai.response.decode_failed",
+                            "provider", "openai",
+                            "exceptionType", e.getClass().getSimpleName(),
+                            "errorMessage", e.getMessage()
+                    ),
+                    "image ai response decode failed",
                     e
             );
             throw new S3Exception(ErrorCode.INCODING_EXCEPTION);

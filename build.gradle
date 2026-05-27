@@ -88,6 +88,9 @@ dependencies {
     // Spring Actuator
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
 
+    // JSON structured logging
+    implementation 'net.logstash.logback:logstash-logback-encoder:7.4'
+
     // postgresql
     runtimeOnly 'org.postgresql:postgresql:42.7.3'
 

@@ -29,6 +29,8 @@ import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+import static or.sopt.houme.global.logging.LogMarkers.fields;
+
 @Service
 @Profile("!load_test")
 @RequiredArgsConstructor
@@ -57,9 +59,12 @@ public class GeminiImageServiceImpl implements GeminiImageService {
         String promptWithSize = applySizeHint(prompt, geminiImageConfig.getSize());
         List<GeminiImageRequest.Part> referenceParts = toReferenceImageParts(referenceImageUrls);
         log.info(
-                "event=image.gemini.reference_prepared referenceImageCount={} usableReferenceImageCount={}",
-                referenceImageUrls == null ? 0 : referenceImageUrls.size(),
-                referenceParts.size()
+                fields(
+                        "event", "image.gemini.reference_prepared",
+                        "referenceImageCount", referenceImageUrls == null ? 0 : referenceImageUrls.size(),
+                        "usableReferenceImageCount", referenceParts.size()
+                ),
+                "gemini reference images prepared"
         );
         GeminiImageRequest request = GeminiImageRequest.of(promptWithSize, referenceParts);
         return executeGeminiRequest(promptWithSize, request, defaultModel(geminiImageConfig.getModel()));
@@ -71,37 +76,57 @@ public class GeminiImageServiceImpl implements GeminiImageService {
             String model
     ) {
         long startTime = System.nanoTime();
-        log.info("event=image.ai.request.started provider=gemini model={} promptLength={}", model, prompt.length());
+        log.info(
+                fields(
+                        "event", "image.ai.request.started",
+                        "provider", "gemini",
+                        "model", model,
+                        "promptLength", prompt.length()
+                ),
+                "image ai request started"
+        );
         try {
             GeminiImageResponse response = geminiImageClient.generateImage(model, apiKey, request);
             byte[] image = decodeBase64(extractBase64(response));
             ImageUploadResponseDTO responseDTO = s3Util.uploadByByte(S3Constant.CHAT_GPT_DIRNAME, image);
             responseDTO.setPullPrompt(prompt);
             log.info(
-                    "event=image.ai.request.succeeded provider=gemini model={} durationMs={} imageBytes={}",
-                    model,
-                    elapsedMillis(startTime),
-                    image.length
+                    fields(
+                            "event", "image.ai.request.succeeded",
+                            "provider", "gemini",
+                            "model", model,
+                            "durationMs", elapsedMillis(startTime),
+                            "imageBytes", image.length
+                    ),
+                    "image ai request succeeded"
             );
             return responseDTO;
         } catch (FeignException e) {
             log.error(
-                    "event=image.ai.request.failed provider=gemini model={} durationMs={} status={} exceptionType={} message={}",
-                    model,
-                    elapsedMillis(startTime),
-                    e.status(),
-                    e.getClass().getSimpleName(),
-                    e.getMessage(),
+                    fields(
+                            "event", "image.ai.request.failed",
+                            "provider", "gemini",
+                            "model", model,
+                            "durationMs", elapsedMillis(startTime),
+                            "status", e.status(),
+                            "exceptionType", e.getClass().getSimpleName(),
+                            "errorMessage", e.getMessage()
+                    ),
+                    "image ai request failed",
                     e
             );
             throw new ChatGptException(ErrorCode.CHAT_GPT_CALL_EXCEPTION);
         } catch (IllegalArgumentException e) {
             log.error(
-                    "event=image.ai.response.decode_failed provider=gemini model={} durationMs={} exceptionType={} message={}",
-                    model,
-                    elapsedMillis(startTime),
-                    e.getClass().getSimpleName(),
-                    e.getMessage(),
+                    fields(
+                            "event", "image.ai.response.decode_failed",
+                            "provider", "gemini",
+                            "model", model,
+                            "durationMs", elapsedMillis(startTime),
+                            "exceptionType", e.getClass().getSimpleName(),
+                            "errorMessage", e.getMessage()
+                    ),
+                    "image ai response decode failed",
                     e
             );
             throw new S3Exception(ErrorCode.INCODING_EXCEPTION);
@@ -121,7 +146,14 @@ public class GeminiImageServiceImpl implements GeminiImageService {
                 DownloadedImageData imageData = downloadImage(url);
                 referenceParts.add(GeminiImageRequest.Part.inlineData(imageData.mimeType(), imageData.base64Data()));
             } catch (ChatGptException e) {
-                log.warn("event=image.reference.download_failed provider=gemini exceptionType={}", e.getClass().getSimpleName());
+                log.warn(
+                        fields(
+                                "event", "image.reference.download_failed",
+                                "provider", "gemini",
+                                "exceptionType", e.getClass().getSimpleName()
+                        ),
+                        "image reference download failed"
+                );
             }
         }
         return referenceParts.stream().collect(Collectors.toList());

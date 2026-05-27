@@ -18,6 +18,8 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+import static or.sopt.houme.global.logging.LogMarkers.fields;
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -78,7 +80,13 @@ public class PromptServiceImpl implements PromptService {
                 + tastePrompt + "\n"
                 + joinedFurniturePrompt;
 
-        log.info("event=image.prompt.created promptLength={}", finalPrompt.length());
+        log.info(
+                fields(
+                        "event", "image.prompt.created",
+                        "promptLength", finalPrompt.length()
+                ),
+                "image prompt created"
+        );
 
         return finalPrompt;
     }

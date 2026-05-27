@@ -15,6 +15,8 @@ import org.springframework.stereotype.Service;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Supplier;
 
+import static or.sopt.houme.global.logging.LogMarkers.fields;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -51,14 +53,23 @@ public class AsyncGenerateImageServiceImpl implements AsyncGenerateImageService{
         try {
             ImageUploadResponseDTO response = supplier.get();
             success = true;
-            log.info("event=image.async.succeeded provider={}", provider);
+            log.info(
+                    fields(
+                            "event", "image.async.succeeded",
+                            "provider", provider
+                    ),
+                    "async image generation succeeded"
+            );
             return CompletableFuture.completedFuture(response);
         } catch (Exception e) {
             log.error(
-                    "event=image.async.failed provider={} exceptionType={} message={}",
-                    provider,
-                    e.getClass().getSimpleName(),
-                    e.getMessage(),
+                    fields(
+                            "event", "image.async.failed",
+                            "provider", provider,
+                            "exceptionType", e.getClass().getSimpleName(),
+                            "errorMessage", e.getMessage()
+                    ),
+                    "async image generation failed",
                     e
             );
             return CompletableFuture.failedFuture(e);

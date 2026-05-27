@@ -32,7 +32,7 @@
       },
       "targets": [
         {
-          "expr": "{service=\"spring\"} |= \"event=exception\"",
+          "expr": "{service=\"spring\"} | json | event=~\"exception\\..*\" | line_format \"{{.level}} {{.event}} {{.method}} {{.uri}} status={{.status}} code={{.errorCode}} msg={{.errorMessage}}\"",
           "refId": "A"
         }
       ],
@@ -63,7 +63,7 @@
       },
       "targets": [
         {
-          "expr": "{service=\"spring\"} |= \"event=auth.failed\"",
+          "expr": "{service=\"spring\"} | json | event=\"auth.failed\" | line_format \"{{.level}} {{.event}} {{.method}} {{.uri}} status={{.status}} code={{.errorCode}} reason={{.reason}}\"",
           "refId": "A"
         }
       ],
@@ -94,7 +94,7 @@
       },
       "targets": [
         {
-          "expr": "{service=\"spring\"} |= \"event=image.generation\"",
+          "expr": "{service=\"spring\"} | json | event=~\"image\\..*\" | line_format \"{{.level}} {{.event}} provider={{.provider}} flow={{.flow}} userId={{.userId}} durationMs={{.durationMs}} msg={{.message}}\"",
           "refId": "A"
         }
       ],
