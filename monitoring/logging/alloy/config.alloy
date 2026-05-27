@@ -28,7 +28,7 @@ discovery.relabel "docker_logs" {
 
   rule {
     source_labels = ["__meta_docker_container_name"]
-    regex         = "/(blue|green|houme)"
+    regex         = "/(blue|green|houme.*)"
     target_label  = "service"
     replacement   = "spring"
   }
