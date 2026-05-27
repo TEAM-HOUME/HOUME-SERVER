@@ -1,0 +1,21 @@
+global:
+  scrape_interval: 5s
+  evaluation_interval: 5s
+
+scrape_configs:
+  - job_name: houme-app
+    metrics_path: /actuator/prometheus
+    static_configs:
+      - targets:
+          - 10.0.1.11:8080
+          - 10.0.1.11:8081
+        labels:
+          env: prod
+          app: houme
+
+  - job_name: prometheus
+    static_configs:
+      - targets:
+          - prometheus:9090
+        labels:
+          env: prod

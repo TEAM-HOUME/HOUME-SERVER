@@ -1,0 +1,22 @@
+apiVersion: 1
+
+providers:
+  - name: houme-metric
+    orgId: 1
+    folder: HOUME Metric
+    type: file
+    disableDeletion: false
+    updateIntervalSeconds: 30
+    allowUiUpdates: true
+    options:
+      path: /var/lib/grafana/dashboards/metric
+
+  - name: houme-logging
+    orgId: 1
+    folder: HOUME Logging
+    type: file
+    disableDeletion: false
+    updateIntervalSeconds: 30
+    allowUiUpdates: true
+    options:
+      path: /var/lib/grafana/dashboards/logging
