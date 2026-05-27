@@ -32,7 +32,7 @@
       },
       "targets": [
         {
-          "expr": "{service=\"spring\"} | json | event=~\"exception.*\" | line_format \"{{.level}} | {{.event}} | {{.method}} {{.uri}} | status={{.status}} | code={{.errorCode}} | type={{.exceptionType}}\"",
+          "expr": "{service=\"spring\"} | json | event=~\"exception.*\" | line_format \"{{if eq .event \\\"exception.type_mismatch\\\"}}잘못된 요청 값{{else if eq .event \\\"exception.method_not_allowed\\\"}}허용되지 않은 HTTP 메서드{{else if eq .event \\\"exception.validation\\\"}}요청 검증 실패{{else if eq .event \\\"exception.method_validation\\\"}}요청 검증 실패{{else if eq .event \\\"exception.constraint_violation\\\"}}요청 검증 실패{{else if eq .event \\\"exception.missing_header\\\"}}필수 헤더 누락{{else if eq .event \\\"exception.request_body_not_readable\\\"}}요청 본문 파싱 실패{{else if eq .event \\\"exception.not_found_url\\\"}}존재하지 않는 URL{{else if eq .event \\\"exception.db_constraint\\\"}}DB 제약조건 위반{{else if eq .event \\\"exception.async_pool_overflow\\\"}}비동기 처리 큐 초과{{else if eq .event \\\"exception.image_fallback\\\"}}이미지 생성 실패{{else if eq .event \\\"exception.unhandled\\\"}}서버 내부 오류{{else if eq .event \\\"exception.general\\\"}}처리된 예외{{else}}예외 발생{{end}} | {{.method}} {{.uri}} | 상태={{.status}} | 코드={{.errorCode}} | {{.exceptionType}}\"",
           "refId": "A"
         }
       ],
