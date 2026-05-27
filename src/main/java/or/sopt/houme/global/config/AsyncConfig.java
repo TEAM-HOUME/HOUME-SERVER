@@ -6,6 +6,7 @@ import io.micrometer.core.instrument.Gauge;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Tags;
 import io.micrometer.core.instrument.binder.jvm.ExecutorServiceMetrics;
+import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -14,6 +15,7 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.Map;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.RejectedExecutionException;
@@ -61,6 +63,7 @@ public class AsyncConfig {
         executor.setThreadNamePrefix("TokenRefresh-");
         executor.setWaitForTasksToCompleteOnShutdown(true);
         executor.setAwaitTerminationSeconds(10);
+        executor.setTaskDecorator(AsyncConfig::decorateWithMdc);
         executor.setRejectedExecutionHandler((r, e) -> log.warn("TokenRefresh 큐 포화 — 토큰 갱신 작업 유실 (active={}, queue={})", e.getActiveCount(), e.getQueue().size()));
         executor.initialize();
         return executor;
@@ -81,6 +84,7 @@ public class AsyncConfig {
         // maxPoolSize 확장이 실제로 일어나도록 대기 큐는 더 작게 유지한다.
         executor.setQueueCapacity(platformQueueCapacity);       // 대기 큐 크기
         executor.setThreadNamePrefix("ImageGenerator-");
+        executor.setTaskDecorator(AsyncConfig::decorateWithMdc);
         Tags tags = executorTags("platform");
         Counter rejectedCounter = meterRegistry.counter(
                 "houme.async.executor.rejected.total",
@@ -173,6 +177,27 @@ public class AsyncConfig {
         }
     }
 
+    private static Runnable decorateWithMdc(Runnable task) {
+        Map<String, String> capturedContext = MDC.getCopyOfContextMap();
+        return () -> {
+            Map<String, String> previousContext = MDC.getCopyOfContextMap();
+            try {
+                if (capturedContext == null) {
+                    MDC.clear();
+                } else {
+                    MDC.setContextMap(capturedContext);
+                }
+                task.run();
+            } finally {
+                if (previousContext == null) {
+                    MDC.clear();
+                } else {
+                    MDC.setContextMap(previousContext);
+                }
+            }
+        };
+    }
+
     private static class VirtualThreadBoundedExecutor implements Executor {
 
         private final ExecutorService delegate;
@@ -194,10 +219,11 @@ public class AsyncConfig {
                 rejectedCounter.increment();
                 throw new RejectedExecutionException("가상 스레드 동시 실행 한도를 초과했습니다. 잠시 후 다시 시도해주세요.");
             }
+            Runnable decoratedCommand = decorateWithMdc(command);
             delegate.execute(() -> {
                 activeTasks.incrementAndGet();
                 try {
-                    command.run();
+                    decoratedCommand.run();
                 } finally {
                     activeTasks.decrementAndGet();
                     semaphore.release();
