@@ -16,6 +16,7 @@ import or.sopt.houme.domain.user.repository.BlacklistTokenRepository;
 import or.sopt.houme.global.api.ErrorCode;
 import or.sopt.houme.global.config.JWTConfig;
 import or.sopt.houme.global.config.WhiteListConfig;
+import org.slf4j.MDC;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -38,6 +39,7 @@ import java.util.stream.Stream;
  * */
 @RequiredArgsConstructor
 @Component
+@Slf4j
 public class JWTFilter extends OncePerRequestFilter {
 
     private final JWTUtil jwtUtil;
@@ -114,6 +116,7 @@ public class JWTFilter extends OncePerRequestFilter {
                     filterChain.doFilter(request, response);
                     return;
                 }
+                logAuthFailure(request, ErrorCode.ACCESS_TOKEN_BLACKLISTED);
                 setErrorResponse(response, ErrorCode.ACCESS_TOKEN_BLACKLISTED);
                 return;
             }
@@ -124,6 +127,7 @@ public class JWTFilter extends OncePerRequestFilter {
                     filterChain.doFilter(request, response);
                     return;
                 }
+                logAuthFailure(request, ErrorCode.ACCESS_INVALID_TYPE);
                 setErrorResponse(response, ErrorCode.ACCESS_INVALID_TYPE);
                 return;
             }
@@ -133,6 +137,7 @@ public class JWTFilter extends OncePerRequestFilter {
                 filterChain.doFilter(request, response);
                 return;
             }
+            logAuthFailure(request, ErrorCode.ACCESS_TOKEN_EXPIRED);
             setErrorResponse(response, ErrorCode.ACCESS_TOKEN_EXPIRED);
             return;
         }
@@ -146,6 +151,7 @@ public class JWTFilter extends OncePerRequestFilter {
         try {
                 role = Role.valueOf(roleString);
             } catch (IllegalArgumentException e) {
+                logAuthFailure(request, ErrorCode.ROLE_INVALID_TYPE);
                 setErrorResponse(response, ErrorCode.ROLE_INVALID_TYPE);
 
                 return;
@@ -164,7 +170,13 @@ public class JWTFilter extends OncePerRequestFilter {
         //세션에 사용자 등록
         SecurityContextHolder.getContext().setAuthentication(authToken);
 
-        filterChain.doFilter(request, response);
+        MDC.put("userId", String.valueOf(id));
+        try {
+            log.debug("event=auth.success method={} uri={} userId={}", request.getMethod(), request.getRequestURI(), id);
+            filterChain.doFilter(request, response);
+        } finally {
+            MDC.remove("userId");
+        }
     }
 
 
@@ -179,6 +191,17 @@ public class JWTFilter extends OncePerRequestFilter {
                 "{\"code\":%d, \"message\":\"%s\"}",
                 errorCode.getCode(), errorCode.getMsg()
         ));
+    }
+
+    private void logAuthFailure(HttpServletRequest request, ErrorCode errorCode) {
+        log.warn(
+                "event=auth.failed method={} uri={} status={} errorCode={} reason={}",
+                request.getMethod(),
+                request.getRequestURI(),
+                errorCode.getStatus().value(),
+                errorCode.getCode(),
+                errorCode.name()
+        );
     }
 
 }

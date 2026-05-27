@@ -1,12 +1,15 @@
 package or.sopt.houme.global.api;
 
 import io.sentry.Sentry;
-import or.sopt.houme.global.api.handler.ImageFallbackException;
 import jakarta.validation.ConstraintViolationException;
+import lombok.extern.slf4j.Slf4j;
+import or.sopt.houme.global.api.handler.ImageFallbackException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 import org.springframework.web.HttpMediaTypeNotAcceptableException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -20,6 +23,7 @@ import org.springframework.web.servlet.NoHandlerFoundException;
 import java.util.concurrent.RejectedExecutionException;
 
 @RestControllerAdvice
+@Slf4j
 public class GlobalExceptionHandler {
 
 
@@ -41,6 +45,7 @@ public class GlobalExceptionHandler {
                 "이미지 생성 중 예외가 발생하였습니다"
         );
 
+        logException("exception.image_fallback", errorCode, e, true);
         return ResponseEntity.internalServerError().body(response);
     }
 
@@ -51,6 +56,7 @@ public class GlobalExceptionHandler {
 
         Sentry.captureException(e);
 
+        logException("exception.general", errorCode, e, isServerError(errorCode));
         return ResponseEntity.status(errorCode.getStatus()).body(response);
     }
 
@@ -62,6 +68,7 @@ public class GlobalExceptionHandler {
 
         Sentry.captureException(e);
 
+        logException("exception.http_media_type_not_acceptable", errorCode, e, false);
         return ResponseEntity.status(errorCode.getStatus()).body(response);
     }
 
@@ -73,6 +80,7 @@ public class GlobalExceptionHandler {
 
         Sentry.captureException(ex);
 
+        logException("exception.missing_header", errorCode, ex, false);
         return ResponseEntity.status(errorCode.getStatus()).body(response);
     }
 
@@ -83,6 +91,7 @@ public class GlobalExceptionHandler {
 
         Sentry.captureException(e);
 
+        logException("exception.method_not_allowed", errorCode, e, false);
         return ResponseEntity.status(errorCode.getStatus()).body(response);
     }
 
@@ -93,6 +102,7 @@ public class GlobalExceptionHandler {
 
         Sentry.captureException(e);
 
+        logException("exception.type_mismatch", errorCode, e, false);
         return ResponseEntity.status(errorCode.getStatus()).body(response);
     }
 
@@ -102,6 +112,7 @@ public class GlobalExceptionHandler {
 
         Sentry.captureException(ex);
 
+        logException("exception.not_found_url", errorCode, ex, false);
         return ResponseEntity.status(errorCode.getStatus()).body(ApiResponse.fail(errorCode.getCode(), errorCode.getMsg()));
     }
 
@@ -111,6 +122,7 @@ public class GlobalExceptionHandler {
 
         Sentry.captureException(e);
 
+        logException("exception.validation", errorCode, e, false);
         return ResponseEntity.status(errorCode.getStatus()).body(ApiResponse.fail(errorCode.getCode(), errorCode.getMsg()));
     }
 
@@ -120,6 +132,7 @@ public class GlobalExceptionHandler {
 
         Sentry.captureException(e);
 
+        logException("exception.method_validation", errorCode, e, false);
         return ResponseEntity.status(errorCode.getStatus()).body(ApiResponse.fail(errorCode.getCode(), errorCode.getMsg()));
     }
 
@@ -129,6 +142,7 @@ public class GlobalExceptionHandler {
 
         Sentry.captureException(e);
 
+        logException("exception.constraint_violation", errorCode, e, false);
         return ResponseEntity.status(errorCode.getStatus()).body(ApiResponse.fail(errorCode.getCode(), errorCode.getMsg()));
     }
 
@@ -137,6 +151,7 @@ public class GlobalExceptionHandler {
 
         Sentry.captureException(e);
 
+        logUnhandledException(e);
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(ApiResponse.fail(HttpStatus.INTERNAL_SERVER_ERROR.value(), "서버 내부 오류입니다."));
     }
@@ -148,6 +163,7 @@ public class GlobalExceptionHandler {
 
         Sentry.captureException(e);
 
+        logException("exception.request_body_not_readable", errorCode, e, false);
         return ResponseEntity.status(errorCode.getStatus())
                 .body(ApiResponse.fail(errorCode.getCode(), errorCode.getMsg()));
     }
@@ -159,6 +175,7 @@ public class GlobalExceptionHandler {
 
         Sentry.captureException(e);
 
+        logException("exception.db_constraint", errorCode, e, true);
         return ResponseEntity.status(errorCode.getStatus())
                 .body(ApiResponse.fail(errorCode.getCode(), errorCode.getMsg()));
     }
@@ -170,7 +187,59 @@ public class GlobalExceptionHandler {
 
         Sentry.captureException(e);
 
+        logException("exception.async_pool_overflow", errorCode, e, true);
         return ResponseEntity.status(errorCode.getStatus())
                 .body(ApiResponse.fail(errorCode.getCode(), errorCode.getMsg()));
+    }
+
+    private void logException(String event, ErrorCode errorCode, Exception e, boolean withStackTrace) {
+        ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+        String method = attributes == null ? "N/A" : attributes.getRequest().getMethod();
+        String uri = attributes == null ? "N/A" : attributes.getRequest().getRequestURI();
+
+        if (withStackTrace) {
+            log.error(
+                    "event={} method={} uri={} status={} errorCode={} exceptionType={} message={}",
+                    event,
+                    method,
+                    uri,
+                    errorCode.getStatus().value(),
+                    errorCode.getCode(),
+                    e.getClass().getSimpleName(),
+                    e.getMessage(),
+                    e
+            );
+            return;
+        }
+        log.warn(
+                "event={} method={} uri={} status={} errorCode={} exceptionType={} message={}",
+                event,
+                method,
+                uri,
+                errorCode.getStatus().value(),
+                errorCode.getCode(),
+                e.getClass().getSimpleName(),
+                e.getMessage()
+        );
+    }
+
+    private void logUnhandledException(Exception e) {
+        ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+        String method = attributes == null ? "N/A" : attributes.getRequest().getMethod();
+        String uri = attributes == null ? "N/A" : attributes.getRequest().getRequestURI();
+
+        log.error(
+                "event=exception.unhandled method={} uri={} status={} exceptionType={} message={}",
+                method,
+                uri,
+                HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                e.getClass().getSimpleName(),
+                e.getMessage(),
+                e
+        );
+    }
+
+    private boolean isServerError(ErrorCode errorCode) {
+        return errorCode.getStatus().is5xxServerError();
     }
 }
