@@ -384,7 +384,9 @@ public class CurationProductServiceImpl implements CurationProductService {
             case "CLOSET": return "옷장";
             case "SINGLE_SOFA":
             case "CHAIR": return "의자/스툴";
-            case "DRESSER": return "화장대/협탁";
+            case "DRESSER":
+            case "DRESSING_TABLE": return "화장대/협탁"; // [pbem22, 2026-05-28, #548] DB nameEng 실제값 DRESSING_TABLE 추가
+            case "LIGHTING": return "조명"; // [pbem22, 2026-05-28, #548] DB Furniture LIGHTING(id=24) 대응
             default: break;
         }
 
@@ -403,6 +405,7 @@ public class CurationProductServiceImpl implements CurationProductService {
         List<FurnitureType> types = furnitureTypeRepository.findAll();
         List<Furniture> furnitures = furnitureRepository.findAll();
 
+        // [pbem22, 2026-05-28, #548] DB 실제 등록값 기준으로 고정 음수 ID → findFurniture() 전환
         return List.of(
                 new FurnitureTypeFilterResponse(0L, "전체", "ALL"),
                 findType(types, "BED", "침대/프레임", -10L),
@@ -412,9 +415,9 @@ public class CurationProductServiceImpl implements CurationProductService {
                 findFurniture(furnitures, "CLOSET", "옷장", -14L),
                 findType(types, "STORAGE", "수납/장식장", -15L),
                 findType(types, "SOFA", "소파", -16L),
-                new FurnitureTypeFilterResponse(-1L, "의자/스툴", "CHAIR"),
-                new FurnitureTypeFilterResponse(-2L, "화장대/협탁", "DRESSER"),
-                new FurnitureTypeFilterResponse(-3L, "조명", "LIGHTING"),
+                findFurniture(furnitures, "CHAIR", "의자/스툴", -1L),
+                findFurniture(furnitures, "DRESSING_TABLE", "화장대/협탁", -2L),
+                findFurniture(furnitures, "LIGHTING", "조명", -3L),
                 findType(types, "ETC", "기타", -17L)
         );
     }
