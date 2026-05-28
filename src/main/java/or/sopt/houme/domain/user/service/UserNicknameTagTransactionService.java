@@ -26,7 +26,7 @@ import java.util.stream.IntStream;
 @RequiredArgsConstructor
 public class UserNicknameTagTransactionService {
 
-    private static final int SIGN_UP_CREDIT_COUNT = 1;
+    private static final int SIGN_UP_CREDIT_COUNT = 5;
 
     private final UserRepository userRepository;
     private final CreditRepository creditRepository;
