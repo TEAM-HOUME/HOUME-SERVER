@@ -48,7 +48,7 @@ public class CurationProductServiceImpl implements CurationProductService {
     private static final String SELECTIVE_TYPE_NAMEENG = "SELECTIVE";
     private static final List<String> INDIVIDUAL_FILTER_FURNITURE_NAMEENGS = List.of(
             "OFFICE_DESK", "DINING_TABLE", "SITTING_TABLE", "CLOSET",
-            "DISPLAY_CABINET", "CHAIR", "DRESSING_TABLE", "LIGHTING"
+            "DISPLAY_CABINET", "CHAIR", "DRESSER", "DRESSING_TABLE", "LIGHTING"
     );
 
     private final FurnitureTypeRepository furnitureTypeRepository;
