@@ -44,6 +44,13 @@ import java.util.stream.Collectors;
 @Transactional(readOnly = true)
 public class CurationProductServiceImpl implements CurationProductService {
 
+    private static final String ETC_TYPE_NAMEENG = "ETC";
+    private static final String SELECTIVE_TYPE_NAMEENG = "SELECTIVE";
+    private static final List<String> INDIVIDUAL_FILTER_FURNITURE_NAMEENGS = List.of(
+            "OFFICE_DESK", "DINING_TABLE", "SITTING_TABLE", "CLOSET",
+            "DISPLAY_CABINET", "CHAIR", "DRESSING_TABLE", "LIGHTING"
+    );
+
     private final FurnitureTypeRepository furnitureTypeRepository;
     private final FurnitureRepository furnitureRepository;
     private final CurationRawProductRepository curationRawProductRepository;
@@ -77,27 +84,35 @@ public class CurationProductServiceImpl implements CurationProductService {
 
         // Sentinel 값(0L, 음수) 전처리
         List<Long> filteredTypeIds = preprocessTypeIds(typeIds);
-        
+
         // 0L(전체)이 포함되어 있다면 가구 유형 필터링을 적용하지 않음
         if (typeIds != null && typeIds.contains(0L)) {
-            filteredTypeIds = null; 
+            filteredTypeIds = null;
+        }
+
+        // ETC 필터 처리: SELECTIVE 타입 중 개별 필터 없는 상품 + 직접 매핑 상품
+        List<Long> etcProductIds = resolveEtcProductIds(typeIds, filteredTypeIds);
+        if (etcProductIds != null) {
+            filteredTypeIds = filteredTypeIds == null ? null :
+                    filteredTypeIds.stream().filter(id -> !id.equals(getEtcTypeId())).toList();
+            if (filteredTypeIds != null && filteredTypeIds.isEmpty()) filteredTypeIds = null;
         }
 
         Slice<CurationRawProduct> productSlice = curationRawProductRepository.findAllByCurationFilters(
-                keyword, filteredTypeIds, priceFilters, colorNames, cursor, pageable
+                keyword, filteredTypeIds, priceFilters, colorNames, cursor, pageable, etcProductIds
         );
 
         boolean isRecommended = false;
         if (productSlice.isEmpty()) {
-            boolean hasFilter = hasAnyFilter(filteredTypeIds, priceFilters, colorNames);
+            boolean hasFilter = hasAnyFilter(filteredTypeIds, priceFilters, colorNames) || (etcProductIds != null && !etcProductIds.isEmpty());
             if (hasFilter) {
                 productSlice = curationRawProductRepository.findAllByCurationFiltersRecommend(
-                        filteredTypeIds, priceFilters, colorNames, cursor, pageable
+                        filteredTypeIds, priceFilters, colorNames, cursor, pageable, etcProductIds
                 );
             }
             if (productSlice.isEmpty()) {
                 productSlice = curationRawProductRepository.findAllByCurationFilters(
-                        null, null, null, null, cursor, pageable
+                        null, null, null, null, cursor, pageable, null
                 );
             }
             isRecommended = true;
@@ -245,21 +260,29 @@ public class CurationProductServiceImpl implements CurationProductService {
             filteredTypeIds = null;
         }
 
+        // ETC 필터 처리: SELECTIVE 타입 중 개별 필터 없는 상품 + 직접 매핑 상품
+        List<Long> etcProductIds = resolveEtcProductIds(typeIds, filteredTypeIds);
+        if (etcProductIds != null) {
+            filteredTypeIds = filteredTypeIds == null ? null :
+                    filteredTypeIds.stream().filter(id -> !id.equals(getEtcTypeId())).toList();
+            if (filteredTypeIds != null && filteredTypeIds.isEmpty()) filteredTypeIds = null;
+        }
+
         Slice<CurationRawProduct> productSlice = curationRawProductRepository.findAllByCurationFiltersV2(
-                keyword, filteredTypeIds, priceFilters, colorNames, cursor, pageable
+                keyword, filteredTypeIds, priceFilters, colorNames, cursor, pageable, etcProductIds
         );
 
         boolean isRecommended = false;
         if (productSlice.isEmpty()) {
-            boolean hasFilter = hasAnyFilter(filteredTypeIds, priceFilters, colorNames);
+            boolean hasFilter = hasAnyFilter(filteredTypeIds, priceFilters, colorNames) || (etcProductIds != null && !etcProductIds.isEmpty());
             if (hasFilter) {
                 productSlice = curationRawProductRepository.findAllByCurationFiltersRecommend(
-                        filteredTypeIds, priceFilters, colorNames, cursor, pageable
+                        filteredTypeIds, priceFilters, colorNames, cursor, pageable, etcProductIds
                 );
             }
             if (productSlice.isEmpty()) {
                 productSlice = curationRawProductRepository.findAllByCurationFiltersV2(
-                        null, null, null, null, cursor, pageable
+                        null, null, null, null, cursor, pageable, null
                 );
             }
             isRecommended = true;
@@ -413,13 +436,48 @@ public class CurationProductServiceImpl implements CurationProductService {
                 findFurniture(furnitures, "DINING_TABLE", "식탁", -12L),
                 findFurniture(furnitures, "SITTING_TABLE", "좌식 테이블", -13L),
                 findFurniture(furnitures, "CLOSET", "옷장", -14L),
-                findType(types, "STORAGE", "수납/장식장", -15L),
+                findFurniture(furnitures, "DISPLAY_CABINET", "수납/장식장", -15L),
                 findType(types, "SOFA", "소파", -16L),
                 findFurniture(furnitures, "CHAIR", "의자/스툴", -1L),
                 findFurniture(furnitures, "DRESSING_TABLE", "화장대/협탁", -2L),
                 findFurniture(furnitures, "LIGHTING", "조명", -3L),
                 findType(types, "ETC", "기타", -17L)
         );
+    }
+
+    private Long getEtcTypeId() {
+        return furnitureTypeRepository.findAll().stream()
+                .filter(t -> ETC_TYPE_NAMEENG.equalsIgnoreCase(t.getNameEng()))
+                .map(FurnitureType::getId)
+                .findFirst()
+                .orElse(null);
+    }
+
+    private List<Long> resolveEtcProductIds(List<Long> rawTypeIds, List<Long> filteredTypeIds) {
+        if (rawTypeIds == null || rawTypeIds.contains(0L)) return null;
+
+        Long etcTypeId = getEtcTypeId();
+        if (etcTypeId == null || !rawTypeIds.contains(etcTypeId)) return null;
+
+        Long selectiveTypeId = furnitureTypeRepository.findAll().stream()
+                .filter(t -> SELECTIVE_TYPE_NAMEENG.equalsIgnoreCase(t.getNameEng()))
+                .map(FurnitureType::getId)
+                .findFirst()
+                .orElse(null);
+
+        List<Long> excludedFurnitureIds = furnitureRepository.findAll().stream()
+                .filter(f -> f.getFurnitureNameEng() != null &&
+                        INDIVIDUAL_FILTER_FURNITURE_NAMEENGS.contains(f.getFurnitureNameEng().toUpperCase()))
+                .map(Furniture::getId)
+                .toList();
+
+        Long etcDirectFurnitureId = furnitureRepository.findAll().stream()
+                .filter(f -> ETC_TYPE_NAMEENG.equalsIgnoreCase(f.getFurnitureNameEng()))
+                .map(Furniture::getId)
+                .findFirst()
+                .orElse(null);
+
+        return curationRawProductRepository.findEtcProductIds(selectiveTypeId, excludedFurnitureIds, etcDirectFurnitureId);
     }
 
     private FurnitureTypeFilterResponse findType(List<FurnitureType> types, String nameEng, String labelKr, Long fallbackId) {

@@ -12,6 +12,7 @@ import or.sopt.houme.domain.furniture.model.entity.CurationRawProduct;
 import or.sopt.houme.domain.furniture.model.entity.CurationSource;
 import or.sopt.houme.domain.furniture.model.entity.QCurationRawProduct;
 import or.sopt.houme.domain.furniture.model.entity.QCurationRawProductColor;
+import or.sopt.houme.domain.furniture.model.entity.QCurationRawProductFurniture;
 import or.sopt.houme.domain.furniture.model.entity.QCurationRawProductFurnitureTag;
 import or.sopt.houme.domain.furniture.model.entity.QFurniture;
 import or.sopt.houme.domain.furniture.model.entity.QFurnitureTag;
@@ -75,7 +76,8 @@ public class CurationRawProductRepositoryImpl implements CurationRawProductRepos
             List<PriceRangeFilter> priceRanges,
             List<String> colorNames,
             Long cursor,
-            Pageable pageable
+            Pageable pageable,
+            List<Long> additionalProductIds
     ) {
         QCurationRawProduct rawProduct = QCurationRawProduct.curationRawProduct;
         QCurationRawProductFurnitureTag mapping = QCurationRawProductFurnitureTag.curationRawProductFurnitureTag;
@@ -96,15 +98,22 @@ public class CurationRawProductRepositoryImpl implements CurationRawProductRepos
                     .or(rawProduct.brand.containsIgnoreCase(keyword)));
         }
 
-        if (typeIds != null && !typeIds.isEmpty()) {
-            finalWhere.and(rawProduct.id.in(
-                    queryFactory.select(mapping.curationRawProduct.id)
-                            .from(mapping)
-                            .join(mapping.furnitureTag, fTag)
-                            .join(fTag.furniture, furniture)
-                            .leftJoin(furniture.furnitureType, fType)
-                            .where(fType.id.in(typeIds).or(furniture.id.in(typeIds)))
-            ));
+        if ((typeIds != null && !typeIds.isEmpty()) || (additionalProductIds != null && !additionalProductIds.isEmpty())) {
+            BooleanBuilder typeOrEtc = new BooleanBuilder();
+            if (typeIds != null && !typeIds.isEmpty()) {
+                typeOrEtc.or(rawProduct.id.in(
+                        queryFactory.select(mapping.curationRawProduct.id)
+                                .from(mapping)
+                                .join(mapping.furnitureTag, fTag)
+                                .join(fTag.furniture, furniture)
+                                .leftJoin(furniture.furnitureType, fType)
+                                .where(fType.id.in(typeIds).or(furniture.id.in(typeIds)))
+                ));
+            }
+            if (additionalProductIds != null && !additionalProductIds.isEmpty()) {
+                typeOrEtc.or(rawProduct.id.in(additionalProductIds));
+            }
+            finalWhere.and(typeOrEtc);
         }
 
         if (priceRanges != null && !priceRanges.isEmpty()) {
@@ -153,7 +162,8 @@ public class CurationRawProductRepositoryImpl implements CurationRawProductRepos
             List<PriceRangeFilter> priceRanges,
             List<String> colorNames,
             Long cursor,
-            Pageable pageable
+            Pageable pageable,
+            List<Long> additionalProductIds
     ) {
         QCurationRawProduct rawProduct = QCurationRawProduct.curationRawProduct;
         QCurationRawProductFurnitureTag mapping = QCurationRawProductFurnitureTag.curationRawProductFurnitureTag;
@@ -174,15 +184,22 @@ public class CurationRawProductRepositoryImpl implements CurationRawProductRepos
             finalWhere.and(rawProduct.searchTokens.contains(keyword.toLowerCase()));
         }
 
-        if (typeIds != null && !typeIds.isEmpty()) {
-            finalWhere.and(rawProduct.id.in(
-                    queryFactory.select(mapping.curationRawProduct.id)
-                            .from(mapping)
-                            .join(mapping.furnitureTag, fTag)
-                            .join(fTag.furniture, furniture)
-                            .leftJoin(furniture.furnitureType, fType)
-                            .where(fType.id.in(typeIds).or(furniture.id.in(typeIds)))
-            ));
+        if ((typeIds != null && !typeIds.isEmpty()) || (additionalProductIds != null && !additionalProductIds.isEmpty())) {
+            BooleanBuilder typeOrEtc = new BooleanBuilder();
+            if (typeIds != null && !typeIds.isEmpty()) {
+                typeOrEtc.or(rawProduct.id.in(
+                        queryFactory.select(mapping.curationRawProduct.id)
+                                .from(mapping)
+                                .join(mapping.furnitureTag, fTag)
+                                .join(fTag.furniture, furniture)
+                                .leftJoin(furniture.furnitureType, fType)
+                                .where(fType.id.in(typeIds).or(furniture.id.in(typeIds)))
+                ));
+            }
+            if (additionalProductIds != null && !additionalProductIds.isEmpty()) {
+                typeOrEtc.or(rawProduct.id.in(additionalProductIds));
+            }
+            finalWhere.and(typeOrEtc);
         }
 
         if (priceRanges != null && !priceRanges.isEmpty()) {
@@ -419,7 +436,8 @@ public class CurationRawProductRepositoryImpl implements CurationRawProductRepos
             List<PriceRangeFilter> priceRanges,
             List<String> colorNames,
             Long cursor,
-            Pageable pageable
+            Pageable pageable,
+            List<Long> additionalProductIds
     ) {
         QCurationRawProduct rawProduct = QCurationRawProduct.curationRawProduct;
         QCurationRawProductFurnitureTag mapping = QCurationRawProductFurnitureTag.curationRawProductFurnitureTag;
@@ -450,6 +468,13 @@ public class CurationRawProductRepositoryImpl implements CurationRawProductRepos
                     new CaseBuilder().when(rawProduct.id.in(typeSubquery)).then(1).otherwise(0)
             );
             atLeastOne.or(rawProduct.id.in(typeSubquery));
+        }
+
+        if (additionalProductIds != null && !additionalProductIds.isEmpty()) {
+            matchScore = matchScore.add(
+                    new CaseBuilder().when(rawProduct.id.in(additionalProductIds)).then(1).otherwise(0)
+            );
+            atLeastOne.or(rawProduct.id.in(additionalProductIds));
         }
 
         if (priceRanges != null && !priceRanges.isEmpty()) {
@@ -498,6 +523,47 @@ public class CurationRawProductRepositoryImpl implements CurationRawProductRepos
         }
 
         return new SliceImpl<>(content, pageable, hasNext);
+    }
+
+    @Override
+    public List<Long> findEtcProductIds(Long selectiveTypeId, List<Long> excludedFurnitureIds, Long etcDirectFurnitureId) {
+        QCurationRawProduct rawProduct = QCurationRawProduct.curationRawProduct;
+        QCurationRawProductFurnitureTag mapping = QCurationRawProductFurnitureTag.curationRawProductFurnitureTag;
+        QFurnitureTag fTag = QFurnitureTag.furnitureTag;
+        QFurniture furniture = QFurniture.furniture;
+        QFurnitureType fType = QFurnitureType.furnitureType;
+        QCurationRawProductFurniture directMapping = QCurationRawProductFurniture.curationRawProductFurniture;
+
+        java.util.Set<Long> result = new java.util.HashSet<>();
+
+        // FurnitureTag 경로: SELECTIVE 타입 하위 중 개별 필터 가구 제외
+        if (selectiveTypeId != null) {
+            com.querydsl.core.types.dsl.BooleanExpression typeCondition = fType.id.eq(selectiveTypeId);
+            if (excludedFurnitureIds != null && !excludedFurnitureIds.isEmpty()) {
+                typeCondition = typeCondition.and(furniture.id.notIn(excludedFurnitureIds));
+            }
+            List<Long> fromTag = queryFactory
+                    .select(mapping.curationRawProduct.id)
+                    .from(mapping)
+                    .join(mapping.furnitureTag, fTag)
+                    .join(fTag.furniture, furniture)
+                    .join(furniture.furnitureType, fType)
+                    .where(typeCondition)
+                    .fetch();
+            result.addAll(fromTag);
+        }
+
+        // 직접 매핑 경로: ETC Furniture에 바로 매핑된 상품
+        if (etcDirectFurnitureId != null) {
+            List<Long> fromDirect = queryFactory
+                    .select(directMapping.curationRawProduct.id)
+                    .from(directMapping)
+                    .where(directMapping.furniture.id.eq(etcDirectFurnitureId))
+                    .fetch();
+            result.addAll(fromDirect);
+        }
+
+        return new java.util.ArrayList<>(result);
     }
 
     private BooleanExpression containsIgnoreCase(com.querydsl.core.types.dsl.StringPath path, String keyword) {
