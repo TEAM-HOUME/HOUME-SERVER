@@ -415,7 +415,6 @@ public class CurationProductServiceImpl implements CurationProductService {
 
         return switch (typeEng) {
             case "BED" -> "침대/프레임";
-            case "STORAGE" -> "수납/장식장";
             case "SOFA" -> "소파";
             case "LIGHTING" -> "조명";
             case "SELECTIVE" -> "그 외";
