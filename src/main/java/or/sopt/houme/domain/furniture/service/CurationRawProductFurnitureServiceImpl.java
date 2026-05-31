@@ -81,7 +81,7 @@ public class CurationRawProductFurnitureServiceImpl implements CurationRawProduc
                 .map(raw -> {
                     List<ProductColorResponse> colors =
                             colorsByRawProductId.getOrDefault(raw.getId(), List.of());
-                    boolean isLiked = likedRawProductIds.contains(raw.getId());
+                    boolean isLiked = likedRawProductIds.contains(raw.getProductId());
 
                     FurnitureProductsInfoResponseV2.ProductInfo product = new FurnitureProductsInfoResponseV2.ProductInfo(
                             raw.getId(),
@@ -155,7 +155,7 @@ public class CurationRawProductFurnitureServiceImpl implements CurationRawProduc
         return jjymRepository.findAllByUserIdAndRecommendFurnitureIdIn(user.getId(), recommendIds).stream()
                 .map(Jjym::getRecommendFurniture)
                 .filter(Objects::nonNull)
-                .map(RecommendFurniture::getId)
+                .map(RecommendFurniture::getFurnitureProductId)
                 .collect(Collectors.toSet());
     }
 
