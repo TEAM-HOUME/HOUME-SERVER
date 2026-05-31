@@ -91,10 +91,12 @@ public class CurationProductServiceImpl implements CurationProductService {
         }
 
         // ETC 필터 처리: SELECTIVE 타입 중 개별 필터 없는 상품 + 직접 매핑 상품
-        List<Long> etcProductIds = resolveEtcProductIds(typeIds, filteredTypeIds);
+        EtcResolution etc = resolveEtc(typeIds);
+        List<Long> etcProductIds = etc.productIds();
         if (etcProductIds != null) {
+            Long etcTypeId = etc.typeId();
             filteredTypeIds = filteredTypeIds == null ? null :
-                    filteredTypeIds.stream().filter(id -> !id.equals(getEtcTypeId())).toList();
+                    filteredTypeIds.stream().filter(id -> !id.equals(etcTypeId)).toList();
             if (filteredTypeIds != null && filteredTypeIds.isEmpty()) filteredTypeIds = null;
         }
 
@@ -261,10 +263,12 @@ public class CurationProductServiceImpl implements CurationProductService {
         }
 
         // ETC 필터 처리: SELECTIVE 타입 중 개별 필터 없는 상품 + 직접 매핑 상품
-        List<Long> etcProductIds = resolveEtcProductIds(typeIds, filteredTypeIds);
+        EtcResolution etc = resolveEtc(typeIds);
+        List<Long> etcProductIds = etc.productIds();
         if (etcProductIds != null) {
+            Long etcTypeId = etc.typeId();
             filteredTypeIds = filteredTypeIds == null ? null :
-                    filteredTypeIds.stream().filter(id -> !id.equals(getEtcTypeId())).toList();
+                    filteredTypeIds.stream().filter(id -> !id.equals(etcTypeId)).toList();
             if (filteredTypeIds != null && filteredTypeIds.isEmpty()) filteredTypeIds = null;
         }
 
@@ -444,39 +448,37 @@ public class CurationProductServiceImpl implements CurationProductService {
         );
     }
 
-    private Long getEtcTypeId() {
-        return furnitureTypeRepository.findAll().stream()
+    private record EtcResolution(Long typeId, List<Long> productIds) {}
+
+    private EtcResolution resolveEtc(List<Long> rawTypeIds) {
+        if (rawTypeIds == null || rawTypeIds.contains(0L)) return new EtcResolution(null, null);
+
+        List<FurnitureType> allTypes = furnitureTypeRepository.findAll();
+        Long etcTypeId = allTypes.stream()
                 .filter(t -> ETC_TYPE_NAMEENG.equalsIgnoreCase(t.getNameEng()))
                 .map(FurnitureType::getId)
-                .findFirst()
-                .orElse(null);
-    }
+                .findFirst().orElse(null);
+        if (etcTypeId == null || !rawTypeIds.contains(etcTypeId)) return new EtcResolution(etcTypeId, null);
 
-    private List<Long> resolveEtcProductIds(List<Long> rawTypeIds, List<Long> filteredTypeIds) {
-        if (rawTypeIds == null || rawTypeIds.contains(0L)) return null;
-
-        Long etcTypeId = getEtcTypeId();
-        if (etcTypeId == null || !rawTypeIds.contains(etcTypeId)) return null;
-
-        Long selectiveTypeId = furnitureTypeRepository.findAll().stream()
+        Long selectiveTypeId = allTypes.stream()
                 .filter(t -> SELECTIVE_TYPE_NAMEENG.equalsIgnoreCase(t.getNameEng()))
                 .map(FurnitureType::getId)
-                .findFirst()
-                .orElse(null);
+                .findFirst().orElse(null);
 
-        List<Long> excludedFurnitureIds = furnitureRepository.findAll().stream()
+        List<Furniture> allFurnitures = furnitureRepository.findAll();
+        List<Long> excludedFurnitureIds = allFurnitures.stream()
                 .filter(f -> f.getFurnitureNameEng() != null &&
                         INDIVIDUAL_FILTER_FURNITURE_NAMEENGS.contains(f.getFurnitureNameEng().toUpperCase()))
                 .map(Furniture::getId)
                 .toList();
-
-        Long etcDirectFurnitureId = furnitureRepository.findAll().stream()
+        Long etcDirectFurnitureId = allFurnitures.stream()
                 .filter(f -> ETC_TYPE_NAMEENG.equalsIgnoreCase(f.getFurnitureNameEng()))
                 .map(Furniture::getId)
-                .findFirst()
-                .orElse(null);
+                .findFirst().orElse(null);
 
-        return curationRawProductRepository.findEtcProductIds(selectiveTypeId, excludedFurnitureIds, etcDirectFurnitureId);
+        List<Long> productIds = curationRawProductRepository.findEtcProductIds(
+                selectiveTypeId, excludedFurnitureIds, etcDirectFurnitureId);
+        return new EtcResolution(etcTypeId, productIds);
     }
 
     private FurnitureTypeFilterResponse findType(List<FurnitureType> types, String nameEng, String labelKr, Long fallbackId) {
