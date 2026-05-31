@@ -44,6 +44,13 @@ import java.util.stream.Collectors;
 @Transactional(readOnly = true)
 public class CurationProductServiceImpl implements CurationProductService {
 
+    private static final String ETC_TYPE_NAMEENG = "ETC";
+    private static final String SELECTIVE_TYPE_NAMEENG = "SELECTIVE";
+    private static final List<String> INDIVIDUAL_FILTER_FURNITURE_NAMEENGS = List.of(
+            "OFFICE_DESK", "DINING_TABLE", "SITTING_TABLE", "CLOSET",
+            "DISPLAY_CABINET", "CHAIR", "DRESSER", "DRESSING_TABLE", "LIGHTING"
+    );
+
     private final FurnitureTypeRepository furnitureTypeRepository;
     private final FurnitureRepository furnitureRepository;
     private final CurationRawProductRepository curationRawProductRepository;
@@ -77,27 +84,37 @@ public class CurationProductServiceImpl implements CurationProductService {
 
         // Sentinel 값(0L, 음수) 전처리
         List<Long> filteredTypeIds = preprocessTypeIds(typeIds);
-        
+
         // 0L(전체)이 포함되어 있다면 가구 유형 필터링을 적용하지 않음
         if (typeIds != null && typeIds.contains(0L)) {
-            filteredTypeIds = null; 
+            filteredTypeIds = null;
+        }
+
+        // ETC 필터 처리: SELECTIVE 타입 중 개별 필터 없는 상품 + 직접 매핑 상품
+        EtcResolution etc = resolveEtc(typeIds);
+        List<Long> etcProductIds = etc.productIds();
+        if (etcProductIds != null) {
+            Long etcTypeId = etc.typeId();
+            filteredTypeIds = filteredTypeIds == null ? null :
+                    filteredTypeIds.stream().filter(id -> !id.equals(etcTypeId)).toList();
+            if (filteredTypeIds != null && filteredTypeIds.isEmpty()) filteredTypeIds = null;
         }
 
         Slice<CurationRawProduct> productSlice = curationRawProductRepository.findAllByCurationFilters(
-                keyword, filteredTypeIds, priceFilters, colorNames, cursor, pageable
+                keyword, filteredTypeIds, priceFilters, colorNames, cursor, pageable, etcProductIds
         );
 
         boolean isRecommended = false;
         if (productSlice.isEmpty()) {
-            boolean hasFilter = hasAnyFilter(filteredTypeIds, priceFilters, colorNames);
+            boolean hasFilter = hasAnyFilter(filteredTypeIds, priceFilters, colorNames) || (etcProductIds != null && !etcProductIds.isEmpty());
             if (hasFilter) {
                 productSlice = curationRawProductRepository.findAllByCurationFiltersRecommend(
-                        filteredTypeIds, priceFilters, colorNames, cursor, pageable
+                        filteredTypeIds, priceFilters, colorNames, cursor, pageable, etcProductIds
                 );
             }
             if (productSlice.isEmpty()) {
                 productSlice = curationRawProductRepository.findAllByCurationFilters(
-                        null, null, null, null, cursor, pageable
+                        null, null, null, null, cursor, pageable, null
                 );
             }
             isRecommended = true;
@@ -245,21 +262,31 @@ public class CurationProductServiceImpl implements CurationProductService {
             filteredTypeIds = null;
         }
 
+        // ETC 필터 처리: SELECTIVE 타입 중 개별 필터 없는 상품 + 직접 매핑 상품
+        EtcResolution etc = resolveEtc(typeIds);
+        List<Long> etcProductIds = etc.productIds();
+        if (etcProductIds != null) {
+            Long etcTypeId = etc.typeId();
+            filteredTypeIds = filteredTypeIds == null ? null :
+                    filteredTypeIds.stream().filter(id -> !id.equals(etcTypeId)).toList();
+            if (filteredTypeIds != null && filteredTypeIds.isEmpty()) filteredTypeIds = null;
+        }
+
         Slice<CurationRawProduct> productSlice = curationRawProductRepository.findAllByCurationFiltersV2(
-                keyword, filteredTypeIds, priceFilters, colorNames, cursor, pageable
+                keyword, filteredTypeIds, priceFilters, colorNames, cursor, pageable, etcProductIds
         );
 
         boolean isRecommended = false;
         if (productSlice.isEmpty()) {
-            boolean hasFilter = hasAnyFilter(filteredTypeIds, priceFilters, colorNames);
+            boolean hasFilter = hasAnyFilter(filteredTypeIds, priceFilters, colorNames) || (etcProductIds != null && !etcProductIds.isEmpty());
             if (hasFilter) {
                 productSlice = curationRawProductRepository.findAllByCurationFiltersRecommend(
-                        filteredTypeIds, priceFilters, colorNames, cursor, pageable
+                        filteredTypeIds, priceFilters, colorNames, cursor, pageable, etcProductIds
                 );
             }
             if (productSlice.isEmpty()) {
                 productSlice = curationRawProductRepository.findAllByCurationFiltersV2(
-                        null, null, null, null, cursor, pageable
+                        null, null, null, null, cursor, pageable, null
                 );
             }
             isRecommended = true;
@@ -384,13 +411,14 @@ public class CurationProductServiceImpl implements CurationProductService {
             case "CLOSET": return "옷장";
             case "SINGLE_SOFA":
             case "CHAIR": return "의자/스툴";
-            case "DRESSER": return "화장대/협탁";
+            case "DRESSER":
+            case "DRESSING_TABLE": return "화장대/협탁"; // [pbem22, 2026-05-28, #548] DB nameEng 실제값 DRESSING_TABLE 추가
+            case "LIGHTING": return "조명"; // [pbem22, 2026-05-28, #548] DB Furniture LIGHTING(id=24) 대응
             default: break;
         }
 
         return switch (typeEng) {
             case "BED" -> "침대/프레임";
-            case "STORAGE" -> "수납/장식장";
             case "SOFA" -> "소파";
             case "LIGHTING" -> "조명";
             case "SELECTIVE" -> "그 외";
@@ -403,6 +431,7 @@ public class CurationProductServiceImpl implements CurationProductService {
         List<FurnitureType> types = furnitureTypeRepository.findAll();
         List<Furniture> furnitures = furnitureRepository.findAll();
 
+        // [pbem22, 2026-05-28, #548] DB 실제 등록값 기준으로 고정 음수 ID → findFurniture() 전환
         return List.of(
                 new FurnitureTypeFilterResponse(0L, "전체", "ALL"),
                 findType(types, "BED", "침대/프레임", -10L),
@@ -410,13 +439,46 @@ public class CurationProductServiceImpl implements CurationProductService {
                 findFurniture(furnitures, "DINING_TABLE", "식탁", -12L),
                 findFurniture(furnitures, "SITTING_TABLE", "좌식 테이블", -13L),
                 findFurniture(furnitures, "CLOSET", "옷장", -14L),
-                findType(types, "STORAGE", "수납/장식장", -15L),
+                findFurniture(furnitures, "DISPLAY_CABINET", "수납/장식장", -15L),
                 findType(types, "SOFA", "소파", -16L),
-                new FurnitureTypeFilterResponse(-1L, "의자/스툴", "CHAIR"),
-                new FurnitureTypeFilterResponse(-2L, "화장대/협탁", "DRESSER"),
-                new FurnitureTypeFilterResponse(-3L, "조명", "LIGHTING"),
+                findFurniture(furnitures, "CHAIR", "의자/스툴", -1L),
+                findFurniture(furnitures, "DRESSING_TABLE", "화장대/협탁", -2L),
+                findFurniture(furnitures, "LIGHTING", "조명", -3L),
                 findType(types, "ETC", "기타", -17L)
         );
+    }
+
+    private record EtcResolution(Long typeId, List<Long> productIds) {}
+
+    private EtcResolution resolveEtc(List<Long> rawTypeIds) {
+        if (rawTypeIds == null || rawTypeIds.contains(0L)) return new EtcResolution(null, null);
+
+        List<FurnitureType> allTypes = furnitureTypeRepository.findAll();
+        Long etcTypeId = allTypes.stream()
+                .filter(t -> ETC_TYPE_NAMEENG.equalsIgnoreCase(t.getNameEng()))
+                .map(FurnitureType::getId)
+                .findFirst().orElse(null);
+        if (etcTypeId == null || !rawTypeIds.contains(etcTypeId)) return new EtcResolution(etcTypeId, null);
+
+        Long selectiveTypeId = allTypes.stream()
+                .filter(t -> SELECTIVE_TYPE_NAMEENG.equalsIgnoreCase(t.getNameEng()))
+                .map(FurnitureType::getId)
+                .findFirst().orElse(null);
+
+        List<Furniture> allFurnitures = furnitureRepository.findAll();
+        List<Long> excludedFurnitureIds = allFurnitures.stream()
+                .filter(f -> f.getFurnitureNameEng() != null &&
+                        INDIVIDUAL_FILTER_FURNITURE_NAMEENGS.contains(f.getFurnitureNameEng().toUpperCase()))
+                .map(Furniture::getId)
+                .toList();
+        Long etcDirectFurnitureId = allFurnitures.stream()
+                .filter(f -> ETC_TYPE_NAMEENG.equalsIgnoreCase(f.getFurnitureNameEng()))
+                .map(Furniture::getId)
+                .findFirst().orElse(null);
+
+        List<Long> productIds = curationRawProductRepository.findEtcProductIds(
+                selectiveTypeId, excludedFurnitureIds, etcDirectFurnitureId);
+        return new EtcResolution(etcTypeId, productIds);
     }
 
     private FurnitureTypeFilterResponse findType(List<FurnitureType> types, String nameEng, String labelKr, Long fallbackId) {

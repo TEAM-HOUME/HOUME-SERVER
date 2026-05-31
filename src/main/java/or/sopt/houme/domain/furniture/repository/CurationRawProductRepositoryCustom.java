@@ -16,7 +16,8 @@ public interface CurationRawProductRepositoryCustom {
             List<PriceRangeFilter> priceRanges,
             List<String> colorNames,
             Long cursor,
-            Pageable pageable
+            Pageable pageable,
+            List<Long> additionalProductIds
     );
 
     Slice<CurationRawProduct> findAllByCurationFiltersV2(
@@ -25,7 +26,8 @@ public interface CurationRawProductRepositoryCustom {
             List<PriceRangeFilter> priceRanges,
             List<String> colorNames,
             Long cursor,
-            Pageable pageable
+            Pageable pageable,
+            List<Long> additionalProductIds
     );
 
     Slice<CurationRawProduct> findAllByCurationFiltersRecommend(
@@ -33,8 +35,11 @@ public interface CurationRawProductRepositoryCustom {
             List<PriceRangeFilter> priceRanges,
             List<String> colorNames,
             Long cursor,
-            Pageable pageable
+            Pageable pageable,
+            List<Long> additionalProductIds
     );
+
+    List<Long> findEtcProductIds(Long selectiveTypeId, List<Long> excludedFurnitureIds, Long etcDirectFurnitureId);
 
     Page<CurationRawProduct> findExposedRawProductsExcludingLikedByUser(Long userId, Pageable pageable);
     Long findMaxExposedRawProductIdExcludingLikedByUser(Long userId);

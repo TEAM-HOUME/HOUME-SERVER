@@ -112,7 +112,7 @@ class CurationProductServiceImplTest {
         );
 
         given(curationRawProductRepository.findAllByCurationFilters(
-                eq(keyword), any(), any(), any(), eq(cursor), any()
+                eq(keyword), any(), any(), any(), eq(cursor), any(), any()
         )).willReturn(slice);
 
         // when
@@ -150,7 +150,7 @@ class CurationProductServiceImplTest {
         );
 
         given(curationRawProductRepository.findAllByCurationFiltersV2(
-                eq(keyword), any(), any(), any(), any(), any()
+                eq(keyword), any(), any(), any(), any(), any(), any()
         )).willReturn(slice);
 
         // when
@@ -182,9 +182,9 @@ class CurationProductServiceImplTest {
                 .isExposed(true).furnitureTagMappings(new HashSet<>()).build();
         Slice<CurationRawProduct> recommendSlice = new SliceImpl<>(List.of(recommended), PageRequest.of(0, size), false);
 
-        given(curationRawProductRepository.findAllByCurationFilters(any(), any(), any(), any(), any(), any()))
+        given(curationRawProductRepository.findAllByCurationFilters(any(), any(), any(), any(), any(), any(), any()))
                 .willReturn(emptySlice);
-        given(curationRawProductRepository.findAllByCurationFiltersRecommend(any(), any(), any(), any(), any()))
+        given(curationRawProductRepository.findAllByCurationFiltersRecommend(any(), any(), any(), any(), any(), any()))
                 .willReturn(recommendSlice);
 
         // when
@@ -210,7 +210,7 @@ class CurationProductServiceImplTest {
         Slice<CurationRawProduct> emptySlice = new SliceImpl<>(List.of(), PageRequest.of(0, size), false);
         Slice<CurationRawProduct> fallbackSlice = new SliceImpl<>(List.of(fallback), PageRequest.of(0, size), false);
 
-        given(curationRawProductRepository.findAllByCurationFilters(any(), any(), any(), any(), any(), any()))
+        given(curationRawProductRepository.findAllByCurationFilters(any(), any(), any(), any(), any(), any(), any()))
                 .willReturn(emptySlice)
                 .willReturn(fallbackSlice);
 
@@ -242,9 +242,9 @@ class CurationProductServiceImplTest {
                 .isExposed(true).furnitureTagMappings(new HashSet<>()).build();
         Slice<CurationRawProduct> recommendSlice = new SliceImpl<>(List.of(recommended), PageRequest.of(0, size), false);
 
-        given(curationRawProductRepository.findAllByCurationFiltersV2(any(), any(), any(), any(), any(), any()))
+        given(curationRawProductRepository.findAllByCurationFiltersV2(any(), any(), any(), any(), any(), any(), any()))
                 .willReturn(emptySlice);
-        given(curationRawProductRepository.findAllByCurationFiltersRecommend(any(), any(), any(), any(), any()))
+        given(curationRawProductRepository.findAllByCurationFiltersRecommend(any(), any(), any(), any(), any(), any()))
                 .willReturn(recommendSlice);
 
         // when
@@ -270,7 +270,7 @@ class CurationProductServiceImplTest {
         Slice<CurationRawProduct> emptySlice = new SliceImpl<>(List.of(), PageRequest.of(0, size), false);
         Slice<CurationRawProduct> fallbackSlice = new SliceImpl<>(List.of(fallback), PageRequest.of(0, size), false);
 
-        given(curationRawProductRepository.findAllByCurationFiltersV2(any(), any(), any(), any(), any(), any()))
+        given(curationRawProductRepository.findAllByCurationFiltersV2(any(), any(), any(), any(), any(), any(), any()))
                 .willReturn(emptySlice)
                 .willReturn(fallbackSlice);
 
