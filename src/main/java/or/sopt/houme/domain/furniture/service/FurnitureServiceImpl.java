@@ -41,6 +41,11 @@ import java.util.stream.Collectors;
 @Transactional(readOnly = true)
 public class FurnitureServiceImpl implements FurnitureService {
 
+    private static final Set<String> FUNNEL_EXCLUDED_TYPE_NAMEENGS = Set.of("ETC");
+    private static final Set<String> FUNNEL_EXCLUDED_FURNITURE_NAMEENGS = Set.of(
+            "CHAIR", "DRESSING_TABLE", "LIGHTING", "CLOSET", "ETC"
+    );
+
     private final FurnitureRepository furnitureRepository;
     private final UserRepository userRepository;
     private final TagRepository tagRepository;
@@ -69,11 +74,13 @@ public class FurnitureServiceImpl implements FurnitureService {
 
     @Override
     public List<FurnitureCategoryGroup> getDashboardCategories() {
-        // 모든 카테고리 가져오기
-        List<FurnitureType> furnitureTypes = furnitureTypeRepository.findAll();
+        List<FurnitureType> furnitureTypes = furnitureTypeRepository.findAll().stream()
+                .filter(t -> t.getNameEng() == null || !FUNNEL_EXCLUDED_TYPE_NAMEENGS.contains(t.getNameEng().toUpperCase()))
+                .toList();
 
-        // findAllWithFurnitureType() 으로 N+1 방지
-        List<Furniture> furnitureList = furnitureRepository.findAllWithFurnitureType();
+        List<Furniture> furnitureList = furnitureRepository.findAllWithFurnitureType().stream()
+                .filter(f -> f.getFurnitureNameEng() == null || !FUNNEL_EXCLUDED_FURNITURE_NAMEENGS.contains(f.getFurnitureNameEng().toUpperCase()))
+                .toList();
 
         // FurnitureType 별로 그룹화
         Map<Long, List<FurnitureItem>> furnitureByCategory = furnitureList.stream()
