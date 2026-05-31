@@ -57,6 +57,9 @@ public class FurnitureServiceImpl implements FurnitureService {
     private final NaverShopApiClient naverShopApiClient;
     private final FastApiImageHashClient imageHashClient;
 
+    // [pbem22, 2026-05-28, #541] CurationRawProductFurniture 경로 폴백을 위해 추가
+    private final CurationRawProductFurnitureService curationRawProductFurnitureService;
+
     // 가구 반환
     @Cacheable(value = "furnitureAndActivityCache")
     @Override
@@ -171,7 +174,21 @@ public class FurnitureServiceImpl implements FurnitureService {
 
         // 3. 선택 가구들과 스타일 태그에 해당하는 매핑 객체를 furniture_tags에서 조회
         List<FurnitureTag> matchedTags = furnitureTagRepository.findAllByTagIdAndFurnitureIn(tag.getId(), selectedFurnitures);
-        return buildCategoryResponse(matchedTags);
+
+        // [pbem22, 2026-05-28, #541] FurnitureTag 경로에 없는 가구도 CurationRawProductFurniture로 매핑된 경우 카테고리에 포함
+        List<Long> selectedFurnitureIds = selectedFurnitures.stream().map(Furniture::getId).toList();
+        Set<Long> taggedFurnitureIds = matchedTags.stream()
+                .map(ft -> ft.getFurniture().getId())
+                .collect(Collectors.toSet());
+        List<Long> extraFurnitureIds = curationRawProductFurnitureService
+                .getFurnitureIdsHavingProducts(selectedFurnitureIds).stream()
+                .filter(id -> !taggedFurnitureIds.contains(id))
+                .toList();
+        List<Furniture> extraFurnitures = extraFurnitureIds.isEmpty()
+                ? List.of()
+                : furnitureRepository.findAllById(extraFurnitureIds);
+
+        return buildCategoryResponseWithExtra(matchedTags, extraFurnitures);
     }
 
     @Override
@@ -261,5 +278,32 @@ public class FurnitureServiceImpl implements FurnitureService {
                 .toList();
 
         return FurnitureCategoriesResponse.of(categoryResponses);
+    }
+
+    // [pbem22, 2026-05-28, #541] FurnitureTag 경로 카테고리 + CurationRawProductFurniture 경로 카테고리 합산 반환
+    private FurnitureCategoriesResponse buildCategoryResponseWithExtra(
+            List<FurnitureTag> matchedTags,
+            List<Furniture> extraFurnitures
+    ) {
+        List<FurnitureCategoriesResponse.FurnitureCategoryResponse> fromTags = matchedTags.stream()
+                .sorted(Comparator.comparingInt(FurnitureTag::getPriority))
+                .map(ft -> FurnitureCategoriesResponse.FurnitureCategoryResponse.of(
+                        ft.getFurniture().getId(),
+                        ft.getFurniture().getFurnitureNameKr()
+                ))
+                .toList();
+
+        List<FurnitureCategoriesResponse.FurnitureCategoryResponse> fromExtra = extraFurnitures.stream()
+                .map(f -> FurnitureCategoriesResponse.FurnitureCategoryResponse.of(
+                        f.getId(),
+                        f.getFurnitureNameKr()
+                ))
+                .toList();
+
+        List<FurnitureCategoriesResponse.FurnitureCategoryResponse> combined = new ArrayList<>();
+        combined.addAll(fromTags);
+        combined.addAll(fromExtra);
+
+        return FurnitureCategoriesResponse.of(combined);
     }
 }

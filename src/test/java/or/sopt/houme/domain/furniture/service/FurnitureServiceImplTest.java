@@ -68,6 +68,8 @@ class FurnitureServiceImplTest {
     FurnitureTypeRepository furnitureTypeRepository;
     @Mock
     ActivityFurnitureRepository activityFurnitureRepository;
+    @Mock
+    CurationRawProductFurnitureService curationRawProductFurnitureService;
 
     @Test
     @DisplayName("주요활동, 가구들에 대한 정보들을 받을 수 있다.")
@@ -395,12 +397,70 @@ class FurnitureServiceImplTest {
         when(furnitureRepository.findAllByHouseId(house.getId())).thenReturn(List.of(bed, chair, tv, dining));
         when(furnitureTagRepository.findAllByTagIdAndFurnitureIn(tag.getId(), List.of(bed, chair, tv, dining)))
                 .thenReturn(List.of(ftBed, ftChair, ftTv, ftDining));
+        when(curationRawProductFurnitureService.getFurnitureIdsHavingProducts(List.of(1L, 2L, 3L, 4L)))
+                .thenReturn(List.of());
 
         FurnitureCategoriesResponse response = furnitureService.getFurnitureCategoriesByStyleV2(user, imageId);
 
         assertThat(response.categories())
                 .extracting(FurnitureCategoriesResponse.FurnitureCategoryResponse::categoryName)
                 .containsExactly("식탁", "TV", "의자", "침대");
+    }
+
+    @Test
+    @DisplayName("V2 카테고리 조회 - FurnitureTag 없는 가구도 CurationRawProductFurniture 매핑 있으면 카테고리에 포함된다")
+    void getFurnitureCategoriesByStyleV2_includesExtraFromCurationRawProductFurniture() {
+        Long imageId = 10L;
+
+        Tag tag = Tag.builder().id(100L).build();
+        House house = House.builder().id(200L).build();
+
+        Furniture sofa = Furniture.builder().id(1L).furnitureNameKr("소파").build();
+        Furniture desk = Furniture.builder().id(2L).furnitureNameKr("책상").build();
+
+        FurnitureTag ftSofa = FurnitureTag.builder().id(11L).tag(tag).furniture(sofa).priority(1).build();
+
+        when(tagRepository.findTagByUserIdAndImageId(user.getId(), imageId)).thenReturn(Optional.of(tag));
+        when(houseRepository.findHouseByUserIdAndImageId(user.getId(), imageId)).thenReturn(Optional.of(house));
+        when(furnitureRepository.findAllByHouseId(house.getId())).thenReturn(List.of(sofa, desk));
+        when(furnitureTagRepository.findAllByTagIdAndFurnitureIn(tag.getId(), List.of(sofa, desk)))
+                .thenReturn(List.of(ftSofa));
+        when(curationRawProductFurnitureService.getFurnitureIdsHavingProducts(List.of(1L, 2L)))
+                .thenReturn(List.of(2L));
+        when(furnitureRepository.findAllById(List.of(2L))).thenReturn(List.of(desk));
+
+        FurnitureCategoriesResponse response = furnitureService.getFurnitureCategoriesByStyleV2(user, imageId);
+
+        assertThat(response.categories()).hasSize(2);
+        assertThat(response.categories())
+                .extracting(FurnitureCategoriesResponse.FurnitureCategoryResponse::categoryName)
+                .containsExactly("소파", "책상");
+    }
+
+    @Test
+    @DisplayName("V2 카테고리 조회 - FurnitureTag와 CurationRawProductFurniture에 모두 있는 가구는 중복 없이 한 번만 반환된다")
+    void getFurnitureCategoriesByStyleV2_noDuplicateWhenBothPathsExist() {
+        Long imageId = 10L;
+
+        Tag tag = Tag.builder().id(100L).build();
+        House house = House.builder().id(200L).build();
+
+        Furniture bed = Furniture.builder().id(1L).furnitureNameKr("침대").build();
+
+        FurnitureTag ftBed = FurnitureTag.builder().id(11L).tag(tag).furniture(bed).priority(1).build();
+
+        when(tagRepository.findTagByUserIdAndImageId(user.getId(), imageId)).thenReturn(Optional.of(tag));
+        when(houseRepository.findHouseByUserIdAndImageId(user.getId(), imageId)).thenReturn(Optional.of(house));
+        when(furnitureRepository.findAllByHouseId(house.getId())).thenReturn(List.of(bed));
+        when(furnitureTagRepository.findAllByTagIdAndFurnitureIn(tag.getId(), List.of(bed)))
+                .thenReturn(List.of(ftBed));
+        when(curationRawProductFurnitureService.getFurnitureIdsHavingProducts(List.of(1L)))
+                .thenReturn(List.of(1L));
+
+        FurnitureCategoriesResponse response = furnitureService.getFurnitureCategoriesByStyleV2(user, imageId);
+
+        assertThat(response.categories()).hasSize(1);
+        assertThat(response.categories().get(0).categoryName()).isEqualTo("침대");
     }
 
     private Furniture createFurniture(Long id, String eng, String kr, FurnitureType type) {
