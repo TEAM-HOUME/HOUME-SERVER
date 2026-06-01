@@ -100,6 +100,7 @@ class GenerateImageServiceImplTest {
                 .originalFilename(originalFilename)
                 .url(imageLink)
                 .fileExtension(contentType)
+                .house(savedHouse)
                 .build();
 
         GenerateImage saveImage = generateImageRepository.save(generateImage);
