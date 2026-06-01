@@ -9,6 +9,8 @@ import java.util.Set;
 
 public interface GenerateImageRepositoryCustom {
 
+    Optional<GenerateImage> findByIdWithHouseAndUser(Long imageId);
+
     Optional<GenerateImage> findByHouseId(Long houseId);
 
     // 가장 최근 생성된 GenerateImage 1개 가져오기

@@ -11,6 +11,7 @@ import or.sopt.houme.domain.generateImage.model.entity.QGenerateImage;
 import or.sopt.houme.domain.generateImage.model.entity.QGenerateImageRawProduct;
 import or.sopt.houme.domain.banner.model.entity.QBanner;
 import or.sopt.houme.domain.house.model.entity.QHouse;
+import or.sopt.houme.domain.user.model.entity.QUser;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -24,6 +25,20 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class GenerateImageRepositoryImpl implements GenerateImageRepositoryCustom {
     private final JPAQueryFactory queryFactory;
+
+    @Override
+    public Optional<GenerateImage> findByIdWithHouseAndUser(Long imageId) {
+        QGenerateImage generateImage = QGenerateImage.generateImage;
+        QHouse house = QHouse.house;
+        QUser user = QUser.user;
+
+        return Optional.ofNullable(queryFactory
+                .selectFrom(generateImage)
+                .join(generateImage.house, house).fetchJoin()
+                .join(house.user, user).fetchJoin()
+                .where(generateImage.id.eq(imageId))
+                .fetchOne());
+    }
 
     @Override
     public Optional<GenerateImage> findByHouseId(Long houseId) {

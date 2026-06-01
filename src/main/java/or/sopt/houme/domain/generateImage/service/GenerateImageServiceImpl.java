@@ -39,7 +39,7 @@ public class GenerateImageServiceImpl implements GenerateImageService {
     @Override
     public GenerateImage findGenerateImage(Long imageId) {
 
-        return generateImageRepository.findById(imageId)
+        return generateImageRepository.findByIdWithHouseAndUser(imageId)
                 .orElseThrow(() -> new GenerateImageException(ErrorCode.NOT_FOUND_GENERATE_IMAGE_ENTITY));
     }
 
