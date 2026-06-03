@@ -1,15 +1,20 @@
 package or.sopt.houme.domain.house.service.floorPlan;
 
+import or.sopt.houme.domain.generateImage.model.entity.GenerateImage;
 import or.sopt.houme.domain.generateImage.repository.GenerateImageRepository;
+import or.sopt.houme.domain.house.model.entity.House;
+import or.sopt.houme.domain.house.model.entity.mapping.HouseFloorPlan;
 import or.sopt.houme.domain.house.presentation.floorPlan.dto.response.FloorPlanListResponse;
 import or.sopt.houme.domain.house.presentation.floorPlan.dto.response.ExploreHouseTemplateDetailResponse;
 import or.sopt.houme.domain.house.presentation.floorPlan.dto.response.ExploreHouseTemplateListResponse;
 import or.sopt.houme.domain.house.presentation.floorPlan.dto.response.RecentFloorPlanResponse;
 import or.sopt.houme.domain.house.model.floorPlan.entity.FloorPlan;
+import or.sopt.houme.domain.house.model.floorPlan.vo.FloorPlanImageItem;
 import or.sopt.houme.domain.house.repository.floorPlan.FloorPlanRepository;
 import or.sopt.houme.domain.house.model.entity.enums.Equilibrium;
 import or.sopt.houme.domain.house.model.entity.enums.Form;
 import or.sopt.houme.domain.house.model.entity.enums.Structure;
+import or.sopt.houme.domain.user.model.entity.User;
 import or.sopt.houme.domain.user.util.floorplan.FloorPlanEquilibriumJsonCodec;
 import or.sopt.houme.domain.user.util.floorplan.FloorPlanFormJsonCodec;
 import or.sopt.houme.domain.user.util.floorplan.FloorPlanImageJsonCodec;
@@ -24,6 +29,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.tuple;
@@ -60,12 +66,57 @@ class FloorPlanServiceImplTest {
         RecentFloorPlanResponse response = floorPlanService.getRecentFloorPlan(null);
 
         assertThat(response.hasRecentImage()).isFalse();
-        assertThat(response.floorPlan()).isNotNull();
-        assertThat(response.floorPlan().id()).isNull();
-        assertThat(response.floorPlan().name()).isNull();
-        assertThat(response.floorPlan().imageUrl()).isNull();
-        assertThat(response.floorPlan().equilibrium()).isNull();
-        assertThat(response.floorPlan().view()).isNull();
+        assertThat(response.floorPlanId()).isNull();
+        assertThat(response.floorPlanName()).isNull();
+        assertThat(response.equilibrium()).isNull();
+        assertThat(response.floorPlans()).isEmpty();
+    }
+
+    @Test
+    @DisplayName("최근 생성 도면 조회 시 가장 최근 도면의 모든 view 이미지를 배열로 반환한다")
+    void getRecentFloorPlan_returnsAllImages() {
+        User user = User.builder()
+                .id(1L)
+                .build();
+        FloorPlan floorPlan = FloorPlan.builder()
+                .id(10L)
+                .floorPlanName("복층 오피스텔")
+                .equilibrium(Equilibrium.BETWEEN_6_10)
+                .imagesJson("images-json")
+                .url("https://fallback-image")
+                .filename("fallback.png")
+                .originalFilename("fallback-origin.png")
+                .fileExtension("png")
+                .build();
+        HouseFloorPlan houseFloorPlan = HouseFloorPlan.builder()
+                .id(100L)
+                .floorPlan(floorPlan)
+                .build();
+        House house = House.builder()
+                .houseFloorPlans(List.of(houseFloorPlan))
+                .build();
+        GenerateImage generateImage = GenerateImage.builder()
+                .house(house)
+                .build();
+
+        when(generateImageRepository.findMostRecentByUserId(1L)).thenReturn(Optional.of(generateImage));
+        when(floorPlanImageJsonCodec.read("images-json")).thenReturn(List.of(
+                FloorPlanImageItem.create("https://image-1", "file-1.png", "origin-1.png", "png", 1, "TOP_VIEW"),
+                FloorPlanImageItem.create("https://image-2", "file-2.png", "origin-2.png", "png", 2, "SIDE_VIEW")
+        ));
+
+        RecentFloorPlanResponse response = floorPlanService.getRecentFloorPlan(user);
+
+        assertThat(response.hasRecentImage()).isTrue();
+        assertThat(response.floorPlanId()).isEqualTo(10L);
+        assertThat(response.floorPlanName()).isEqualTo("복층 오피스텔");
+        assertThat(response.equilibrium()).isEqualTo(Equilibrium.BETWEEN_6_10.getDescription());
+        assertThat(response.floorPlans())
+                .extracting("imageUrl", "view")
+                .containsExactly(
+                        tuple("https://image-1", "TOP_VIEW"),
+                        tuple("https://image-2", "SIDE_VIEW")
+                );
     }
 
     @Test
