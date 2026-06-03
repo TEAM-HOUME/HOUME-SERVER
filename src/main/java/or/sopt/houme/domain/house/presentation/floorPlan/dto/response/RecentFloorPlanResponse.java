@@ -1,15 +1,25 @@
 package or.sopt.houme.domain.house.presentation.floorPlan.dto.response;
 
+import java.util.List;
+
 public record RecentFloorPlanResponse(
         Boolean hasRecentImage,
-        RecentFloorPlanItemResponse floorPlan
+        Long floorPlanId,
+        String floorPlanName,
+        String equilibrium,
+        List<ExploreHouseTemplateDetailItemResponse> floorPlans
 ) {
 
-    public static RecentFloorPlanResponse withRecent(RecentFloorPlanItemResponse floorPlan) {
-        return new RecentFloorPlanResponse(Boolean.TRUE, floorPlan);
+    public static RecentFloorPlanResponse withRecent(
+            Long floorPlanId,
+            String floorPlanName,
+            String equilibrium,
+            List<ExploreHouseTemplateDetailItemResponse> floorPlans
+    ) {
+        return new RecentFloorPlanResponse(Boolean.TRUE, floorPlanId, floorPlanName, equilibrium, floorPlans);
     }
 
     public static RecentFloorPlanResponse noRecent() {
-        return new RecentFloorPlanResponse(Boolean.FALSE, RecentFloorPlanItemResponse.empty());
+        return new RecentFloorPlanResponse(Boolean.FALSE, null, null, null, List.of());
     }
 }

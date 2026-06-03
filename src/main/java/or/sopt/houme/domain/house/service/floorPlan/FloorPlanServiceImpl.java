@@ -11,7 +11,6 @@ import or.sopt.houme.domain.house.presentation.floorPlan.dto.response.ExploreHou
 import or.sopt.houme.domain.house.presentation.floorPlan.dto.response.ExploreHouseTemplateDetailResponse;
 import or.sopt.houme.domain.house.presentation.floorPlan.dto.response.ExploreHouseTemplateItemResponse;
 import or.sopt.houme.domain.house.presentation.floorPlan.dto.response.ExploreHouseTemplateListResponse;
-import or.sopt.houme.domain.house.presentation.floorPlan.dto.response.RecentFloorPlanItemResponse;
 import or.sopt.houme.domain.house.presentation.floorPlan.dto.response.RecentFloorPlanResponse;
 import or.sopt.houme.domain.house.model.entity.mapping.HouseFloorPlan;
 import or.sopt.houme.domain.house.model.floorPlan.entity.FloorPlan;
@@ -89,9 +88,15 @@ public class FloorPlanServiceImpl implements FloorPlanService {
             return RecentFloorPlanResponse.noRecent();
         }
 
-        FloorPlanImageItem representativeImage = resolveRepresentativeFloorPlanImage(floorPlan);
+        List<ExploreHouseTemplateDetailItemResponse> floorPlans = resolveFloorPlanImages(floorPlan).stream()
+                .map(image -> ExploreHouseTemplateDetailItemResponse.of(image.url(), image.view()))
+                .toList();
+
         return RecentFloorPlanResponse.withRecent(
-                RecentFloorPlanItemResponse.of(floorPlan, representativeImage.url(), representativeImage.view())
+                floorPlan.getId(),
+                floorPlan.getFloorPlanName(),
+                floorPlan.getEquilibrium() != null ? floorPlan.getEquilibrium().getDescription() : null,
+                floorPlans
         );
     }
 
@@ -123,7 +128,7 @@ public class FloorPlanServiceImpl implements FloorPlanService {
 
         List<ExploreHouseTemplateItemResponse> responses = limitedFloorPlans.stream()
                 .map(floorPlan -> {
-                    FloorPlanImageItem representative = resolveRepresentativeFloorPlanImage(floorPlan);
+                    FloorPlanImageItem representative = resolveFloorPlanImages(floorPlan).getFirst();
                     return ExploreHouseTemplateItemResponse.of(
                             floorPlan,
                             representative.url(),
@@ -140,19 +145,7 @@ public class FloorPlanServiceImpl implements FloorPlanService {
         FloorPlan floorPlan = floorPlanRepository.findById(floorPlanId)
                 .orElseThrow(() -> new HouseException(ErrorCode.NOT_FOUND_FLOOR_PLAN));
 
-        List<FloorPlanImageItem> images;
-        try {
-            images = floorPlanImageJsonCodec.read(floorPlan.getImagesJson());
-        } catch (Exception e) {
-            log.warn("Failed to parse floor plan images_json. floorPlanId={}", floorPlan.getId(), e);
-            images = fallbackImages(floorPlan);
-        }
-        if (images.isEmpty()) {
-            images = fallbackImages(floorPlan);
-        }
-
-        List<ExploreHouseTemplateDetailItemResponse> responses = images.stream()
-                .filter(image -> image.url() != null && !image.url().isBlank())
+        List<ExploreHouseTemplateDetailItemResponse> responses = resolveFloorPlanImages(floorPlan).stream()
                 .map(image -> ExploreHouseTemplateDetailItemResponse.of(image.url(), image.view()))
                 .toList();
 
@@ -171,7 +164,7 @@ public class FloorPlanServiceImpl implements FloorPlanService {
         return mapping.getId();
     }
 
-    private FloorPlanImageItem resolveRepresentativeFloorPlanImage(FloorPlan floorPlan) {
+    private List<FloorPlanImageItem> resolveFloorPlanImages(FloorPlan floorPlan) {
         List<FloorPlanImageItem> images;
         try {
             images = floorPlanImageJsonCodec.read(floorPlan.getImagesJson());
@@ -183,10 +176,11 @@ public class FloorPlanServiceImpl implements FloorPlanService {
             images = fallbackImages(floorPlan);
         }
 
-        return images.stream()
+        List<FloorPlanImageItem> validImages = images.stream()
                 .filter(item -> item.url() != null && !item.url().isBlank())
-                .findFirst()
-                .orElseGet(() -> fallbackImages(floorPlan).getFirst());
+                .toList();
+
+        return validImages.isEmpty() ? fallbackImages(floorPlan) : validImages;
     }
 
     private List<FloorPlanImageItem> fallbackImages(FloorPlan floorPlan) {
