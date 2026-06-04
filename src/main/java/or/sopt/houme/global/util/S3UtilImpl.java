@@ -3,9 +3,12 @@ package or.sopt.houme.global.util;
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.SdkClientException;
 import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.model.ListObjectsV2Request;
+import com.amazonaws.services.s3.model.ListObjectsV2Result;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.amazonaws.services.s3.model.S3Object;
+import com.amazonaws.services.s3.model.S3ObjectSummary;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import or.sopt.houme.global.api.ErrorCode;
@@ -20,6 +23,8 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 import static or.sopt.houme.global.util.constant.S3ExtensionConstant.EXTENSION_PNG;
@@ -168,7 +173,7 @@ public class S3UtilImpl implements S3Util {
 
 
     /**
-     * S3에서 key에 해당하는 객체를 바이트로 다운로드합니다. (어드민 이미지 최적화 sweep에서 원본을 읽을 때 사용)
+     * S3에서 key에 해당하는 객체를 바이트로 다운로드합니다.
      *
      * @param key S3 객체 key
      * @return 객체 바이트
@@ -220,6 +225,40 @@ public class S3UtilImpl implements S3Util {
             log.error("S3 variant upload failed (client). bucket={}, key={}, message={}", bucket, key, e.getMessage(), e);
             throw new S3Exception(ErrorCode.IMAGE_VARIANT_UPLOAD_EXCEPTION);
         }
+    }
+
+    /**
+     * S3에서, 지정한 prefix 아래의 모든 객체 key를 반환합니다.
+     *
+     * @param prefix S3 prefix (예: "floorplan/")
+     * @return prefix 아래 객체 key 목록
+     */
+    @Override
+    public List<String> listKeys(String prefix) {
+        List<String> keys = new ArrayList<>();
+        try {
+            ListObjectsV2Request request = new ListObjectsV2Request()
+                    .withBucketName(bucket)
+                    .withPrefix(prefix);
+            ListObjectsV2Result result;
+            do {
+                result = amazonS3.listObjectsV2(request);
+                for (S3ObjectSummary summary : result.getObjectSummaries()) {
+                    keys.add(summary.getKey());
+                }
+                request.setContinuationToken(result.getNextContinuationToken());
+            } while (result.isTruncated());
+        } catch (AmazonServiceException e) {
+            log.error(
+                    "S3 list failed (service). bucket={}, prefix={}, statusCode={}, errorCode={}, requestId={}, message={}",
+                    bucket, prefix, e.getStatusCode(), e.getErrorCode(), e.getRequestId(), e.getErrorMessage(), e
+            );
+            throw new S3Exception(ErrorCode.IMAGE_LIST_EXCEPTION);
+        } catch (SdkClientException e) {
+            log.error("S3 list failed (client). bucket={}, prefix={}, message={}", bucket, prefix, e.getMessage(), e);
+            throw new S3Exception(ErrorCode.IMAGE_LIST_EXCEPTION);
+        }
+        return keys;
     }
 
     /**

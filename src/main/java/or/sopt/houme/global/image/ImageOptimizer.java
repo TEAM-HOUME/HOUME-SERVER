@@ -12,7 +12,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * 원본 이미지(byte[])를 cwebp로 리사이즈 + WebP 변환하는 유틸
  *
- * cwebp는 도커 이미지에 포함된 정적 바이너리({@code /app/bin/cwebp})를 실행하므로,
+ * cwebp는 도커 이미지에 포함된 정적 바이너리(/app/bin/cwebp)를 실행하므로,
  * 디코딩/리사이즈/인코딩이 JVM heap이 아닌 별도 프로세스(native 메모리)에서 수행됨
  * => 서버의 고정 heap 제약 영향 X, 대용량 이미지로 인한 JVM OOM 위험 X
  *
@@ -32,7 +32,7 @@ public class ImageOptimizer {
 
     /**
      * 원본 이미지를 지정한 가로 너비로 리사이즈하고 WebP로 변환
-     * 세로 높이는 원본 비율에 맞춰 자동 계산(cwebp {@code -resize width 0}).
+     * 세로 높이는 원본 비율에 맞춰 자동 계산(cwebp -resize width 0).
      *
      * @param source 원본 이미지 바이트 (jpg/png 등)
      * @param width  변환 결과의 가로 픽셀 너비
