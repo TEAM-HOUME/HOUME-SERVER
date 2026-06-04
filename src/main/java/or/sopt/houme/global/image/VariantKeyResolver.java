@@ -39,15 +39,6 @@ public class VariantKeyResolver {
     }
 
     /**
-     * 원본 하나에 대한 모든 너비의 variant key 목록을 반환합니다.
-     */
-    public List<String> variantKeysFor(String originalKey) {
-        return VARIANT_WIDTHS.stream()
-                .map(width -> toVariantKey(originalKey, width))
-                .toList();
-    }
-
-    /**
      * 주어진 key가 variant(최적화로 생성된 webp)인지 판별합니다.
      * 호출 측에서 variant를 걸러낼 때 사용합니다. (variant를 다시 변환하는 일 방지)
      */

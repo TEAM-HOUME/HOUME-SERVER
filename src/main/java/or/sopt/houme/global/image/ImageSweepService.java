@@ -62,13 +62,15 @@ public class ImageSweepService {
 
         int converted = 0;
         for (String originalKey : originals) {
-            boolean allVariantsExist = variantKeyResolver.variantKeysFor(originalKey).stream()
-                    .allMatch(existingKeys::contains);
-            if (allVariantsExist) {
+            // variant가 없는 너비만 추려냄
+            List<Integer> missingWidths = VariantKeyResolver.VARIANT_WIDTHS.stream()
+                    .filter(width -> !existingKeys.contains(variantKeyResolver.toVariantKey(originalKey, width)))
+                    .toList();
+            if (missingWidths.isEmpty()) {
                 continue;
             }
             try {
-                convertMissingVariants(originalKey, existingKeys);
+                convertVariants(originalKey, missingWidths);
                 converted++;
             } catch (Exception e) {
                 log.error("원본 변환 실패: {} — 원본 보존 후 건너뜀", originalKey, e);
@@ -77,13 +79,10 @@ public class ImageSweepService {
         return converted;
     }
 
-    private void convertMissingVariants(String originalKey, Set<String> existingKeys) {
+    private void convertVariants(String originalKey, List<Integer> widths) {
         byte[] source = s3Util.download(originalKey);
-        for (int width : VariantKeyResolver.VARIANT_WIDTHS) {
+        for (int width : widths) {
             String variantKey = variantKeyResolver.toVariantKey(originalKey, width);
-            if (existingKeys.contains(variantKey)) {
-                continue;
-            }
             byte[] webp = imageOptimizer.toResizedWebp(source, width);
             s3Util.uploadWebpVariant(variantKey, webp);
             log.info("variant 생성: {} ({} bytes)", variantKey, webp.length);

@@ -22,12 +22,14 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 public class ImageOptimizer {
 
-    private static final long PROCESS_TIMEOUT_SECONDS = 30L;
-
     private final String cwebpPath;
+    private final long processTimeoutSeconds;
 
-    public ImageOptimizer(@Value("${image.cwebp.path:/app/bin/cwebp}") String cwebpPath) {
+    public ImageOptimizer(
+            @Value("${image.cwebp.path:/app/bin/cwebp}") String cwebpPath,
+            @Value("${image.cwebp.timeout-seconds:30}") long processTimeoutSeconds) {
         this.cwebpPath = cwebpPath;
+        this.processTimeoutSeconds = processTimeoutSeconds;
     }
 
     /**
@@ -54,11 +56,11 @@ public class ImageOptimizer {
                     .redirectErrorStream(true)
                     .start();
 
-            boolean finished = process.waitFor(PROCESS_TIMEOUT_SECONDS, TimeUnit.SECONDS);
+            boolean finished = process.waitFor(processTimeoutSeconds, TimeUnit.SECONDS);
             if (!finished) {
                 process.destroyForcibly();
                 throw new ImageOptimizationException(
-                        "cwebp 변환이 " + PROCESS_TIMEOUT_SECONDS + "초 내에 완료되지 않았습니다. width=" + width);
+                        "cwebp 변환이 " + processTimeoutSeconds + "초 내에 완료되지 않았습니다. width=" + width);
             }
 
             int exitCode = process.exitValue();
