@@ -1,6 +1,7 @@
 package or.sopt.houme.domain.furniture.repository;
 
 import or.sopt.houme.domain.furniture.model.entity.CurationRawProduct;
+import or.sopt.houme.domain.furniture.model.entity.SoozipCategory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
@@ -46,6 +47,21 @@ public interface CurationRawProductRepositoryCustom {
     List<CurationRawProduct> findExposedRawProductsExcludingLikedByUserWithCursor(
             Long userId,
             Long cursor,
+            int size,
+            List<Long> excludedIds
+    );
+
+    List<CurationRawProduct> findExposedRawProductsExcludingLikedByUserByCategory(
+            Long userId,
+            SoozipCategory category,
+            int size,
+            List<Long> excludedIds
+    );
+
+    List<CurationRawProduct> findExposedRawProductsExcludingLikedByUserByFurnitureIds(
+            Long userId,
+            List<Long> furnitureIds,
+            SoozipCategory category,
             int size,
             List<Long> excludedIds
     );

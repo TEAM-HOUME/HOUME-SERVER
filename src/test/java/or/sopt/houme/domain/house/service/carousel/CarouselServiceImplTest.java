@@ -1,13 +1,21 @@
 package or.sopt.houme.domain.house.service.carousel;
 
 import or.sopt.houme.domain.furniture.model.entity.CurationRawProduct;
+import or.sopt.houme.domain.furniture.model.entity.Furniture;
+import or.sopt.houme.domain.furniture.model.entity.FurnitureType;
+import or.sopt.houme.domain.furniture.model.entity.SoozipCategory;
 import or.sopt.houme.domain.furniture.repository.CurationRawProductRepository;
 import or.sopt.houme.domain.furniture.service.JjymService;
+import or.sopt.houme.domain.generateImage.model.entity.GenerateImage;
+import or.sopt.houme.domain.generateImage.repository.GenerateImageRepository;
 import or.sopt.houme.domain.house.presentation.carousel.controller.dto.GetCarouselListResponseDTO;
 import or.sopt.houme.domain.house.presentation.carousel.controller.dto.GetCarouselResponseDTO;
 import or.sopt.houme.domain.house.presentation.carousel.controller.dto.GetCarouselV2ListResponseDTO;
 import or.sopt.houme.domain.house.model.carousel.entity.Carousel;
 import or.sopt.houme.domain.house.model.carousel.entity.CarouselType;
+import or.sopt.houme.domain.house.model.entity.House;
+import or.sopt.houme.domain.house.model.entity.mapping.HouseFurniture;
+import or.sopt.houme.domain.house.repository.HouseFurnitureRepository;
 import or.sopt.houme.domain.house.repository.carousel.CarouselRepository;
 import or.sopt.houme.domain.preference.model.entity.CarouselPreference;
 import or.sopt.houme.domain.preference.model.entity.Preference;
@@ -56,6 +64,12 @@ class CarouselServiceImplTest {
     @Mock
     private JjymService jjymService;
 
+    @Mock
+    private GenerateImageRepository generateImageRepository;
+
+    @Mock
+    private HouseFurnitureRepository houseFurnitureRepository;
+
     private User user;
     private Carousel carousel;
 
@@ -101,31 +115,101 @@ class CarouselServiceImplTest {
     }
 
     @Test
-    @DisplayName("getCarouselV2()는 사용자 찜 제외를 DB 쿼리에서 처리한 결과를 반환한다")
+    @DisplayName("getCarouselV2() 초기 조회는 선택 가구와 furniture 카테고리를 우선 노출한다")
     void getCarouselV2_returnsExposedRawProductsExcludingLikedProducts() {
-        CurationRawProduct rawProduct1 = CurationRawProduct.builder()
+        CurationRawProduct preferredRawProduct = CurationRawProduct.builder()
                 .id(101L)
                 .productImageUrl("image-101")
+                .category(SoozipCategory.FURNITURE)
                 .build();
-        CurationRawProduct rawProduct2 = CurationRawProduct.builder()
+        CurationRawProduct furnitureRawProduct = CurationRawProduct.builder()
                 .id(102L)
                 .productImageUrl("image-102")
+                .category(SoozipCategory.FURNITURE)
+                .build();
+        CurationRawProduct randomRawProduct = CurationRawProduct.builder()
+                .id(103L)
+                .productImageUrl("image-103")
+                .build();
+        FurnitureType furnitureType = FurnitureType.builder()
+                .id(11L)
+                .nameKr("의자")
+                .nameEng("CHAIR")
+                .build();
+        Furniture furniture = Furniture.builder()
+                .id(21L)
+                .furnitureType(furnitureType)
+                .furnitureNameKr("의자")
+                .furnitureNameEng("CHAIR")
+                .build();
+        House house = House.builder()
+                .id(31L)
+                .build();
+        GenerateImage generateImage = GenerateImage.builder()
+                .house(house)
+                .build();
+        HouseFurniture houseFurniture = HouseFurniture.builder()
+                .id(41L)
+                .house(house)
+                .furniture(furniture)
                 .build();
 
         when(curationRawProductRepository.findMaxExposedRawProductIdExcludingLikedByUser(1L)).thenReturn(200L);
+        when(generateImageRepository.findMostRecentByUserId(1L)).thenReturn(Optional.of(generateImage));
+        when(houseFurnitureRepository.findAllByHouseIdWithFurniture(31L)).thenReturn(List.of(houseFurniture));
+        when(curationRawProductRepository.findExposedRawProductsExcludingLikedByUserByFurnitureIds(
+                eq(1L), eq(List.of(21L)), eq(SoozipCategory.FURNITURE), eq(4), eq(List.of())
+        )).thenReturn(List.of(preferredRawProduct));
+        when(curationRawProductRepository.findExposedRawProductsExcludingLikedByUserByCategory(
+                eq(1L), eq(SoozipCategory.FURNITURE), eq(9), eq(List.of(101L))
+        )).thenReturn(List.of(furnitureRawProduct));
         when(curationRawProductRepository.findExposedRawProductsExcludingLikedByUserWithCursor(
-                eq(1L), anyLong(), eq(10), eq(List.of())
-        )).thenReturn(List.of(rawProduct1, rawProduct2));
+                eq(1L), anyLong(), anyInt(), anyList()
+        )).thenReturn(List.of(randomRawProduct), List.of(), List.of());
+        when(curationRawProductRepository.findExposedRawProductsExcludingLikedByUserWithCursor(
+                eq(1L), isNull(), anyInt(), anyList()
+        )).thenReturn(List.of());
 
         GetCarouselV2ListResponseDTO result = carouselService.getCarouselV2(null, user);
 
-        assertThat(result.carousels()).hasSize(2);
-        assertThat(result.carousels().get(0).carouselId()).isEqualTo(101L);
-        assertThat(result.carousels().get(1).carouselId()).isEqualTo(102L);
+        assertThat(result.carousels()).hasSize(3);
+        assertThat(result.carousels())
+                .extracting("carouselId")
+                .containsExactly(101L, 102L, 103L);
         assertThat(result.nextCursor()).isNull();
         verify(curationRawProductRepository, times(1))
-                .findExposedRawProductsExcludingLikedByUserWithCursor(eq(1L), anyLong(), eq(10), eq(List.of()));
+                .findExposedRawProductsExcludingLikedByUserByFurnitureIds(eq(1L), eq(List.of(21L)), eq(SoozipCategory.FURNITURE), eq(4), eq(List.of()));
+        verify(curationRawProductRepository, times(1))
+                .findExposedRawProductsExcludingLikedByUserByCategory(eq(1L), eq(SoozipCategory.FURNITURE), eq(9), eq(List.of(101L)));
         verifyNoInteractions(jjymService);
+    }
+
+    @Test
+    @DisplayName("getCarouselV2() 커서 조회는 기존 커서 기준 연속 조회를 유지한다")
+    void getCarouselV2_withCursor_usesCursorQueryOnly() {
+        CurationRawProduct rawProduct1 = CurationRawProduct.builder()
+                .id(88L)
+                .productImageUrl("image-88")
+                .build();
+        CurationRawProduct rawProduct2 = CurationRawProduct.builder()
+                .id(77L)
+                .productImageUrl("image-77")
+                .build();
+
+        when(curationRawProductRepository.findExposedRawProductsExcludingLikedByUserWithCursor(
+                1L,
+                90L,
+                10,
+                List.of()
+        )).thenReturn(List.of(rawProduct1, rawProduct2));
+
+        GetCarouselV2ListResponseDTO result = carouselService.getCarouselV2(90L, user);
+
+        assertThat(result.carousels())
+                .extracting("carouselId")
+                .containsExactly(88L, 77L);
+        assertThat(result.nextCursor()).isNull();
+        verifyNoInteractions(generateImageRepository, houseFurnitureRepository);
     }
 
 
