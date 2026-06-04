@@ -177,6 +177,16 @@ jib {
         creationTime = "USE_CURRENT_TIMESTAMP"
         format = 'Docker'
     }
+    // cwebp 실행파일을 도커 이미지에 포함 + 실행권한 부여
+    extraDirectories {
+        paths {
+            path {
+                from = file('src/main/jib')
+                into = '/'
+            }
+        }
+        permissions = ['/app/bin/cwebp': '755']
+    }
 }
 
 jacoco {
