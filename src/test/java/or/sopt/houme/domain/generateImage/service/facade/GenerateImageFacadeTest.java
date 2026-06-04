@@ -3,6 +3,7 @@ package or.sopt.houme.domain.generateImage.service.facade;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import or.sopt.houme.domain.banner.model.entity.Banner;
+import or.sopt.houme.domain.banner.model.entity.BannerCurationRawProduct;
 import or.sopt.houme.domain.banner.model.entity.BannerType;
 import or.sopt.houme.domain.banner.model.vo.BannerStyleAnswerChip;
 import or.sopt.houme.domain.banner.repository.BannerRepository;
@@ -65,6 +66,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -79,6 +81,7 @@ import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.times;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("[FloorPlan Service Test]")
@@ -446,6 +449,111 @@ class GenerateImageFacadeTest {
                 any(),
                 eq(imageUploadResponseDTO)
         );
+    }
+
+    @Test
+    @DisplayName("배너 템플릿 이미지 생성 시 선택 칩 상품 이미지를 배너 기본 상품보다 먼저 reference에 넣는다")
+    void generateBannerImageByGemini_placesSelectedChipProductBeforeBannerProducts() throws Exception {
+        User user = User.builder()
+                .id(1L)
+                .name("test_user")
+                .build();
+
+        Credit lockedCredit = Credit.builder()
+                .id(10L)
+                .status(CreditStatus.PENDING)
+                .user(user)
+                .build();
+
+        CurationRawProduct selectedProduct = CurationRawProduct.builder()
+                .id(350L)
+                .source("desker")
+                .productId(501L)
+                .productImageUrl("https://selected-product-image")
+                .productSiteUrl("https://selected-product-site")
+                .productName("선택 칩 책상")
+                .fetchedAt(LocalDateTime.now())
+                .build();
+        CurationRawProduct otherProduct = CurationRawProduct.builder()
+                .id(365L)
+                .source("29cm")
+                .productId(516L)
+                .productImageUrl("https://other-product-image")
+                .productSiteUrl("https://other-product-site")
+                .productName("배너 기본 상품")
+                .fetchedAt(LocalDateTime.now())
+                .build();
+
+        Banner banner = Banner.builder()
+                .id(100L)
+                .bannerType(BannerType.BANNER)
+                .bannerImageUrl("https://banner-image")
+                .stylePrompt("배너 스타일 프롬프트")
+                .styleAnswerChipsJson("[{\"id\":2}]")
+                .bannerRawProducts(List.of(
+                        BannerCurationRawProduct.of(null, selectedProduct),
+                        BannerCurationRawProduct.of(null, otherProduct)
+                ))
+                .build();
+
+        FloorPlan floorPlan = FloorPlan.builder()
+                .id(11L)
+                .url("https://floorplan-default")
+                .floorPlanPrompt("도면 프롬프트")
+                .imagesJson("[]")
+                .build();
+
+        BannerGenerateImageRequest request = new BannerGenerateImageRequest(
+                100L,
+                2L,
+                11L,
+                null,
+                false
+        );
+
+        ImageUploadResponseDTO imageUploadResponseDTO = ImageUploadResponseDTO.from(
+                "generated.webp",
+                "generated-original.webp",
+                "https://generated-image",
+                "image/webp"
+        );
+
+        when(creditService.tryLockAndGetCredit(user)).thenReturn(lockedCredit);
+        when(bannerRepository.findByIdWithRawProducts(100L, BannerType.BANNER, false)).thenReturn(Optional.of(banner));
+        when(floorPlanRepository.findById(11L)).thenReturn(Optional.of(floorPlan));
+        when(objectMapper.readValue(eq("[{\"id\":2}]"), any(TypeReference.class)))
+                .thenReturn(List.of(new BannerStyleAnswerChip(2L, 2, "답변", "선택 프롬프트", 350L)));
+        when(floorPlanImageJsonCodec.read("[]")).thenReturn(List.of());
+        when(geminiImageService.createImageWithReferences(any(), argThat(referenceImageUrls ->
+                referenceImageUrls.equals(List.of(
+                        "https://floorplan-default",
+                        "https://selected-product-image",
+                        "https://banner-image",
+                        "https://other-product-image"
+                ))
+        ))).thenReturn(imageUploadResponseDTO);
+        when(generateImageTransactionService.saveBannerImageAndConfirmCredit(
+                eq(user),
+                eq(lockedCredit),
+                eq(banner),
+                eq(11L),
+                eq(false),
+                any(),
+                eq(imageUploadResponseDTO)
+        )).thenReturn(BannerGenerateImageResponse.of(999L, "https://generated-image", false));
+
+        BannerGenerateImageResponse response = generateImageFacade.generateBannerImageByGemini(user, request);
+
+        assertThat(response.imageId()).isEqualTo(999L);
+        verify(geminiImageService, times(1)).createImageWithReferences(any(), argThat(referenceImageUrls ->
+                referenceImageUrls.equals(List.of(
+                        "https://floorplan-default",
+                        "https://selected-product-image",
+                        "https://banner-image",
+                        "https://other-product-image"
+                ))
+        ));
+        verify(curationRawProductRepository, never()).findById(anyLong());
     }
 
     @Test
