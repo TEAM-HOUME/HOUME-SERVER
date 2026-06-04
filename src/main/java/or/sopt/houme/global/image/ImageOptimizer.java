@@ -4,10 +4,16 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Iterator;
 import java.util.concurrent.TimeUnit;
+
+import javax.imageio.ImageIO;
+import javax.imageio.ImageReader;
+import javax.imageio.stream.ImageInputStream;
 
 /**
  * 원본 이미지(byte[])를 cwebp로 리사이즈 + WebP 변환하는 유틸
@@ -44,30 +50,37 @@ public class ImageOptimizer {
     public byte[] toResizedWebp(byte[] source, int width) {
         Path input = null;
         Path output = null;
+        Path processLog = null;
         try {
             input = Files.createTempFile("houme-img-src-", ".bin");
             output = Files.createTempFile("houme-img-out-", ".webp");
+            processLog = Files.createTempFile("houme-img-log-", ".txt");
             Files.write(input, source);
 
+            // cwebp 진단 출력을 파이프 대신 임시 파일로 보냄
+            // -> waitFor()를 먼저 해도 파이프 버퍼가 차서 자식 프로세스가 멈추는 deadlock이 없음
             Process process = new ProcessBuilder(
                     cwebpPath, "-quiet",
                     "-resize", String.valueOf(width), "0",
                     input.toString(), "-o", output.toString())
                     .redirectErrorStream(true)
+                    .redirectOutput(processLog.toFile())
                     .start();
 
             boolean finished = process.waitFor(processTimeoutSeconds, TimeUnit.SECONDS);
             if (!finished) {
                 process.destroyForcibly();
+                // 강제 종료가 실제로 끝날 때까지 대기 (프로세스/FD 정리)
+                process.waitFor(5, TimeUnit.SECONDS);
                 throw new ImageOptimizationException(
                         "cwebp 변환이 " + processTimeoutSeconds + "초 내에 완료되지 않았습니다. width=" + width);
             }
 
             int exitCode = process.exitValue();
             if (exitCode != 0) {
-                String processLog = new String(process.getInputStream().readAllBytes()).trim();
+                String diagnostics = Files.readString(processLog).trim();
                 throw new ImageOptimizationException(
-                        "cwebp 변환 실패. exitCode=" + exitCode + ", width=" + width + ", log=" + processLog);
+                        "cwebp 변환 실패. exitCode=" + exitCode + ", width=" + width + ", log=" + diagnostics);
             }
 
             byte[] result = Files.readAllBytes(output);
@@ -84,7 +97,34 @@ public class ImageOptimizer {
         } finally {
             deleteQuietly(input);
             deleteQuietly(output);
+            deleteQuietly(processLog);
         }
+    }
+
+    /**
+     * 원본 이미지의 픽셀 크기(가로, 세로)를 헤더에서만 읽어 반환
+     * 형식을 못 읽으면 null을 반환
+     */
+    public ImageSize readSize(byte[] source) {
+        try (ImageInputStream iis = ImageIO.createImageInputStream(new ByteArrayInputStream(source))) {
+            Iterator<ImageReader> readers = ImageIO.getImageReaders(iis);
+            if (!readers.hasNext()) {
+                return null;
+            }
+            ImageReader reader = readers.next();
+            try {
+                reader.setInput(iis);
+                return new ImageSize(reader.getWidth(0), reader.getHeight(0));
+            } finally {
+                reader.dispose();
+            }
+        } catch (IOException e) {
+            return null;
+        }
+    }
+
+    /** 이미지 픽셀 크기 (가로, 세로) */
+    public record ImageSize(int width, int height) {
     }
 
     private void deleteQuietly(Path path) {

@@ -30,6 +30,9 @@ public class ImageSweepService {
     /** 변환 대상 원본 확장자 (이미 webp인 이미지나 variant는 제외) */
     private static final Set<String> TARGET_EXTENSIONS = Set.of("jpg", "jpeg", "png");
 
+    /** 디코딩 시 메모리를 과도하게 쓰는 큰 이미지를 거르기 위한 픽셀 수 상한 (약 50MP) */
+    private static final long MAX_PIXELS = 50_000_000L;
+
     private final S3Util s3Util;
     private final ImageOptimizer imageOptimizer;
     private final VariantKeyResolver variantKeyResolver;
@@ -81,7 +84,18 @@ public class ImageSweepService {
 
     private void convertVariants(String originalKey, List<Integer> widths) {
         byte[] source = s3Util.download(originalKey);
+
+        ImageOptimizer.ImageSize size = imageOptimizer.readSize(source);
+        if (size != null && (long) size.width() * size.height() > MAX_PIXELS) {
+            log.warn("초대형 이미지라 변환을 건너뜀: {} ({}x{})", originalKey, size.width(), size.height());
+            return;
+        }
+
         for (int width : widths) {
+            // 원본보다 큰 너비는 업스케일이라 만들지 않음 (프론트는 원본 이미지로 폴백)
+            if (size != null && width >= size.width()) {
+                continue;
+            }
             String variantKey = variantKeyResolver.toVariantKey(originalKey, width);
             byte[] webp = imageOptimizer.toResizedWebp(source, width);
             s3Util.uploadWebpVariant(variantKey, webp);
