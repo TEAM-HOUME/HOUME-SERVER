@@ -909,6 +909,7 @@ public class GenerateImageFacade {
 
         Long selectedChipRawProductId = selectedChip.curationRawProductId();
         if (selectedChipRawProductId != null) {
+            // 선택 칩 상품은 배너 기본 상품보다 먼저 주입해 모델에 더 강한 우선순위를 준다.
             CurationRawProduct selectedChipRawProduct = bannerRawProductsById.get(selectedChipRawProductId);
             if (selectedChipRawProduct == null) {
                 selectedChipRawProduct = curationRawProductRepository.findById(selectedChipRawProductId)
@@ -925,6 +926,7 @@ public class GenerateImageFacade {
         }
 
         bannerRawProductsById.values().forEach(rawProduct -> {
+            // 이미 앞에서 넣은 선택 칩 상품은 다시 추가하지 않아 순서를 고정한다.
             if (Objects.equals(rawProduct.getId(), selectedChipRawProductId)) {
                 return;
             }
