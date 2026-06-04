@@ -103,7 +103,7 @@ class CarouselServiceImplTest {
         // then
         assertThat(result.carouselResponseDTOS()).hasSize(2);
         assertThat(result.carouselResponseDTOS())
-                .extracting("carouselId")
+                .extracting("rawProductId")
                 .containsExactlyInAnyOrder(1L, 2L);
     }
 
@@ -139,7 +139,7 @@ class CarouselServiceImplTest {
 
         assertThat(result.carousels()).hasSize(3);
         assertThat(result.carousels())
-                .extracting("carouselId")
+                .extracting("rawProductId")
                 .containsExactly(103L, 101L, 102L);
         verifyNoInteractions(jjymService);
     }

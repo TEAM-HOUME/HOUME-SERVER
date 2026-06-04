@@ -24,7 +24,7 @@ class GetCarouselResponseDTOTest {
         GetCarouselResponseDTO dto = GetCarouselResponseDTO.from(carousel);
 
         // then
-        assertThat(dto.carouselId()).isEqualTo(1L);
+        assertThat(dto.rawProductId()).isEqualTo(1L);
         assertThat(dto.url()).isEqualTo("https://example.com/image.jpg");
     }
 }

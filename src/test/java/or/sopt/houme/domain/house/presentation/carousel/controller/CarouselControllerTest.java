@@ -104,9 +104,9 @@ class CarouselControllerTest {
                 .andExpect(jsonPath("$.code").value(200))
                 .andExpect(jsonPath("$.msg").exists())
                 .andExpect(jsonPath("$.data.carouselResponseDTOS", hasSize(2)))
-                .andExpect(jsonPath("$.data.carouselResponseDTOS[0].carouselId").value(1))
+                .andExpect(jsonPath("$.data.carouselResponseDTOS[0].rawProductId").value(1))
                 .andExpect(jsonPath("$.data.carouselResponseDTOS[0].url").value("url1"))
-                .andExpect(jsonPath("$.data.carouselResponseDTOS[1].carouselId").value(2))
+                .andExpect(jsonPath("$.data.carouselResponseDTOS[1].rawProductId").value(2))
                 .andExpect(jsonPath("$.data.carouselResponseDTOS[1].url").value("url2"));
     }
 
@@ -131,9 +131,9 @@ class CarouselControllerTest {
                 .andExpect(jsonPath("$.code").value(200))
                 .andExpect(jsonPath("$.msg").exists())
                 .andExpect(jsonPath("$.data.carousels", hasSize(2)))
-                .andExpect(jsonPath("$.data.carousels[0].carouselId").value(11))
+                .andExpect(jsonPath("$.data.carousels[0].rawProductId").value(11))
                 .andExpect(jsonPath("$.data.carousels[0].url").value("url11"))
-                .andExpect(jsonPath("$.data.carousels[1].carouselId").value(12))
+                .andExpect(jsonPath("$.data.carousels[1].rawProductId").value(12))
                 .andExpect(jsonPath("$.data.carousels[1].url").value("url12"));
     }
 
