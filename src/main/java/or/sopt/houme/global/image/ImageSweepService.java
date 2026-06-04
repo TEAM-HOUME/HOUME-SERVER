@@ -87,7 +87,7 @@ public class ImageSweepService {
 
         ImageOptimizer.ImageSize size = imageOptimizer.readSize(source);
         if (size != null && (long) size.width() * size.height() > MAX_PIXELS) {
-            log.warn("초대형 이미지라 변환을 건너뜀: {} ({}x{})", originalKey, size.width(), size.height());
+            log.warn("크기가 큰 이미지라 변환을 건너뜀: {} ({}x{})", originalKey, size.width(), size.height());
             return;
         }
 
