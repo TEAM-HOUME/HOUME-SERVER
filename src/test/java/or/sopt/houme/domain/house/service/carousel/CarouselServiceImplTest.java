@@ -130,12 +130,12 @@ class CarouselServiceImplTest {
                 List.of(101L, 102L, 103L)
         );
 
-        when(carouselCandidateService.collectCandidates(1L)).thenReturn(candidateBundle);
+        when(carouselCandidateService.collectCandidates(1L, List.of(21L, 22L))).thenReturn(candidateBundle);
         when(carouselShuffleService.selectDisplayIds(candidateBundle, 1L)).thenReturn(List.of(103L, 101L, 102L));
         when(curationRawProductRepository.findAllById(List.of(103L, 101L, 102L)))
                 .thenReturn(List.of(rawProduct1, rawProduct2, rawProduct3));
 
-        GetCarouselV2ListResponseDTO result = carouselService.getCarouselV2(user);
+        GetCarouselV2ListResponseDTO result = carouselService.getCarouselV2(user, List.of(21L, 22L));
 
         assertThat(result.carousels()).hasSize(3);
         assertThat(result.carousels())

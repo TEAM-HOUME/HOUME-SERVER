@@ -4,10 +4,6 @@ import lombok.RequiredArgsConstructor;
 import or.sopt.houme.domain.furniture.model.entity.CurationRawProduct;
 import or.sopt.houme.domain.furniture.model.entity.SoozipCategory;
 import or.sopt.houme.domain.furniture.repository.CurationRawProductRepository;
-import or.sopt.houme.domain.generateImage.model.entity.GenerateImage;
-import or.sopt.houme.domain.generateImage.repository.GenerateImageRepository;
-import or.sopt.houme.domain.house.model.entity.mapping.HouseFurniture;
-import or.sopt.houme.domain.house.repository.HouseFurnitureRepository;
 import or.sopt.houme.domain.house.service.carousel.dto.CarouselCandidateBundle;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,7 +12,6 @@ import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -36,19 +31,15 @@ public class CarouselCandidateService {
             SoozipCategory.MINI_ELECTRONICS
     );
 
-    private final GenerateImageRepository generateImageRepository;
-    private final HouseFurnitureRepository houseFurnitureRepository;
     private final CurationRawProductRepository curationRawProductRepository;
 
-    public CarouselCandidateBundle collectCandidates(Long userId) {
-        Optional<GenerateImage> recentGenerateImage = generateImageRepository.findMostRecentByUserId(userId);
-        Long recentImageId = recentGenerateImage.map(GenerateImage::getId).orElse(null);
-        List<Long> recentFurnitureIds = resolveRecentSelectedFurnitureIds(recentGenerateImage);
+    public CarouselCandidateBundle collectCandidates(Long userId, List<Long> requestFurnitureIds) {
+        List<Long> selectedFurnitureSourceIds = normalizeFurnitureIds(requestFurnitureIds);
 
         List<Long> selectedFurnitureIds = mapIds(
                 curationRawProductRepository.findExposedRawProductsExcludingLikedByUserByFurnitureIds(
                         userId,
-                        recentFurnitureIds,
+                        selectedFurnitureSourceIds,
                         SoozipCategory.FURNITURE,
                         SELECTED_FURNITURE_CANDIDATE_LIMIT,
                         List.of()
@@ -87,7 +78,7 @@ public class CarouselCandidateService {
         );
 
         return new CarouselCandidateBundle(
-                recentImageId,
+                null,
                 selectedFurnitureIds,
                 furnitureCategoryIds,
                 otherCategoryIds,
@@ -95,20 +86,12 @@ public class CarouselCandidateService {
         );
     }
 
-    private List<Long> resolveRecentSelectedFurnitureIds(Optional<GenerateImage> recentGenerateImage) {
-        if (recentGenerateImage.isEmpty() || recentGenerateImage.get().getHouse() == null) {
+    private List<Long> normalizeFurnitureIds(List<Long> furnitureIds) {
+        if (furnitureIds == null || furnitureIds.isEmpty()) {
             return List.of();
         }
 
-        Long houseId = recentGenerateImage.get().getHouse().getId();
-        if (houseId == null) {
-            return List.of();
-        }
-
-        return houseFurnitureRepository.findAllByHouseIdWithFurniture(houseId).stream()
-                .map(HouseFurniture::getFurniture)
-                .filter(Objects::nonNull)
-                .map(furniture -> furniture.getId())
+        return furnitureIds.stream()
                 .filter(Objects::nonNull)
                 .distinct()
                 .toList();

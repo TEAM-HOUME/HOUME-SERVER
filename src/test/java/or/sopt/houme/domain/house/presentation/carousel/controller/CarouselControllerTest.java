@@ -119,11 +119,12 @@ class CarouselControllerTest {
                 new GetCarouselResponseDTO(12L, "url12")
         );
         GetCarouselV2ListResponseDTO responseDTO = GetCarouselV2ListResponseDTO.of(mockList);
-        when(carouselService.getCarouselV2(any())).thenReturn(responseDTO);
+        when(carouselService.getCarouselV2(any(), eq(List.of(10L, 20L)))).thenReturn(responseDTO);
 
         setAuthentication(testUserDetails);
 
         mockMvc.perform(get("/api/v2/carousels")
+                        .param("furnitureIds", "10", "20")
                         .requestAttr("userDetails", testUserDetails)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -134,6 +135,18 @@ class CarouselControllerTest {
                 .andExpect(jsonPath("$.data.carousels[0].url").value("url11"))
                 .andExpect(jsonPath("$.data.carousels[1].carouselId").value(12))
                 .andExpect(jsonPath("$.data.carousels[1].url").value("url12"));
+    }
+
+    @Test
+    @DisplayName("GET /api/v2/carousels 요청 시 furnitureIds가 없으면 400을 반환한다")
+    @WithMockUser()
+    void getCarouselsV2_returnsBadRequest_whenFurnitureIdsMissing() throws Exception {
+        setAuthentication(testUserDetails);
+
+        mockMvc.perform(get("/api/v2/carousels")
+                        .requestAttr("userDetails", testUserDetails)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest());
     }
 
 

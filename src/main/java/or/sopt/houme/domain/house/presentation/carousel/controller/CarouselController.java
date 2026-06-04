@@ -3,6 +3,8 @@ package or.sopt.houme.domain.house.presentation.carousel.controller;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import or.sopt.houme.domain.house.presentation.carousel.controller.dto.GetCarouselListResponseDTO;
 import or.sopt.houme.domain.house.service.carousel.CarouselLikeLogService;
@@ -12,11 +14,14 @@ import or.sopt.houme.domain.house.presentation.carousel.controller.dto.GetCarous
 import or.sopt.houme.domain.user.presentation.controller.dto.CustomUserDetails;
 import or.sopt.houme.global.api.ApiResponse;
 import or.sopt.houme.global.api.ErrorCode;
+import or.sopt.houme.global.api.GeneralException;
 import or.sopt.houme.global.api.handler.CarouselException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -46,9 +51,14 @@ public class CarouselController {
     @Operation(summary = "캐러셀 조회 API v2",
             description = "실제 상품을 응답합니다. 한 번 조회 시, 100개의 상품을 반환합니다.")
     public ResponseEntity<ApiResponse<GetCarouselV2ListResponseDTO>> getCarouselsV2(
-            @AuthenticationPrincipal CustomUserDetails userDetails) {
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @RequestParam(value = "furnitureIds", required = false)
+            List<@NotNull(message = "furnitureIds에는 null이 포함될 수 없습니다.") Long> furnitureIds) {
+        if (furnitureIds == null || furnitureIds.isEmpty()) {
+            throw new GeneralException(ErrorCode.NOT_VALID_EXCEPTION);
+        }
 
-        GetCarouselV2ListResponseDTO carousels = carouselService.getCarouselV2(userDetails.getUser());
+        GetCarouselV2ListResponseDTO carousels = carouselService.getCarouselV2(userDetails.getUser(), furnitureIds);
 
         return ResponseEntity.ok(ApiResponse.ok(carousels));
     }
