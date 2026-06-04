@@ -9,5 +9,9 @@ public interface S3Util {
 
     ImageUploadResponseDTO uploadByByte(String dirName, byte[] imageBytes);
 
+    byte[] download(String key);
+
+    void uploadWebpVariant(String key, byte[] webpBytes);
+
     void delete(String fileUrl);
 }

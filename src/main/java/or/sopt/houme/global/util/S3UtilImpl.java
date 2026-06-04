@@ -5,6 +5,7 @@ import com.amazonaws.SdkClientException;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
+import com.amazonaws.services.s3.model.S3Object;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import or.sopt.houme.global.api.ErrorCode;
@@ -18,6 +19,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.UUID;
 
 import static or.sopt.houme.global.util.constant.S3ExtensionConstant.EXTENSION_PNG;
@@ -33,6 +35,10 @@ public class S3UtilImpl implements S3Util {
     private String bucket;
 
     private final AmazonS3 amazonS3;
+
+    private static final String CONTENT_TYPE_WEBP = "image/webp";
+    // 최적화 이미지(variant)는 내용이 바뀌지 않으므로 장기 캐싱 (원본은 Cache-Control 미설정 → 재방문 시 재다운로드 발생)
+    private static final String CACHE_CONTROL_IMMUTABLE = "public, max-age=31536000, immutable";
 
 
     /**
@@ -160,6 +166,61 @@ public class S3UtilImpl implements S3Util {
 
 
 
+
+    /**
+     * S3에서 key에 해당하는 객체를 바이트로 다운로드합니다. (어드민 이미지 최적화 sweep에서 원본을 읽을 때 사용)
+     *
+     * @param key S3 객체 key
+     * @return 객체 바이트
+     */
+    @Override
+    public byte[] download(String key) {
+        try (S3Object s3Object = amazonS3.getObject(bucket, key);
+             InputStream content = s3Object.getObjectContent()) {
+            return content.readAllBytes();
+        } catch (AmazonServiceException e) {
+            log.error(
+                    "S3 download failed (service). bucket={}, key={}, statusCode={}, errorCode={}, requestId={}, message={}",
+                    bucket, key, e.getStatusCode(), e.getErrorCode(), e.getRequestId(), e.getErrorMessage(), e
+            );
+            throw new S3Exception(ErrorCode.IMAGE_DOWNLOAD_EXCEPTION);
+        } catch (SdkClientException e) {
+            log.error("S3 download failed (client). bucket={}, key={}, message={}", bucket, key, e.getMessage(), e);
+            throw new S3Exception(ErrorCode.IMAGE_DOWNLOAD_EXCEPTION);
+        } catch (IOException e) {
+            log.error("S3 download failed (io). bucket={}, key={}, message={}", bucket, key, e.getMessage(), e);
+            throw new S3Exception(ErrorCode.IMAGE_DOWNLOAD_EXCEPTION);
+        }
+    }
+
+    /**
+     * WebP 변환본(variant)을 지정한 key에 업로드합니다.
+     * content-type은 image/webp, Cache-Control은 장기 캐싱(immutable)으로 설정합니다.
+     *
+     * @param key       variant를 저장할 S3 key (네이밍 규칙으로 결정된 key)
+     * @param webpBytes WebP 변환 결과 바이트
+     */
+    @Override
+    public void uploadWebpVariant(String key, byte[] webpBytes) {
+        ObjectMetadata metadata = new ObjectMetadata();
+        metadata.setContentLength(webpBytes.length);
+        metadata.setContentType(CONTENT_TYPE_WEBP);
+        metadata.setCacheControl(CACHE_CONTROL_IMMUTABLE);
+
+        try {
+            ByteArrayInputStream inputStream = new ByteArrayInputStream(webpBytes);
+            amazonS3.putObject(new PutObjectRequest(bucket, key, inputStream, metadata));
+        } catch (AmazonServiceException e) {
+            log.error(
+                    "S3 variant upload failed (service). bucket={}, key={}, statusCode={}, errorCode={}, requestId={}, message={}",
+                    bucket, key, e.getStatusCode(), e.getErrorCode(), e.getRequestId(), e.getErrorMessage(), e
+            );
+            throw new S3Exception(ErrorCode.IMAGE_VARIANT_UPLOAD_EXCEPTION);
+        } catch (SdkClientException e) {
+            log.error("S3 variant upload failed (client). bucket={}, key={}, message={}", bucket, key, e.getMessage(), e);
+            throw new S3Exception(ErrorCode.IMAGE_VARIANT_UPLOAD_EXCEPTION);
+        }
+    }
 
     /**
      * key 기반으로 이미지를 삭제하는 메서드입니다.
