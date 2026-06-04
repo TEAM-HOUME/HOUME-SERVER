@@ -5,6 +5,7 @@ import or.sopt.houme.domain.house.service.carousel.dto.CarouselCandidateBundle;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -20,13 +21,14 @@ public class CarouselShuffleService {
 
     public List<Long> selectDisplayIds(CarouselCandidateBundle bundle, Long userId) {
         LinkedHashSet<Long> selectedIds = new LinkedHashSet<>();
-        ShuffledBucket selectedBucket = new ShuffledBucket(bundle.selectedFurnitureIds(), computeSeed(userId, bundle.recentImageId(), 11L));
-        ShuffledBucket furnitureBucket = new ShuffledBucket(bundle.furnitureCategoryIds(), computeSeed(userId, bundle.recentImageId(), 23L));
+        long epochDay = LocalDate.now(ZoneOffset.UTC).toEpochDay();
+        ShuffledBucket selectedBucket = new ShuffledBucket(bundle.selectedFurnitureIds(), computeSeed(userId, bundle.recentImageId(), epochDay, 11L));
+        ShuffledBucket furnitureBucket = new ShuffledBucket(bundle.furnitureCategoryIds(), computeSeed(userId, bundle.recentImageId(), epochDay, 23L));
 
         Map<SoozipCategory, ShuffledBucket> otherBuckets = new LinkedHashMap<>();
         long salt = 31L;
         for (Map.Entry<SoozipCategory, List<Long>> entry : bundle.otherCategoryIds().entrySet()) {
-            otherBuckets.put(entry.getKey(), new ShuffledBucket(entry.getValue(), computeSeed(userId, bundle.recentImageId(), salt++)));
+            otherBuckets.put(entry.getKey(), new ShuffledBucket(entry.getValue(), computeSeed(userId, bundle.recentImageId(), epochDay, salt++)));
         }
         List<ShuffledBucket> rotatingOtherBuckets = new ArrayList<>(otherBuckets.values());
 
@@ -42,7 +44,7 @@ public class CarouselShuffleService {
             }
         }
 
-        ShuffledBucket fallbackBucket = new ShuffledBucket(bundle.fallbackIds(), computeSeed(userId, bundle.recentImageId(), 97L));
+        ShuffledBucket fallbackBucket = new ShuffledBucket(bundle.fallbackIds(), computeSeed(userId, bundle.recentImageId(), epochDay, 97L));
         while (selectedIds.size() < TARGET_SIZE && fallbackBucket.hasNext()) {
             addNext(selectedIds, fallbackBucket);
         }
@@ -67,10 +69,9 @@ public class CarouselShuffleService {
         }
     }
 
-    private long computeSeed(Long userId, Long recentImageId, long salt) {
+    private long computeSeed(Long userId, Long recentImageId, long epochDay, long salt) {
         long baseUserId = userId == null ? 0L : userId;
         long baseImageId = recentImageId == null ? 0L : recentImageId;
-        long epochDay = LocalDate.now().toEpochDay();
         return (baseUserId * 31L) ^ (baseImageId * 17L) ^ (epochDay * 13L) ^ salt;
     }
 

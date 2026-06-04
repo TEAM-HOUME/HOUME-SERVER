@@ -9,9 +9,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.EnumMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -35,6 +37,7 @@ public class CarouselCandidateService {
 
     public CarouselCandidateBundle collectCandidates(Long userId, List<Long> requestFurnitureIds) {
         List<Long> selectedFurnitureSourceIds = normalizeFurnitureIds(requestFurnitureIds);
+        Set<Long> excludedIds = new LinkedHashSet<>();
 
         List<Long> selectedFurnitureIds = mapIds(
                 curationRawProductRepository.findExposedRawProductsExcludingLikedByUserByFurnitureIds(
@@ -42,30 +45,31 @@ public class CarouselCandidateService {
                         selectedFurnitureSourceIds,
                         SoozipCategory.FURNITURE,
                         SELECTED_FURNITURE_CANDIDATE_LIMIT,
-                        List.of()
+                        List.copyOf(excludedIds)
                 )
         );
+        excludedIds.addAll(selectedFurnitureIds);
 
         List<Long> furnitureCategoryIds = mapIds(
                 curationRawProductRepository.findExposedRawProductsExcludingLikedByUserByCategory(
                         userId,
                         SoozipCategory.FURNITURE,
                         FURNITURE_CATEGORY_CANDIDATE_LIMIT,
-                        List.of()
+                        List.copyOf(excludedIds)
                 )
         );
+        excludedIds.addAll(furnitureCategoryIds);
 
         Map<SoozipCategory, List<Long>> otherCategoryIds = new EnumMap<>(SoozipCategory.class);
         for (SoozipCategory category : OTHER_CATEGORIES) {
-            otherCategoryIds.put(
+            List<Long> otherIds = mapIds(curationRawProductRepository.findExposedRawProductsExcludingLikedByUserByCategory(
+                    userId,
                     category,
-                    mapIds(curationRawProductRepository.findExposedRawProductsExcludingLikedByUserByCategory(
-                            userId,
-                            category,
-                            OTHER_CATEGORY_CANDIDATE_LIMIT,
-                            List.of()
-                    ))
-            );
+                    OTHER_CATEGORY_CANDIDATE_LIMIT,
+                    List.copyOf(excludedIds)
+            ));
+            otherCategoryIds.put(category, otherIds);
+            excludedIds.addAll(otherIds);
         }
 
         List<Long> fallbackIds = mapIds(
@@ -73,7 +77,7 @@ public class CarouselCandidateService {
                         userId,
                         null,
                         FALLBACK_CANDIDATE_LIMIT,
-                        List.of()
+                        List.copyOf(excludedIds)
                 )
         );
 
