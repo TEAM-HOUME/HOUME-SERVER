@@ -19,16 +19,16 @@ import or.sopt.houme.global.api.handler.CarouselException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class CarouselServiceImpl implements CarouselService {
-    private static final int CAROUSEL_V2_SIZE = 10;
-
     private final CarouselCacheService carouselCacheService;
     private final CarouselRepository carouselRepository;
     private final PreferenceRepository preferenceRepository;
@@ -36,6 +36,8 @@ public class CarouselServiceImpl implements CarouselService {
     private final CurationRawProductRepository curationRawProductRepository;
     private final JjymService jjymService;
     private final CarouselLikeLogService carouselLikeLogService;
+    private final CarouselCandidateService carouselCandidateService;
+    private final CarouselShuffleService carouselShuffleService;
 
     @Override
     public GetCarouselListResponseDTO getCarousel(int page) {
@@ -55,46 +57,25 @@ public class CarouselServiceImpl implements CarouselService {
     }
 
     @Override
-    public GetCarouselV2ListResponseDTO getCarouselV2(Long cursor, User user) {
-        Long userId = user.getId();
-        List<CurationRawProduct> selected = new ArrayList<>();
-
-        Long effectiveCursor = cursor;
-        if (effectiveCursor == null) {
-            Long maxId = curationRawProductRepository.findMaxExposedRawProductIdExcludingLikedByUser(userId);
-            if (maxId == null) {
-                return GetCarouselV2ListResponseDTO.of(List.of(), null);
-            }
-            long randomStartId = resolveRandomStartId(userId, maxId);
-            effectiveCursor = randomStartId + 1L;
+    public GetCarouselV2ListResponseDTO getCarouselV2(User user, List<Long> furnitureIds) {
+        var candidateBundle = carouselCandidateService.collectCandidates(user.getId(), furnitureIds);
+        List<Long> displayIds = carouselShuffleService.selectDisplayIds(candidateBundle, user.getId());
+        if (displayIds.isEmpty()) {
+            return GetCarouselV2ListResponseDTO.of(List.of());
         }
 
-        selected.addAll(curationRawProductRepository.findExposedRawProductsExcludingLikedByUserWithCursor(
-                userId,
-                effectiveCursor,
-                CAROUSEL_V2_SIZE,
-                List.of()
-        ));
+        Map<Long, CurationRawProduct> rawProductById = curationRawProductRepository.findAllById(displayIds).stream()
+                .collect(Collectors.toMap(CurationRawProduct::getId, Function.identity()));
 
-        if (cursor == null && selected.size() < CAROUSEL_V2_SIZE) {
-            List<Long> excludedIds = selected.stream().map(CurationRawProduct::getId).toList();
-            selected.addAll(curationRawProductRepository.findExposedRawProductsExcludingLikedByUserWithCursor(
-                    userId,
-                    null,
-                    CAROUSEL_V2_SIZE - selected.size(),
-                    excludedIds
-            ));
-        }
-
-        List<GetCarouselResponseDTO> result = selected.stream()
+        List<GetCarouselResponseDTO> result = displayIds.stream()
+                .map(rawProductById::get)
+                .filter(java.util.Objects::nonNull)
                 .map(rawProduct -> GetCarouselResponseDTO.of(rawProduct.getId(), rawProduct.getProductImageUrl()))
                 .toList();
-        Long nextCursor = selected.size() < CAROUSEL_V2_SIZE
-                ? null
-                : selected.get(selected.size() - 1).getId();
 
-        return GetCarouselV2ListResponseDTO.of(result, nextCursor);
+        return GetCarouselV2ListResponseDTO.of(result);
     }
+
     @Override
     @Transactional
     public void likeCarousel(User user, Long carouselId) {
@@ -111,12 +92,6 @@ public class CarouselServiceImpl implements CarouselService {
     public void likeCarouselV2WithLog(User user, Long rawProductId) {
         jjymService.likeRawProduct(user.getId(), rawProductId);
         carouselLikeLogService.createLikeLog(user, rawProductId);
-    }
-
-    private long resolveRandomStartId(Long userId, Long maxId) {
-        long seed = java.time.LocalDate.now().toEpochDay() ^ userId;
-        long positive = Math.abs(seed == Long.MIN_VALUE ? 0L : seed);
-        return (positive % maxId) + 1L;
     }
 
     private void updateLike(Long userId, Long carouselId, boolean isLike) {

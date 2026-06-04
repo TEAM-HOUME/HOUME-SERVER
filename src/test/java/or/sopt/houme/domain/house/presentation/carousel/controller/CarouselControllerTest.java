@@ -2,6 +2,7 @@ package or.sopt.houme.domain.house.presentation.carousel.controller;
 
 import or.sopt.houme.domain.house.presentation.carousel.controller.dto.GetCarouselListResponseDTO;
 import or.sopt.houme.domain.house.presentation.carousel.controller.dto.GetCarouselResponseDTO;
+import or.sopt.houme.domain.house.presentation.carousel.controller.dto.GetCarouselV2ListResponseDTO;
 import or.sopt.houme.domain.house.service.carousel.CarouselLikeLogService;
 import or.sopt.houme.domain.house.service.carousel.facade.CarouselOptimisticLockFacade;
 import or.sopt.houme.domain.house.service.carousel.CarouselService;
@@ -103,10 +104,49 @@ class CarouselControllerTest {
                 .andExpect(jsonPath("$.code").value(200))
                 .andExpect(jsonPath("$.msg").exists())
                 .andExpect(jsonPath("$.data.carouselResponseDTOS", hasSize(2)))
-                .andExpect(jsonPath("$.data.carouselResponseDTOS[0].carouselId").value(1))
+                .andExpect(jsonPath("$.data.carouselResponseDTOS[0].rawProductId").value(1))
                 .andExpect(jsonPath("$.data.carouselResponseDTOS[0].url").value("url1"))
-                .andExpect(jsonPath("$.data.carouselResponseDTOS[1].carouselId").value(2))
+                .andExpect(jsonPath("$.data.carouselResponseDTOS[1].rawProductId").value(2))
                 .andExpect(jsonPath("$.data.carouselResponseDTOS[1].url").value("url2"));
+    }
+
+    @Test
+    @DisplayName("GET /api/v2/carousels 요청 시 100개 이하의 캐러셀 응답을 반환한다")
+    @WithMockUser()
+    void getCarouselsV2_returnsCarouselList() throws Exception {
+        List<GetCarouselResponseDTO> mockList = List.of(
+                new GetCarouselResponseDTO(11L, "url11"),
+                new GetCarouselResponseDTO(12L, "url12")
+        );
+        GetCarouselV2ListResponseDTO responseDTO = GetCarouselV2ListResponseDTO.of(mockList);
+        when(carouselService.getCarouselV2(any(), eq(List.of(10L, 20L)))).thenReturn(responseDTO);
+
+        setAuthentication(testUserDetails);
+
+        mockMvc.perform(get("/api/v2/carousels")
+                        .param("furnitureIds", "10", "20")
+                        .requestAttr("userDetails", testUserDetails)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value(200))
+                .andExpect(jsonPath("$.msg").exists())
+                .andExpect(jsonPath("$.data.carousels", hasSize(2)))
+                .andExpect(jsonPath("$.data.carousels[0].rawProductId").value(11))
+                .andExpect(jsonPath("$.data.carousels[0].url").value("url11"))
+                .andExpect(jsonPath("$.data.carousels[1].rawProductId").value(12))
+                .andExpect(jsonPath("$.data.carousels[1].url").value("url12"));
+    }
+
+    @Test
+    @DisplayName("GET /api/v2/carousels 요청 시 furnitureIds가 없으면 400을 반환한다")
+    @WithMockUser()
+    void getCarouselsV2_returnsBadRequest_whenFurnitureIdsMissing() throws Exception {
+        setAuthentication(testUserDetails);
+
+        mockMvc.perform(get("/api/v2/carousels")
+                        .requestAttr("userDetails", testUserDetails)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest());
     }
 
 

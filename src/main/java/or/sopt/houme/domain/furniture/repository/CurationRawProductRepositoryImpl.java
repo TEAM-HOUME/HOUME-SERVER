@@ -14,6 +14,7 @@ import or.sopt.houme.domain.furniture.model.entity.QCurationRawProduct;
 import or.sopt.houme.domain.furniture.model.entity.QCurationRawProductColor;
 import or.sopt.houme.domain.furniture.model.entity.QCurationRawProductFurniture;
 import or.sopt.houme.domain.furniture.model.entity.QCurationRawProductFurnitureTag;
+import or.sopt.houme.domain.furniture.model.entity.SoozipCategory;
 import or.sopt.houme.domain.furniture.model.entity.QFurniture;
 import or.sopt.houme.domain.furniture.model.entity.QFurnitureTag;
 import or.sopt.houme.domain.furniture.model.entity.QFurnitureType;
@@ -349,6 +350,62 @@ public class CurationRawProductRepositoryImpl implements CurationRawProductRepos
     }
 
     @Override
+    public List<CurationRawProduct> findExposedRawProductsExcludingLikedByUserByCategory(
+            Long userId,
+            SoozipCategory category,
+            int size,
+            List<Long> excludedIds
+    ) {
+        QCurationRawProduct rawProduct = QCurationRawProduct.curationRawProduct;
+        BooleanBuilder where = buildExposedRawProductBaseWhere(userId, excludedIds);
+        if (category != null) {
+            where.and(rawProduct.category.eq(category));
+        }
+
+        return queryFactory
+                .selectFrom(rawProduct)
+                .where(where)
+                .orderBy(rawProduct.id.desc())
+                .limit(size)
+                .fetch();
+    }
+
+    @Override
+    public List<CurationRawProduct> findExposedRawProductsExcludingLikedByUserByFurnitureIds(
+            Long userId,
+            List<Long> furnitureIds,
+            SoozipCategory category,
+            int size,
+            List<Long> excludedIds
+    ) {
+        if (furnitureIds == null || furnitureIds.isEmpty()) {
+            return List.of();
+        }
+
+        QCurationRawProduct rawProduct = QCurationRawProduct.curationRawProduct;
+        QCurationRawProductFurnitureTag mapping = QCurationRawProductFurnitureTag.curationRawProductFurnitureTag;
+        QFurnitureTag furnitureTag = QFurnitureTag.furnitureTag;
+        QFurniture furniture = QFurniture.furniture;
+
+        BooleanBuilder where = buildExposedRawProductBaseWhere(userId, excludedIds);
+        where.and(furniture.id.in(furnitureIds));
+        if (category != null) {
+            where.and(rawProduct.category.eq(category));
+        }
+
+        return queryFactory
+                .selectDistinct(rawProduct)
+                .from(rawProduct)
+                .join(rawProduct.furnitureTagMappings, mapping)
+                .join(mapping.furnitureTag, furnitureTag)
+                .join(furnitureTag.furniture, furniture)
+                .where(where)
+                .orderBy(rawProduct.id.desc())
+                .limit(size)
+                .fetch();
+    }
+
+    @Override
     public List<CurationRawProduct> findAllSimilarByFurnitureTypeIds(
             List<Long> furnitureTypeIds,
             List<Long> excludeRawProductIds,
@@ -428,6 +485,33 @@ public class CurationRawProductRepositoryImpl implements CurationRawProductRepos
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
                 .fetch();
+    }
+
+    private BooleanBuilder buildExposedRawProductBaseWhere(Long userId, List<Long> excludedIds) {
+        QCurationRawProduct rawProduct = QCurationRawProduct.curationRawProduct;
+        BooleanBuilder where = new BooleanBuilder();
+        where.and(rawProduct.isExposed.isTrue().or(rawProduct.isExposed.isNull()));
+        where.and(notLikedByUser(userId, rawProduct));
+        if (excludedIds != null && !excludedIds.isEmpty()) {
+            where.and(rawProduct.id.notIn(excludedIds.stream().filter(Objects::nonNull).toList()));
+        }
+        return where;
+    }
+
+    private BooleanExpression notLikedByUser(Long userId, QCurationRawProduct rawProduct) {
+        QJjym jjym = QJjym.jjym;
+        QRecommendFurniture recommendFurniture = QRecommendFurniture.recommendFurniture;
+
+        return JPAExpressions
+                .selectOne()
+                .from(jjym)
+                .join(jjym.recommendFurniture, recommendFurniture)
+                .where(
+                        jjym.user.id.eq(userId),
+                        recommendFurniture.source.eq(CurationSource.RAW),
+                        recommendFurniture.furnitureProductId.eq(rawProduct.productId)
+                )
+                .notExists();
     }
 
     @Override
