@@ -73,8 +73,9 @@ public class ImageSweepService {
                 continue;
             }
             try {
-                convertVariants(originalKey, missingWidths);
-                converted++;
+                if (convertVariants(originalKey, missingWidths) > 0) {
+                    converted++;
+                }
             } catch (Exception e) {
                 log.error("원본 변환 실패: {} — 원본 보존 후 건너뜀", originalKey, e);
             }
@@ -82,25 +83,28 @@ public class ImageSweepService {
         return converted;
     }
 
-    private void convertVariants(String originalKey, List<Integer> widths) {
+    private int convertVariants(String originalKey, List<Integer> widths) {
         byte[] source = s3Util.download(originalKey);
 
         ImageOptimizer.ImageSize size = imageOptimizer.readSize(source);
         if (size != null && (long) size.width() * size.height() > MAX_PIXELS) {
             log.warn("크기가 큰 이미지라 변환을 건너뜀: {} ({}x{})", originalKey, size.width(), size.height());
-            return;
+            return 0;
         }
 
+        int uploaded = 0;
         for (int width : widths) {
-            // 원본보다 큰 너비는 업스케일이라 만들지 않음 (프론트는 원본 이미지로 폴백)
-            if (size != null && width >= size.width()) {
+            // 원본보다 큰 variant 너비는 원본보다 업스케일이므로 skip (같은 너비는 variant 생성, 없으면 프론트가 원본으로 폴백)
+            if (size != null && width > size.width()) {
                 continue;
             }
             String variantKey = variantKeyResolver.toVariantKey(originalKey, width);
             byte[] webp = imageOptimizer.toResizedWebp(source, width);
             s3Util.uploadWebpVariant(variantKey, webp);
             log.info("variant 생성: {} ({} bytes)", variantKey, webp.length);
+            uploaded++;
         }
+        return uploaded;
     }
 
     private boolean isTargetOriginal(String key) {
