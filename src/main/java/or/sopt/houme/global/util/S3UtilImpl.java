@@ -39,8 +39,8 @@ public class S3UtilImpl implements S3Util {
     @Value("${cloud.aws.s3.bucket}")
     private String bucket;
 
-    // 다운로드 시 heap에 올릴 원본 바이트 상한 (이 크기를 넘으면 다운로드 전에 차단)
-    @Value("${image.sweep.max-source-bytes:26214400}")
+    // 다운로드 시 heap에 올릴 원본 바이트 상한 (약 20MB, 초과 시 다운로드 전에 차단)
+    @Value("${image.sweep.max-source-bytes:20971520}")
     private long maxSourceBytes;
 
     private final AmazonS3 amazonS3;
