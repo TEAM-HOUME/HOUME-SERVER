@@ -178,6 +178,7 @@ jib {
         format = 'Docker'
     }
     // cwebp 실행파일을 도커 이미지에 포함 + 실행권한 부여
+    // cwebp 바이너리: EC2가 t3.small -> libwebp 1.5.0 linux-x86-64 (amd64 static-pie)
     extraDirectories {
         paths {
             path {
