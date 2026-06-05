@@ -5,8 +5,10 @@ import lombok.extern.slf4j.Slf4j;
 import or.sopt.houme.global.util.S3Util;
 import org.springframework.stereotype.Service;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -93,15 +95,17 @@ public class ImageSweepService {
         }
 
         int uploaded = 0;
-        for (int width : widths) {
-            // 원본보다 큰 variant 너비는 원본보다 업스케일이므로 skip (같은 너비는 variant 생성, 없으면 프론트가 원본으로 폴백)
-            if (size != null && width > size.width()) {
-                continue;
-            }
-            String variantKey = variantKeyResolver.toVariantKey(originalKey, width);
-            byte[] webp = imageOptimizer.toResizedWebp(source, width);
+        // 원본이 작아 여러 목표 너비(400/800/1280)가 같은 너비(원본의 너비)로 클램프되는 경우, 같은 너비를 두 번 인코딩하지 않도록 캐시
+        Map<Integer, byte[]> encodedByWidth = new HashMap<>();
+        for (int targetWidth : widths) {
+            // targetWidth는 만들 variant의 목표 너비. 원본보다 targetWidth가 크면
+            // 원본을 업스케일하는 대신 원본 너비로 줄여서 variant를 만들어 항상 WebP를 생성한다.
+            int resizeWidth = (size != null) ? Math.min(targetWidth, size.width()) : targetWidth;
+            byte[] webp = encodedByWidth.computeIfAbsent(resizeWidth,
+                    width -> imageOptimizer.toResizedWebp(source, width));
+            String variantKey = variantKeyResolver.toVariantKey(originalKey, targetWidth);
             s3Util.uploadWebpVariant(variantKey, webp);
-            log.info("variant 생성: {} ({} bytes)", variantKey, webp.length);
+            log.info("variant 생성: {} ({} bytes, 실제너비={}px)", variantKey, webp.length, resizeWidth);
             uploaded++;
         }
         return uploaded;

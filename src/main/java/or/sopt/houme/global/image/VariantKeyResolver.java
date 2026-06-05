@@ -16,8 +16,9 @@ import java.util.regex.Pattern;
 public class VariantKeyResolver {
 
     /**
-     * 생성할 variant 너비
+     * 생성할 variant 너비 (각 값은 만들 variant의 목표 너비)
      * 프론트 렌더에 필요한 크기 기반(그리드 썸네일 ~200px, 최대너비/상세이미지 ~440px)에 DPR 2~3을 반영한 값.
+     * 원본이 목표 너비보다 작으면 업스케일하지 않고 원본 너비로 줄여서 생성하므로, 모든 원본이 세 너비의 variant를 모두 가집니다.
      * 웹의 srcset이 페이지별로 필요한 이미지 1개만 다운로드하므로, 모든 이미지에 3가지 width를 적용해도 대역폭 낭비가 없습니다.
      */
     public static final List<Integer> VARIANT_WIDTHS = List.of(400, 800, 1280);
