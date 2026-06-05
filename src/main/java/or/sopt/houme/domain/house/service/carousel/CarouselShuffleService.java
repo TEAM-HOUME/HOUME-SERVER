@@ -32,16 +32,18 @@ public class CarouselShuffleService {
         }
         List<ShuffledBucket> rotatingOtherBuckets = new ArrayList<>(otherBuckets.values());
 
-        int otherIndex = 0;
-        while (selectedIds.size() < TARGET_SIZE && hasAnyRemaining(selectedBucket, furnitureBucket, rotatingOtherBuckets)) {
+        while (selectedIds.size() < TARGET_SIZE && hasAnyRemaining(selectedBucket, furnitureBucket)) {
+            addNext(selectedIds, selectedBucket);
+            addNext(selectedIds, selectedBucket);
             addNext(selectedIds, selectedBucket);
             addNext(selectedIds, selectedBucket);
             addNext(selectedIds, furnitureBucket);
+        }
 
-            if (!rotatingOtherBuckets.isEmpty()) {
-                addNext(selectedIds, rotatingOtherBuckets.get(otherIndex % rotatingOtherBuckets.size()));
-                otherIndex++;
-            }
+        int otherIndex = 0;
+        while (selectedIds.size() < TARGET_SIZE && hasAnyRemaining(rotatingOtherBuckets)) {
+            addNext(selectedIds, rotatingOtherBuckets.get(otherIndex % rotatingOtherBuckets.size()));
+            otherIndex++;
         }
 
         ShuffledBucket fallbackBucket = new ShuffledBucket(bundle.fallbackIds(), computeSeed(userId, bundle.recentImageId(), epochDay, 97L));
@@ -52,12 +54,12 @@ public class CarouselShuffleService {
         return new ArrayList<>(selectedIds);
     }
 
-    private boolean hasAnyRemaining(ShuffledBucket selectedBucket, ShuffledBucket furnitureBucket, List<ShuffledBucket> otherBuckets) {
-        if (selectedBucket.hasNext() || furnitureBucket.hasNext()) {
-            return true;
-        }
+    private boolean hasAnyRemaining(ShuffledBucket selectedBucket, ShuffledBucket furnitureBucket) {
+        return selectedBucket.hasNext() || furnitureBucket.hasNext();
+    }
 
-        return otherBuckets.stream().anyMatch(ShuffledBucket::hasNext);
+    private boolean hasAnyRemaining(List<ShuffledBucket> buckets) {
+        return buckets.stream().anyMatch(ShuffledBucket::hasNext);
     }
 
     private void addNext(Set<Long> selectedIds, ShuffledBucket bucket) {
