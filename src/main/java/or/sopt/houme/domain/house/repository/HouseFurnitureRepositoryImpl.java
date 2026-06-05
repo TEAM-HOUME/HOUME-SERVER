@@ -30,4 +30,23 @@ public class HouseFurnitureRepositoryImpl implements HouseFurnitureRepositoryCus
                 .orderBy(houseFurniture.id.asc())
                 .fetch();
     }
+
+    @Override
+    public List<HouseFurniture> findAllByHouseIdInWithFurniture(List<Long> houseIds) {
+        if (houseIds == null || houseIds.isEmpty()) {
+            return List.of();
+        }
+
+        QHouseFurniture houseFurniture = QHouseFurniture.houseFurniture;
+        QFurniture furniture = QFurniture.furniture;
+        QFurnitureType furnitureType = QFurnitureType.furnitureType;
+
+        return queryFactory
+                .selectFrom(houseFurniture)
+                .join(houseFurniture.furniture, furniture).fetchJoin()
+                .join(furniture.furnitureType, furnitureType).fetchJoin()
+                .where(houseFurniture.house.id.in(houseIds))
+                .orderBy(houseFurniture.house.id.asc(), houseFurniture.id.asc())
+                .fetch();
+    }
 }
