@@ -39,6 +39,10 @@ public class S3UtilImpl implements S3Util {
     @Value("${cloud.aws.s3.bucket}")
     private String bucket;
 
+    // 다운로드 시 heap에 올릴 원본 바이트 상한 (이 크기를 넘으면 다운로드 전에 차단)
+    @Value("${image.sweep.max-source-bytes:26214400}")
+    private long maxSourceBytes;
+
     private final AmazonS3 amazonS3;
 
     private static final String CONTENT_TYPE_WEBP = "image/webp";
@@ -182,6 +186,13 @@ public class S3UtilImpl implements S3Util {
     public byte[] download(String key) {
         try (S3Object s3Object = amazonS3.getObject(bucket, key);
              InputStream content = s3Object.getObjectContent()) {
+            // 이미지를 heap에 올리기 전에 Content-Length로 크기를 먼저 검사 (대용량 파일 OOM 방지)
+            long contentLength = s3Object.getObjectMetadata().getContentLength();
+            if (contentLength > maxSourceBytes) {
+                log.warn("S3 download skipped (too large). bucket={}, key={}, contentLength={}, limit={}",
+                        bucket, key, contentLength, maxSourceBytes);
+                throw new S3Exception(ErrorCode.IMAGE_DOWNLOAD_EXCEPTION);
+            }
             return content.readAllBytes();
         } catch (AmazonServiceException e) {
             log.error(
