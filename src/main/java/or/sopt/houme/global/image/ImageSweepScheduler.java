@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
 /**
  * 어드민 이미지 최적화 sweep을 주기적으로 실행하는 스케줄러입니다.
  *
- * fixedDelay(기본 12시간) 간격으로 sweep을 실행합니다.
+ * 매일 새벽 4시(KST)에 sweep을 실행합니다. (트래픽이 적은 시간대 + 24시간 주기)
  * image.sweep.enabled=false 로 비활성화할 수 있습니다(테스트/로컬 환경).
  */
 @Component
@@ -20,12 +20,14 @@ public class ImageSweepScheduler {
 
     private final ImageSweepService imageSweepService;
 
-    @Scheduled(
-            // 서버 시작 60초 후 첫 sweep 돌리기
-            initialDelayString = "${image.sweep.initial-delay-ms:60000}",
-            fixedDelayString = "${image.sweep.fixed-delay-ms:43200000}"
-    )
+    // 매일 새벽 4시(KST) 실행. cron 형식: 초 분 시 일 월 요일
+    @Scheduled(cron = "${image.sweep.cron:0 0 4 * * *}", zone = "Asia/Seoul")
     public void runSweep() {
-        imageSweepService.sweep();
+        // 예기치 못한 Throwable(Error 포함)이 스케줄러를 조용히 멈추지 않도록 최상위 가드
+        try {
+            imageSweepService.sweep();
+        } catch (Throwable t) {
+            log.error("이미지 최적화 sweep 실행 중 예외 발생. 다음 주기에 재시도합니다.", t);
+        }
     }
 }
