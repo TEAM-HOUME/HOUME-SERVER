@@ -31,7 +31,8 @@ class CarouselShuffleServiceTest {
 
         List<Long> result = carouselShuffleService.selectDisplayIds(bundle, 1L);
 
-        assertThat(result).startsWith(1L, 2L, 3L, 4L, 101L);
-        assertThat(result).containsSubsequence(1001L, 1002L);
+        assertThat(result.subList(0, 5)).containsExactlyInAnyOrder(1L, 2L, 3L, 4L, 101L);
+        assertThat(result.subList(5, 7)).containsExactlyInAnyOrder(1001L, 1002L);
+        assertThat(result.subList(7, 9)).containsExactlyInAnyOrder(2001L, 2002L);
     }
 }
