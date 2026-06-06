@@ -3,8 +3,12 @@ package or.sopt.houme.global.util;
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.SdkClientException;
 import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.model.ListObjectsV2Request;
+import com.amazonaws.services.s3.model.ListObjectsV2Result;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
+import com.amazonaws.services.s3.model.S3Object;
+import com.amazonaws.services.s3.model.S3ObjectSummary;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import or.sopt.houme.global.api.ErrorCode;
@@ -18,6 +22,9 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 import static or.sopt.houme.global.util.constant.S3ExtensionConstant.EXTENSION_PNG;
@@ -32,7 +39,15 @@ public class S3UtilImpl implements S3Util {
     @Value("${cloud.aws.s3.bucket}")
     private String bucket;
 
+    // 다운로드 시 heap에 올릴 원본 바이트 상한 (약 20MB, 초과 시 다운로드 전에 차단)
+    @Value("${image.sweep.max-source-bytes:20971520}")
+    private long maxSourceBytes;
+
     private final AmazonS3 amazonS3;
+
+    private static final String CONTENT_TYPE_WEBP = "image/webp";
+    // 최적화 이미지(variant)는 내용이 바뀌지 않으므로 장기 캐싱 (원본은 Cache-Control 미설정 → 재방문 시 재다운로드 발생)
+    private static final String CACHE_CONTROL_IMMUTABLE = "public, max-age=31536000, immutable";
 
 
     /**
@@ -160,6 +175,102 @@ public class S3UtilImpl implements S3Util {
 
 
 
+
+    /**
+     * S3에서 key에 해당하는 객체를 바이트로 다운로드합니다.
+     *
+     * @param key S3 객체 key
+     * @return 객체 바이트
+     */
+    @Override
+    public byte[] download(String key) {
+        try (S3Object s3Object = amazonS3.getObject(bucket, key);
+             InputStream content = s3Object.getObjectContent()) {
+            // 이미지를 heap에 올리기 전에 Content-Length로 크기를 먼저 검사 (대용량 파일 OOM 방지)
+            long contentLength = s3Object.getObjectMetadata().getContentLength();
+            if (contentLength > maxSourceBytes) {
+                log.warn("S3 download skipped (too large). bucket={}, key={}, contentLength={}, limit={}",
+                        bucket, key, contentLength, maxSourceBytes);
+                throw new S3Exception(ErrorCode.IMAGE_DOWNLOAD_EXCEPTION);
+            }
+            return content.readAllBytes();
+        } catch (AmazonServiceException e) {
+            log.error(
+                    "S3 download failed (service). bucket={}, key={}, statusCode={}, errorCode={}, requestId={}, message={}",
+                    bucket, key, e.getStatusCode(), e.getErrorCode(), e.getRequestId(), e.getErrorMessage(), e
+            );
+            throw new S3Exception(ErrorCode.IMAGE_DOWNLOAD_EXCEPTION);
+        } catch (SdkClientException e) {
+            log.error("S3 download failed (client). bucket={}, key={}, message={}", bucket, key, e.getMessage(), e);
+            throw new S3Exception(ErrorCode.IMAGE_DOWNLOAD_EXCEPTION);
+        } catch (IOException e) {
+            log.error("S3 download failed (io). bucket={}, key={}, message={}", bucket, key, e.getMessage(), e);
+            throw new S3Exception(ErrorCode.IMAGE_DOWNLOAD_EXCEPTION);
+        }
+    }
+
+    /**
+     * WebP 변환본(variant)을 지정한 key에 업로드합니다.
+     * content-type은 image/webp, Cache-Control은 장기 캐싱(immutable)으로 설정합니다.
+     *
+     * @param key       variant를 저장할 S3 key (네이밍 규칙으로 결정된 key)
+     * @param webpBytes WebP 변환 결과 바이트
+     */
+    @Override
+    public void uploadWebpVariant(String key, byte[] webpBytes) {
+        ObjectMetadata metadata = new ObjectMetadata();
+        metadata.setContentLength(webpBytes.length);
+        metadata.setContentType(CONTENT_TYPE_WEBP);
+        metadata.setCacheControl(CACHE_CONTROL_IMMUTABLE);
+
+        try {
+            ByteArrayInputStream inputStream = new ByteArrayInputStream(webpBytes);
+            amazonS3.putObject(new PutObjectRequest(bucket, key, inputStream, metadata));
+        } catch (AmazonServiceException e) {
+            log.error(
+                    "S3 variant upload failed (service). bucket={}, key={}, statusCode={}, errorCode={}, requestId={}, message={}",
+                    bucket, key, e.getStatusCode(), e.getErrorCode(), e.getRequestId(), e.getErrorMessage(), e
+            );
+            throw new S3Exception(ErrorCode.IMAGE_VARIANT_UPLOAD_EXCEPTION);
+        } catch (SdkClientException e) {
+            log.error("S3 variant upload failed (client). bucket={}, key={}, message={}", bucket, key, e.getMessage(), e);
+            throw new S3Exception(ErrorCode.IMAGE_VARIANT_UPLOAD_EXCEPTION);
+        }
+    }
+
+    /**
+     * S3에서, 지정한 prefix 아래의 모든 객체 key를 반환합니다.
+     *
+     * @param prefix S3 prefix (예: "floorplan/")
+     * @return prefix 아래 객체 key 목록
+     */
+    @Override
+    public List<String> listKeys(String prefix) {
+        List<String> keys = new ArrayList<>();
+        try {
+            ListObjectsV2Request request = new ListObjectsV2Request()
+                    .withBucketName(bucket)
+                    .withPrefix(prefix);
+            ListObjectsV2Result result;
+            do {
+                result = amazonS3.listObjectsV2(request);
+                for (S3ObjectSummary summary : result.getObjectSummaries()) {
+                    keys.add(summary.getKey());
+                }
+                request.setContinuationToken(result.getNextContinuationToken());
+            } while (result.isTruncated());
+        } catch (AmazonServiceException e) {
+            log.error(
+                    "S3 list failed (service). bucket={}, prefix={}, statusCode={}, errorCode={}, requestId={}, message={}",
+                    bucket, prefix, e.getStatusCode(), e.getErrorCode(), e.getRequestId(), e.getErrorMessage(), e
+            );
+            throw new S3Exception(ErrorCode.IMAGE_LIST_EXCEPTION);
+        } catch (SdkClientException e) {
+            log.error("S3 list failed (client). bucket={}, prefix={}, message={}", bucket, prefix, e.getMessage(), e);
+            throw new S3Exception(ErrorCode.IMAGE_LIST_EXCEPTION);
+        }
+        return keys;
+    }
 
     /**
      * key 기반으로 이미지를 삭제하는 메서드입니다.
