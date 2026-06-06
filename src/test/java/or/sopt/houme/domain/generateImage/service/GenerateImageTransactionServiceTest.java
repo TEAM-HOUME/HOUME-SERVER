@@ -83,7 +83,7 @@ class GenerateImageTransactionServiceTest {
                 .build();
 
         when(banner.getBannerType()).thenReturn(BannerType.BANNER);
-        when(houseService.createTemplateHouse(user, banner, finalPrompt, floorPlanId, isMirror))
+        when(houseService.createTemplateHouse(user, banner, finalPrompt, floorPlanId, isMirror, null))
                 .thenReturn(house);
         when(generateImageService.createGenerateImage(imageResponse, house, GenerateImageType.BANNER))
                 .thenReturn(generateImage);
@@ -101,7 +101,7 @@ class GenerateImageTransactionServiceTest {
         assertThat(response.imageId()).isEqualTo(101L);
         assertThat(response.imageUrl()).isEqualTo("https://cdn.example.com/file.jpg");
         assertThat(response.isMirror()).isTrue();
-        verify(houseService).createTemplateHouse(user, banner, finalPrompt, floorPlanId, isMirror);
+        verify(houseService).createTemplateHouse(user, banner, finalPrompt, floorPlanId, isMirror, null);
         verify(generateImageService).createGenerateImage(imageResponse, house, GenerateImageType.BANNER);
         verify(creditService).commitCreditDeletion(lockedCredit);
         verify(userService).updateHasGeneratedImage(user);
@@ -122,7 +122,7 @@ class GenerateImageTransactionServiceTest {
         );
 
         when(banner.getBannerType()).thenReturn(BannerType.BANNER);
-        when(houseService.createTemplateHouse(user, banner, "prompt", 1L, false)).thenReturn(house);
+        when(houseService.createTemplateHouse(user, banner, "prompt", 1L, false, null)).thenReturn(house);
         when(generateImageService.createGenerateImage(imageResponse, house, GenerateImageType.BANNER))
                 .thenThrow(new RuntimeException("image save failed"));
 
@@ -160,7 +160,7 @@ class GenerateImageTransactionServiceTest {
                 .generationType(GenerateImageType.LIST)
                 .build();
 
-        when(houseService.createTemplateHouse(user, banner, "prompt", 2L, true)).thenReturn(house);
+        when(houseService.createTemplateHouse(user, banner, "prompt", 2L, true, null)).thenReturn(house);
         when(generateImageService.createGenerateImage(imageResponse, house, GenerateImageType.BANNER))
                 .thenReturn(generateImage);
         doThrow(new RuntimeException("credit commit failed"))
@@ -195,7 +195,7 @@ class GenerateImageTransactionServiceTest {
                 .generationType(GenerateImageType.FULL_FUNNEL)
                 .build();
 
-        when(houseService.createTemplateHouse(user, null, "prompt", 3L, false)).thenReturn(house);
+        when(houseService.createTemplateHouse(user, null, "prompt", 3L, false, null)).thenReturn(house);
         when(houseService.updateHouseActivity(anyLong(), eq(Activity.REMOTE_WORK))).thenReturn(house);
         when(generateImageService.createGenerateImage(imageResponse, house, GenerateImageType.FULL_FUNNEL))
                 .thenReturn(generateImage);
@@ -238,7 +238,7 @@ class GenerateImageTransactionServiceTest {
                 .generationType(GenerateImageType.PRODUCT)
                 .build();
 
-        when(houseService.createTemplateHouse(user, null, "prompt", 1L, false)).thenReturn(house);
+        when(houseService.createTemplateHouse(user, null, "prompt", 1L, false, null)).thenReturn(house);
         when(generateImageService.createGenerateImage(imageResponse, house, GenerateImageType.PRODUCT))
                 .thenReturn(generateImage);
 

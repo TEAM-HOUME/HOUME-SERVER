@@ -7,14 +7,14 @@ public record RecentFloorPlanResponse(
         Long floorPlanId,
         String floorPlanName,
         String equilibrium,
-        List<ExploreHouseTemplateDetailItemResponse> floorPlans
+        List<RecentFloorPlanItemResponse> floorPlans
 ) {
 
     public static RecentFloorPlanResponse withRecent(
             Long floorPlanId,
             String floorPlanName,
             String equilibrium,
-            List<ExploreHouseTemplateDetailItemResponse> floorPlans
+            List<RecentFloorPlanItemResponse> floorPlans
     ) {
         return new RecentFloorPlanResponse(Boolean.TRUE, floorPlanId, floorPlanName, equilibrium, floorPlans);
     }

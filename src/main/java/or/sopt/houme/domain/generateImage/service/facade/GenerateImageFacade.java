@@ -402,6 +402,7 @@ public class GenerateImageFacade {
                     banner,
                     request.floorPlanId(),
                     request.isMirror(),
+                    request.floorPlanView(),
                     prompt,
                     imageUploadResponseDTO
             );
@@ -469,6 +470,7 @@ public class GenerateImageFacade {
                     style,
                     request.floorPlanId(),
                     request.isMirror(),
+                    request.floorPlanView(),
                     prompt,
                     imageUploadResponseDTO
             );
@@ -554,6 +556,7 @@ public class GenerateImageFacade {
                     lockedCredit,
                     request.floorPlanId(),
                     request.isMirror(),
+                    request.floorPlanView(),
                     prompt,
                     imageUploadResponseDTO,
                     activity,
@@ -621,6 +624,7 @@ public class GenerateImageFacade {
                     lockedCredit,
                     request.floorPlanId(),
                     request.isMirror(),
+                    request.floorPlanView(),
                     prompt,
                     imageUploadResponseDTO,
                     selectedProducts

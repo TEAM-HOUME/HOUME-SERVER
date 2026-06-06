@@ -11,6 +11,7 @@ import or.sopt.houme.domain.house.presentation.floorPlan.dto.response.ExploreHou
 import or.sopt.houme.domain.house.presentation.floorPlan.dto.response.ExploreHouseTemplateDetailResponse;
 import or.sopt.houme.domain.house.presentation.floorPlan.dto.response.ExploreHouseTemplateItemResponse;
 import or.sopt.houme.domain.house.presentation.floorPlan.dto.response.ExploreHouseTemplateListResponse;
+import or.sopt.houme.domain.house.presentation.floorPlan.dto.response.RecentFloorPlanItemResponse;
 import or.sopt.houme.domain.house.presentation.floorPlan.dto.response.RecentFloorPlanResponse;
 import or.sopt.houme.domain.house.model.entity.mapping.HouseFloorPlan;
 import or.sopt.houme.domain.house.model.floorPlan.entity.FloorPlan;
@@ -78,18 +79,23 @@ public class FloorPlanServiceImpl implements FloorPlanService {
             return RecentFloorPlanResponse.noRecent();
         }
 
-        FloorPlan floorPlan = recentGenerateImage.get().getHouse().getHouseFloorPlans().stream()
+        HouseFloorPlan recentHouseFloorPlan = recentGenerateImage.get().getHouse().getHouseFloorPlans().stream()
                 .sorted((left, right) -> Long.compare(safeHouseFloorPlanId(left), safeHouseFloorPlanId(right)))
-                .map(HouseFloorPlan::getFloorPlan)
-                .filter(java.util.Objects::nonNull)
+                .filter(mapping -> mapping != null && mapping.getFloorPlan() != null)
                 .findFirst()
                 .orElse(null);
-        if (floorPlan == null) {
+        if (recentHouseFloorPlan == null) {
             return RecentFloorPlanResponse.noRecent();
         }
+        FloorPlan floorPlan = recentHouseFloorPlan.getFloorPlan();
+        String selectedView = normalizeView(recentHouseFloorPlan.getSelectedView());
 
-        List<ExploreHouseTemplateDetailItemResponse> floorPlans = resolveFloorPlanImages(floorPlan).stream()
-                .map(image -> ExploreHouseTemplateDetailItemResponse.of(image.url(), image.view()))
+        List<RecentFloorPlanItemResponse> floorPlans = resolveFloorPlanImages(floorPlan).stream()
+                .map(image -> RecentFloorPlanItemResponse.of(
+                        image.url(),
+                        image.view(),
+                        isRecentUsedView(image.view(), selectedView)
+                ))
                 .toList();
 
         return RecentFloorPlanResponse.withRecent(
@@ -162,6 +168,23 @@ public class FloorPlanServiceImpl implements FloorPlanService {
             return Long.MAX_VALUE;
         }
         return mapping.getId();
+    }
+
+    private boolean isRecentUsedView(String view, String selectedView) {
+        if (selectedView == null) {
+            return false;
+        }
+        String normalizedView = normalizeView(view);
+        return normalizedView != null && selectedView.equalsIgnoreCase(normalizedView);
+    }
+
+    private String normalizeView(String view) {
+        if (view == null) {
+            return null;
+        }
+
+        String normalized = view.trim();
+        return normalized.isEmpty() ? null : normalized;
     }
 
     private List<FloorPlanImageItem> resolveFloorPlanImages(FloorPlan floorPlan) {

@@ -26,4 +26,7 @@ public class HouseFloorPlan {
 
     @Column(name = "is_reverse", nullable = false)
     private boolean isReverse;
+
+    @Column(name = "selected_view")
+    private String selectedView;
 }

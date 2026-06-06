@@ -142,7 +142,30 @@ public class GenerateImageTransactionService {
             String finalPrompt,
             ImageUploadResponseDTO imageResponse
     ) {
-        House house = houseService.createTemplateHouse(user, banner, finalPrompt, floorPlanId, isMirror);
+        return saveBannerImageAndConfirmCredit(
+                user,
+                lockedCredit,
+                banner,
+                floorPlanId,
+                isMirror,
+                null,
+                finalPrompt,
+                imageResponse
+        );
+    }
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public BannerGenerateImageResponse saveBannerImageAndConfirmCredit(
+            User user,
+            Credit lockedCredit,
+            Banner banner,
+            Long floorPlanId,
+            boolean isMirror,
+            String floorPlanView,
+            String finalPrompt,
+            ImageUploadResponseDTO imageResponse
+    ) {
+        House house = houseService.createTemplateHouse(user, banner, finalPrompt, floorPlanId, isMirror, floorPlanView);
 
         GenerateImage generateImage = generateImageService.createGenerateImage(
                 imageResponse,
@@ -167,7 +190,34 @@ public class GenerateImageTransactionService {
             java.util.List<Long> furnitureIds,
             java.util.List<Long> moodBoardIds
     ) {
-        House house = houseService.createTemplateHouse(user, null, finalPrompt, floorPlanId, isMirror);
+        return saveV4ImageAndConfirmCredit(
+                user,
+                lockedCredit,
+                floorPlanId,
+                isMirror,
+                null,
+                finalPrompt,
+                imageResponse,
+                activity,
+                furnitureIds,
+                moodBoardIds
+        );
+    }
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public GenerateImageV4Response saveV4ImageAndConfirmCredit(
+            User user,
+            Credit lockedCredit,
+            Long floorPlanId,
+            boolean isMirror,
+            String floorPlanView,
+            String finalPrompt,
+            ImageUploadResponseDTO imageResponse,
+            Activity activity,
+            java.util.List<Long> furnitureIds,
+            java.util.List<Long> moodBoardIds
+    ) {
+        House house = houseService.createTemplateHouse(user, null, finalPrompt, floorPlanId, isMirror, floorPlanView);
         houseService.updateHouseActivity(house.getId(), activity);
 
         if (furnitureIds != null && !furnitureIds.isEmpty()) {
@@ -198,7 +248,30 @@ public class GenerateImageTransactionService {
             ImageUploadResponseDTO imageResponse,
             List<CurationRawProduct> selectedProducts
     ) {
-        House house = houseService.createTemplateHouse(user, null, finalPrompt, floorPlanId, isMirror);
+        return saveProductImageAndConfirmCredit(
+                user,
+                lockedCredit,
+                floorPlanId,
+                isMirror,
+                null,
+                finalPrompt,
+                imageResponse,
+                selectedProducts
+        );
+    }
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public GenerateImageV4Response saveProductImageAndConfirmCredit(
+            User user,
+            Credit lockedCredit,
+            Long floorPlanId,
+            boolean isMirror,
+            String floorPlanView,
+            String finalPrompt,
+            ImageUploadResponseDTO imageResponse,
+            List<CurationRawProduct> selectedProducts
+    ) {
+        House house = houseService.createTemplateHouse(user, null, finalPrompt, floorPlanId, isMirror, floorPlanView);
 
         GenerateImage generateImage = generateImageService.createGenerateImage(
                 imageResponse,

@@ -91,6 +91,7 @@ class FloorPlanServiceImplTest {
         HouseFloorPlan houseFloorPlan = HouseFloorPlan.builder()
                 .id(100L)
                 .floorPlan(floorPlan)
+                .selectedView("SIDE_VIEW")
                 .build();
         House house = House.builder()
                 .houseFloorPlans(List.of(houseFloorPlan))
@@ -112,10 +113,10 @@ class FloorPlanServiceImplTest {
         assertThat(response.floorPlanName()).isEqualTo("복층 오피스텔");
         assertThat(response.equilibrium()).isEqualTo(Equilibrium.BETWEEN_6_10.getDescription());
         assertThat(response.floorPlans())
-                .extracting("imageUrl", "view")
+                .extracting("imageUrl", "view", "isRecentUsedView")
                 .containsExactly(
-                        tuple("https://image-1", "TOP_VIEW"),
-                        tuple("https://image-2", "SIDE_VIEW")
+                        tuple("https://image-1", "TOP_VIEW", false),
+                        tuple("https://image-2", "SIDE_VIEW", true)
                 );
     }
 

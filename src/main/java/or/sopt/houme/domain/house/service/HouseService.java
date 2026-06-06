@@ -36,8 +36,12 @@ public interface HouseService {
     // 템플릿 기반 이미지 생성을 위한 house 저장
     House createTemplateHouse(User user, Banner banner, String prompt, Long floorPlanId, boolean isMirror);
 
+    House createTemplateHouse(User user, Banner banner, String prompt, Long floorPlanId, boolean isMirror, String selectedView);
+
     // houseId와 floorPlan 저장
     void saveHouseFloorPlan(House house, Long floorPlanId, boolean isMirror);
+
+    void saveHouseFloorPlan(House house, Long floorPlanId, boolean isMirror, String selectedView);
 
     // house와 furniture 저장
     void saveHouseFurniture(House house, List<Long> furnitureIds);
