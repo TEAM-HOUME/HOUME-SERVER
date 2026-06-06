@@ -9,6 +9,7 @@ import or.sopt.houme.domain.house.presentation.carousel.controller.dto.GetCarous
 import or.sopt.houme.domain.house.model.carousel.entity.Carousel;
 import or.sopt.houme.domain.house.model.carousel.entity.CarouselType;
 import or.sopt.houme.domain.house.repository.carousel.CarouselRepository;
+import or.sopt.houme.domain.house.service.carousel.dto.CarouselCandidateBundle;
 import or.sopt.houme.domain.preference.model.entity.CarouselPreference;
 import or.sopt.houme.domain.preference.model.entity.Preference;
 import or.sopt.houme.domain.preference.repository.CarouselPreferenceRepository;
@@ -56,6 +57,12 @@ class CarouselServiceImplTest {
     @Mock
     private JjymService jjymService;
 
+    @Mock
+    private CarouselCandidateService carouselCandidateService;
+
+    @Mock
+    private CarouselShuffleService carouselShuffleService;
+
     private User user;
     private Carousel carousel;
 
@@ -96,12 +103,12 @@ class CarouselServiceImplTest {
         // then
         assertThat(result.carouselResponseDTOS()).hasSize(2);
         assertThat(result.carouselResponseDTOS())
-                .extracting("carouselId")
+                .extracting("rawProductId")
                 .containsExactlyInAnyOrder(1L, 2L);
     }
 
     @Test
-    @DisplayName("getCarouselV2()는 사용자 찜 제외를 DB 쿼리에서 처리한 결과를 반환한다")
+    @DisplayName("getCarouselV2()는 후보군 셔플 결과 순서대로 100개 캐러셀 응답을 조립한다")
     void getCarouselV2_returnsExposedRawProductsExcludingLikedProducts() {
         CurationRawProduct rawProduct1 = CurationRawProduct.builder()
                 .id(101L)
@@ -111,20 +118,29 @@ class CarouselServiceImplTest {
                 .id(102L)
                 .productImageUrl("image-102")
                 .build();
+        CurationRawProduct rawProduct3 = CurationRawProduct.builder()
+                .id(103L)
+                .productImageUrl("image-103")
+                .build();
+        CarouselCandidateBundle candidateBundle = new CarouselCandidateBundle(
+                500L,
+                List.of(1L, 2L),
+                List.of(3L, 4L),
+                java.util.Map.of(),
+                List.of(101L, 102L, 103L)
+        );
 
-        when(curationRawProductRepository.findMaxExposedRawProductIdExcludingLikedByUser(1L)).thenReturn(200L);
-        when(curationRawProductRepository.findExposedRawProductsExcludingLikedByUserWithCursor(
-                eq(1L), anyLong(), eq(10), eq(List.of())
-        )).thenReturn(List.of(rawProduct1, rawProduct2));
+        when(carouselCandidateService.collectCandidates(1L, List.of(21L, 22L))).thenReturn(candidateBundle);
+        when(carouselShuffleService.selectDisplayIds(candidateBundle, 1L)).thenReturn(List.of(103L, 101L, 102L));
+        when(curationRawProductRepository.findAllById(List.of(103L, 101L, 102L)))
+                .thenReturn(List.of(rawProduct1, rawProduct2, rawProduct3));
 
-        GetCarouselV2ListResponseDTO result = carouselService.getCarouselV2(null, user);
+        GetCarouselV2ListResponseDTO result = carouselService.getCarouselV2(user, List.of(21L, 22L));
 
-        assertThat(result.carousels()).hasSize(2);
-        assertThat(result.carousels().get(0).carouselId()).isEqualTo(101L);
-        assertThat(result.carousels().get(1).carouselId()).isEqualTo(102L);
-        assertThat(result.nextCursor()).isNull();
-        verify(curationRawProductRepository, times(1))
-                .findExposedRawProductsExcludingLikedByUserWithCursor(eq(1L), anyLong(), eq(10), eq(List.of()));
+        assertThat(result.carousels()).hasSize(3);
+        assertThat(result.carousels())
+                .extracting("rawProductId")
+                .containsExactly(103L, 101L, 102L);
         verifyNoInteractions(jjymService);
     }
 

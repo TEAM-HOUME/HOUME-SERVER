@@ -900,33 +900,41 @@ public class GenerateImageFacade {
         if (floorPlanImageUrl != null && !floorPlanImageUrl.isBlank()) {
             urls.add(floorPlanImageUrl);
         }
-        if (banner.getBannerImageUrl() != null && !banner.getBannerImageUrl().isBlank()) {
-            urls.add(banner.getBannerImageUrl());
-        }
 
         Map<Long, CurationRawProduct> bannerRawProductsById = new LinkedHashMap<>();
         banner.getBannerRawProducts().stream()
                 .map(mapping -> mapping != null ? mapping.getCurationRawProduct() : null)
                 .filter(Objects::nonNull)
-                .forEach(rawProduct -> {
-                    bannerRawProductsById.put(rawProduct.getId(), rawProduct);
-                    if (rawProduct.getProductImageUrl() != null && !rawProduct.getProductImageUrl().isBlank()) {
-                        urls.add(rawProduct.getProductImageUrl());
-                    }
-                });
+                .forEach(rawProduct -> bannerRawProductsById.put(rawProduct.getId(), rawProduct));
 
-        if (selectedChip.curationRawProductId() != null) {
-            CurationRawProduct selectedChipRawProduct = bannerRawProductsById.get(selectedChip.curationRawProductId());
+        Long selectedChipRawProductId = selectedChip.curationRawProductId();
+        if (selectedChipRawProductId != null) {
+            // 선택 칩 상품은 배너 기본 상품보다 먼저 주입해 모델에 더 강한 우선순위를 준다.
+            CurationRawProduct selectedChipRawProduct = bannerRawProductsById.get(selectedChipRawProductId);
             if (selectedChipRawProduct == null) {
-                selectedChipRawProduct = curationRawProductRepository.findById(selectedChip.curationRawProductId())
+                selectedChipRawProduct = curationRawProductRepository.findById(selectedChipRawProductId)
                         .orElseThrow(() -> new GeneralException(ErrorCode.NOT_FOUND_CURATION_RAW_PRODUCT));
             }
-            if (selectedChipRawProduct != null
-                    && selectedChipRawProduct.getProductImageUrl() != null
+            if (selectedChipRawProduct.getProductImageUrl() != null
                     && !selectedChipRawProduct.getProductImageUrl().isBlank()) {
                 urls.add(selectedChipRawProduct.getProductImageUrl());
             }
         }
+
+        if (banner.getBannerImageUrl() != null && !banner.getBannerImageUrl().isBlank()) {
+            urls.add(banner.getBannerImageUrl());
+        }
+
+        bannerRawProductsById.values().forEach(rawProduct -> {
+            // 이미 앞에서 넣은 선택 칩 상품은 다시 추가하지 않아 순서를 고정한다.
+            if (Objects.equals(rawProduct.getId(), selectedChipRawProductId)) {
+                return;
+            }
+            if (rawProduct.getProductImageUrl() != null && !rawProduct.getProductImageUrl().isBlank()) {
+                urls.add(rawProduct.getProductImageUrl());
+            }
+        });
+
         return List.copyOf(urls);
     }
 
