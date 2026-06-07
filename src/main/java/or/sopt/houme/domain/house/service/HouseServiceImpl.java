@@ -118,6 +118,12 @@ public class HouseServiceImpl implements HouseService {
     @Transactional
     @Override
     public House createTemplateHouse(User user, Banner banner, String prompt, Long floorPlanId, boolean isMirror) {
+        return createTemplateHouse(user, banner, prompt, floorPlanId, isMirror, null);
+    }
+
+    @Transactional
+    @Override
+    public House createTemplateHouse(User user, Banner banner, String prompt, Long floorPlanId, boolean isMirror, String selectedView) {
         FloorPlan floorPlan = floorPlanRepository.findById(floorPlanId)
                 .orElseThrow(() -> new HouseException(ErrorCode.NOT_FOUND_FLOOR_PLAN));
 
@@ -130,7 +136,7 @@ public class HouseServiceImpl implements HouseService {
                 .build();
 
         House savedHouse = houseRepository.save(house);
-        saveHouseFloorPlan(savedHouse, floorPlanId, isMirror);
+        saveHouseFloorPlan(savedHouse, floorPlanId, isMirror, selectedView);
         return savedHouse;
     }
 
@@ -150,7 +156,12 @@ public class HouseServiceImpl implements HouseService {
     @Transactional
     @Override
     public void saveHouseFloorPlan(House house, Long floorPlanId, boolean isMirror) {
+        saveHouseFloorPlan(house, floorPlanId, isMirror, null);
+    }
 
+    @Transactional
+    @Override
+    public void saveHouseFloorPlan(House house, Long floorPlanId, boolean isMirror, String selectedView) {
         FloorPlan floorPlan = floorPlanRepository.findById(floorPlanId)
                 .orElseThrow(() -> new HouseException(ErrorCode.NOT_FOUND_FLOOR_PLAN));
 
@@ -158,6 +169,7 @@ public class HouseServiceImpl implements HouseService {
                 .house(house)
                 .floorPlan(floorPlan)
                 .isReverse(isMirror)
+                .selectedView(selectedView)
                 .build();
 
         houseFloorPlanRepository.save(houseFloorPlan);

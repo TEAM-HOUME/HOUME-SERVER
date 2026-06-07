@@ -432,6 +432,7 @@ class GenerateImageFacadeTest {
                 eq(11L),
                 eq(false),
                 any(),
+                any(),
                 eq(imageUploadResponseDTO)
         )).thenReturn(BannerGenerateImageResponse.of(999L, "https://generated-image", false));
 
@@ -446,6 +447,7 @@ class GenerateImageFacadeTest {
                 eq(banner),
                 eq(11L),
                 eq(false),
+                any(),
                 any(),
                 eq(imageUploadResponseDTO)
         );
@@ -538,6 +540,7 @@ class GenerateImageFacadeTest {
                 eq(banner),
                 eq(11L),
                 eq(false),
+                any(),
                 any(),
                 eq(imageUploadResponseDTO)
         )).thenReturn(BannerGenerateImageResponse.of(999L, "https://generated-image", false));
@@ -644,6 +647,7 @@ class GenerateImageFacadeTest {
                 eq(11L),
                 eq(true),
                 any(),
+                any(),
                 eq(imageUploadResponseDTO),
                 eq(Activity.REMOTE_WORK),
                 eq(List.of(7L, 8L)),
@@ -667,6 +671,7 @@ class GenerateImageFacadeTest {
                 eq(lockedCredit),
                 eq(11L),
                 eq(true),
+                any(),
                 any(),
                 eq(imageUploadResponseDTO),
                 eq(Activity.REMOTE_WORK),
@@ -793,7 +798,7 @@ class GenerateImageFacadeTest {
                 .thenReturn(List.of(FloorPlanImageItem.create("https://floorplan-view", "file", "orig", "png", 1, "창가 뷰")));
         when(geminiImageService.createImageWithReferences(any(), any())).thenReturn(imageUploadResponseDTO);
         when(generateImageTransactionService.saveProductImageAndConfirmCredit(
-                eq(user), eq(lockedCredit), eq(11L), eq(true), any(), eq(imageUploadResponseDTO), eq(List.of(p1, p2, p3))
+                eq(user), eq(lockedCredit), eq(11L), eq(true), any(), any(), eq(imageUploadResponseDTO), eq(List.of(p1, p2, p3))
         )).thenReturn(GenerateImageV4Response.of(999L, "https://generated-image", true));
 
         GenerateImageV4Response response = generateImageFacade.generateImageByProducts(user, request);
@@ -810,7 +815,7 @@ class GenerateImageFacadeTest {
                         && urls.contains("https://p3"))
         );
         verify(generateImageTransactionService).saveProductImageAndConfirmCredit(
-                eq(user), eq(lockedCredit), eq(11L), eq(true), any(), eq(imageUploadResponseDTO), eq(List.of(p1, p2, p3))
+                eq(user), eq(lockedCredit), eq(11L), eq(true), any(), any(), eq(imageUploadResponseDTO), eq(List.of(p1, p2, p3))
         );
     }
 }
