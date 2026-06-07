@@ -9,6 +9,7 @@ import or.sopt.houme.domain.credit.repository.CreditRepository;
 import or.sopt.houme.domain.furniture.model.entity.CurationRawProduct;
 import or.sopt.houme.domain.furniture.model.entity.CurationRawProductColor;
 import or.sopt.houme.domain.furniture.model.entity.CurationSource;
+import or.sopt.houme.domain.furniture.model.entity.Furniture;
 import or.sopt.houme.domain.furniture.model.entity.Jjym;
 import or.sopt.houme.domain.furniture.model.entity.RecommendFurniture;
 import or.sopt.houme.domain.furniture.model.entity.SoozipCategory;
@@ -23,11 +24,13 @@ import or.sopt.houme.domain.generateImage.repository.GenerateImageRepository;
 import or.sopt.houme.domain.generateImage.repository.GenerateImageUsedProductRepository;
 import or.sopt.houme.domain.house.model.entity.House;
 import or.sopt.houme.domain.house.model.entity.mapping.HouseFloorPlan;
+import or.sopt.houme.domain.house.model.entity.mapping.HouseFurniture;
 import or.sopt.houme.domain.house.model.entity.enums.Equilibrium;
 import or.sopt.houme.domain.house.model.entity.enums.Form;
 import or.sopt.houme.domain.house.model.entity.enums.Structure;
 import or.sopt.houme.domain.house.model.floorPlan.entity.FloorPlan;
 import or.sopt.houme.domain.house.repository.HouseFloorPlanRepository;
+import or.sopt.houme.domain.house.repository.HouseFurnitureRepository;
 import or.sopt.houme.domain.house.repository.HouseRepository;
 import or.sopt.houme.domain.preference.model.entity.GenerateImagePreference;
 import or.sopt.houme.domain.preference.model.entity.Preference;
@@ -67,6 +70,7 @@ class UserServiceImplTest {
     private final UserRepository userRepository = mock(UserRepository.class);
     private final HouseRepository houseRepository = mock(HouseRepository.class);
     private final HouseFloorPlanRepository houseFloorPlanRepository = mock(HouseFloorPlanRepository.class);
+    private final HouseFurnitureRepository houseFurnitureRepository = mock(HouseFurnitureRepository.class);
     private final TagRepository tagRepository = mock(TagRepository.class);
     private final GenerateImageRepository generateImageRepository = mock(GenerateImageRepository.class);
     private final CreditRepository creditRepository = mock(CreditRepository.class);
@@ -87,6 +91,7 @@ class UserServiceImplTest {
             userRepository,
             houseRepository,
             houseFloorPlanRepository,
+            houseFurnitureRepository,
             tagRepository,
             generateImageRepository,
             creditRepository,
@@ -499,6 +504,202 @@ class UserServiceImplTest {
         assertThat(secondItem.usedProducts()).hasSize(1);
         assertThat(secondItem.usedProducts().get(0).isJjym()).isTrue();
         assertThat(secondItem.usedProducts().get(0).colors()).containsExactly("우드");
+    }
+
+    @Test
+    @DisplayName("마이페이지 생성 이미지 이력 v2 조회 시 FULL_FUNNEL은 선택 가구 기반 fallback 제목을 반환한다")
+    void getUserGeneratedImageHistoryListV2_fullFunnelFallbackSummary_success() {
+        given(userRepository.findById(user.getId())).willReturn(Optional.of(user));
+
+        House fullFunnelHouse = House.builder()
+                .id(31L)
+                .user(user)
+                .isValid(true)
+                .build();
+
+        GenerateImage fullFunnelImage = GenerateImage.builder()
+                .id(301L)
+                .url("https://cdn.com/full-funnel-image.png")
+                .house(fullFunnelHouse)
+                .generationType(GenerateImageType.FULL_FUNNEL)
+                .build();
+        ReflectionTestUtils.setField(fullFunnelImage, "createdAt", LocalDateTime.of(2026, 3, 25, 9, 0));
+
+        Furniture desk = Furniture.builder()
+                .id(1L)
+                .furnitureNameKr("업무용 책상")
+                .build();
+        Furniture chair = Furniture.builder()
+                .id(2L)
+                .furnitureNameKr("의자")
+                .build();
+
+        given(generateImageRepository.findAllByUserIdWithHouseAndBanner(user.getId()))
+                .willReturn(List.of(fullFunnelImage));
+        given(houseFloorPlanRepository.findAllByHouseIdIn(List.of(31L)))
+                .willReturn(List.of(HouseFloorPlan.builder().house(fullFunnelHouse).isReverse(false).build()));
+        given(generateImageRawProductRepository.findAllByGenerateImageIdInWithRawProduct(List.of(301L)))
+                .willReturn(List.of());
+        given(generateImageUsedProductRepository.findAllByGenerateImageIdInWithRawProduct(List.of(301L)))
+                .willReturn(List.of());
+        given(houseFurnitureRepository.findAllByHouseIdInWithFurniture(List.of(31L)))
+                .willReturn(List.of(
+                        HouseFurniture.builder().id(1L).house(fullFunnelHouse).furniture(desk).build(),
+                        HouseFurniture.builder().id(2L).house(fullFunnelHouse).furniture(chair).build()
+                ));
+
+        MyPageGeneratedImageV2Response response = userService.getUserGeneratedImageHistoryListV2(user);
+
+        assertThat(response.groups()).hasSize(1);
+        MyPageGeneratedImageV2Response.ItemResponse item = response.groups().get(0).items().get(0);
+        assertThat(item.viewType()).isEqualTo(MyPageGeneratedImageV2Response.ViewType.FULL_FUNNEL);
+        assertThat(item.bannerTitle()).isNull();
+        assertThat(item.productSummaryText()).isEqualTo("업무용 책상 외 1개 가구로 생성된 이미지");
+        assertThat(item.usedProducts()).isEmpty();
+    }
+
+    @Test
+    @DisplayName("FULL_FUNNEL에 raw product가 있으면 선택 가구 fallback 대신 raw product 제목을 사용한다")
+    void getUserGeneratedImageHistoryListV2_fullFunnelWithRawProducts_usesRawProducts() {
+        given(userRepository.findById(user.getId())).willReturn(Optional.of(user));
+
+        House fullFunnelHouse = House.builder()
+                .id(32L)
+                .user(user)
+                .isValid(true)
+                .build();
+
+        GenerateImage fullFunnelImage = GenerateImage.builder()
+                .id(302L)
+                .url("https://cdn.com/full-funnel-raw.png")
+                .house(fullFunnelHouse)
+                .generationType(GenerateImageType.FULL_FUNNEL)
+                .build();
+        ReflectionTestUtils.setField(fullFunnelImage, "createdAt", LocalDateTime.of(2026, 3, 25, 10, 0));
+
+        CurationRawProduct rawProduct = CurationRawProduct.builder()
+                .id(501L)
+                .source("soozip")
+                .category(SoozipCategory.FURNITURE)
+                .productId(2001L)
+                .productImageUrl("https://cdn.com/raw.png")
+                .productSiteUrl("https://mall/raw")
+                .productName("실제 상품")
+                .fetchedAt(LocalDateTime.of(2026, 3, 25, 8, 0))
+                .build();
+
+        Furniture desk = Furniture.builder()
+                .id(1L)
+                .furnitureNameKr("업무용 책상")
+                .build();
+
+        given(generateImageRepository.findAllByUserIdWithHouseAndBanner(user.getId()))
+                .willReturn(List.of(fullFunnelImage));
+        given(houseFloorPlanRepository.findAllByHouseIdIn(List.of(32L)))
+                .willReturn(List.of(HouseFloorPlan.builder().house(fullFunnelHouse).isReverse(false).build()));
+        given(generateImageRawProductRepository.findAllByGenerateImageIdInWithRawProduct(List.of(302L)))
+                .willReturn(List.of(GenerateImageRawProduct.of(fullFunnelImage, rawProduct, 1)));
+        given(curationRawProductColorRepository.findAllByCurationRawProductIdIn(List.of(501L)))
+                .willReturn(List.of());
+        given(recommendFurnitureRepository.findAllBySourceAndFurnitureProductIdIn(CurationSource.RAW, List.of(2001L)))
+                .willReturn(List.of());
+        given(houseFurnitureRepository.findAllByHouseIdInWithFurniture(anyList()))
+                .willReturn(List.of(HouseFurniture.builder().id(1L).house(fullFunnelHouse).furniture(desk).build()));
+
+        MyPageGeneratedImageV2Response response = userService.getUserGeneratedImageHistoryListV2(user);
+
+        MyPageGeneratedImageV2Response.ItemResponse item = response.groups().get(0).items().get(0);
+        assertThat(item.productSummaryText()).isEqualTo("실제 상품로 생성된 이미지");
+        then(houseFurnitureRepository).should(never()).findAllByHouseIdInWithFurniture(anyList());
+    }
+
+    @Test
+    @DisplayName("FULL_FUNNEL에 raw product도 선택 가구도 없으면 productSummaryText는 null이다")
+    void getUserGeneratedImageHistoryListV2_fullFunnelWithoutAnyProducts_returnsNullSummary() {
+        given(userRepository.findById(user.getId())).willReturn(Optional.of(user));
+
+        House fullFunnelHouse = House.builder()
+                .id(33L)
+                .user(user)
+                .isValid(true)
+                .build();
+
+        GenerateImage fullFunnelImage = GenerateImage.builder()
+                .id(303L)
+                .url("https://cdn.com/full-funnel-empty.png")
+                .house(fullFunnelHouse)
+                .generationType(GenerateImageType.FULL_FUNNEL)
+                .build();
+        ReflectionTestUtils.setField(fullFunnelImage, "createdAt", LocalDateTime.of(2026, 3, 25, 11, 0));
+
+        given(generateImageRepository.findAllByUserIdWithHouseAndBanner(user.getId()))
+                .willReturn(List.of(fullFunnelImage));
+        given(houseFloorPlanRepository.findAllByHouseIdIn(List.of(33L)))
+                .willReturn(List.of(HouseFloorPlan.builder().house(fullFunnelHouse).isReverse(false).build()));
+        given(generateImageRawProductRepository.findAllByGenerateImageIdInWithRawProduct(List.of(303L)))
+                .willReturn(List.of());
+        given(generateImageUsedProductRepository.findAllByGenerateImageIdInWithRawProduct(List.of(303L)))
+                .willReturn(List.of());
+        given(houseFurnitureRepository.findAllByHouseIdInWithFurniture(List.of(33L)))
+                .willReturn(List.of());
+
+        MyPageGeneratedImageV2Response response = userService.getUserGeneratedImageHistoryListV2(user);
+
+        MyPageGeneratedImageV2Response.ItemResponse item = response.groups().get(0).items().get(0);
+        assertThat(item.productSummaryText()).isNull();
+    }
+
+    @Test
+    @DisplayName("FULL_FUNNEL fallback은 공백 이름을 가구로 대체하고 중복 가구명은 제거한다")
+    void getUserGeneratedImageHistoryListV2_fullFunnelFallback_deduplicatesAndUsesGenericName() {
+        given(userRepository.findById(user.getId())).willReturn(Optional.of(user));
+
+        House fullFunnelHouse = House.builder()
+                .id(34L)
+                .user(user)
+                .isValid(true)
+                .build();
+
+        GenerateImage fullFunnelImage = GenerateImage.builder()
+                .id(304L)
+                .url("https://cdn.com/full-funnel-dup.png")
+                .house(fullFunnelHouse)
+                .generationType(GenerateImageType.FULL_FUNNEL)
+                .build();
+        ReflectionTestUtils.setField(fullFunnelImage, "createdAt", LocalDateTime.of(2026, 3, 25, 12, 0));
+
+        Furniture blankNameFurniture = Furniture.builder()
+                .id(1L)
+                .furnitureNameKr(" ")
+                .build();
+        Furniture duplicateDesk1 = Furniture.builder()
+                .id(2L)
+                .furnitureNameKr("책상")
+                .build();
+        Furniture duplicateDesk2 = Furniture.builder()
+                .id(3L)
+                .furnitureNameKr("책상")
+                .build();
+
+        given(generateImageRepository.findAllByUserIdWithHouseAndBanner(user.getId()))
+                .willReturn(List.of(fullFunnelImage));
+        given(houseFloorPlanRepository.findAllByHouseIdIn(List.of(34L)))
+                .willReturn(List.of(HouseFloorPlan.builder().house(fullFunnelHouse).isReverse(false).build()));
+        given(generateImageRawProductRepository.findAllByGenerateImageIdInWithRawProduct(List.of(304L)))
+                .willReturn(List.of());
+        given(generateImageUsedProductRepository.findAllByGenerateImageIdInWithRawProduct(List.of(304L)))
+                .willReturn(List.of());
+        given(houseFurnitureRepository.findAllByHouseIdInWithFurniture(List.of(34L)))
+                .willReturn(List.of(
+                        HouseFurniture.builder().id(1L).house(fullFunnelHouse).furniture(blankNameFurniture).build(),
+                        HouseFurniture.builder().id(2L).house(fullFunnelHouse).furniture(duplicateDesk1).build(),
+                        HouseFurniture.builder().id(3L).house(fullFunnelHouse).furniture(duplicateDesk2).build()
+                ));
+
+        MyPageGeneratedImageV2Response response = userService.getUserGeneratedImageHistoryListV2(user);
+
+        MyPageGeneratedImageV2Response.ItemResponse item = response.groups().get(0).items().get(0);
+        assertThat(item.productSummaryText()).isEqualTo("가구 외 1개 가구로 생성된 이미지");
     }
 
     @Test

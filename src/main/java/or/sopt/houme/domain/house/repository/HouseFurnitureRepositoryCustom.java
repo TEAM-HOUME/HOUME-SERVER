@@ -6,4 +6,6 @@ import java.util.List;
 
 public interface HouseFurnitureRepositoryCustom {
     List<HouseFurniture> findAllByHouseIdWithFurniture(Long houseId);
+
+    List<HouseFurniture> findAllByHouseIdInWithFurniture(List<Long> houseIds);
 }

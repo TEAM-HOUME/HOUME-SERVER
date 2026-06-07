@@ -9,6 +9,7 @@ import or.sopt.houme.domain.credit.repository.CreditRepository;
 import or.sopt.houme.domain.furniture.model.entity.CurationRawProduct;
 import or.sopt.houme.domain.furniture.model.entity.CurationRawProductColor;
 import or.sopt.houme.domain.furniture.model.entity.CurationSource;
+import or.sopt.houme.domain.furniture.model.entity.Furniture;
 import or.sopt.houme.domain.furniture.model.entity.Jjym;
 import or.sopt.houme.domain.furniture.model.entity.RecommendFurniture;
 import or.sopt.houme.domain.furniture.repository.CurationRawProductColorRepository;
@@ -23,9 +24,11 @@ import or.sopt.houme.domain.generateImage.repository.GenerateImageRepository;
 import or.sopt.houme.domain.generateImage.repository.GenerateImageUsedProductRepository;
 import or.sopt.houme.domain.house.model.entity.House;
 import or.sopt.houme.domain.house.model.entity.mapping.HouseFloorPlan;
+import or.sopt.houme.domain.house.model.entity.mapping.HouseFurniture;
 import or.sopt.houme.domain.house.model.floorPlan.entity.FloorPlan;
 import or.sopt.houme.domain.house.model.taste.entity.Tag;
 import or.sopt.houme.domain.house.repository.HouseFloorPlanRepository;
+import or.sopt.houme.domain.house.repository.HouseFurnitureRepository;
 import or.sopt.houme.domain.house.repository.HouseRepository;
 import or.sopt.houme.domain.house.repository.taste.tag.TagRepository;
 import or.sopt.houme.domain.preference.model.entity.Factor;
@@ -81,6 +84,7 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final HouseRepository houseRepository;
     private final HouseFloorPlanRepository houseFloorPlanRepository;
+    private final HouseFurnitureRepository houseFurnitureRepository;
     private final TagRepository tagRepository;
     private final GenerateImageRepository generateImageRepository;
     private final CreditRepository creditRepository;
@@ -171,6 +175,13 @@ public class UserServiceImpl implements UserService {
         Map<Long, List<String>> colorsByRawProductId = buildColorsByRawProductId(rawProductsByImageId);
         Map<Long, Boolean> jjymByRawProductId = buildJjymByRawProductId(findUser.getId(), rawProductsByImageId);
         Map<Long, Boolean> mirrorByHouseId = buildMirrorByHouseId(generateImages);
+        List<GenerateImage> fullFunnelImagesNeedingFallback = generateImages.stream()
+                .filter(generateImage -> generateImage.getResolvedGenerationType() == GenerateImageType.FULL_FUNNEL)
+                .filter(generateImage -> rawProductsByImageId.getOrDefault(generateImage.getId(), List.of()).isEmpty())
+                .toList();
+        Map<Long, List<String>> selectedFurnitureNamesByHouseId = fullFunnelImagesNeedingFallback.isEmpty()
+                ? Map.of()
+                : buildSelectedFurnitureNamesByHouseId(fullFunnelImagesNeedingFallback);
 
         Map<LocalDate, List<MyPageGeneratedImageV2Response.ItemResponse>> grouped = new LinkedHashMap<>();
         for (GenerateImage generateImage : generateImages) {
@@ -191,13 +202,17 @@ public class UserServiceImpl implements UserService {
 
             GenerateImageType generationType = generateImage.getResolvedGenerationType();
             Banner banner = resolveBanner(generateImage, bannersById);
+            String productSummaryText = buildProductSummaryText(rawProducts);
+            if (productSummaryText == null && generationType == GenerateImageType.FULL_FUNNEL) {
+                productSummaryText = buildFullFunnelSummaryText(generateImage, selectedFurnitureNamesByHouseId);
+            }
             MyPageGeneratedImageV2Response.ItemResponse item = MyPageGeneratedImageV2Response.ItemResponse.of(
                     generateImage.getId(),
                     resolveMyPageViewType(generationType),
                     generateImage.getUrl(),
                     generateImage.getCreatedAt(),
                     banner != null ? banner.getBannerTitle() : null,
-                    buildProductSummaryText(rawProducts),
+                    productSummaryText,
                     resolveIsMirror(generateImage, mirrorByHouseId),
                     usedProducts
             );
@@ -645,6 +660,42 @@ public class UserServiceImpl implements UserService {
     }
 
     /**
+     * FULL_FUNNEL 제목 fallback 생성을 위해 house에 연결된 선택 가구명을 미리 조회합니다.
+     */
+    private Map<Long, List<String>> buildSelectedFurnitureNamesByHouseId(List<GenerateImage> generateImages) {
+        List<Long> houseIds = generateImages.stream()
+                .map(GenerateImage::getHouse)
+                .filter(Objects::nonNull)
+                .map(House::getId)
+                .filter(Objects::nonNull)
+                .distinct()
+                .toList();
+
+        if (houseIds.isEmpty()) {
+            return Map.of();
+        }
+
+        return houseFurnitureRepository.findAllByHouseIdInWithFurniture(houseIds).stream()
+                .filter(mapping -> mapping.getHouse() != null && mapping.getHouse().getId() != null)
+                .filter(mapping -> mapping.getFurniture() != null)
+                .collect(Collectors.groupingBy(
+                        mapping -> mapping.getHouse().getId(),
+                        LinkedHashMap::new,
+                        Collectors.mapping(
+                                mapping -> resolveFurnitureSummaryName(mapping.getFurniture()),
+                                Collectors.toCollection(LinkedHashSet::new)
+                        )
+                ))
+                .entrySet().stream()
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        entry -> List.copyOf(entry.getValue()),
+                        (left, right) -> left,
+                        LinkedHashMap::new
+                ));
+    }
+
+    /**
      * 생성 이미지에 연결된 배너를 배너 맵 기준으로 보정하여 반환합니다.
      */
     private Banner resolveBanner(GenerateImage generateImage, Map<Long, Banner> bannersById) {
@@ -669,6 +720,35 @@ public class UserServiceImpl implements UserService {
             return firstName + "로 생성된 이미지";
         }
         return firstName + " 외 " + remainingCount + "개로 생성된 이미지";
+    }
+
+    private String buildFullFunnelSummaryText(
+            GenerateImage generateImage,
+            Map<Long, List<String>> selectedFurnitureNamesByHouseId
+    ) {
+        House house = generateImage.getHouse();
+        if (house == null || house.getId() == null) {
+            return null;
+        }
+
+        List<String> furnitureNames = selectedFurnitureNamesByHouseId.getOrDefault(house.getId(), List.of());
+        if (furnitureNames.isEmpty()) {
+            return null;
+        }
+
+        String firstName = furnitureNames.get(0);
+        int remainingCount = furnitureNames.size() - 1;
+        if (remainingCount <= 0) {
+            return firstName + " 기반으로 생성된 이미지";
+        }
+        return firstName + " 외 " + remainingCount + "개 가구로 생성된 이미지";
+    }
+
+    private String resolveFurnitureSummaryName(Furniture furniture) {
+        if (furniture.getFurnitureNameKr() != null && !furniture.getFurnitureNameKr().isBlank()) {
+            return furniture.getFurnitureNameKr();
+        }
+        return "가구";
     }
 
     private FloorPlan resolveFloorPlan(House house) {
