@@ -175,7 +175,13 @@ public class UserServiceImpl implements UserService {
         Map<Long, List<String>> colorsByRawProductId = buildColorsByRawProductId(rawProductsByImageId);
         Map<Long, Boolean> jjymByRawProductId = buildJjymByRawProductId(findUser.getId(), rawProductsByImageId);
         Map<Long, Boolean> mirrorByHouseId = buildMirrorByHouseId(generateImages);
-        Map<Long, List<String>> selectedFurnitureNamesByHouseId = buildSelectedFurnitureNamesByHouseId(generateImages);
+        List<GenerateImage> fullFunnelImagesNeedingFallback = generateImages.stream()
+                .filter(generateImage -> generateImage.getResolvedGenerationType() == GenerateImageType.FULL_FUNNEL)
+                .filter(generateImage -> rawProductsByImageId.getOrDefault(generateImage.getId(), List.of()).isEmpty())
+                .toList();
+        Map<Long, List<String>> selectedFurnitureNamesByHouseId = fullFunnelImagesNeedingFallback.isEmpty()
+                ? Map.of()
+                : buildSelectedFurnitureNamesByHouseId(fullFunnelImagesNeedingFallback);
 
         Map<LocalDate, List<MyPageGeneratedImageV2Response.ItemResponse>> grouped = new LinkedHashMap<>();
         for (GenerateImage generateImage : generateImages) {
