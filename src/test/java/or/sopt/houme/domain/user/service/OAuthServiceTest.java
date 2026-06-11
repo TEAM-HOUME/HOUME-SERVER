@@ -81,7 +81,7 @@ class OAuthServiceTest {
         SignupSession signupSession = SignupSession.of(1L, "test@houme.kr", "카카오닉네임");
         User savedUser = User.builder()
                 .id(1L)
-                .name("느긋한펭귄")
+                .name("카카오닉네임")
                 .nickname("느긋한펭귄")
                 .nicknameTag("#4821")
                 .role(Role.ROLE_USER)
@@ -92,7 +92,7 @@ class OAuthServiceTest {
         when(nicknameService.generateNicknameTag("느긋한펭귄")).thenReturn("#4821");
         when(userNicknameTagTransactionService.createSocialUserWithNicknameTag(
                 signupSession,
-                "느긋한펭귄",
+                "카카오닉네임",
                 "느긋한펭귄",
                 "#4821",
                 Gender.MALE,
@@ -116,7 +116,7 @@ class OAuthServiceTest {
         assertEquals("느긋한펭귄", result);
         verify(userNicknameTagTransactionService).createSocialUserWithNicknameTag(
                 signupSession,
-                "느긋한펭귄",
+                "카카오닉네임",
                 "느긋한펭귄",
                 "#4821",
                 Gender.MALE,
@@ -130,7 +130,7 @@ class OAuthServiceTest {
         SignupSession signupSession = SignupSession.of(1L, "test@houme.kr", "카카오닉네임");
         User savedUser = User.builder()
                 .id(1L)
-                .name("느긋한펭귄")
+                .name("카카오닉네임")
                 .nickname("느긋한펭귄")
                 .nicknameTag("#5678")
                 .role(Role.ROLE_USER)
@@ -141,7 +141,7 @@ class OAuthServiceTest {
         when(nicknameService.generateNicknameTag("느긋한펭귄")).thenReturn("#1234", "#5678");
         when(userNicknameTagTransactionService.createSocialUserWithNicknameTag(
                 signupSession,
-                "느긋한펭귄",
+                "카카오닉네임",
                 "느긋한펭귄",
                 "#1234",
                 Gender.MALE,
@@ -149,7 +149,7 @@ class OAuthServiceTest {
         )).thenThrow(new DataIntegrityViolationException("uk_user_nickname_nickname_tag"));
         when(userNicknameTagTransactionService.createSocialUserWithNicknameTag(
                 signupSession,
-                "느긋한펭귄",
+                "카카오닉네임",
                 "느긋한펭귄",
                 "#5678",
                 Gender.MALE,

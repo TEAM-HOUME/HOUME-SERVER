@@ -845,7 +845,7 @@ class UserServiceImplTest {
         userService.updateUserV2(inputUser, "새닉네임", Gender.MALE, LocalDate.of(2000, 5, 15));
 
         // then
-        assertEquals("새닉네임", dbUser.getName());
+        assertThat(dbUser.getName()).isNull();
         assertEquals("새닉네임", dbUser.getNickname());
         assertEquals("#1234", dbUser.getNicknameTag());
         assertEquals(Gender.MALE, dbUser.getGender());
@@ -909,7 +909,7 @@ class UserServiceImplTest {
         User inputUser = User.builder().id(1L).build();
         User updatedUser = User.builder()
                 .id(1L)
-                .name("기존닉네임")
+                .name("카카오기본명")
                 .nickname("기존닉네임")
                 .nicknameTag("#0001")
                 .birthday(LocalDate.of(1999, 1, 1))
@@ -940,6 +940,7 @@ class UserServiceImplTest {
         assertThat(response.nickname()).isEqualTo("새닉네임");
         assertThat(response.birthday()).isEqualTo(LocalDate.of(2001, 1, 1));
         assertThat(response.gender()).isEqualTo(Gender.FEMALE);
+        assertThat(updatedUser.getName()).isEqualTo("카카오기본명");
     }
 
     @Test
@@ -986,7 +987,7 @@ class UserServiceImplTest {
         User inputUser = User.builder().id(1L).build();
         User updatedUser = User.builder()
                 .id(1L)
-                .name("기존닉네임")
+                .name("카카오기본명")
                 .nickname("기존닉네임")
                 .nicknameTag("#0001")
                 .birthday(LocalDate.of(1999, 1, 1))

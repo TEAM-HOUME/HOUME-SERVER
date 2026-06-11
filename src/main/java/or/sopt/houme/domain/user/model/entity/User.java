@@ -76,16 +76,15 @@ public class User extends BaseEntity {
     public void updateUserFromSignUpV2(String nickname, String nicknameTag, LocalDate birthday, Gender gender) {
         this.nickname = nickname;
         this.nicknameTag = nicknameTag;
-        this.name = nickname;
         this.birthday = birthday;
         this.gender = gender;
     }
 
     public void updateMyPageProfile(String nickname, String nicknameTag, LocalDate birthday, Gender gender) {
         if (nickname != null) {
+            // 마이페이지에서 바꾸는 값은 서비스용 nickname만 갱신하고 name은 유지합니다.
             this.nickname = nickname;
             this.nicknameTag = nicknameTag;
-            this.name = nickname;
         }
         if (birthday != null) {
             this.birthday = birthday;

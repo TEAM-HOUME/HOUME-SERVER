@@ -277,9 +277,10 @@ public class OAuthService {
         for (int attempt = 0; attempt < NicknameService.NICKNAME_TAG_RETRY_COUNT; attempt++) {
             String nicknameTag = nicknameService.generateNicknameTag(nickname);
             try {
+                // 카카오에서 받은 기본 프로필명은 name에 보존하고, 서비스 내 표시명은 nickname에 저장합니다.
                 return userNicknameTagTransactionService.createSocialUserWithNicknameTag(
                         signupSession,
-                        nickname,
+                        signupSession.nickname(),
                         nickname,
                         nicknameTag,
                         gender,

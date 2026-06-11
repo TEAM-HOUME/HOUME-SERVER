@@ -48,6 +48,29 @@ class UserNicknameTagTransactionServiceTest {
     }
 
     @Test
+    @DisplayName("소셜 회원가입 v2는 카카오 닉네임을 name으로, 입력 닉네임을 nickname으로 저장한다")
+    void createSocialUserWithNicknameTag_savesKakaoNicknameToName() {
+        SignupSession signupSession = SignupSession.of(1L, "test@houme.kr", "카카오닉네임");
+        given(userRepository.saveAndFlush(org.mockito.ArgumentMatchers.any(User.class)))
+                .willAnswer(invocation -> invocation.getArgument(0));
+
+        User savedUser = service.createSocialUserWithNicknameTag(
+                signupSession,
+                "카카오닉네임",
+                "서비스닉네임",
+                "#1234",
+                Gender.MALE,
+                LocalDate.of(2000, 1, 1)
+        );
+
+        org.junit.jupiter.api.Assertions.assertAll(
+                () -> org.junit.jupiter.api.Assertions.assertEquals("카카오닉네임", savedUser.getName()),
+                () -> org.junit.jupiter.api.Assertions.assertEquals("서비스닉네임", savedUser.getNickname()),
+                () -> org.junit.jupiter.api.Assertions.assertEquals("#1234", savedUser.getNicknameTag())
+        );
+    }
+
+    @Test
     @DisplayName("자체 회원가입 v2 완료는 가입 크레딧 5개를 생성한다")
     void completeUserSignUpV2_createsFiveCredits() {
         User user = User.builder().id(1L).email("test@houme.kr").build();
