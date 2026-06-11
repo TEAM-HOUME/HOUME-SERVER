@@ -165,8 +165,60 @@ public class GenerateImageTransactionService {
             String finalPrompt,
             ImageUploadResponseDTO imageResponse
     ) {
-        House house = houseService.createTemplateHouse(user, banner, finalPrompt, floorPlanId, isMirror, floorPlanView);
+        House house = createTemplateHouseBeforeImageGeneration(
+                user,
+                banner,
+                floorPlanId,
+                isMirror,
+                floorPlanView,
+                finalPrompt,
+                null,
+                null,
+                null
+        );
 
+        return saveBannerImageAndConfirmCredit(
+                user,
+                lockedCredit,
+                house,
+                banner,
+                imageResponse,
+                isMirror
+        );
+    }
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public House createTemplateHouseBeforeImageGeneration(
+            User user,
+            Banner banner,
+            Long floorPlanId,
+            boolean isMirror,
+            String floorPlanView,
+            String finalPrompt,
+            Activity activity,
+            List<Long> furnitureIds,
+            List<Long> moodBoardIds
+    ) {
+        House house = houseService.createTemplateHouse(user, banner, finalPrompt, floorPlanId, isMirror, floorPlanView);
+        if (activity != null) {
+            houseService.updateHouseActivity(house.getId(), activity);
+        }
+        houseService.saveHouseFurniture(house, furnitureIds);
+        if (moodBoardIds != null && !moodBoardIds.isEmpty()) {
+            houseService.saveHouseTaste(house, moodBoardIds);
+        }
+        return house;
+    }
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public BannerGenerateImageResponse saveBannerImageAndConfirmCredit(
+            User user,
+            Credit lockedCredit,
+            House house,
+            Banner banner,
+            ImageUploadResponseDTO imageResponse,
+            boolean isMirror
+    ) {
         GenerateImage generateImage = generateImageService.createGenerateImage(
                 imageResponse,
                 house,
@@ -217,16 +269,29 @@ public class GenerateImageTransactionService {
             java.util.List<Long> furnitureIds,
             java.util.List<Long> moodBoardIds
     ) {
-        House house = houseService.createTemplateHouse(user, null, finalPrompt, floorPlanId, isMirror, floorPlanView);
-        houseService.updateHouseActivity(house.getId(), activity);
+        House house = createTemplateHouseBeforeImageGeneration(
+                user,
+                null,
+                floorPlanId,
+                isMirror,
+                floorPlanView,
+                finalPrompt,
+                activity,
+                furnitureIds,
+                moodBoardIds
+        );
 
-        if (furnitureIds != null && !furnitureIds.isEmpty()) {
-            houseService.saveHouseFurniture(house, furnitureIds);
-        }
-        if (moodBoardIds != null && !moodBoardIds.isEmpty()) {
-            houseService.saveHouseTaste(house, moodBoardIds);
-        }
+        return saveV4ImageAndConfirmCredit(user, lockedCredit, house, imageResponse, isMirror);
+    }
 
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public GenerateImageV4Response saveV4ImageAndConfirmCredit(
+            User user,
+            Credit lockedCredit,
+            House house,
+            ImageUploadResponseDTO imageResponse,
+            boolean isMirror
+    ) {
         GenerateImage generateImage = generateImageService.createGenerateImage(
                 imageResponse,
                 house,
@@ -271,8 +336,30 @@ public class GenerateImageTransactionService {
             ImageUploadResponseDTO imageResponse,
             List<CurationRawProduct> selectedProducts
     ) {
-        House house = houseService.createTemplateHouse(user, null, finalPrompt, floorPlanId, isMirror, floorPlanView);
+        House house = createTemplateHouseBeforeImageGeneration(
+                user,
+                null,
+                floorPlanId,
+                isMirror,
+                floorPlanView,
+                finalPrompt,
+                null,
+                null,
+                null
+        );
 
+        return saveProductImageAndConfirmCredit(user, lockedCredit, house, imageResponse, selectedProducts, isMirror);
+    }
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public GenerateImageV4Response saveProductImageAndConfirmCredit(
+            User user,
+            Credit lockedCredit,
+            House house,
+            ImageUploadResponseDTO imageResponse,
+            List<CurationRawProduct> selectedProducts,
+            boolean isMirror
+    ) {
         GenerateImage generateImage = generateImageService.createGenerateImage(
                 imageResponse,
                 house,

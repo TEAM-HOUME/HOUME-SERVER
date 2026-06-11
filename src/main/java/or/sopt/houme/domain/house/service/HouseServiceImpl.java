@@ -185,6 +185,9 @@ public class HouseServiceImpl implements HouseService {
     @Transactional
     @Override
     public void saveHouseFurniture(House house, List<Long> furnitureIds) {
+        if (furnitureIds == null || furnitureIds.isEmpty()) {
+            return;
+        }
 
         List<Furniture> furnitures = furnitureRepository.findAllById(furnitureIds);
 

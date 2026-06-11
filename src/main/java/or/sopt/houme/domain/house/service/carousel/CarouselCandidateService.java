@@ -2,9 +2,14 @@ package or.sopt.houme.domain.house.service.carousel;
 
 import lombok.RequiredArgsConstructor;
 import or.sopt.houme.domain.furniture.model.entity.CurationRawProduct;
+import or.sopt.houme.domain.house.model.entity.House;
+import or.sopt.houme.domain.house.model.entity.mapping.HouseFurniture;
 import or.sopt.houme.domain.furniture.model.entity.SoozipCategory;
 import or.sopt.houme.domain.furniture.repository.CurationRawProductRepository;
+import or.sopt.houme.domain.house.repository.HouseFurnitureRepository;
+import or.sopt.houme.domain.house.repository.HouseRepository;
 import or.sopt.houme.domain.house.service.carousel.dto.CarouselCandidateBundle;
+import or.sopt.houme.domain.user.model.entity.User;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,6 +25,23 @@ import java.util.Set;
 @Transactional(readOnly = true)
 public class CarouselCandidateService {
     private final CurationRawProductRepository curationRawProductRepository;
+    private final HouseRepository houseRepository;
+    private final HouseFurnitureRepository houseFurnitureRepository;
+
+    public CarouselCandidateBundle collectCandidates(User user) {
+        House latestHouse = houseRepository.findLatestHouse(user);
+        List<Long> furnitureIds = latestHouse == null
+                ? List.of()
+                : houseFurnitureRepository.findAllByHouseIdWithFurniture(latestHouse.getId()).stream()
+                .map(HouseFurniture::getFurniture)
+                .filter(Objects::nonNull)
+                .map(or.sopt.houme.domain.furniture.model.entity.Furniture::getId)
+                .filter(Objects::nonNull)
+                .distinct()
+                .toList();
+
+        return collectCandidates(user.getId(), furnitureIds);
+    }
 
     public CarouselCandidateBundle collectCandidates(Long userId, List<Long> requestFurnitureIds) {
         List<Long> selectedFurnitureSourceIds = normalizeFurnitureIds(requestFurnitureIds);

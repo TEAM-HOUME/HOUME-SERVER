@@ -16,6 +16,7 @@ import or.sopt.houme.domain.furniture.model.entity.Furniture;
 import or.sopt.houme.domain.furniture.model.entity.FurnitureTag;
 import or.sopt.houme.domain.furniture.repository.ActivityFurnitureRepository;
 import or.sopt.houme.domain.furniture.service.FurnitureService;
+import or.sopt.houme.domain.furniture.repository.CurationRawProductFurnitureRepository;
 import or.sopt.houme.domain.furniture.repository.CurationRawProductRepository;
 import or.sopt.houme.domain.furniture.repository.FurnitureTagRepository;
 import or.sopt.houme.domain.generateImage.infrastructure.gemini.service.GeminiImageService;
@@ -107,6 +108,9 @@ class GenerateImageFacadeTest {
 
     @Mock
     CurationRawProductRepository curationRawProductRepository;
+
+    @Mock
+    CurationRawProductFurnitureRepository curationRawProductFurnitureRepository;
 
     @Mock
     FurnitureTagRepository furnitureTagRepository;
@@ -394,6 +398,7 @@ class GenerateImageFacadeTest {
                 .styleAnswerChipsJson("[{\"id\":1}]")
                 .bannerRawProducts(List.of())
                 .build();
+        House house = House.builder().id(900L).build();
 
         FloorPlan floorPlan = FloorPlan.builder()
                 .id(11L)
@@ -423,17 +428,26 @@ class GenerateImageFacadeTest {
         when(objectMapper.readValue(eq("[{\"id\":1}]"), any(TypeReference.class)))
                 .thenReturn(List.of(new BannerStyleAnswerChip(1L, 1, "답변", "선택 프롬프트", null)));
         when(floorPlanImageJsonCodec.read("[]")).thenReturn(List.of());
+        when(generateImageTransactionService.createTemplateHouseBeforeImageGeneration(
+                eq(user),
+                eq(banner),
+                eq(11L),
+                eq(false),
+                eq("TOP"),
+                any(),
+                eq(null),
+                eq(List.of()),
+                eq(null)
+        )).thenReturn(house);
         when(geminiImageService.createImageWithReferences(any(), any()))
                 .thenReturn(imageUploadResponseDTO);
         when(generateImageTransactionService.saveBannerImageAndConfirmCredit(
                 eq(user),
                 eq(lockedCredit),
+                eq(house),
                 eq(banner),
-                eq(11L),
-                eq(false),
-                any(),
-                any(),
-                eq(imageUploadResponseDTO)
+                eq(imageUploadResponseDTO),
+                eq(false)
         )).thenReturn(BannerGenerateImageResponse.of(999L, "https://generated-image", false));
 
         BannerGenerateImageResponse response = generateImageFacade.generateBannerImageByGemini(user, request);
@@ -444,12 +458,10 @@ class GenerateImageFacadeTest {
         verify(generateImageTransactionService).saveBannerImageAndConfirmCredit(
                 eq(user),
                 eq(lockedCredit),
+                eq(house),
                 eq(banner),
-                eq(11L),
-                eq(false),
-                any(),
-                any(),
-                eq(imageUploadResponseDTO)
+                eq(imageUploadResponseDTO),
+                eq(false)
         );
     }
 
@@ -497,6 +509,7 @@ class GenerateImageFacadeTest {
                         BannerCurationRawProduct.of(null, otherProduct)
                 ))
                 .build();
+        House house = House.builder().id(901L).build();
 
         FloorPlan floorPlan = FloorPlan.builder()
                 .id(11L)
@@ -526,6 +539,20 @@ class GenerateImageFacadeTest {
         when(objectMapper.readValue(eq("[{\"id\":2}]"), any(TypeReference.class)))
                 .thenReturn(List.of(new BannerStyleAnswerChip(2L, 2, "답변", "선택 프롬프트", 350L)));
         when(floorPlanImageJsonCodec.read("[]")).thenReturn(List.of());
+        when(curationRawProductRepository.findAllByIdWithFurnitureTags(List.of(350L, 365L))).thenReturn(List.of());
+        when(curationRawProductFurnitureRepository.findAllByCurationRawProductIdInWithFurniture(List.of(350L, 365L)))
+                .thenReturn(List.of());
+        when(generateImageTransactionService.createTemplateHouseBeforeImageGeneration(
+                eq(user),
+                eq(banner),
+                eq(11L),
+                eq(false),
+                eq(null),
+                any(),
+                eq(null),
+                eq(List.of()),
+                eq(null)
+        )).thenReturn(house);
         when(geminiImageService.createImageWithReferences(any(), argThat(referenceImageUrls ->
                 referenceImageUrls.equals(List.of(
                         "https://floorplan-default",
@@ -537,12 +564,10 @@ class GenerateImageFacadeTest {
         when(generateImageTransactionService.saveBannerImageAndConfirmCredit(
                 eq(user),
                 eq(lockedCredit),
+                eq(house),
                 eq(banner),
-                eq(11L),
-                eq(false),
-                any(),
-                any(),
-                eq(imageUploadResponseDTO)
+                eq(imageUploadResponseDTO),
+                eq(false)
         )).thenReturn(BannerGenerateImageResponse.of(999L, "https://generated-image", false));
 
         BannerGenerateImageResponse response = generateImageFacade.generateBannerImageByGemini(user, request);
@@ -622,6 +647,7 @@ class GenerateImageFacadeTest {
                 .priority(2)
                 .searchKeyword("k2")
                 .build();
+        House house = House.builder().id(902L).build();
 
         ImageUploadResponseDTO imageUploadResponseDTO = ImageUploadResponseDTO.from(
                 "generated.webp",
@@ -639,19 +665,25 @@ class GenerateImageFacadeTest {
                 .thenReturn(List.of(selectedFurnitureTag, activityFurnitureTag));
         when(floorPlanImageJsonCodec.read("[]"))
                 .thenReturn(List.of(FloorPlanImageItem.create("https://floorplan-view", "file", "orig", "png", 1, "창가 뷰")));
+        when(generateImageTransactionService.createTemplateHouseBeforeImageGeneration(
+                eq(user),
+                eq(null),
+                eq(11L),
+                eq(true),
+                eq("창가 뷰"),
+                any(),
+                eq(Activity.REMOTE_WORK),
+                eq(List.of(7L, 8L)),
+                eq(List.of(1L, 2L))
+        )).thenReturn(house);
         when(geminiImageService.createImageWithReferences(any(), any()))
                 .thenReturn(imageUploadResponseDTO);
         when(generateImageTransactionService.saveV4ImageAndConfirmCredit(
                 eq(user),
                 eq(lockedCredit),
-                eq(11L),
-                eq(true),
-                any(),
-                any(),
+                eq(house),
                 eq(imageUploadResponseDTO),
-                eq(Activity.REMOTE_WORK),
-                eq(List.of(7L, 8L)),
-                eq(List.of(1L, 2L))
+                eq(true)
         )).thenReturn(GenerateImageV4Response.of(999L, "https://generated-image", true));
 
         GenerateImageV4Response response = generateImageFacade.generateImageV4ByGemini(user, request);
@@ -669,14 +701,9 @@ class GenerateImageFacadeTest {
         verify(generateImageTransactionService).saveV4ImageAndConfirmCredit(
                 eq(user),
                 eq(lockedCredit),
-                eq(11L),
-                eq(true),
-                any(),
-                any(),
+                eq(house),
                 eq(imageUploadResponseDTO),
-                eq(Activity.REMOTE_WORK),
-                eq(List.of(7L, 8L)),
-                eq(List.of(1L, 2L))
+                eq(true)
         );
     }
 
@@ -779,6 +806,7 @@ class GenerateImageFacadeTest {
                 .floorPlanPrompt("도면 프롬프트")
                 .imagesJson("[]")
                 .build();
+        House house = House.builder().id(903L).build();
 
         CurationRawProduct p1 = CurationRawProduct.builder().id(1L).productName("소파").productImageUrl("https://p1").build();
         CurationRawProduct p2 = CurationRawProduct.builder().id(2L).productName("책상").productImageUrl("https://p2").build();
@@ -794,11 +822,25 @@ class GenerateImageFacadeTest {
         when(creditService.tryLockAndGetCredit(user)).thenReturn(lockedCredit);
         when(floorPlanRepository.findById(11L)).thenReturn(Optional.of(floorPlan));
         when(curationRawProductRepository.findAllById(List.of(1L, 2L, 3L))).thenReturn(List.of(p1, p2, p3));
+        when(curationRawProductRepository.findAllByIdWithFurnitureTags(List.of(1L, 2L, 3L))).thenReturn(List.of());
+        when(curationRawProductFurnitureRepository.findAllByCurationRawProductIdInWithFurniture(List.of(1L, 2L, 3L)))
+                .thenReturn(List.of());
         when(floorPlanImageJsonCodec.read("[]"))
                 .thenReturn(List.of(FloorPlanImageItem.create("https://floorplan-view", "file", "orig", "png", 1, "창가 뷰")));
+        when(generateImageTransactionService.createTemplateHouseBeforeImageGeneration(
+                eq(user),
+                eq(null),
+                eq(11L),
+                eq(true),
+                eq("창가 뷰"),
+                any(),
+                eq(null),
+                eq(List.of()),
+                eq(null)
+        )).thenReturn(house);
         when(geminiImageService.createImageWithReferences(any(), any())).thenReturn(imageUploadResponseDTO);
         when(generateImageTransactionService.saveProductImageAndConfirmCredit(
-                eq(user), eq(lockedCredit), eq(11L), eq(true), any(), any(), eq(imageUploadResponseDTO), eq(List.of(p1, p2, p3))
+                eq(user), eq(lockedCredit), eq(house), eq(imageUploadResponseDTO), eq(List.of(p1, p2, p3)), eq(true)
         )).thenReturn(GenerateImageV4Response.of(999L, "https://generated-image", true));
 
         GenerateImageV4Response response = generateImageFacade.generateImageByProducts(user, request);
@@ -815,7 +857,7 @@ class GenerateImageFacadeTest {
                         && urls.contains("https://p3"))
         );
         verify(generateImageTransactionService).saveProductImageAndConfirmCredit(
-                eq(user), eq(lockedCredit), eq(11L), eq(true), any(), any(), eq(imageUploadResponseDTO), eq(List.of(p1, p2, p3))
+                eq(user), eq(lockedCredit), eq(house), eq(imageUploadResponseDTO), eq(List.of(p1, p2, p3)), eq(true)
         );
     }
 }
