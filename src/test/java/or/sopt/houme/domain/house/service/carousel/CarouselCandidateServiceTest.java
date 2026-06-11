@@ -91,7 +91,7 @@ class CarouselCandidateServiceTest {
                 List.of(101L, 102L, 103L, 104L)
         )).thenReturn(List.of(rawProduct(105L)));
 
-        CarouselCandidateBundle result = carouselCandidateService.collectCandidates(1L, List.of(10L, 20L));
+        CarouselCandidateBundle result = carouselCandidateService.collectCandidates(1L, 99L, List.of(10L, 20L));
 
         assertThat(result.selectedFurnitureIds()).containsExactly(101L);
         assertThat(result.furnitureCategoryIds()).containsExactly(102L);

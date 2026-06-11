@@ -40,10 +40,10 @@ public class CarouselCandidateService {
                 .distinct()
                 .toList();
 
-        return collectCandidates(user.getId(), furnitureIds);
+        return collectCandidates(user.getId(), latestHouse == null ? null : latestHouse.getId(), furnitureIds);
     }
 
-    public CarouselCandidateBundle collectCandidates(Long userId, List<Long> requestFurnitureIds) {
+    public CarouselCandidateBundle collectCandidates(Long userId, Long houseId, List<Long> requestFurnitureIds) {
         List<Long> selectedFurnitureSourceIds = normalizeFurnitureIds(requestFurnitureIds);
         Set<Long> excludedIds = new LinkedHashSet<>();
 
@@ -90,7 +90,7 @@ public class CarouselCandidateService {
         );
 
         return new CarouselCandidateBundle(
-                null,
+                houseId,
                 selectedFurnitureIds,
                 furnitureCategoryIds,
                 otherCategoryIds,
