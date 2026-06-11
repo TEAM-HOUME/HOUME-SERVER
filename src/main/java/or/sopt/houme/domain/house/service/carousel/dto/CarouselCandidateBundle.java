@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 public record CarouselCandidateBundle(
-        Long recentImageId,
+        Long houseId,
         List<Long> selectedFurnitureIds,
         List<Long> furnitureCategoryIds,
         Map<SoozipCategory, List<Long>> otherCategoryIds,

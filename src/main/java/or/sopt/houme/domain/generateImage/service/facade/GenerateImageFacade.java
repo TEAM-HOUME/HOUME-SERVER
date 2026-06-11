@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import or.sopt.houme.domain.banner.model.entity.Banner;
+import or.sopt.houme.domain.banner.model.entity.BannerCurationRawProduct;
 import or.sopt.houme.domain.banner.model.entity.BannerType;
 import or.sopt.houme.domain.banner.model.vo.BannerStyleAnswerChip;
 import or.sopt.houme.domain.banner.repository.BannerRepository;
@@ -13,10 +14,12 @@ import or.sopt.houme.domain.credit.model.entity.Credit;
 import or.sopt.houme.domain.credit.model.entity.CreditStatus;
 import or.sopt.houme.domain.credit.service.CreditService;
 import or.sopt.houme.domain.furniture.model.entity.CurationRawProduct;
+import or.sopt.houme.domain.furniture.model.entity.CurationRawProductFurniture;
 import or.sopt.houme.domain.furniture.model.entity.FurnitureTag;
 import or.sopt.houme.domain.furniture.model.entity.ActivityFurniture;
 import or.sopt.houme.domain.furniture.model.entity.Furniture;
 import or.sopt.houme.domain.furniture.repository.ActivityFurnitureRepository;
+import or.sopt.houme.domain.furniture.repository.CurationRawProductFurnitureRepository;
 import or.sopt.houme.domain.furniture.repository.CurationRawProductRepository;
 import or.sopt.houme.domain.furniture.repository.FurnitureTagRepository;
 import or.sopt.houme.domain.furniture.service.FurnitureService;
@@ -96,6 +99,7 @@ public class GenerateImageFacade {
     private final FurnitureTagRepository furnitureTagRepository;
     private final ActivityFurnitureRepository activityFurnitureRepository;
     private final CurationRawProductRepository curationRawProductRepository;
+    private final CurationRawProductFurnitureRepository curationRawProductFurnitureRepository;
     private final FloorPlanImageJsonCodec floorPlanImageJsonCodec;
     private final ObjectMapper objectMapper;
 
@@ -378,6 +382,17 @@ public class GenerateImageFacade {
             String floorPlanImageUrl = resolveFloorPlanImageUrl(floorPlan, request.floorPlanView());
             List<String> referenceImageUrls = buildReferenceImageUrls(banner, selectedChip, floorPlanImageUrl);
             String prompt = buildBannerPrompt(banner, selectedChip, floorPlan);
+            House house = generateImageTransactionService.createTemplateHouseBeforeImageGeneration(
+                    user,
+                    banner,
+                    request.floorPlanId(),
+                    request.isMirror(),
+                    request.floorPlanView(),
+                    prompt,
+                    null,
+                    extractFurnitureIdsFromRawProducts(resolveBannerRawProductsForCarousel(banner, selectedChip)),
+                    null
+            );
             log.info(
                     "배너 템플릿 이미지 생성 프롬프트/참고이미지 bannerId={}, answerId={}, prompt={}, referenceImageUrls={}",
                     banner.getId(),
@@ -399,12 +414,10 @@ public class GenerateImageFacade {
             BannerGenerateImageResponse response = generateImageTransactionService.saveBannerImageAndConfirmCredit(
                     user,
                     lockedCredit,
+                    house,
                     banner,
-                    request.floorPlanId(),
-                    request.isMirror(),
-                    request.floorPlanView(),
-                    prompt,
-                    imageUploadResponseDTO
+                    imageUploadResponseDTO,
+                    request.isMirror()
             );
             log.info("배너 템플릿 기반 인테리어 이미지 생성 저장 완료 imageId={}", response.imageId());
             return response;
@@ -447,6 +460,17 @@ public class GenerateImageFacade {
             String floorPlanImageUrl = resolveFloorPlanImageUrl(floorPlan, request.floorPlanView());
             List<String> referenceImageUrls = buildStyleReferenceImageUrls(style, floorPlanImageUrl);
             String prompt = buildStylePrompt(style, floorPlan);
+            House house = generateImageTransactionService.createTemplateHouseBeforeImageGeneration(
+                    user,
+                    style,
+                    request.floorPlanId(),
+                    request.isMirror(),
+                    request.floorPlanView(),
+                    prompt,
+                    null,
+                    extractFurnitureIdsFromRawProducts(extractBannerRawProducts(style)),
+                    null
+            );
             log.info(
                     "스타일 템플릿 이미지 생성 프롬프트/참고이미지 bannerId={}, prompt={}, referenceImageUrls={}",
                     style.getId(),
@@ -467,12 +491,10 @@ public class GenerateImageFacade {
             BannerGenerateImageResponse response = generateImageTransactionService.saveBannerImageAndConfirmCredit(
                     user,
                     lockedCredit,
+                    house,
                     style,
-                    request.floorPlanId(),
-                    request.isMirror(),
-                    request.floorPlanView(),
-                    prompt,
-                    imageUploadResponseDTO
+                    imageUploadResponseDTO,
+                    request.isMirror()
             );
             log.info("스타일 템플릿 기반 인테리어 이미지 생성 저장 완료 imageId={}", response.imageId());
             return OtherStyleGenerateImageResponse.of(response.imageId(), response.imageUrl(), response.isMirror());
@@ -535,6 +557,17 @@ public class GenerateImageFacade {
             String floorPlanImageUrl = resolveFloorPlanImageUrlStrict(floorPlan, request.floorPlanView());
             List<String> referenceImageUrls = buildV4ReferenceImageUrls(floorPlanImageUrl, matchedFurnitureTags);
             String prompt = buildV4Prompt(floorPlan, selectedTag, matchedFurnitureTags);
+            House house = generateImageTransactionService.createTemplateHouseBeforeImageGeneration(
+                    user,
+                    null,
+                    request.floorPlanId(),
+                    request.isMirror(),
+                    request.floorPlanView(),
+                    prompt,
+                    activity,
+                    combinedFurnitureIds,
+                    request.moodBoardIds()
+            );
 
             log.info(
                     "V4 이미지 생성 프롬프트/참고이미지 tagId={}, prompt={}, referenceImageCount={}",
@@ -554,14 +587,9 @@ public class GenerateImageFacade {
             return generateImageTransactionService.saveV4ImageAndConfirmCredit(
                     user,
                     lockedCredit,
-                    request.floorPlanId(),
-                    request.isMirror(),
-                    request.floorPlanView(),
-                    prompt,
+                    house,
                     imageUploadResponseDTO,
-                    activity,
-                    combinedFurnitureIds,
-                    request.moodBoardIds()
+                    request.isMirror()
             );
         } catch (ValidException validException) {
             if (lockedCredit != null && lockedCredit.getStatus() == CreditStatus.PENDING) {
@@ -611,6 +639,17 @@ public class GenerateImageFacade {
             String floorPlanImageUrl = resolveFloorPlanImageUrlStrict(floorPlan, request.floorPlanView());
             List<String> referenceImageUrls = buildProductReferenceImageUrls(floorPlanImageUrl, selectedProducts);
             String prompt = buildProductBasedPrompt(floorPlan, selectedProducts);
+            House house = generateImageTransactionService.createTemplateHouseBeforeImageGeneration(
+                    user,
+                    null,
+                    request.floorPlanId(),
+                    request.isMirror(),
+                    request.floorPlanView(),
+                    prompt,
+                    null,
+                    extractFurnitureIdsFromRawProducts(selectedProducts),
+                    null
+            );
 
             ImageUploadResponseDTO imageUploadResponseDTO =
                     geminiImageService.createImageWithReferences(prompt, referenceImageUrls);
@@ -622,12 +661,10 @@ public class GenerateImageFacade {
             return generateImageTransactionService.saveProductImageAndConfirmCredit(
                     user,
                     lockedCredit,
-                    request.floorPlanId(),
-                    request.isMirror(),
-                    request.floorPlanView(),
-                    prompt,
+                    house,
                     imageUploadResponseDTO,
-                    selectedProducts
+                    selectedProducts,
+                    request.isMirror()
             );
         } catch (ValidException validException) {
             if (lockedCredit != null && lockedCredit.getStatus() == CreditStatus.PENDING) {
@@ -849,6 +886,64 @@ public class GenerateImageFacade {
         } catch (JsonProcessingException e) {
             throw new GeneralException(ErrorCode.OBJECTMAPPER_EXCEPTION);
         }
+    }
+
+    private List<CurationRawProduct> resolveBannerRawProductsForCarousel(
+            Banner banner,
+            BannerStyleAnswerChip selectedChip
+    ) {
+        Map<Long, CurationRawProduct> rawProductById = new LinkedHashMap<>();
+        extractBannerRawProducts(banner).forEach(rawProduct -> rawProductById.put(rawProduct.getId(), rawProduct));
+
+        Long selectedChipRawProductId = selectedChip.curationRawProductId();
+        if (selectedChipRawProductId != null && !rawProductById.containsKey(selectedChipRawProductId)) {
+            curationRawProductRepository.findById(selectedChipRawProductId)
+                    .ifPresent(rawProduct -> rawProductById.put(rawProduct.getId(), rawProduct));
+        }
+        return List.copyOf(rawProductById.values());
+    }
+
+    private List<CurationRawProduct> extractBannerRawProducts(Banner banner) {
+        if (banner == null || banner.getBannerRawProducts() == null) {
+            return List.of();
+        }
+
+        return banner.getBannerRawProducts().stream()
+                .map(BannerCurationRawProduct::getCurationRawProduct)
+                .filter(Objects::nonNull)
+                .filter(rawProduct -> rawProduct.getId() != null)
+                .toList();
+    }
+
+    private List<Long> extractFurnitureIdsFromRawProducts(List<CurationRawProduct> rawProducts) {
+        List<Long> rawProductIds = rawProducts == null ? List.of() : rawProducts.stream()
+                .filter(Objects::nonNull)
+                .map(CurationRawProduct::getId)
+                .filter(Objects::nonNull)
+                .distinct()
+                .toList();
+        if (rawProductIds.isEmpty()) {
+            return List.of();
+        }
+
+        LinkedHashSet<Long> furnitureIds = new LinkedHashSet<>();
+        curationRawProductRepository.findAllByIdWithFurnitureTags(rawProductIds).stream()
+                .filter(Objects::nonNull)
+                .flatMap(rawProduct -> rawProduct.getFurnitureTagMappings().stream())
+                .map(mapping -> mapping.getFurnitureTag() != null ? mapping.getFurnitureTag().getFurniture() : null)
+                .filter(Objects::nonNull)
+                .map(Furniture::getId)
+                .filter(Objects::nonNull)
+                .forEach(furnitureIds::add);
+
+        curationRawProductFurnitureRepository.findAllByCurationRawProductIdInWithFurniture(rawProductIds).stream()
+                .map(CurationRawProductFurniture::getFurniture)
+                .filter(Objects::nonNull)
+                .map(Furniture::getId)
+                .filter(Objects::nonNull)
+                .forEach(furnitureIds::add);
+
+        return List.copyOf(furnitureIds);
     }
 
     private String resolveFloorPlanImageUrl(FloorPlan floorPlan, String floorPlanView) {

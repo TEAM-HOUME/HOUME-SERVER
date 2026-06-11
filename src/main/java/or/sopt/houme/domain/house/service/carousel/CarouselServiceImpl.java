@@ -57,8 +57,8 @@ public class CarouselServiceImpl implements CarouselService {
     }
 
     @Override
-    public GetCarouselV2ListResponseDTO getCarouselV2(User user, List<Long> furnitureIds) {
-        var candidateBundle = carouselCandidateService.collectCandidates(user.getId(), furnitureIds);
+    public GetCarouselV2ListResponseDTO getCarouselV2(User user) {
+        var candidateBundle = carouselCandidateService.collectCandidates(user);
         List<Long> displayIds = carouselShuffleService.selectDisplayIds(candidateBundle, user.getId());
         if (displayIds.isEmpty()) {
             return GetCarouselV2ListResponseDTO.of(List.of());

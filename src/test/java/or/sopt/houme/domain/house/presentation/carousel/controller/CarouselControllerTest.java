@@ -119,12 +119,11 @@ class CarouselControllerTest {
                 new GetCarouselResponseDTO(12L, "url12")
         );
         GetCarouselV2ListResponseDTO responseDTO = GetCarouselV2ListResponseDTO.of(mockList);
-        when(carouselService.getCarouselV2(any(), eq(List.of(10L, 20L)))).thenReturn(responseDTO);
+        when(carouselService.getCarouselV2(any())).thenReturn(responseDTO);
 
         setAuthentication(testUserDetails);
 
         mockMvc.perform(get("/api/v2/carousels")
-                        .param("furnitureIds", "10", "20")
                         .requestAttr("userDetails", testUserDetails)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -136,19 +135,6 @@ class CarouselControllerTest {
                 .andExpect(jsonPath("$.data.carousels[1].rawProductId").value(12))
                 .andExpect(jsonPath("$.data.carousels[1].url").value("url12"));
     }
-
-    @Test
-    @DisplayName("GET /api/v2/carousels 요청 시 furnitureIds가 없으면 400을 반환한다")
-    @WithMockUser()
-    void getCarouselsV2_returnsBadRequest_whenFurnitureIdsMissing() throws Exception {
-        setAuthentication(testUserDetails);
-
-        mockMvc.perform(get("/api/v2/carousels")
-                        .requestAttr("userDetails", testUserDetails)
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isBadRequest());
-    }
-
 
     @Test
     @DisplayName("POST /api/v1/carousels/like 요청으로 좋아요를 추가 할 수 있다")
