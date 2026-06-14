@@ -44,6 +44,7 @@ import java.util.stream.Collectors;
 @Transactional(readOnly = true)
 public class CurationProductServiceImpl implements CurationProductService {
 
+    private static final long FURNITURE_ID_OFFSET = 10000L;
     private static final String ETC_TYPE_NAMEENG = "ETC";
     private static final String SELECTIVE_TYPE_NAMEENG = "SELECTIVE";
     private static final List<String> INDIVIDUAL_FILTER_FURNITURE_NAMEENGS = List.of(
@@ -493,7 +494,7 @@ public class CurationProductServiceImpl implements CurationProductService {
         return furnitures.stream()
                 .filter(f -> f.getFurnitureNameEng() != null && f.getFurnitureNameEng().trim().equalsIgnoreCase(nameEng))
                 .findFirst()
-                .map(f -> new FurnitureTypeFilterResponse(f.getId(), labelKr, f.getFurnitureNameEng().trim()))
+                .map(f -> new FurnitureTypeFilterResponse(f.getId() + FURNITURE_ID_OFFSET, labelKr, f.getFurnitureNameEng().trim()))
                 .orElse(new FurnitureTypeFilterResponse(fallbackId, labelKr, nameEng));
     }
 

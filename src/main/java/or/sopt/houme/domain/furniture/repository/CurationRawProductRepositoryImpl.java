@@ -36,6 +36,8 @@ import java.util.Objects;
 @RequiredArgsConstructor
 public class CurationRawProductRepositoryImpl implements CurationRawProductRepositoryCustom {
 
+    private static final long FURNITURE_ID_OFFSET = 10000L;
+
     private final JPAQueryFactory queryFactory;
 
     @Override
@@ -102,14 +104,17 @@ public class CurationRawProductRepositoryImpl implements CurationRawProductRepos
         if ((typeIds != null && !typeIds.isEmpty()) || (additionalProductIds != null && !additionalProductIds.isEmpty())) {
             BooleanBuilder typeOrEtc = new BooleanBuilder();
             if (typeIds != null && !typeIds.isEmpty()) {
-                typeOrEtc.or(rawProduct.id.in(
-                        queryFactory.select(mapping.curationRawProduct.id)
-                                .from(mapping)
-                                .join(mapping.furnitureTag, fTag)
-                                .join(fTag.furniture, furniture)
-                                .leftJoin(furniture.furnitureType, fType)
-                                .where(fType.id.in(typeIds).or(furniture.id.in(typeIds)))
-                ));
+                com.querydsl.core.types.Predicate typeCondition = buildFurnitureTypeCondition(typeIds, fType, furniture);
+                if (typeCondition != null) {
+                    typeOrEtc.or(rawProduct.id.in(
+                            queryFactory.select(mapping.curationRawProduct.id)
+                                    .from(mapping)
+                                    .join(mapping.furnitureTag, fTag)
+                                    .join(fTag.furniture, furniture)
+                                    .leftJoin(furniture.furnitureType, fType)
+                                    .where(typeCondition)
+                    ));
+                }
             }
             if (additionalProductIds != null && !additionalProductIds.isEmpty()) {
                 typeOrEtc.or(rawProduct.id.in(additionalProductIds));
@@ -188,14 +193,17 @@ public class CurationRawProductRepositoryImpl implements CurationRawProductRepos
         if ((typeIds != null && !typeIds.isEmpty()) || (additionalProductIds != null && !additionalProductIds.isEmpty())) {
             BooleanBuilder typeOrEtc = new BooleanBuilder();
             if (typeIds != null && !typeIds.isEmpty()) {
-                typeOrEtc.or(rawProduct.id.in(
-                        queryFactory.select(mapping.curationRawProduct.id)
-                                .from(mapping)
-                                .join(mapping.furnitureTag, fTag)
-                                .join(fTag.furniture, furniture)
-                                .leftJoin(furniture.furnitureType, fType)
-                                .where(fType.id.in(typeIds).or(furniture.id.in(typeIds)))
-                ));
+                com.querydsl.core.types.Predicate typeCondition = buildFurnitureTypeCondition(typeIds, fType, furniture);
+                if (typeCondition != null) {
+                    typeOrEtc.or(rawProduct.id.in(
+                            queryFactory.select(mapping.curationRawProduct.id)
+                                    .from(mapping)
+                                    .join(mapping.furnitureTag, fTag)
+                                    .join(fTag.furniture, furniture)
+                                    .leftJoin(furniture.furnitureType, fType)
+                                    .where(typeCondition)
+                    ));
+                }
             }
             if (additionalProductIds != null && !additionalProductIds.isEmpty()) {
                 typeOrEtc.or(rawProduct.id.in(additionalProductIds));
@@ -540,18 +548,21 @@ public class CurationRawProductRepositoryImpl implements CurationRawProductRepos
         BooleanBuilder atLeastOne = new BooleanBuilder();
 
         if (typeIds != null && !typeIds.isEmpty()) {
-            var typeSubquery = JPAExpressions
-                    .select(mapping.curationRawProduct.id)
-                    .from(mapping)
-                    .join(mapping.furnitureTag, fTag)
-                    .join(fTag.furniture, furniture)
-                    .leftJoin(furniture.furnitureType, fType)
-                    .where(fType.id.in(typeIds).or(furniture.id.in(typeIds)));
+            com.querydsl.core.types.Predicate typeCondition = buildFurnitureTypeCondition(typeIds, fType, furniture);
+            if (typeCondition != null) {
+                var typeSubquery = JPAExpressions
+                        .select(mapping.curationRawProduct.id)
+                        .from(mapping)
+                        .join(mapping.furnitureTag, fTag)
+                        .join(fTag.furniture, furniture)
+                        .leftJoin(furniture.furnitureType, fType)
+                        .where(typeCondition);
 
-            matchScore = matchScore.add(
-                    new CaseBuilder().when(rawProduct.id.in(typeSubquery)).then(1).otherwise(0)
-            );
-            atLeastOne.or(rawProduct.id.in(typeSubquery));
+                matchScore = matchScore.add(
+                        new CaseBuilder().when(rawProduct.id.in(typeSubquery)).then(1).otherwise(0)
+                );
+                atLeastOne.or(rawProduct.id.in(typeSubquery));
+            }
         }
 
         if (additionalProductIds != null && !additionalProductIds.isEmpty()) {
@@ -680,5 +691,20 @@ public class CurationRawProductRepositoryImpl implements CurationRawProductRepos
             return null;
         }
         return field.in(brands);
+    }
+
+    private com.querydsl.core.types.Predicate buildFurnitureTypeCondition(List<Long> typeIds, QFurnitureType fType, QFurniture furniture) {
+        if (typeIds == null || typeIds.isEmpty()) return null;
+
+        List<Long> typeFilterIds = typeIds.stream().filter(id -> id < FURNITURE_ID_OFFSET).toList();
+        List<Long> furnitureFilterIds = typeIds.stream()
+                .filter(id -> id >= FURNITURE_ID_OFFSET)
+                .map(id -> id - FURNITURE_ID_OFFSET)
+                .toList();
+
+        BooleanBuilder condition = new BooleanBuilder();
+        if (!typeFilterIds.isEmpty()) condition.or(fType.id.in(typeFilterIds));
+        if (!furnitureFilterIds.isEmpty()) condition.or(furniture.id.in(furnitureFilterIds));
+        return condition.hasValue() ? condition : null;
     }
 }
