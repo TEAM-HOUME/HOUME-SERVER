@@ -10,6 +10,8 @@ import or.sopt.houme.domain.house.repository.HouseRepository;
 import or.sopt.houme.domain.house.repository.HouseFloorPlanRepository;
 import or.sopt.houme.domain.house.repository.HouseFurnitureRepository;
 import or.sopt.houme.domain.house.repository.HouseTasteRepository;
+import java.util.List;
+import or.sopt.houme.domain.generateImage.repository.GenerateImageRawProductRepository;
 import or.sopt.houme.domain.generateImage.repository.GenerateImageRepository;
 import or.sopt.houme.domain.generateImage.repository.ImageGenerationLogRepository;
 import or.sopt.houme.domain.preference.repository.*;
@@ -38,6 +40,7 @@ public class UserDeletionService {
     private final HouseTasteRepository houseTasteRepository;
 
     private final GenerateImageRepository generateImageRepository;
+    private final GenerateImageRawProductRepository generateImageRawProductRepository;
     private final ImageGenerationLogRepository imageGenerationLogRepository;
 
     private final GenerateImagePreferenceRepository generateImagePreferenceRepository;
@@ -112,6 +115,8 @@ public class UserDeletionService {
                 }
             });
             if (!images.isEmpty()) {
+                List<Long> imageIds = images.stream().map(image -> image.getId()).toList();
+                generateImageRawProductRepository.deleteAllByGenerateImageIdIn(imageIds);
                 generateImageRepository.deleteAll(images);
                 generateImageRepository.deleteByHouseId(house.getId());
                 generateImageRepository.flush();
