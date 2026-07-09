@@ -1,0 +1,72 @@
+[host snapshot]
+               total        used        free      shared  buff/cache   available
+Mem:           914Mi       820Mi        74Mi       1.9Mi       178Mi        94Mi
+Swap:          8.0Gi       574Mi       7.4Gi
+---
+procs -----------memory---------- ---swap-- -----io---- -system-- -------cpu-------
+ r  b   swpd   free   buff  cache   si   so    bi    bo   in   cs us sy id wa st gu
+ 0  0 588360  76352   4668 178420  215  218   945   657  807    5  4  1 94  1  0  0
+ 0  0 588360  82044   4668 178864    0    0   360     0  458  597  1  1 98  0  0  0
+ 0  0 588348  81588   4668 178864   96    0    96     0  416  571  1  0 99  0  0  0
+ 0  0 588336  80532   4676 180268  376    0  1784     0 1635 2752  8  2 88  2  0  0
+ 0  0 588336  80532   4676 180268    0    0     0     0  383  541  1  1 99  0  0  0
+---
+NAME                           CPU %     MEM USAGE / LIMIT     NET I/O           BLOCK I/O
+houme-loadtest-grafana         0.05%     77.57MiB / 914.2MiB   7.58MB / 15.4MB   558MB / 89MB
+houme-loadtest-cadvisor        1.30%     49.27MiB / 914.2MiB   8.28MB / 45.5MB   124MB / 8.68MB
+houme-loadtest-node-exporter   0.00%     7.469MiB / 914.2MiB   240kB / 4.62MB    40.6MB / 5.25MB
+houme-loadtest-prometheus      0.02%     73.01MiB / 914.2MiB   118MB / 5.18MB    344MB / 69.8MB
+houme-loadtest-app             0.26%     261MiB / 914.2MiB     2.49MB / 71.4MB   1.37GB / 939MB
+houme-loadtest-nginx           0.00%     552KiB / 914.2MiB     9.73MB / 10.5MB   23.3MB / 3.4MB
+houme-loadtest-redis           0.54%     2.551MiB / 914.2MiB   3.8MB / 1.55MB    58.1MB / 5.12MB
+---
+---
+[prom queries last 25m]
+Q: 100 * max_over_time((1 - avg(rate(node_cpu_seconds_total{job='node-exporter',mode='idle'}[1m]))[25m:15s])
+{"status":"error","errorType":"bad_data","error":"invalid parameter \"query\": 1:106: parse error: unclosed left parenthesis"}
+---
+Q: 100 * max_over_time((1 - (node_memory_MemAvailable_bytes{job='node-exporter'} / node_memory_MemTotal_bytes{job='node-exporter'}))[25m:15s])
+{"status":"success","data":{"resultType":"vector","result":[{"metric":{"instance":"node-exporter:9100","job":"node-exporter"},"value":[1772957939.931,"93.9005631564105"]}]}}
+---
+Q: 100 * max_over_time((1 - (node_memory_SwapFree_bytes{job='node-exporter'} / node_memory_SwapTotal_bytes{job='node-exporter'}))[25m:15s])
+{"status":"success","data":{"resultType":"vector","result":[{"metric":{"instance":"node-exporter:9100","job":"node-exporter"},"value":[1772957939.963,"7.36947411035257"]}]}}
+---
+Q: max_over_time(houme_async_executor_active_tasks{executor='imageGenerationExecutor'}[25m])
+{"status":"success","data":{"resultType":"vector","result":[{"metric":{"application":"houme-loadtest","executor":"imageGenerationExecutor","instance":"app:8080","job":"houme-app","mode":"virtual"},"value":[1772957939.986,"10"]}]}}
+---
+Q: min_over_time(houme_async_executor_available_permits{executor='imageGenerationExecutor'}[25m])
+{"status":"success","data":{"resultType":"vector","result":[{"metric":{"application":"houme-loadtest","executor":"imageGenerationExecutor","instance":"app:8080","job":"houme-app","mode":"virtual"},"value":[1772957940.038,"6"]}]}}
+---
+Q: max_over_time(houme_async_executor_queue_size{executor='imageGenerationExecutor'}[25m])
+{"status":"success","data":{"resultType":"vector","result":[{"metric":{"application":"houme-loadtest","executor":"imageGenerationExecutor","instance":"app:8080","job":"houme-app","mode":"virtual"},"value":[1772957940.067,"0"]}]}}
+---
+Q: increase(houme_async_executor_rejected_total{executor='imageGenerationExecutor'}[25m])
+{"status":"success","data":{"resultType":"vector","result":[{"metric":{"application":"houme-loadtest","executor":"imageGenerationExecutor","instance":"app:8080","job":"houme-app","mode":"virtual"},"value":[1772957940.091,"0"]}]}}
+---
+Q: max_over_time(hikaricp_connections_pending[25m])
+{"status":"success","data":{"resultType":"vector","result":[{"metric":{"application":"houme-loadtest","instance":"app:8080","job":"houme-app","pool":"HikariPool-1"},"value":[1772957940.117,"30"]}]}}
+---
+Q: max_over_time(hikaricp_connections_active[25m])
+{"status":"success","data":{"resultType":"vector","result":[{"metric":{"application":"houme-loadtest","instance":"app:8080","job":"houme-app","pool":"HikariPool-1"},"value":[1772957940.140,"10"]}]}}
+---
+Q: max_over_time(sum(jvm_memory_used_bytes{area='heap'})[25m])
+{"status":"error","errorType":"bad_data","error":"invalid parameter \"query\": 1:54: parse error: ranges only allowed for vector selectors"}
+---
+Q: max_over_time(jvm_threads_live_threads[25m])
+{"status":"success","data":{"resultType":"vector","result":[{"metric":{"application":"houme-loadtest","instance":"app:8080","job":"houme-app"},"value":[1772957940.213,"112"]}]}}
+---
+Q: max_over_time((100 * (1 - avg(rate(node_cpu_seconds_total{job='node-exporter',mode='idle'}[1m]))))[25m:15s])
+{"status":"success","data":{"resultType":"vector","result":[{"metric":{},"value":[1772957973.143,"41.19090909090698"]}]}}
+---
+Q: max_over_time((sum(jvm_memory_used_bytes{area='heap'}))[25m:15s])
+{"status":"success","data":{"resultType":"vector","result":[{"metric":{},"value":[1772957973.202,"169656680"]}]}}
+---
+Q: max_over_time(process_resident_memory_bytes{application='houme-loadtest'}[25m])
+{"status":"success","data":{"resultType":"vector","result":[]}}
+---
+Q: max_over_time(houme_generate_image_async_duration_seconds_max[25m])
+{"status":"success","data":{"resultType":"vector","result":[{"metric":{"application":"houme-loadtest","instance":"app:8080","job":"houme-app","provider":"gemini","result":"success"},"value":[1772957973.252,"135.336533574"]},{"metric":{"application":"houme-loadtest","instance":"app:8080","job":"houme-app","provider":"gemini","result":"failure"},"value":[1772957973.252,"89.984699446"]}]}}
+---
+Q: max_over_time(http_server_requests_seconds_max{uri='/api/v3/generated-images/generate/gemini'}[25m])
+{"status":"success","data":{"resultType":"vector","result":[{"metric":{"application":"houme-loadtest","error":"none","exception":"none","instance":"app:8080","job":"houme-app","method":"POST","outcome":"SUCCESS","status":"200","uri":"/api/v3/generated-images/generate/gemini"},"value":[1772957973.276,"164.558851177"]},{"metric":{"application":"houme-loadtest","error":"none","exception":"none","instance":"app:8080","job":"houme-app","method":"POST","outcome":"SERVER_ERROR","status":"500","uri":"/api/v3/generated-images/generate/gemini"},"value":[1772957973.276,"133.758388338"]},{"metric":{"application":"houme-loadtest","error":"none","exception":"none","instance":"app:8080","job":"houme-app","method":"POST","outcome":"CLIENT_ERROR","status":"400","uri":"/api/v3/generated-images/generate/gemini"},"value":[1772957973.276,"2.616435016"]},{"metric":{"application":"houme-loadtest","error":"CannotCreateTransactionException","exception":"CannotCreateTransactionException","instance":"app:8080","job":"houme-app","method":"POST","outcome":"SERVER_ERROR","status":"500","uri":"/api/v3/generated-images/generate/gemini"},"value":[1772957973.276,"38.971384486"]},{"metric":{"application":"houme-loadtest","error":"IOException","exception":"IOException","instance":"app:8080","job":"houme-app","method":"POST","outcome":"SUCCESS","status":"200","uri":"/api/v3/generated-images/generate/gemini"},"value":[1772957973.276,"149.303166905"]}]}}
+---

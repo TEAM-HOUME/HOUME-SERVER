@@ -13,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -26,8 +27,11 @@ public class JWTController {
     @GetMapping("/access")
     @Operation(summary = "테스트용 액세스 토큰 발급기",
             description = "자체 로그인이 없기 때문에 액세스 토큰이 필요한 경우에 해당 메서드를 이용하여 토큰을 발급 받아주세요")
-    public ResponseEntity<ApiResponse<String>> createAccess(HttpServletResponse response){
-        jwtService.createToken(response);
+    public ResponseEntity<ApiResponse<String>> createAccess(
+            HttpServletResponse response,
+            @RequestParam(required = false) Long userId
+    ){
+        jwtService.createToken(response, userId);
 
         return ResponseEntity.ok(ApiResponse.ok("테스트용 액세스 토큰이 발급되었습니다. 헤더를 확인해주세요"));
     }

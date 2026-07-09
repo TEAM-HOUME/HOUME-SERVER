@@ -1,9 +1,13 @@
 package or.sopt.houme.domain.house.service.carousel;
 
 import lombok.RequiredArgsConstructor;
+import or.sopt.houme.domain.furniture.model.entity.CurationRawProduct;
+import or.sopt.houme.domain.furniture.repository.CurationRawProductRepository;
+import or.sopt.houme.domain.furniture.service.JjymService;
+import or.sopt.houme.domain.house.model.carousel.entity.Carousel;
 import or.sopt.houme.domain.house.presentation.carousel.controller.dto.GetCarouselListResponseDTO;
 import or.sopt.houme.domain.house.presentation.carousel.controller.dto.GetCarouselResponseDTO;
-import or.sopt.houme.domain.house.model.carousel.entity.Carousel;
+import or.sopt.houme.domain.house.presentation.carousel.controller.dto.GetCarouselV2ListResponseDTO;
 import or.sopt.houme.domain.house.repository.carousel.CarouselRepository;
 import or.sopt.houme.domain.preference.model.entity.CarouselPreference;
 import or.sopt.houme.domain.preference.model.entity.Preference;
@@ -16,17 +20,24 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class CarouselServiceImpl implements CarouselService {
-
+    private final CarouselCacheService carouselCacheService;
     private final CarouselRepository carouselRepository;
     private final PreferenceRepository preferenceRepository;
     private final CarouselPreferenceRepository carouselPreferenceRepository;
-    private final CarouselCacheService carouselCacheService;
+    private final CurationRawProductRepository curationRawProductRepository;
+    private final JjymService jjymService;
+    private final CarouselLikeLogService carouselLikeLogService;
+    private final CarouselCandidateService carouselCandidateService;
+    private final CarouselShuffleService carouselShuffleService;
 
     @Override
     public GetCarouselListResponseDTO getCarousel(int page) {
@@ -45,16 +56,26 @@ public class CarouselServiceImpl implements CarouselService {
         return GetCarouselListResponseDTO.of(result);
     }
 
+    @Override
+    public GetCarouselV2ListResponseDTO getCarouselV2(User user) {
+        var candidateBundle = carouselCandidateService.collectCandidates(user);
+        List<Long> displayIds = carouselShuffleService.selectDisplayIds(candidateBundle, user.getId());
+        if (displayIds.isEmpty()) {
+            return GetCarouselV2ListResponseDTO.of(List.of());
+        }
 
+        Map<Long, CurationRawProduct> rawProductById = curationRawProductRepository.findAllById(displayIds).stream()
+                .collect(Collectors.toMap(CurationRawProduct::getId, Function.identity()));
 
-    /**
-     * 캐러셀 좋아요를 저장하는 메서드 입니다
-     *
-     * carouselPreference 를 탐색하여 회원과 캐러셀이 존재하는지 확인하고
-     * 존재한다면 like 인지 탐색하고 최종적으로 like 상태일 수 있도록 저장합니다
-     *
-     * 존재하지 않는다면 like 상태의 엔티티를 새롭게 생성합니다
-     * */
+        List<GetCarouselResponseDTO> result = displayIds.stream()
+                .map(rawProductById::get)
+                .filter(java.util.Objects::nonNull)
+                .map(rawProduct -> GetCarouselResponseDTO.of(rawProduct.getId(), rawProduct.getProductImageUrl()))
+                .toList();
+
+        return GetCarouselV2ListResponseDTO.of(result);
+    }
+
     @Override
     @Transactional
     public void likeCarousel(User user, Long carouselId) {
@@ -67,6 +88,11 @@ public class CarouselServiceImpl implements CarouselService {
         updateLike(user.getId(), carouselId, false);
     }
 
+    @Transactional
+    public void likeCarouselV2WithLog(User user, Long rawProductId) {
+        jjymService.likeRawProduct(user.getId(), rawProductId);
+        carouselLikeLogService.createLikeLog(user, rawProductId);
+    }
 
     private void updateLike(Long userId, Long carouselId, boolean isLike) {
         Carousel carousel = findCarousel(carouselId);

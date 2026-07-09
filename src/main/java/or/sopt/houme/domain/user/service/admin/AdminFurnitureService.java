@@ -15,6 +15,10 @@ public interface AdminFurnitureService {
 
     AdminFurnitureTagGetDTO getFurnitureTag();
 
+    AdminFurnitureTagOptionListResponse getFurnitureTagsByType(Long furnitureTypeId);
+
+    AdminFurnitureOptionListResponse getFurnituresByType(Long furnitureTypeId);
+
     AdminFurnitureUpdateResponseDTO updateFurniture(AdminFurnitureUpdateRequestDTO dto, String contentType);
 
     void deleteFurnitureTag(AdminFurnitureTagDeleteDTO dto);

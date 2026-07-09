@@ -3,9 +3,6 @@ package or.sopt.houme.domain.preference.service;
 import or.sopt.houme.domain.generateImage.model.entity.GenerateImage;
 import or.sopt.houme.domain.generateImage.repository.GenerateImageRepository;
 import or.sopt.houme.domain.house.model.entity.House;
-import or.sopt.houme.domain.house.model.entity.enums.Equilibrium;
-import or.sopt.houme.domain.house.model.entity.enums.Form;
-import or.sopt.houme.domain.house.model.entity.enums.Structure;
 import or.sopt.houme.domain.house.repository.HouseRepository;
 import or.sopt.houme.domain.preference.model.entity.GenerateImagePreference;
 import or.sopt.houme.domain.preference.model.entity.Preference;
@@ -69,9 +66,6 @@ class PromptPreferenceServiceImplTest {
         User save = userRepository.save(user);
 
         House house = House.builder()
-                .form(Form.OFFICETEL)
-                .structure(Structure.OPEN_ONE_ROOM)
-                .equilibrium(Equilibrium.UNDER_5)
                 .isValid(true)
                 .user(save)
                 .build();

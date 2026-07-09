@@ -17,11 +17,15 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import or.sopt.houme.global.api.ErrorCode;
+import or.sopt.houme.global.api.handler.FurnitureException;
 import org.hibernate.annotations.Comment;
 
 import java.time.LocalDateTime;
 import java.util.LinkedHashSet;
+import java.util.Locale;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
@@ -44,6 +48,7 @@ import java.util.Set;
 )
 @Comment("큐레이션 원본 수집 데이터를 저장하는 엔티티입니다")
 public class CurationRawProduct {
+    private static final Pattern SOURCE_PATTERN = Pattern.compile("^[a-z0-9][a-z0-9_-]{0,49}$");
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -107,10 +112,24 @@ public class CurationRawProduct {
     @Comment("수집 시각")
     private LocalDateTime fetchedAt;
 
+    @Builder.Default
+    @Column(name = "is_exposed")
+    @Comment("노출 여부")
+    private Boolean isExposed = true;
+
+    @Column(name = "search_tokens", columnDefinition = "text")
+    @Comment("검색용 사전 토큰화 데이터 (상품명/브랜드/가구유형/커스텀 키워드 공백 구분)")
+    private String searchTokens;
+
     @OneToMany(mappedBy = "curationRawProduct", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     @Comment("수동 매핑된 가구 태그(다중 매핑)")
     private Set<CurationRawProductFurnitureTag> furnitureTagMappings = new LinkedHashSet<>();
+
+    @OneToMany(mappedBy = "curationRawProduct", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    @Comment("수동 매핑된 하위 가구(다중 매핑)")
+    private Set<CurationRawProductFurniture> furnitureMappings = new LinkedHashSet<>();
 
     public static CurationRawProduct of(
             String source,
@@ -123,7 +142,7 @@ public class CurationRawProduct {
             LocalDateTime fetchedAt
     ) {
         return CurationRawProduct.builder()
-                .source(source)
+                .source(normalizeSource(source))
                 .category(category)
                 .productId(productId)
                 .productImageUrl(productImageUrl)
@@ -164,7 +183,8 @@ public class CurationRawProduct {
             Integer discountRate,
             Long discountPrice,
             Long baseShippingFee,
-            Long freeShippingCondition
+            Long freeShippingCondition,
+            Boolean isExposed
     ) {
         if (brand != null && !brand.isBlank()) {
             this.brand = brand;
@@ -184,6 +204,39 @@ public class CurationRawProduct {
         if (freeShippingCondition != null) {
             this.freeShippingCondition = freeShippingCondition;
         }
+        if (isExposed != null) {
+            this.isExposed = isExposed;
+        }
+    }
+
+    public void updateAdminFields(
+            String source,
+            SoozipCategory category,
+            Long productId,
+            String productImageUrl,
+            String productSiteUrl,
+            String productName,
+            String productMallName,
+            String brand,
+            Long listPrice,
+            Integer discountRate,
+            Long discountPrice,
+            Long baseShippingFee,
+            Long freeShippingCondition,
+            LocalDateTime fetchedAt,
+            Boolean isExposed
+    ) {
+        if (source != null && !source.isBlank()) {
+            this.source = normalizeSource(source);
+        }
+        if (category != null) {
+            this.category = category;
+        }
+        if (productId != null) {
+            this.productId = productId;
+        }
+        updateFrom(productImageUrl, productSiteUrl, productName, productMallName, fetchedAt);
+        updateMeta(brand, listPrice, discountRate, discountPrice, baseShippingFee, freeShippingCondition, isExposed);
     }
 
     public boolean addFurnitureTag(FurnitureTag furnitureTag) {
@@ -205,5 +258,29 @@ public class CurationRawProduct {
 
     public void clearFurnitureTags() {
         furnitureTagMappings.clear();
+    }
+
+    public void clearFurnitures() {
+        furnitureMappings.clear();
+    }
+
+    public void updateExposure(boolean isExposed) {
+        this.isExposed = isExposed;
+    }
+
+    public void updateSearchTokens(String searchTokens) {
+        this.searchTokens = searchTokens;
+    }
+
+    private static String normalizeSource(String source) {
+        if (source == null || source.isBlank()) {
+            throw new FurnitureException(ErrorCode.NOT_VALID_EXCEPTION);
+        }
+
+        String canonical = source.trim().toLowerCase(Locale.ROOT);
+        if (!SOURCE_PATTERN.matcher(canonical).matches()) {
+            throw new FurnitureException(ErrorCode.NOT_VALID_EXCEPTION);
+        }
+        return canonical;
     }
 }

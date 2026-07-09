@@ -7,7 +7,9 @@ import or.sopt.houme.domain.furniture.infrastructure.dto.external.naverShop.forP
 import or.sopt.houme.domain.furniture.infrastructure.dto.external.naverShop.NaverFurnitureProductDto;
 import or.sopt.houme.domain.furniture.model.entity.CurationSource;
 import or.sopt.houme.domain.furniture.model.entity.FurnitureTag;
+import or.sopt.houme.domain.furniture.presentation.dto.response.FurnitureProductsInfoResponseV2;
 import or.sopt.houme.domain.furniture.service.CurationFurnitureService;
+import or.sopt.houme.domain.furniture.service.CurationRawProductFurnitureService;
 import or.sopt.houme.domain.furniture.service.CurationRawProductService;
 import or.sopt.houme.domain.furniture.service.FurnitureService;
 import or.sopt.houme.domain.furniture.service.ImageHashService;
@@ -38,8 +40,11 @@ public class FurnitureFacadeImpl implements FurnitureFacade {
     private final CurationRawProductService curationRawProductService;
     private final NaverProperties naverProperties;
 
+    // [pbem22, 2026-05-28, #541] CurationRawProductFurniture 경로 폴백을 위해 추가
+    private final CurationRawProductFurnitureService curationRawProductFurnitureService;
+
     @Override
-    public FurnitureProductsInfoResponse getFurnitureProductInfoFromNaverApi(User user, Long imageId, Long categoryId) {
+    public FurnitureProductsInfoResponseV2 getFurnitureProductInfoFromNaverApi(User user, Long imageId, Long categoryId) {
 
 
         LocalDateTime now = LocalDateTime.now();
@@ -47,7 +52,17 @@ public class FurnitureFacadeImpl implements FurnitureFacade {
 
         // 1. FurnitureTag 조회 (DB)
         log.info("연관된 가구들을 조회합니다:{}",formatted);
-        FurnitureTag furnitureTag = furnitureService.findFurnitureTag(user, imageId, categoryId);
+        // [pbem22, 2026-05-28, #541] FurnitureTag 없을 경우 CurationRawProductFurniture 경로로 폴백
+        FurnitureTag furnitureTag;
+        try {
+            furnitureTag = furnitureService.findFurnitureTag(user, imageId, categoryId);
+        } catch (GeneralException e) {
+            if (ErrorCode.NOT_FOUND_FURNITURE_TAG.equals(e.getErrorCode())) {
+                log.info("FurnitureTag 없음, CurationRawProductFurniture 경로로 폴백: categoryId={}", categoryId);
+                return curationRawProductFurnitureService.buildProductsResponseByFurnitureId(user, categoryId);
+            }
+            throw e;
+        }
 
         // 네이버 큐레이션은 현재 비활성화합니다.
         // 기존 로직은 추후 복구를 위해 주석으로 유지합니다.
@@ -106,8 +121,12 @@ public class FurnitureFacadeImpl implements FurnitureFacade {
         }
 
         log.info("큐레이션 종료:{}",formatted);
-        // 네이버 큐레이션 비활성화로 RAW 결과만 반환합니다.
-        return FurnitureProductsInfoResponse.of(user.getName(), rawInfos);
+        return curationFurnitureService.buildProductsInfoResponse(
+                user.getId(),
+                user.getName(),
+                furnitureTag,
+                rawInfos
+        );
     }
 
     // 기획의사결정용

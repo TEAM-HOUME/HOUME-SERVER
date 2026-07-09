@@ -1,10 +1,15 @@
 package or.sopt.houme.domain.house.service.carousel;
 
+import or.sopt.houme.domain.furniture.model.entity.CurationRawProduct;
+import or.sopt.houme.domain.furniture.repository.CurationRawProductRepository;
+import or.sopt.houme.domain.furniture.service.JjymService;
 import or.sopt.houme.domain.house.presentation.carousel.controller.dto.GetCarouselListResponseDTO;
 import or.sopt.houme.domain.house.presentation.carousel.controller.dto.GetCarouselResponseDTO;
+import or.sopt.houme.domain.house.presentation.carousel.controller.dto.GetCarouselV2ListResponseDTO;
 import or.sopt.houme.domain.house.model.carousel.entity.Carousel;
 import or.sopt.houme.domain.house.model.carousel.entity.CarouselType;
 import or.sopt.houme.domain.house.repository.carousel.CarouselRepository;
+import or.sopt.houme.domain.house.service.carousel.dto.CarouselCandidateBundle;
 import or.sopt.houme.domain.preference.model.entity.CarouselPreference;
 import or.sopt.houme.domain.preference.model.entity.Preference;
 import or.sopt.houme.domain.preference.repository.CarouselPreferenceRepository;
@@ -20,7 +25,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -46,6 +50,18 @@ class CarouselServiceImplTest {
 
     @Mock
     private CarouselCacheService carouselCacheService;
+
+    @Mock
+    private CurationRawProductRepository curationRawProductRepository;
+
+    @Mock
+    private JjymService jjymService;
+
+    @Mock
+    private CarouselCandidateService carouselCandidateService;
+
+    @Mock
+    private CarouselShuffleService carouselShuffleService;
 
     private User user;
     private Carousel carousel;
@@ -87,8 +103,45 @@ class CarouselServiceImplTest {
         // then
         assertThat(result.carouselResponseDTOS()).hasSize(2);
         assertThat(result.carouselResponseDTOS())
-                .extracting("carouselId")
+                .extracting("rawProductId")
                 .containsExactlyInAnyOrder(1L, 2L);
+    }
+
+    @Test
+    @DisplayName("getCarouselV2()는 후보군 셔플 결과 순서대로 100개 캐러셀 응답을 조립한다")
+    void getCarouselV2_returnsExposedRawProductsExcludingLikedProducts() {
+        CurationRawProduct rawProduct1 = CurationRawProduct.builder()
+                .id(101L)
+                .productImageUrl("image-101")
+                .build();
+        CurationRawProduct rawProduct2 = CurationRawProduct.builder()
+                .id(102L)
+                .productImageUrl("image-102")
+                .build();
+        CurationRawProduct rawProduct3 = CurationRawProduct.builder()
+                .id(103L)
+                .productImageUrl("image-103")
+                .build();
+        CarouselCandidateBundle candidateBundle = new CarouselCandidateBundle(
+                500L,
+                List.of(1L, 2L),
+                List.of(3L, 4L),
+                java.util.Map.of(),
+                List.of(101L, 102L, 103L)
+        );
+
+        when(carouselCandidateService.collectCandidates(user)).thenReturn(candidateBundle);
+        when(carouselShuffleService.selectDisplayIds(candidateBundle, 1L)).thenReturn(List.of(103L, 101L, 102L));
+        when(curationRawProductRepository.findAllById(List.of(103L, 101L, 102L)))
+                .thenReturn(List.of(rawProduct1, rawProduct2, rawProduct3));
+
+        GetCarouselV2ListResponseDTO result = carouselService.getCarouselV2(user);
+
+        assertThat(result.carousels()).hasSize(3);
+        assertThat(result.carousels())
+                .extracting("rawProductId")
+                .containsExactly(103L, 101L, 102L);
+        verifyNoInteractions(jjymService);
     }
 
 
