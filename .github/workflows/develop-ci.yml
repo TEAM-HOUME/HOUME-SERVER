@@ -18,16 +18,7 @@ jobs:
     permissions:
       checks: write
       pull-requests: write
-    services:
-      redis:
-        image: redis:7-alpine
-        ports:
-          - 6379:6379
-        options: >-
-          --health-cmd "redis-cli ping || exit 1"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
+    # redis 서비스 제거: 테스트가 Testcontainers(PostgreSQL/Redis)로 자체 인프라를 띄운다 (#580)
 
     steps:
       - name: checkout the code
@@ -41,11 +32,8 @@ jobs:
         uses: gradle/actions/setup-gradle@v5
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
-      - name: Add application-test.yml
-        run: |
-          mkdir -p ./src/main/resources
-          echo "${{ secrets.APPLICATION_TEST }}" > ./src/main/resources/application-test.yml
-
+      # APPLICATION_TEST 시크릿 주입 제거: src/test/resources/application-test.yml 이 커밋되어 있고
+      # DB/Redis 는 Testcontainers 가 공급한다 (#580)
       - name: Run Gradle build and tests
         run: |
           ./gradlew clean build -Dspring.profiles.active=test
