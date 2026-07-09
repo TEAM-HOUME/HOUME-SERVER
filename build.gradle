@@ -106,6 +106,9 @@ dependencies {
     // sentry
     implementation 'io.sentry:sentry-spring-boot-starter-jakarta:7.9.0'
 
+    // 구조화(JSON) 로그 — Loki 수집용 (logback-spring.xml dev/prod 프로파일에서 사용)
+    implementation 'net.logstash.logback:logstash-logback-encoder:7.4'
+
     // prometheus
     implementation 'io.micrometer:micrometer-registry-prometheus'
 
