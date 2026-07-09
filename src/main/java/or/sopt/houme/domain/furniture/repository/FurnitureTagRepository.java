@@ -10,13 +10,12 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface FurnitureTagRepository extends JpaRepository<FurnitureTag, Long> {
+public interface FurnitureTagRepository extends JpaRepository<FurnitureTag, Long>, FurnitureTagRepositoryCustom {
 
     Optional<FurnitureTag> findByFurnitureAndTag(Furniture furniture, Tag tag);
 
     List<FurnitureTag> findByFurniture(Furniture furniture);
 
-    List<FurnitureTag> findAllByTagIdAndFurnitureIn(Long tagId, List<Furniture> furnitures);
-
     List<FurnitureTag> findAllByFurnitureIdInAndTagId(List<Long> furnitureIds, Long tagId);
+
 }

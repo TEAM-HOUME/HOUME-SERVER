@@ -22,7 +22,7 @@ class GetCarouselListResponseDTOTest {
 
         // then
         assertThat(result.carouselResponseDTOS()).hasSize(2);
-        assertThat(result.carouselResponseDTOS().get(0).carouselId()).isEqualTo(1L);
+        assertThat(result.carouselResponseDTOS().get(0).rawProductId()).isEqualTo(1L);
         assertThat(result.carouselResponseDTOS().get(1).url()).isEqualTo("https://example.com/image2.jpg");
     }
 }

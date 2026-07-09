@@ -15,7 +15,13 @@ import java.util.List;
 @AllArgsConstructor
 @Getter
 @Builder
-@Table(name = "users")
+@Table(
+        name = "users",
+        uniqueConstraints = @UniqueConstraint(
+                name = "uk_user_nickname_nickname_tag",
+                columnNames = {"nickname", "nickname_tag"}
+        )
+)
 public class User extends BaseEntity {
 
     @Id
@@ -24,6 +30,12 @@ public class User extends BaseEntity {
 
     @Column(name = "name", nullable = true)
     private String name;
+
+    @Column(name = "nickname", nullable = true)
+    private String nickname;
+
+    @Column(name = "nickname_tag", nullable = true, length = 5)
+    private String nicknameTag;
 
     @Column(name = "birthday", nullable = true)
     private LocalDate birthday;
@@ -53,11 +65,44 @@ public class User extends BaseEntity {
     @Column(name = "role", nullable = false)
     private Role role;
 
-    // 자체 회원가입시 사용되는 유저 업데이트 메서드
+    // v1 자체 회원가입시 사용되는 유저 업데이트 메서드
     public void updateUserFromSignUp(String name, LocalDate birthday, Gender gender) {
         this.name = name;
         this.birthday = birthday;
         this.gender = gender;
+    }
+
+    // v2 자체 회원가입시 사용되는 유저 업데이트 메서드
+    public void updateUserFromSignUpV2(String nickname, String nicknameTag, LocalDate birthday, Gender gender) {
+        this.nickname = nickname;
+        this.nicknameTag = nicknameTag;
+        this.name = nickname;
+        this.birthday = birthday;
+        this.gender = gender;
+    }
+
+    public void updateMyPageProfile(String nickname, String nicknameTag, LocalDate birthday, Gender gender) {
+        if (nickname != null) {
+            this.nickname = nickname;
+            this.nicknameTag = nicknameTag;
+            this.name = nickname;
+        }
+        if (birthday != null) {
+            this.birthday = birthday;
+        }
+        if (gender != null) {
+            this.gender = gender;
+        }
+    }
+
+    public String getDisplayName() {
+        if (nickname != null && !nickname.isBlank()) {
+            return nickname;
+        }
+        if (name != null && !name.isBlank()) {
+            return name;
+        }
+        return "";
     }
 
     // 이미지 생성 여부 update

@@ -56,4 +56,16 @@ public class CurationRawProductColor {
     @Column(name = "client_color_name")
     @Comment("클라이언트 반환용 색상명")
     private String clientColorName;
+
+    public static CurationRawProductColor of(
+            CurationRawProduct curationRawProduct,
+            String rawColorName,
+            String clientColorName
+    ) {
+        return CurationRawProductColor.builder()
+                .curationRawProduct(curationRawProduct)
+                .rawColorName(rawColorName)
+                .clientColorName(clientColorName)
+                .build();
+    }
 }

@@ -62,4 +62,27 @@ public class CarouselOptimisticLockFacade {
 
         throw new CarouselException(ErrorCode.CAROUSEL_RETRY_EXCEPTION);
     }
+
+    public void likeCarouselV2(User user, Long rawProductId) {
+        int retryCount = 0;
+
+        while (retryCount < MAX_RETRIES) {
+            try {
+                preferenceService.likeCarouselV2WithLog(user, rawProductId);
+                return;
+            } catch (OptimisticLockException | DataIntegrityViolationException e) {
+                long backoffTime = (long) Math.pow(2, retryCount) * RETRY_DELAY_MS;
+                try {
+                    Thread.sleep(backoffTime);
+                } catch (InterruptedException ie) {
+                    Thread.currentThread().interrupt();
+                    throw new CarouselException(ErrorCode.CAROUSEL_INTERRUPT_EXCEPTION);
+                }
+                retryCount++;
+            }
+        }
+
+        throw new CarouselException(ErrorCode.CAROUSEL_RETRY_EXCEPTION);
+    }
+
 }

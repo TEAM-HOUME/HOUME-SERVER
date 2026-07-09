@@ -1,0 +1,51 @@
+[Run]
+- scenario: step_mid_load_v4
+- profile: local,load_test
+- target: http://43.203.212.114:8080
+- conditions: osiv=false, hikari.maxPoolSize=20, virtualLimit=32, geminiStub=60000ms, failureRate=0
+
+[k6 summary]
+- http_reqs: 277
+- iterations: 276
+- http_req_failed: 0
+- checks: 1
+- http_req_duration.avg: 60360.88263176895 ms
+- http_req_duration.med: 60101.417 ms
+- http_req_duration.p90: 60182.6446 ms
+- http_req_duration.p95: 60264.2234 ms
+- http_req_duration.max: 81013.181 ms
+- iteration_duration.avg: 61366.92938814492 ms
+- iteration_duration.p95: 61278.13971825 ms
+- iteration_duration.max: 82018.318792 ms
+- request_rate: 0.29785742060342707 req/s
+- vus_max: 30
+
+[Prometheus peaks]
+- host_cpu_usage_max_percent: 86.9727272727323
+- host_memory_usage_max_percent: 93.641203565233
+- host_swap_usage_max_percent: 7.634166543086307
+- jvm_heap_used_max_bytes: 175045432
+- jvm_live_threads_max: 111
+- executor_active_tasks_max: 30
+- executor_available_permits_min: 2
+- executor_queue_size_max: 0
+- executor_rejected_total_max: 0
+- hikari_connections_active_max: 6
+- hikari_connections_pending_max: 0
+- hikari_connections_max_max: 20
+- hikari_timeouts_max: 0
+- http_200_count_max: 294
+- http_500_count_max: 0
+- http_200_duration_max_seconds: 81.008278307
+
+[Post-run host snapshot]
+- free -m:
+  total=914 used=794 free=75 buff/cache=202 available=119
+- swap:
+  total=8191 used=619 free=7572
+- docker stats:
+  app=237MiB/914.2MiB, grafana=81.57MiB, prometheus=73.88MiB, cadvisor=47.82MiB
+
+[Logs]
+- open-in-view warning: not observed after rebuilt image deployment
+- grep(CannotCreateTransactionException|Connection is not available|TaskRejectedException|RejectedExecutionException): 0

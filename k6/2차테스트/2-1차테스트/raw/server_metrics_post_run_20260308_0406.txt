@@ -1,0 +1,30 @@
+=== free -h ===
+               total        used        free      shared  buff/cache   available
+Mem:           914Mi       800Mi        79Mi       2.0Mi       191Mi       113Mi
+Swap:          8.0Gi       216Mi       7.8Gi
+
+=== vmstat 1 5 ===
+procs -----------memory---------- ---swap-- -----io---- -system-- -------cpu-------
+ r  b   swpd   free   buff  cache   si   so    bi    bo   in   cs us sy id wa st gu
+ 1  0 221512  81168   2320 193548   39   79   569   791  453    2  4  1 95  1  0  0
+ 0  0 221512  84428   2320 193560   60    0    60     0  205  278  1  0 99  0  0  0
+ 0  0 221512  84496   2320 193560    0    0     0     0  216  290  0  0 100  0  0  0
+ 0  0 221512  84496   2320 193560    0    0     0     0  200  263  0  0 99  0  0  0
+ 0  0 221512  84700   2320 193560    0    0     0     0  206  262  1  0 100  0  0  0
+
+=== uptime ===
+ 04:06:57 up  1:31,  1 user,  load average: 0.00, 0.02, 0.00
+
+=== docker stats --no-stream ===
+CONTAINER ID   NAME                   CPU %     MEM USAGE / LIMIT     MEM %     NET I/O           BLOCK I/O         PIDS
+4d72e5c51a81   houme-loadtest-app     0.29%     434.2MiB / 914.2MiB   47.50%    2.12MB / 2.62MB   224MB / 132MB     99
+3d3b32d7d5b3   houme-loadtest-nginx   0.00%     1.449MiB / 914.2MiB   0.16%     356kB / 404kB     9.74MB / 2.51MB   3
+409f158943e9   houme-loadtest-redis   0.52%     1.988MiB / 914.2MiB   0.22%     854kB / 346kB     18.4MB / 2.11MB   6
+
+=== dmesg oom ===
+(없음)
+
+=== log highlights ===
+- nginx access에서 500 응답 5건 확인
+- app 로그에서 같은 시각대에 `[load_test] Gemini Stub 실패 시뮬레이션` 확인
+- Hikari timeout, OOM, reject 관련 후행 로그는 이번 사후 스냅샷에서 확인되지 않음

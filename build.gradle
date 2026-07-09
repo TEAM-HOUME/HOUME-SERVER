@@ -11,7 +11,7 @@ version = '0.0.1-SNAPSHOT'
 
 java {
     toolchain {
-        languageVersion = JavaLanguageVersion.of(17)
+        languageVersion = JavaLanguageVersion.of(21)
     }
 }
 
@@ -157,7 +157,7 @@ tasks.named('test') {
 
 jib {
     from {
-        image = 'eclipse-temurin:17-jdk' // 베이스 이미지 지정
+        image = 'eclipse-temurin:21-jdk' // 베이스 이미지 지정
     }
     to {
         image = project.hasProperty('jibToImage') ? project.getProperty('jibToImage') : 'default/image'
@@ -176,6 +176,17 @@ jib {
         jvmFlags = ["-Xms512m", "-Xmx512m"]
         creationTime = "USE_CURRENT_TIMESTAMP"
         format = 'Docker'
+    }
+    // cwebp 실행파일을 도커 이미지에 포함 + 실행권한 부여
+    // cwebp 바이너리: EC2가 t3.small -> libwebp 1.5.0 linux-x86-64 (amd64 static-pie)
+    extraDirectories {
+        paths {
+            path {
+                from = file('src/main/jib')
+                into = '/'
+            }
+        }
+        permissions = ['/app/bin/cwebp': '755']
     }
 }
 

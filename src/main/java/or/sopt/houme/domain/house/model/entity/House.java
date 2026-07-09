@@ -2,13 +2,12 @@ package or.sopt.houme.domain.house.model.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import or.sopt.houme.domain.banner.model.entity.Banner;
 import or.sopt.houme.domain.generateImage.model.entity.GenerateImage;
 import or.sopt.houme.domain.house.model.entity.enums.Activity;
-import or.sopt.houme.domain.house.model.entity.enums.Equilibrium;
-import or.sopt.houme.domain.house.model.entity.enums.Form;
-import or.sopt.houme.domain.house.model.entity.enums.Structure;
 import or.sopt.houme.domain.house.model.entity.mapping.HouseFloorPlan;
 import or.sopt.houme.domain.user.model.entity.User;
+import or.sopt.houme.global.entity.BaseEntity;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,22 +18,10 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 @Table(name = "houses")
-public class House {
+public class House extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
-    @Enumerated(EnumType.STRING)
-    @Column(name = "form", nullable = false)
-    private Form form;
-
-    @Enumerated(EnumType.STRING)
-    @Column(name = "structure", nullable = false)
-    private Structure structure;
-
-    @Enumerated(EnumType.STRING)
-    @Column(name = "equilibrium", nullable = false)
-    private Equilibrium equilibrium;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "activity", nullable = true)
@@ -43,6 +30,10 @@ public class House {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private User user;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "banner_id")
+    private Banner banner;
 
     @OneToMany(mappedBy = "house")
     @Builder.Default

@@ -4,9 +4,6 @@ import jakarta.persistence.EntityManager;
 import or.sopt.houme.domain.generateImage.model.entity.GenerateImage;
 import or.sopt.houme.domain.house.model.entity.House;
 import or.sopt.houme.domain.house.model.entity.enums.Activity;
-import or.sopt.houme.domain.house.model.entity.enums.Equilibrium;
-import or.sopt.houme.domain.house.model.entity.enums.Form;
-import or.sopt.houme.domain.house.model.entity.enums.Structure;
 import or.sopt.houme.domain.user.model.entity.*;
 import or.sopt.houme.global.config.QuerydslConfig;
 import org.junit.jupiter.api.BeforeEach;
@@ -54,9 +51,6 @@ class HouseCustomRepositoryImplTest {
 
         // 🏠 House 생성 및 저장
         mockHouse = House.builder()
-                .form(Form.OFFICETEL)
-                .structure(Structure.OPEN_ONE_ROOM)
-                .equilibrium(Equilibrium.UNDER_5)
                 .activity(Activity.READING)
                 .user(mockUser)
                 .isValid(true)

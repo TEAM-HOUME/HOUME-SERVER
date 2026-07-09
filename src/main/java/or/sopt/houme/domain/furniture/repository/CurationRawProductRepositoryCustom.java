@@ -1,0 +1,88 @@
+package or.sopt.houme.domain.furniture.repository;
+
+import or.sopt.houme.domain.furniture.model.entity.CurationRawProduct;
+import or.sopt.houme.domain.furniture.model.entity.SoozipCategory;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
+
+import java.util.List;
+
+public interface CurationRawProductRepositoryCustom {
+    Page<CurationRawProduct> searchByKeyword(String keyword, Pageable pageable);
+
+    Slice<CurationRawProduct> findAllByCurationFilters(
+            String keyword,
+            List<Long> typeIds,
+            List<PriceRangeFilter> priceRanges,
+            List<String> colorNames,
+            Long cursor,
+            Pageable pageable,
+            List<Long> additionalProductIds
+    );
+
+    Slice<CurationRawProduct> findAllByCurationFiltersV2(
+            String keyword,
+            List<Long> typeIds,
+            List<PriceRangeFilter> priceRanges,
+            List<String> colorNames,
+            Long cursor,
+            Pageable pageable,
+            List<Long> additionalProductIds
+    );
+
+    Slice<CurationRawProduct> findAllByCurationFiltersRecommend(
+            List<Long> typeIds,
+            List<PriceRangeFilter> priceRanges,
+            List<String> colorNames,
+            Long cursor,
+            Pageable pageable,
+            List<Long> additionalProductIds
+    );
+
+    List<Long> findEtcProductIds(Long selectiveTypeId, List<Long> excludedFurnitureIds, Long etcDirectFurnitureId);
+
+    Page<CurationRawProduct> findExposedRawProductsExcludingLikedByUser(Long userId, Pageable pageable);
+    Long findMaxExposedRawProductIdExcludingLikedByUser(Long userId);
+    List<CurationRawProduct> findExposedRawProductsExcludingLikedByUserWithCursor(
+            Long userId,
+            Long cursor,
+            int size,
+            List<Long> excludedIds
+    );
+
+    List<CurationRawProduct> findExposedRawProductsExcludingLikedByUserByCategory(
+            Long userId,
+            SoozipCategory category,
+            int size,
+            List<Long> excludedIds
+    );
+
+    List<CurationRawProduct> findExposedRawProductsExcludingLikedByUserByFurnitureIds(
+            Long userId,
+            List<Long> furnitureIds,
+            SoozipCategory category,
+            int size,
+            List<Long> excludedIds
+    );
+
+    List<CurationRawProduct> findAllSimilarByFurnitureTypeIds(
+            List<Long> furnitureTypeIds,
+            List<Long> excludeRawProductIds,
+            Pageable pageable
+    );
+
+    List<CurationRawProduct> findAllSimilarByTagIds(
+            List<Long> tagIds,
+            List<Long> excludeRawProductIds,
+            Pageable pageable
+    );
+
+    List<CurationRawProduct> findAllSimilarByBrands(
+            List<String> brands,
+            List<Long> excludeRawProductIds,
+            Pageable pageable
+    );
+
+    record PriceRangeFilter(Long min, Long max) {}
+}

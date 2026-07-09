@@ -4,9 +4,16 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import or.sopt.houme.domain.generateImage.presentation.dto.request.BannerGenerateImageRequest;
 import or.sopt.houme.domain.generateImage.presentation.dto.request.GenerateImageRequest;
+import or.sopt.houme.domain.generateImage.presentation.dto.request.GenerateImageV4Request;
+import or.sopt.houme.domain.generateImage.presentation.dto.request.OtherStyleGenerateImageRequest;
+import or.sopt.houme.domain.generateImage.presentation.dto.request.ProductGenerateImageRequest;
+import or.sopt.houme.domain.generateImage.presentation.dto.response.BannerGenerateImageResponse;
+import or.sopt.houme.domain.generateImage.presentation.dto.response.GenerateImageV4Response;
 import or.sopt.houme.domain.generateImage.presentation.dto.response.ImageInfoListResponse;
 import or.sopt.houme.domain.generateImage.presentation.dto.response.ImageInfoResponse;
+import or.sopt.houme.domain.generateImage.presentation.dto.response.OtherStyleGenerateImageResponse;
 import or.sopt.houme.domain.generateImage.service.facade.GenerateImageFacade;
 import or.sopt.houme.domain.generateImage.service.facade.GenerateImageLikeFacade;
 import or.sopt.houme.domain.house.presentation.dto.request.IsLikeRequest;
@@ -101,6 +108,54 @@ public class GenerateImageController {
         ImageInfoListResponse imageInfoListResponse = generateImageFacade.generateImageBy2eaGemini(userDetails.getUser(), request);
 
         return ResponseEntity.ok(ApiResponse.ok(imageInfoListResponse));
+    }
+
+    @Operation(summary = "V4 이미지 생성 API",
+            description = "도면/뷰, 무드보드, 주요활동, 가구를 기반으로 Gemini 모델로 이미지 1장을 생성합니다.")
+    @PostMapping("/v4/generated-images/generate")
+    public ResponseEntity<ApiResponse<GenerateImageV4Response>> generateImageV4ByGemini(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @RequestBody @Valid GenerateImageV4Request request
+    ) {
+        GenerateImageV4Response response =
+                generateImageFacade.generateImageV4ByGemini(userDetails.getUser(), request);
+        return ResponseEntity.ok(ApiResponse.ok(response));
+    }
+
+    @Operation(summary = "배너 템플릿 기반 인테리어 이미지 생성 API",
+            description = "선택한 배너 템플릿/답변칩/도면 정보를 기반으로 Gemini 나노바나나 모델로 인테리어 이미지를 생성합니다.")
+    @PostMapping("/v1/generated-images/generate/banner")
+    public ResponseEntity<ApiResponse<BannerGenerateImageResponse>> generateBannerImageByGemini(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @RequestBody @Valid BannerGenerateImageRequest request
+    ) {
+        BannerGenerateImageResponse response =
+                generateImageFacade.generateBannerImageByGemini(userDetails.getUser(), request);
+        return ResponseEntity.ok(ApiResponse.ok(response));
+    }
+
+    @Operation(summary = "선택한 스타일 템플릿 기반 인테리어 이미지 생성 API",
+            description = "선택한 스타일 템플릿/도면 정보를 기반으로 Gemini 모델로 인테리어 이미지를 생성합니다.")
+    @PostMapping("/v1/generated-images/generate/other-style")
+    public ResponseEntity<ApiResponse<OtherStyleGenerateImageResponse>> generateOtherStyleImageByGemini(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @RequestBody @Valid OtherStyleGenerateImageRequest request
+    ) {
+        OtherStyleGenerateImageResponse response =
+                generateImageFacade.generateOtherStyleImageByGemini(userDetails.getUser(), request);
+        return ResponseEntity.ok(ApiResponse.ok(response));
+    }
+
+    @Operation(summary = "선택한 상품 기반 이미지 생성 API",
+            description = "도면/뷰와 선택한 상품 이미지(최대 6개)를 기반으로 Gemini 모델로 이미지 1장을 생성합니다.")
+    @PostMapping("/v1/generated-images/generate/products")
+    public ResponseEntity<ApiResponse<GenerateImageV4Response>> generateImageByProducts(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @RequestBody @Valid ProductGenerateImageRequest request
+    ) {
+        GenerateImageV4Response response =
+                generateImageFacade.generateImageByProducts(userDetails.getUser(), request);
+        return ResponseEntity.ok(ApiResponse.ok(response));
     }
 
     @Operation(summary = "이미지 생성 폴백 로직",
