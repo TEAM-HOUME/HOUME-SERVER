@@ -1,0 +1,163 @@
+# test 프로파일의 모든 컨텍스트에 Testcontainers(PostgreSQL/Redis)를 공급한다.
+# datasource/redis 접속 정보는 이 initializer 가 동적으로 주입한다.
+context:
+  initializer:
+    classes: or.sopt.houme.support.TestContainersInitializer
+
+spring:
+  application:
+    name: houme
+
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      # 테스트는 컨텍스트가 여러 개 캐시되므로 풀을 작게 유지해 PG max_connections 고갈을 막는다
+      maximum-pool-size: 4
+      minimum-idle: 1
+
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    properties:
+      hibernate:
+        format_sql: false
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        show_sql: false
+
+  security:
+    oauth2:
+      client:
+        registration:
+          kakao:
+            client-name: kakao
+            client-id: test-kakao-client-id
+            redirect-uri: http://localhost:8080/oauth/kakao/callback
+            authorization-grant-type: authorization_code
+            scope: profile_nickname,account_email
+            client-authentication-method: client_secret_post
+        provider:
+          kakao:
+            authorization-uri: https://kauth.kakao.com/oauth/authorize
+            token-uri: https://kauth.kakao.com/oauth/token
+            user-info-uri: https://kapi.kakao.com/v2/user/me
+            user-name-attribute: id
+
+  jwt:
+    header: Authorization
+    secret: test-jwt-secret-key-for-integration-tests-must-be-long-enough-0123456789
+    access-token-validity-in-seconds: 3600
+    refresh-token-validity-in-seconds: 2592000
+
+  web:
+    resources:
+      add-mappings: false
+
+openai:
+  api-key: test-openai-key
+  image:
+    model: gpt-image-1
+    n: 1
+    size: 1024x1024
+    quality: medium
+    background: auto
+    output-format: webp
+
+gemini:
+  api-key: test-gemini-key
+  api-base-url: http://localhost:65535
+  image:
+    model: gemini-3-pro-image-preview
+    size: 1024x1024
+
+naver:
+  client-id: test-naver-client-id
+  client-secret: test-naver-client-secret
+  allowed-malls: 테스트몰
+
+soozip:
+  base-url: http://localhost:65535
+
+discord:
+  webhook-url: http://localhost:65535/webhook
+
+cloud:
+  aws:
+    s3:
+      bucket: test-bucket
+      bucket-domain: https://test-bucket.example.com
+    credentials:
+      access-key: test-access-key
+      secret-key: test-secret-key
+    region:
+      static: ap-northeast-2
+      auto: false
+    stack:
+      auto: false
+
+server:
+  env: test
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus,metrics,env
+  metrics:
+    tags:
+      application: houme
+
+app:
+  cookie:
+    domain: ""
+    same-site: Lax
+    secure: false
+
+auth:
+  signup-token:
+    ttl-seconds: 600
+
+external:
+  image-api:
+    base-url: http://localhost:65535
+
+houme:
+  async:
+    image-generation:
+      mode: platform
+      platform:
+        core-size: 2
+        max-size: 4
+        queue-capacity: 10
+      virtual:
+        concurrency-limit: 4
+
+image:
+  cwebp:
+    path: /usr/bin/false
+    timeout-seconds: 5
+  sweep:
+    cron: "-"
+    max-source-bytes: 10485760
+
+resilience4j:
+  circuitbreaker:
+    instances:
+      imageClient:
+        registerHealthIndicator: true
+        slidingWindowSize: 10
+        minimumNumberOfCalls: 5
+        failureRateThreshold: 50
+        waitDurationInOpenState: 10s
+        permittedNumberOfCallsInHalfOpenState: 3
+        automaticTransitionFromOpenToHalfOpenEnabled: true
+
+feign:
+  client:
+    config:
+      default:
+        connectTimeout: 1000
+        readTimeout: 1000
+
+logging:
+  level:
+    or.sopt.houme.global.aop: INFO
