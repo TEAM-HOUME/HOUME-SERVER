@@ -5,12 +5,16 @@ import or.sopt.houme.domain.furniture.infrastructure.client.FastApiImageHashClie
 import or.sopt.houme.domain.furniture.infrastructure.client.NaverShopApiClient;
 import or.sopt.houme.domain.furniture.presentation.dto.ActivityItem;
 import or.sopt.houme.domain.furniture.presentation.dto.FurnitureItem;
+import or.sopt.houme.domain.furniture.presentation.dto.response.ActivityWithFurnitureResponse;
+import or.sopt.houme.domain.furniture.presentation.dto.response.FurnitureCategoryItem;
 import or.sopt.houme.domain.furniture.presentation.dto.response.FurnitureAndActivityResponse;
 import or.sopt.houme.domain.furniture.presentation.dto.response.FurnitureCategoriesResponse;
 import or.sopt.houme.domain.furniture.presentation.dto.response.FurnitureCategoryGroup;
+import or.sopt.houme.domain.furniture.model.entity.ActivityFurniture;
 import or.sopt.houme.domain.furniture.model.entity.Furniture;
 import or.sopt.houme.domain.furniture.model.entity.FurnitureTag;
 import or.sopt.houme.domain.furniture.model.entity.FurnitureType;
+import or.sopt.houme.domain.furniture.repository.ActivityFurnitureRepository;
 import or.sopt.houme.domain.furniture.repository.FurnitureRepository;
 import or.sopt.houme.domain.furniture.repository.FurnitureTagRepository;
 import or.sopt.houme.domain.furniture.repository.FurnitureTypeRepository;
@@ -37,49 +41,30 @@ import java.util.stream.Collectors;
 @Transactional(readOnly = true)
 public class FurnitureServiceImpl implements FurnitureService {
 
+    private static final Set<String> FUNNEL_EXCLUDED_TYPE_NAMEENGS = Set.of("ETC");
+    private static final Set<String> FUNNEL_EXCLUDED_FURNITURE_NAMEENGS = Set.of(
+            "CHAIR", "DRESSING_TABLE", "LIGHTING", "CLOSET", "ETC"
+    );
+
     private final FurnitureRepository furnitureRepository;
     private final UserRepository userRepository;
     private final TagRepository tagRepository;
     private final HouseRepository houseRepository;
     private final FurnitureTagRepository furnitureTagRepository;
     private final FurnitureTypeRepository furnitureTypeRepository;
+    private final ActivityFurnitureRepository activityFurnitureRepository;
 
     private final NaverShopApiClient naverShopApiClient;
     private final FastApiImageHashClient imageHashClient;
+
+    // [pbem22, 2026-05-28, #541] CurationRawProductFurniture 경로 폴백을 위해 추가
+    private final CurationRawProductFurnitureService curationRawProductFurnitureService;
 
     // 가구 반환
     @Cacheable(value = "furnitureAndActivityCache")
     @Override
     public FurnitureAndActivityResponse getFurnitureAndActivity() {
-
-        // 모든 카테고리 가져오기
-        List<FurnitureType> furnitureTypes = furnitureTypeRepository.findAll();
-
-        // findAllWithFurnitureType() 으로 N+1 방지
-        List<Furniture> furnitureList = furnitureRepository.findAllWithFurnitureType();
-
-        // FurnitureType 별로 그룹화
-        Map<Long, List<FurnitureItem>> furnitureByCategory = furnitureList.stream()
-                .collect(Collectors.groupingBy(
-                        furniture -> furniture.getFurnitureType().getId(),  // FurnitureType Id 가져오기
-                        Collectors.collectingAndThen(
-                                Collectors.mapping(FurnitureItem::from, Collectors.toList()),
-                                list -> {
-                                    list.sort(Comparator.comparing(FurnitureItem::id, Comparator.nullsLast(Comparator.naturalOrder())));     // FurnitureItem 리스트 id 기준으로 정렬
-                                    return list;
-                                }
-                        )
-                ));
-
-        // 각 FurnitureType에 해당하는 FurnitureGroup 생성
-        List<FurnitureCategoryGroup> list = furnitureTypes.stream()
-                .map(furnitureType -> {
-                    // 없으면 빈 리스트
-                    List<FurnitureItem> items = furnitureByCategory.getOrDefault(furnitureType.getId(), Collections.emptyList());
-                    return FurnitureCategoryGroup.from(furnitureType, items);
-                })
-                .sorted(Comparator.comparing(FurnitureCategoryGroup::categoryId)) // 카테고리 ID로 정렬
-                .toList();
+        List<FurnitureCategoryGroup> list = getDashboardCategories();
 
         // 주요 활동 담기
         List<ActivityItem> activities = Arrays.stream(Activity.values())
@@ -88,6 +73,74 @@ public class FurnitureServiceImpl implements FurnitureService {
 
         // 반환 Response 생성
         return FurnitureAndActivityResponse.of(activities, list);
+    }
+
+    @Override
+    public List<FurnitureCategoryGroup> getDashboardCategories() {
+        List<FurnitureType> furnitureTypes = furnitureTypeRepository.findAll().stream()
+                .filter(t -> t.getNameEng() == null || !FUNNEL_EXCLUDED_TYPE_NAMEENGS.contains(t.getNameEng().toUpperCase()))
+                .toList();
+
+        List<Furniture> furnitureList = furnitureRepository.findAllWithFurnitureType().stream()
+                .filter(f -> f.getFurnitureNameEng() == null || !FUNNEL_EXCLUDED_FURNITURE_NAMEENGS.contains(f.getFurnitureNameEng().toUpperCase()))
+                .toList();
+
+        // FurnitureType 별로 그룹화
+        Map<Long, List<FurnitureItem>> furnitureByCategory = furnitureList.stream()
+                .collect(Collectors.groupingBy(
+                        furniture -> furniture.getFurnitureType().getId(),  // FurnitureType Id 가져오기
+                        Collectors.collectingAndThen(
+                                Collectors.mapping(FurnitureItem::from, Collectors.toList()),
+                                list -> {
+                                    list.sort(
+                                            Comparator.comparing(
+                                                            FurnitureItem::priority,
+                                                            Comparator.nullsLast(Comparator.naturalOrder())
+                                                    )
+                                                    .thenComparing(FurnitureItem::id, Comparator.nullsLast(Comparator.naturalOrder()))
+                                    );
+                                    return list;
+                                }
+                        )
+                ));
+
+        // 각 FurnitureType에 해당하는 FurnitureGroup 생성
+        return furnitureTypes.stream()
+                .sorted(
+                        Comparator.comparing(
+                                        FurnitureType::getPriority,
+                                        Comparator.nullsLast(Comparator.naturalOrder())
+                                )
+                                .thenComparing(FurnitureType::getId, Comparator.nullsLast(Comparator.naturalOrder()))
+                )
+                .map(furnitureType -> {
+                    // 없으면 빈 리스트
+                    List<FurnitureCategoryItem> items = furnitureByCategory
+                            .getOrDefault(furnitureType.getId(), Collections.emptyList())
+                            .stream()
+                            .map(FurnitureCategoryItem::from)
+                            .toList();
+                    return FurnitureCategoryGroup.from(furnitureType, items);
+                })
+                .toList();
+    }
+
+    @Override
+    public List<ActivityWithFurnitureResponse> getActivityFurnitureMappings() {
+        List<ActivityFurniture> mappings = activityFurnitureRepository.findAllByOrderByPriorityAscIdAsc();
+        Map<Activity, List<FurnitureItem>> grouped = new LinkedHashMap<>();
+
+        for (ActivityFurniture mapping : mappings) {
+            grouped.computeIfAbsent(mapping.getActivity(), key -> new ArrayList<>())
+                    .add(FurnitureItem.from(mapping.getFurniture(), mapping.getPriority()));
+        }
+
+        return grouped.entrySet().stream()
+                .map(entry -> ActivityWithFurnitureResponse.of(
+                        entry.getKey(),
+                        entry.getValue()
+                ))
+                .toList();
     }
 
     @Override
@@ -107,17 +160,35 @@ public class FurnitureServiceImpl implements FurnitureService {
 
         // 5. 교집합으로 산출된 가구들과 스타일 태그에 해당하는 매핑 객체를 furniture_tags에서 조회
         List<FurnitureTag> matchedTags = furnitureTagRepository.findAllByTagIdAndFurnitureIn(tag.getId(), intersectedFurnitures);
+        return buildCategoryResponse(matchedTags);
+    }
 
-        // 6. priority 기준 오름차순 정렬 → 응답 DTO 변환
-        List<FurnitureCategoriesResponse.FurnitureCategoryResponse> categoryResponses = matchedTags.stream()
-                .sorted(Comparator.comparingInt(FurnitureTag::getPriority))
-                .map(ft -> FurnitureCategoriesResponse.FurnitureCategoryResponse.of(
-                        ft.getFurniture().getId(),
-                        ft.getFurniture().getFurnitureNameKr()
-                ))
+    @Override
+    public FurnitureCategoriesResponse getFurnitureCategoriesByStyleV2(User user, Long imageId) {
+
+        // 1. userId와 imageId로 해당하는 스타일 태그 조회
+        Tag tag = findTag(user, imageId);
+
+        // 2. userId와 imageId로 이미지 생성시 선택했던 가구들을 조회
+        List<Furniture> selectedFurnitures = findSelectedFurnitures(user, imageId);
+
+        // 3. 선택 가구들과 스타일 태그에 해당하는 매핑 객체를 furniture_tags에서 조회
+        List<FurnitureTag> matchedTags = furnitureTagRepository.findAllByTagIdAndFurnitureIn(tag.getId(), selectedFurnitures);
+
+        // [pbem22, 2026-05-28, #541] FurnitureTag 경로에 없는 가구도 CurationRawProductFurniture로 매핑된 경우 카테고리에 포함
+        List<Long> selectedFurnitureIds = selectedFurnitures.stream().map(Furniture::getId).toList();
+        Set<Long> taggedFurnitureIds = matchedTags.stream()
+                .map(ft -> ft.getFurniture().getId())
+                .collect(Collectors.toSet());
+        List<Long> extraFurnitureIds = curationRawProductFurnitureService
+                .getFurnitureIdsHavingProducts(selectedFurnitureIds).stream()
+                .filter(id -> !taggedFurnitureIds.contains(id))
                 .toList();
+        List<Furniture> extraFurnitures = extraFurnitureIds.isEmpty()
+                ? List.of()
+                : furnitureRepository.findAllById(extraFurnitureIds);
 
-        return FurnitureCategoriesResponse.of(categoryResponses);
+        return buildCategoryResponseWithExtra(matchedTags, extraFurnitures);
     }
 
     @Override
@@ -195,5 +266,44 @@ public class FurnitureServiceImpl implements FurnitureService {
                 .filter(f -> f.getFurnitureNameEng() != null
                         && keywords.contains(f.getFurnitureNameEng().toLowerCase()))
                 .toList();
+    }
+
+    private FurnitureCategoriesResponse buildCategoryResponse(List<FurnitureTag> matchedTags) {
+        List<FurnitureCategoriesResponse.FurnitureCategoryResponse> categoryResponses = matchedTags.stream()
+                .sorted(Comparator.comparingInt(FurnitureTag::getPriority))
+                .map(ft -> FurnitureCategoriesResponse.FurnitureCategoryResponse.of(
+                        ft.getFurniture().getId(),
+                        ft.getFurniture().getFurnitureNameKr()
+                ))
+                .toList();
+
+        return FurnitureCategoriesResponse.of(categoryResponses);
+    }
+
+    // [pbem22, 2026-05-28, #541] FurnitureTag 경로 카테고리 + CurationRawProductFurniture 경로 카테고리 합산 반환
+    private FurnitureCategoriesResponse buildCategoryResponseWithExtra(
+            List<FurnitureTag> matchedTags,
+            List<Furniture> extraFurnitures
+    ) {
+        List<FurnitureCategoriesResponse.FurnitureCategoryResponse> fromTags = matchedTags.stream()
+                .sorted(Comparator.comparingInt(FurnitureTag::getPriority))
+                .map(ft -> FurnitureCategoriesResponse.FurnitureCategoryResponse.of(
+                        ft.getFurniture().getId(),
+                        ft.getFurniture().getFurnitureNameKr()
+                ))
+                .toList();
+
+        List<FurnitureCategoriesResponse.FurnitureCategoryResponse> fromExtra = extraFurnitures.stream()
+                .map(f -> FurnitureCategoriesResponse.FurnitureCategoryResponse.of(
+                        f.getId(),
+                        f.getFurnitureNameKr()
+                ))
+                .toList();
+
+        List<FurnitureCategoriesResponse.FurnitureCategoryResponse> combined = new ArrayList<>();
+        combined.addAll(fromTags);
+        combined.addAll(fromExtra);
+
+        return FurnitureCategoriesResponse.of(combined);
     }
 }

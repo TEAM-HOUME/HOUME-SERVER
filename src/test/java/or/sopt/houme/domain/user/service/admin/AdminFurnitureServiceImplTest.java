@@ -212,6 +212,39 @@ class AdminFurnitureServiceImplTest {
         assertThat(result.tagNameKr()).containsExactly("모던", "미니멀");
     }
 
+    @Test
+    @DisplayName("getFurnitureTagsByType()는 가구 타입에 연결된 furniture_tag 목록을 조회한다")
+    void getFurnitureTagsByType_success() {
+        // given
+        Tag tag = Tag.builder().id(1L).tagNameKr("유니크 비비드").build();
+        Furniture furniture = Furniture.builder()
+                .id(10L)
+                .furnitureNameKr("침대")
+                .furnitureType(bedType)
+                .build();
+        FurnitureTag furnitureTag = FurnitureTag.builder()
+                .id(100L)
+                .furniture(furniture)
+                .tag(tag)
+                .searchKeyword("비비드 침대")
+                .priority(1)
+                .build();
+
+        when(furnitureTypeRepository.findById(1L)).thenReturn(Optional.of(bedType));
+        when(furnitureTagRepository.findAllByFurnitureTypeIdWithFurnitureAndTag(1L)).thenReturn(List.of(furnitureTag));
+
+        // when
+        AdminFurnitureTagOptionListResponse result = adminFurnitureService.getFurnitureTagsByType(1L);
+
+        // then
+        assertThat(result.furnitureTags()).hasSize(1);
+        assertThat(result.furnitureTags().get(0).furnitureTagId()).isEqualTo(100L);
+        assertThat(result.furnitureTags().get(0).furnitureTypeId()).isEqualTo(1L);
+        assertThat(result.furnitureTags().get(0).furnitureTypeNameKr()).isEqualTo("침대");
+        assertThat(result.furnitureTags().get(0).furnitureNameKr()).isEqualTo("침대");
+        assertThat(result.furnitureTags().get(0).tagNameKr()).isEqualTo("유니크 비비드");
+    }
+
 
     @Test
     @DisplayName("updateFurniture()는 가구 정보를 성공적으로 업데이트한다")

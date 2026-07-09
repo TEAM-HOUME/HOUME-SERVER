@@ -133,6 +133,35 @@ class AdminFurnitureControllerTest {
                 .andExpect(jsonPath("$.data.tagNameKr[1]").value("미니멀"));
     }
 
+    @Test
+    @DisplayName("GET /api/v1/admin/furniture/types/{furnitureTypeId}/tags 요청으로 타입별 furniture_tag를 조회할 수 있다")
+    void getFurnitureTagsByType_success() throws Exception {
+        // given
+        AdminFurnitureTagOptionResponse option = new AdminFurnitureTagOptionResponse(
+                100L,
+                10L,
+                "침대",
+                1L,
+                "침대",
+                8L,
+                "유니크 비비드",
+                "비비드 침대",
+                1
+        );
+        AdminFurnitureTagOptionListResponse response = new AdminFurnitureTagOptionListResponse(List.of(option));
+        when(adminFurnitureService.getFurnitureTagsByType(1L)).thenReturn(response);
+
+        // when & then
+        mockMvc.perform(get("/api/v1/admin/furniture/types/1/tags"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value(200))
+                .andExpect(jsonPath("$.msg").value("응답 성공"))
+                .andExpect(jsonPath("$.data.furnitureTags[0].furnitureTagId").value(100L))
+                .andExpect(jsonPath("$.data.furnitureTags[0].furnitureTypeId").value(1L))
+                .andExpect(jsonPath("$.data.furnitureTags[0].furnitureNameKr").value("침대"))
+                .andExpect(jsonPath("$.data.furnitureTags[0].tagNameKr").value("유니크 비비드"));
+    }
+
 
     @Test
     @DisplayName("PATCH /api/v1/admin/furniture 요청으로 가구 정보를 수정할 수 있다 (presigned URL 옵션)")

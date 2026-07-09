@@ -1,12 +1,36 @@
 package or.sopt.houme.domain.user.service;
 
+import or.sopt.houme.domain.banner.model.entity.Banner;
+import or.sopt.houme.domain.banner.model.entity.BannerCurationRawProduct;
+import or.sopt.houme.domain.banner.model.entity.BannerType;
+import or.sopt.houme.domain.banner.repository.BannerRepository;
 import or.sopt.houme.domain.credit.model.entity.Credit;
 import or.sopt.houme.domain.credit.repository.CreditRepository;
+import or.sopt.houme.domain.furniture.model.entity.CurationRawProduct;
+import or.sopt.houme.domain.furniture.model.entity.CurationRawProductColor;
+import or.sopt.houme.domain.furniture.model.entity.CurationSource;
+import or.sopt.houme.domain.furniture.model.entity.Furniture;
+import or.sopt.houme.domain.furniture.model.entity.Jjym;
+import or.sopt.houme.domain.furniture.model.entity.RecommendFurniture;
+import or.sopt.houme.domain.furniture.model.entity.SoozipCategory;
+import or.sopt.houme.domain.furniture.repository.CurationRawProductColorRepository;
+import or.sopt.houme.domain.furniture.repository.JjymRepository;
+import or.sopt.houme.domain.furniture.repository.RecommendFurnitureRepository;
 import or.sopt.houme.domain.generateImage.model.entity.GenerateImage;
+import or.sopt.houme.domain.generateImage.model.entity.GenerateImageRawProduct;
+import or.sopt.houme.domain.generateImage.model.entity.GenerateImageType;
+import or.sopt.houme.domain.generateImage.repository.GenerateImageRawProductRepository;
 import or.sopt.houme.domain.generateImage.repository.GenerateImageRepository;
+import or.sopt.houme.domain.generateImage.repository.GenerateImageUsedProductRepository;
 import or.sopt.houme.domain.house.model.entity.House;
+import or.sopt.houme.domain.house.model.entity.mapping.HouseFloorPlan;
+import or.sopt.houme.domain.house.model.entity.mapping.HouseFurniture;
 import or.sopt.houme.domain.house.model.entity.enums.Equilibrium;
 import or.sopt.houme.domain.house.model.entity.enums.Form;
+import or.sopt.houme.domain.house.model.entity.enums.Structure;
+import or.sopt.houme.domain.house.model.floorPlan.entity.FloorPlan;
+import or.sopt.houme.domain.house.repository.HouseFloorPlanRepository;
+import or.sopt.houme.domain.house.repository.HouseFurnitureRepository;
 import or.sopt.houme.domain.house.repository.HouseRepository;
 import or.sopt.houme.domain.preference.model.entity.GenerateImagePreference;
 import or.sopt.houme.domain.preference.model.entity.Preference;
@@ -25,7 +49,10 @@ import or.sopt.houme.global.api.handler.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.test.util.ReflectionTestUtils;
 
+import java.time.LocalDateTime;
 import java.time.LocalDate;
 import java.util.Collections;
 import java.util.List;
@@ -42,6 +69,8 @@ class UserServiceImplTest {
 
     private final UserRepository userRepository = mock(UserRepository.class);
     private final HouseRepository houseRepository = mock(HouseRepository.class);
+    private final HouseFloorPlanRepository houseFloorPlanRepository = mock(HouseFloorPlanRepository.class);
+    private final HouseFurnitureRepository houseFurnitureRepository = mock(HouseFurnitureRepository.class);
     private final TagRepository tagRepository = mock(TagRepository.class);
     private final GenerateImageRepository generateImageRepository = mock(GenerateImageRepository.class);
     private final CreditRepository creditRepository = mock(CreditRepository.class);
@@ -49,17 +78,35 @@ class UserServiceImplTest {
     private final FactorRepository factorRepository = mock(FactorRepository.class);
     private final PreferenceRepository preferenceRepository = mock(PreferenceRepository.class);
     private final PreferenceFactorRepository preferenceFactorRepository = mock(PreferenceFactorRepository.class);
+    private final BannerRepository bannerRepository = mock(BannerRepository.class);
+    private final GenerateImageRawProductRepository generateImageRawProductRepository = mock(GenerateImageRawProductRepository.class);
+    private final GenerateImageUsedProductRepository generateImageUsedProductRepository = mock(GenerateImageUsedProductRepository.class);
+    private final RecommendFurnitureRepository recommendFurnitureRepository = mock(RecommendFurnitureRepository.class);
+    private final JjymRepository jjymRepository = mock(JjymRepository.class);
+    private final CurationRawProductColorRepository curationRawProductColorRepository = mock(CurationRawProductColorRepository.class);
+    private final NicknameService nicknameService = mock(NicknameService.class);
+    private final UserNicknameTagTransactionService userNicknameTagTransactionService = mock(UserNicknameTagTransactionService.class);
 
     private final UserServiceImpl userService = new UserServiceImpl(
             userRepository,
             houseRepository,
+            houseFloorPlanRepository,
+            houseFurnitureRepository,
             tagRepository,
             generateImageRepository,
             creditRepository,
             generateImagePreferenceRepository,
             factorRepository,
             preferenceRepository,
-            preferenceFactorRepository
+            preferenceFactorRepository,
+            bannerRepository,
+            generateImageRawProductRepository,
+            generateImageUsedProductRepository,
+            recommendFurnitureRepository,
+            jjymRepository,
+            curationRawProductColorRepository,
+            nicknameService,
+            userNicknameTagTransactionService
             );
 
     private User user;
@@ -75,9 +122,8 @@ class UserServiceImplTest {
                 .build();
 
         house = House.builder()
+                .id(20L)
                 .user(user)
-                .form(Form.APARTMENT)
-                .equilibrium(Equilibrium.UNDER_5)
                 .build();
 
         tag = Tag.builder()
@@ -88,7 +134,9 @@ class UserServiceImplTest {
                 .id(100L)
                 .url("https://cdn.com/image.png")
                 .house(house)
+                .generationType(GenerateImageType.FULL_FUNNEL)
                 .build();
+        ReflectionTestUtils.setField(generateImage, "createdAt", LocalDateTime.of(2026, 3, 24, 10, 0));
     }
 
     @Test
@@ -123,6 +171,10 @@ class UserServiceImplTest {
     void getUserImageHistoryList_MultipleGenerateImages_ReturnsFirst() {
         // given
         Long userId = user.getId();
+        FloorPlan floorPlan = FloorPlan.builder()
+                .form(Form.APARTMENT)
+                .equilibrium(Equilibrium.UNDER_5)
+                .build();
 
         given(userRepository.findById(userId))
                 .willReturn(Optional.of(user));
@@ -151,6 +203,8 @@ class UserServiceImplTest {
         // 3. 대표 태그 반환
         given(tagRepository.findMostFrequentTagByHouseId(house.getId()))
                 .willReturn(Optional.ofNullable(tag));
+        given(houseFloorPlanRepository.findHouseFloorPlanByHouseId(house.getId()))
+                .willReturn(Optional.of(HouseFloorPlan.builder().house(house).floorPlan(floorPlan).isReverse(false).build()));
 
         // when
         UserImageHistoryListResponse response = userService.getUserImageHistoryList(user);
@@ -181,7 +235,10 @@ class UserServiceImplTest {
 
         House house = House.builder()
                 .id(houseId)
+                .build();
+        FloorPlan floorPlan = FloorPlan.builder()
                 .form(Form.OFFICETEL)
+                .structure(Structure.OPEN_ONE_ROOM)
                 .equilibrium(Equilibrium.UNDER_5)
                 .build();
 
@@ -193,12 +250,14 @@ class UserServiceImplTest {
                 .id(1L)
                 .url("https://example.com/image1.png")
                 .house(house)
+                .generationType(GenerateImageType.FULL_FUNNEL)
                 .build();
 
         GenerateImage generateImage2 = GenerateImage.builder()
                 .id(2L)
                 .url("https://example.com/image2.png")
                 .house(house)
+                .generationType(GenerateImageType.FULL_FUNNEL)
                 .build();
 
         GenerateImagePreference generateImagePreference1 = GenerateImagePreference.builder()
@@ -217,6 +276,8 @@ class UserServiceImplTest {
         // generateImages 리스트 2개 반환
         given(generateImageRepository.findGenerateImagesByHouseId(house.getId()))
                 .willReturn(List.of(generateImage1, generateImage2));
+        given(houseFloorPlanRepository.findHouseFloorPlanByHouseId(house.getId()))
+                .willReturn(Optional.of(HouseFloorPlan.builder().house(house).floorPlan(floorPlan).isReverse(false).build()));
 
         given(generateImagePreferenceRepository.findFirstByGenerateImageIdOrderByIdDesc(generateImage1.getId()))
                 .willReturn(Optional.of(generateImagePreference1));
@@ -243,7 +304,7 @@ class UserServiceImplTest {
         // 공통 속성 검증
         response.histories().forEach(history -> {
             assertThat(history.equilibrium()).isEqualTo("5평 이하");
-            assertThat(history.houseForm()).isEqualTo("OFFICETEL");
+            assertThat(history.houseForm()).isEqualTo("오피스텔");
             assertThat(history.tasteTag()).isEqualTo("모던");
             assertThat(history.name()).isEqualTo("테스트유저");
             assertThat(history.isLike()).isTrue();
@@ -304,6 +365,344 @@ class UserServiceImplTest {
     }
 
     @Test
+    @DisplayName("마이페이지 생성 이미지 이력 v2 조회 성공 - 배너/일반 생성 이미지를 날짜별로 묶어 반환한다")
+    void getUserGeneratedImageHistoryListV2_success() {
+        // given
+        given(userRepository.findById(user.getId())).willReturn(Optional.of(user));
+
+        CurationRawProduct bannerRawProduct = CurationRawProduct.builder()
+                .id(101L)
+                .source("soozip")
+                .category(SoozipCategory.FURNITURE)
+                .productId(1001L)
+                .productImageUrl("https://cdn.com/banner-product.png")
+                .productSiteUrl("https://mall/banner-product")
+                .productName("배너 가구")
+                .listPrice(100000L)
+                .discountRate(10)
+                .discountPrice(90000L)
+                .fetchedAt(LocalDateTime.of(2026, 3, 24, 9, 0))
+                .build();
+
+        Banner banner = Banner.builder()
+                .id(11L)
+                .bannerType(BannerType.BANNER)
+                .bannerImageUrl("https://cdn.com/banner.png")
+                .bannerTitle("테스트 배너")
+                .bannerRawProducts(new java.util.ArrayList<>())
+                .build();
+        banner.getBannerRawProducts().add(BannerCurationRawProduct.of(banner, bannerRawProduct));
+
+        House houseWithBanner = House.builder()
+                .id(21L)
+                .activity(house.getActivity())
+                .user(user)
+                .banner(banner)
+                .isValid(true)
+                .build();
+
+        GenerateImage bannerImage = GenerateImage.builder()
+                .id(201L)
+                .url("https://cdn.com/banner-image.png")
+                .house(houseWithBanner)
+                .generationType(GenerateImageType.BANNER)
+                .build();
+        ReflectionTestUtils.setField(bannerImage, "createdAt", LocalDateTime.of(2026, 3, 24, 11, 0));
+
+        CurationRawProduct regularRawProduct = CurationRawProduct.builder()
+                .id(102L)
+                .source("soozip")
+                .category(SoozipCategory.FURNITURE)
+                .productId(1002L)
+                .productImageUrl("https://cdn.com/regular-product.png")
+                .productSiteUrl("https://mall/regular-product")
+                .productName("일반 가구")
+                .listPrice(200000L)
+                .discountRate(15)
+                .discountPrice(170000L)
+                .fetchedAt(LocalDateTime.of(2026, 3, 24, 9, 30))
+                .build();
+
+        GenerateImage productImage = GenerateImage.builder()
+                .id(202L)
+                .url("https://cdn.com/regular-image.png")
+                .house(house)
+                .generationType(GenerateImageType.PRODUCT)
+                .build();
+        ReflectionTestUtils.setField(productImage, "createdAt", LocalDateTime.of(2026, 3, 24, 10, 0));
+
+        given(generateImageRepository.findAllByUserIdWithHouseAndBanner(user.getId()))
+                .willReturn(List.of(bannerImage, productImage));
+        given(bannerRepository.findAllByIdInWithRawProducts(List.of(11L)))
+                .willReturn(List.of(banner));
+        given(generateImageRawProductRepository.findAllByGenerateImageIdInWithRawProduct(List.of(202L)))
+                .willReturn(List.of(GenerateImageRawProduct.of(productImage, regularRawProduct, 1)));
+        given(houseFloorPlanRepository.findAllByHouseIdIn(List.of(21L, house.getId())))
+                .willReturn(List.of(
+                        HouseFloorPlan.builder().house(houseWithBanner).isReverse(true).build(),
+                        HouseFloorPlan.builder().house(house).isReverse(false).build()
+                ));
+
+        CurationRawProductColor bannerColor = CurationRawProductColor.builder()
+                .id(1L)
+                .curationRawProduct(bannerRawProduct)
+                .rawColorName("화이트")
+                .clientColorName("화이트")
+                .build();
+        CurationRawProductColor regularColor = CurationRawProductColor.builder()
+                .id(2L)
+                .curationRawProduct(regularRawProduct)
+                .rawColorName("우드")
+                .clientColorName("우드")
+                .build();
+        given(curationRawProductColorRepository.findAllByCurationRawProductIdIn(List.of(101L, 102L)))
+                .willReturn(List.of(bannerColor, regularColor));
+
+        RecommendFurniture bannerRecommendFurniture = RecommendFurniture.builder()
+                .id(501L)
+                .furnitureProductId(1001L)
+                .source(CurationSource.RAW)
+                .build();
+        RecommendFurniture regularRecommendFurniture = RecommendFurniture.builder()
+                .id(502L)
+                .furnitureProductId(1002L)
+                .source(CurationSource.RAW)
+                .build();
+        given(recommendFurnitureRepository.findAllBySourceAndFurnitureProductIdIn(CurationSource.RAW, List.of(1001L, 1002L)))
+                .willReturn(List.of(bannerRecommendFurniture, regularRecommendFurniture));
+
+        Jjym jjym = Jjym.builder()
+                .id(1L)
+                .user(user)
+                .recommendFurniture(regularRecommendFurniture)
+                .build();
+        given(jjymRepository.findAllByUserIdAndRecommendFurnitureIdIn(user.getId(), List.of(501L, 502L)))
+                .willReturn(List.of(jjym));
+
+        // when
+        MyPageGeneratedImageV2Response response = userService.getUserGeneratedImageHistoryListV2(user);
+
+        // then
+        assertThat(response.groups()).hasSize(1);
+        MyPageGeneratedImageV2Response.DateGroupResponse group = response.groups().get(0);
+        assertThat(group.date()).isEqualTo(LocalDate.of(2026, 3, 24));
+        assertThat(group.items()).hasSize(2);
+
+        MyPageGeneratedImageV2Response.ItemResponse firstItem = group.items().get(0);
+        assertThat(firstItem.viewType()).isEqualTo(MyPageGeneratedImageV2Response.ViewType.BANNER);
+        assertThat(firstItem.bannerTitle()).isEqualTo("테스트 배너");
+        assertThat(firstItem.productSummaryText()).isEqualTo("배너 가구로 생성된 이미지");
+        assertThat(firstItem.isMirror()).isTrue();
+        assertThat(firstItem.usedProducts()).hasSize(1);
+        assertThat(firstItem.usedProducts().get(0).isJjym()).isFalse();
+
+        MyPageGeneratedImageV2Response.ItemResponse secondItem = group.items().get(1);
+        assertThat(secondItem.viewType()).isEqualTo(MyPageGeneratedImageV2Response.ViewType.PRODUCT);
+        assertThat(secondItem.bannerTitle()).isNull();
+        assertThat(secondItem.productSummaryText()).isEqualTo("일반 가구로 생성된 이미지");
+        assertThat(secondItem.isMirror()).isFalse();
+        assertThat(secondItem.usedProducts()).hasSize(1);
+        assertThat(secondItem.usedProducts().get(0).isJjym()).isTrue();
+        assertThat(secondItem.usedProducts().get(0).colors()).containsExactly("우드");
+    }
+
+    @Test
+    @DisplayName("마이페이지 생성 이미지 이력 v2 조회 시 FULL_FUNNEL은 선택 가구 기반 fallback 제목을 반환한다")
+    void getUserGeneratedImageHistoryListV2_fullFunnelFallbackSummary_success() {
+        given(userRepository.findById(user.getId())).willReturn(Optional.of(user));
+
+        House fullFunnelHouse = House.builder()
+                .id(31L)
+                .user(user)
+                .isValid(true)
+                .build();
+
+        GenerateImage fullFunnelImage = GenerateImage.builder()
+                .id(301L)
+                .url("https://cdn.com/full-funnel-image.png")
+                .house(fullFunnelHouse)
+                .generationType(GenerateImageType.FULL_FUNNEL)
+                .build();
+        ReflectionTestUtils.setField(fullFunnelImage, "createdAt", LocalDateTime.of(2026, 3, 25, 9, 0));
+
+        Furniture desk = Furniture.builder()
+                .id(1L)
+                .furnitureNameKr("업무용 책상")
+                .build();
+        Furniture chair = Furniture.builder()
+                .id(2L)
+                .furnitureNameKr("의자")
+                .build();
+
+        given(generateImageRepository.findAllByUserIdWithHouseAndBanner(user.getId()))
+                .willReturn(List.of(fullFunnelImage));
+        given(houseFloorPlanRepository.findAllByHouseIdIn(List.of(31L)))
+                .willReturn(List.of(HouseFloorPlan.builder().house(fullFunnelHouse).isReverse(false).build()));
+        given(generateImageRawProductRepository.findAllByGenerateImageIdInWithRawProduct(List.of(301L)))
+                .willReturn(List.of());
+        given(generateImageUsedProductRepository.findAllByGenerateImageIdInWithRawProduct(List.of(301L)))
+                .willReturn(List.of());
+        given(houseFurnitureRepository.findAllByHouseIdInWithFurniture(List.of(31L)))
+                .willReturn(List.of(
+                        HouseFurniture.builder().id(1L).house(fullFunnelHouse).furniture(desk).build(),
+                        HouseFurniture.builder().id(2L).house(fullFunnelHouse).furniture(chair).build()
+                ));
+
+        MyPageGeneratedImageV2Response response = userService.getUserGeneratedImageHistoryListV2(user);
+
+        assertThat(response.groups()).hasSize(1);
+        MyPageGeneratedImageV2Response.ItemResponse item = response.groups().get(0).items().get(0);
+        assertThat(item.viewType()).isEqualTo(MyPageGeneratedImageV2Response.ViewType.FULL_FUNNEL);
+        assertThat(item.bannerTitle()).isNull();
+        assertThat(item.productSummaryText()).isEqualTo("업무용 책상 외 1개 가구로 생성된 이미지");
+        assertThat(item.usedProducts()).isEmpty();
+    }
+
+    @Test
+    @DisplayName("FULL_FUNNEL에 raw product가 있으면 선택 가구 fallback 대신 raw product 제목을 사용한다")
+    void getUserGeneratedImageHistoryListV2_fullFunnelWithRawProducts_usesRawProducts() {
+        given(userRepository.findById(user.getId())).willReturn(Optional.of(user));
+
+        House fullFunnelHouse = House.builder()
+                .id(32L)
+                .user(user)
+                .isValid(true)
+                .build();
+
+        GenerateImage fullFunnelImage = GenerateImage.builder()
+                .id(302L)
+                .url("https://cdn.com/full-funnel-raw.png")
+                .house(fullFunnelHouse)
+                .generationType(GenerateImageType.FULL_FUNNEL)
+                .build();
+        ReflectionTestUtils.setField(fullFunnelImage, "createdAt", LocalDateTime.of(2026, 3, 25, 10, 0));
+
+        CurationRawProduct rawProduct = CurationRawProduct.builder()
+                .id(501L)
+                .source("soozip")
+                .category(SoozipCategory.FURNITURE)
+                .productId(2001L)
+                .productImageUrl("https://cdn.com/raw.png")
+                .productSiteUrl("https://mall/raw")
+                .productName("실제 상품")
+                .fetchedAt(LocalDateTime.of(2026, 3, 25, 8, 0))
+                .build();
+
+        Furniture desk = Furniture.builder()
+                .id(1L)
+                .furnitureNameKr("업무용 책상")
+                .build();
+
+        given(generateImageRepository.findAllByUserIdWithHouseAndBanner(user.getId()))
+                .willReturn(List.of(fullFunnelImage));
+        given(houseFloorPlanRepository.findAllByHouseIdIn(List.of(32L)))
+                .willReturn(List.of(HouseFloorPlan.builder().house(fullFunnelHouse).isReverse(false).build()));
+        given(generateImageRawProductRepository.findAllByGenerateImageIdInWithRawProduct(List.of(302L)))
+                .willReturn(List.of(GenerateImageRawProduct.of(fullFunnelImage, rawProduct, 1)));
+        given(curationRawProductColorRepository.findAllByCurationRawProductIdIn(List.of(501L)))
+                .willReturn(List.of());
+        given(recommendFurnitureRepository.findAllBySourceAndFurnitureProductIdIn(CurationSource.RAW, List.of(2001L)))
+                .willReturn(List.of());
+        given(houseFurnitureRepository.findAllByHouseIdInWithFurniture(anyList()))
+                .willReturn(List.of(HouseFurniture.builder().id(1L).house(fullFunnelHouse).furniture(desk).build()));
+
+        MyPageGeneratedImageV2Response response = userService.getUserGeneratedImageHistoryListV2(user);
+
+        MyPageGeneratedImageV2Response.ItemResponse item = response.groups().get(0).items().get(0);
+        assertThat(item.productSummaryText()).isEqualTo("실제 상품로 생성된 이미지");
+        then(houseFurnitureRepository).should(never()).findAllByHouseIdInWithFurniture(anyList());
+    }
+
+    @Test
+    @DisplayName("FULL_FUNNEL에 raw product도 선택 가구도 없으면 productSummaryText는 null이다")
+    void getUserGeneratedImageHistoryListV2_fullFunnelWithoutAnyProducts_returnsNullSummary() {
+        given(userRepository.findById(user.getId())).willReturn(Optional.of(user));
+
+        House fullFunnelHouse = House.builder()
+                .id(33L)
+                .user(user)
+                .isValid(true)
+                .build();
+
+        GenerateImage fullFunnelImage = GenerateImage.builder()
+                .id(303L)
+                .url("https://cdn.com/full-funnel-empty.png")
+                .house(fullFunnelHouse)
+                .generationType(GenerateImageType.FULL_FUNNEL)
+                .build();
+        ReflectionTestUtils.setField(fullFunnelImage, "createdAt", LocalDateTime.of(2026, 3, 25, 11, 0));
+
+        given(generateImageRepository.findAllByUserIdWithHouseAndBanner(user.getId()))
+                .willReturn(List.of(fullFunnelImage));
+        given(houseFloorPlanRepository.findAllByHouseIdIn(List.of(33L)))
+                .willReturn(List.of(HouseFloorPlan.builder().house(fullFunnelHouse).isReverse(false).build()));
+        given(generateImageRawProductRepository.findAllByGenerateImageIdInWithRawProduct(List.of(303L)))
+                .willReturn(List.of());
+        given(generateImageUsedProductRepository.findAllByGenerateImageIdInWithRawProduct(List.of(303L)))
+                .willReturn(List.of());
+        given(houseFurnitureRepository.findAllByHouseIdInWithFurniture(List.of(33L)))
+                .willReturn(List.of());
+
+        MyPageGeneratedImageV2Response response = userService.getUserGeneratedImageHistoryListV2(user);
+
+        MyPageGeneratedImageV2Response.ItemResponse item = response.groups().get(0).items().get(0);
+        assertThat(item.productSummaryText()).isNull();
+    }
+
+    @Test
+    @DisplayName("FULL_FUNNEL fallback은 공백 이름을 가구로 대체하고 중복 가구명은 제거한다")
+    void getUserGeneratedImageHistoryListV2_fullFunnelFallback_deduplicatesAndUsesGenericName() {
+        given(userRepository.findById(user.getId())).willReturn(Optional.of(user));
+
+        House fullFunnelHouse = House.builder()
+                .id(34L)
+                .user(user)
+                .isValid(true)
+                .build();
+
+        GenerateImage fullFunnelImage = GenerateImage.builder()
+                .id(304L)
+                .url("https://cdn.com/full-funnel-dup.png")
+                .house(fullFunnelHouse)
+                .generationType(GenerateImageType.FULL_FUNNEL)
+                .build();
+        ReflectionTestUtils.setField(fullFunnelImage, "createdAt", LocalDateTime.of(2026, 3, 25, 12, 0));
+
+        Furniture blankNameFurniture = Furniture.builder()
+                .id(1L)
+                .furnitureNameKr(" ")
+                .build();
+        Furniture duplicateDesk1 = Furniture.builder()
+                .id(2L)
+                .furnitureNameKr("책상")
+                .build();
+        Furniture duplicateDesk2 = Furniture.builder()
+                .id(3L)
+                .furnitureNameKr("책상")
+                .build();
+
+        given(generateImageRepository.findAllByUserIdWithHouseAndBanner(user.getId()))
+                .willReturn(List.of(fullFunnelImage));
+        given(houseFloorPlanRepository.findAllByHouseIdIn(List.of(34L)))
+                .willReturn(List.of(HouseFloorPlan.builder().house(fullFunnelHouse).isReverse(false).build()));
+        given(generateImageRawProductRepository.findAllByGenerateImageIdInWithRawProduct(List.of(304L)))
+                .willReturn(List.of());
+        given(generateImageUsedProductRepository.findAllByGenerateImageIdInWithRawProduct(List.of(304L)))
+                .willReturn(List.of());
+        given(houseFurnitureRepository.findAllByHouseIdInWithFurniture(List.of(34L)))
+                .willReturn(List.of(
+                        HouseFurniture.builder().id(1L).house(fullFunnelHouse).furniture(blankNameFurniture).build(),
+                        HouseFurniture.builder().id(2L).house(fullFunnelHouse).furniture(duplicateDesk1).build(),
+                        HouseFurniture.builder().id(3L).house(fullFunnelHouse).furniture(duplicateDesk2).build()
+                ));
+
+        MyPageGeneratedImageV2Response response = userService.getUserGeneratedImageHistoryListV2(user);
+
+        MyPageGeneratedImageV2Response.ItemResponse item = response.groups().get(0).items().get(0);
+        assertThat(item.productSummaryText()).isEqualTo("가구 외 1개 가구로 생성된 이미지");
+    }
+
+    @Test
     @DisplayName("성공적으로_유저정보를_업데이트한다")
     void updateUser_success() {
         // given
@@ -335,6 +734,7 @@ class UserServiceImplTest {
 
         // then
         assertEquals("New Name", dbUser.getName());
+        assertEquals(null, dbUser.getNickname());
         assertEquals(Gender.MALE, dbUser.getGender());
         assertEquals(LocalDate.of(2000, 5, 15), dbUser.getBirthday());
     }
@@ -371,11 +771,12 @@ class UserServiceImplTest {
 
         // then
         assertEquals("New Name", dbUser.getName());
+        assertEquals(null, dbUser.getNickname());
         assertEquals(Gender.MALE, dbUser.getGender());
         assertEquals(LocalDate.of(2000, 5, 15), dbUser.getBirthday());
 
         verify(creditRepository, times(1))
-                .saveAll(argThat(credits -> credits instanceof java.util.Collection<?> c && c.size() == 1));
+                .saveAll(argThat(credits -> credits instanceof java.util.Collection<?> c && c.size() == 5));
     }
 
 
@@ -411,6 +812,209 @@ class UserServiceImplTest {
         ))
                 .isInstanceOf(CreditException.class)
                 .hasMessageContaining("크레딧 생성 과정 중 예외가 발생하였습니다.");
+    }
+
+    @Test
+    @DisplayName("v2 회원가입은 닉네임 필드를 함께 업데이트한다")
+    void updateUserV2_success() {
+        // given
+        User inputUser = User.builder().id(1L).build();
+
+        User dbUser = User.builder()
+                .id(1L)
+                .name(null)
+                .nickname(null)
+                .birthday(null)
+                .gender(null)
+                .build();
+
+        given(userRepository.findById(1L)).willReturn(Optional.of(dbUser));
+        given(nicknameService.generateNicknameTag("새닉네임")).willReturn("#1234");
+        given(userNicknameTagTransactionService.completeUserSignUpV2(
+                1L,
+                "새닉네임",
+                "#1234",
+                Gender.MALE,
+                LocalDate.of(2000, 5, 15)
+        )).willAnswer(invocation -> {
+            dbUser.updateUserFromSignUpV2("새닉네임", "#1234", LocalDate.of(2000, 5, 15), Gender.MALE);
+            return dbUser.getDisplayName();
+        });
+
+        // when
+        userService.updateUserV2(inputUser, "새닉네임", Gender.MALE, LocalDate.of(2000, 5, 15));
+
+        // then
+        assertEquals("새닉네임", dbUser.getName());
+        assertEquals("새닉네임", dbUser.getNickname());
+        assertEquals("#1234", dbUser.getNicknameTag());
+        assertEquals(Gender.MALE, dbUser.getGender());
+        assertEquals(LocalDate.of(2000, 5, 15), dbUser.getBirthday());
+    }
+
+    @Test
+    @DisplayName("updateUserV2는 닉네임 태그 유니크 충돌이 나면 재시도한다")
+    void updateUserV2_retryOnNicknameTagConstraintViolation() {
+        User inputUser = User.builder().id(1L).build();
+        User dbUser = User.builder().id(1L).build();
+
+        given(userRepository.findById(1L)).willReturn(Optional.of(dbUser));
+        given(nicknameService.generateNicknameTag("새닉네임"))
+                .willReturn("#1234", "#5678");
+        given(userNicknameTagTransactionService.completeUserSignUpV2(
+                1L,
+                "새닉네임",
+                "#1234",
+                Gender.MALE,
+                LocalDate.of(2000, 5, 15)
+        )).willThrow(new DataIntegrityViolationException("uk_user_nickname_nickname_tag"));
+        given(userNicknameTagTransactionService.completeUserSignUpV2(
+                1L,
+                "새닉네임",
+                "#5678",
+                Gender.MALE,
+                LocalDate.of(2000, 5, 15)
+        )).willReturn("새닉네임");
+
+        String result = userService.updateUserV2(inputUser, "새닉네임", Gender.MALE, LocalDate.of(2000, 5, 15));
+
+        assertEquals("새닉네임", result);
+        then(nicknameService).should(times(2)).generateNicknameTag("새닉네임");
+    }
+
+    @Test
+    @DisplayName("마이페이지 프로필 조회는 사용자 프로필 수정 화면 정보를 반환한다")
+    void getMyPageProfile_success() {
+        User inputUser = User.builder().id(1L).build();
+        User dbUser = User.builder()
+                .id(1L)
+                .nickname("잠자는꾸민성1470")
+                .birthday(LocalDate.of(2001, 1, 1))
+                .gender(Gender.FEMALE)
+                .build();
+
+        given(userRepository.findById(1L)).willReturn(Optional.of(dbUser));
+
+        MyPageProfileResponse response = userService.getMyPageProfile(inputUser);
+
+        assertThat(response.userId()).isEqualTo(1L);
+        assertThat(response.nickname()).isEqualTo("잠자는꾸민성1470");
+        assertThat(response.birthday()).isEqualTo(LocalDate.of(2001, 1, 1));
+        assertThat(response.gender()).isEqualTo(Gender.FEMALE);
+    }
+
+    @Test
+    @DisplayName("마이페이지 프로필 수정은 닉네임 태그를 생성하고 사용자 정보를 업데이트한다")
+    void updateMyPageProfile_success() {
+        User inputUser = User.builder().id(1L).build();
+        User updatedUser = User.builder()
+                .id(1L)
+                .name("기존닉네임")
+                .nickname("기존닉네임")
+                .nicknameTag("#0001")
+                .birthday(LocalDate.of(1999, 1, 1))
+                .gender(Gender.MALE)
+                .build();
+
+        given(userRepository.findById(1L)).willReturn(Optional.of(updatedUser));
+        given(nicknameService.generateNicknameTag("새닉네임")).willReturn("#1234");
+        given(userNicknameTagTransactionService.updateMyPageProfile(
+                1L,
+                "새닉네임",
+                "#1234",
+                Gender.FEMALE,
+                LocalDate.of(2001, 1, 1)
+        )).willAnswer(invocation -> {
+            updatedUser.updateMyPageProfile("새닉네임", "#1234", LocalDate.of(2001, 1, 1), Gender.FEMALE);
+            return updatedUser;
+        });
+
+        MyPageProfileResponse response = userService.updateMyPageProfile(
+                inputUser,
+                "새닉네임",
+                Gender.FEMALE,
+                LocalDate.of(2001, 1, 1)
+        );
+
+        assertThat(response.userId()).isEqualTo(1L);
+        assertThat(response.nickname()).isEqualTo("새닉네임");
+        assertThat(response.birthday()).isEqualTo(LocalDate.of(2001, 1, 1));
+        assertThat(response.gender()).isEqualTo(Gender.FEMALE);
+    }
+
+    @Test
+    @DisplayName("마이페이지 프로필 수정은 닉네임 태그 유니크 충돌이 나면 재시도한다")
+    void updateMyPageProfile_retryOnNicknameTagConstraintViolation() {
+        User inputUser = User.builder().id(1L).build();
+        User updatedUser = User.builder().id(1L).build();
+
+        given(userRepository.findById(1L)).willReturn(Optional.of(updatedUser));
+        given(nicknameService.generateNicknameTag("새닉네임"))
+                .willReturn("#1234", "#5678");
+        given(userNicknameTagTransactionService.updateMyPageProfile(
+                1L,
+                "새닉네임",
+                "#1234",
+                Gender.FEMALE,
+                LocalDate.of(2001, 1, 1)
+        )).willThrow(new DataIntegrityViolationException("uk_user_nickname_nickname_tag"));
+        given(userNicknameTagTransactionService.updateMyPageProfile(
+                1L,
+                "새닉네임",
+                "#5678",
+                Gender.FEMALE,
+                LocalDate.of(2001, 1, 1)
+        )).willAnswer(invocation -> {
+            updatedUser.updateMyPageProfile("새닉네임", "#5678", LocalDate.of(2001, 1, 1), Gender.FEMALE);
+            return updatedUser;
+        });
+
+        MyPageProfileResponse response = userService.updateMyPageProfile(
+                inputUser,
+                "새닉네임",
+                Gender.FEMALE,
+                LocalDate.of(2001, 1, 1)
+        );
+
+        assertThat(response.nickname()).isEqualTo("새닉네임");
+        then(nicknameService).should(times(2)).generateNicknameTag("새닉네임");
+    }
+
+    @Test
+    @DisplayName("마이페이지 프로필 수정은 닉네임이 없으면 닉네임 태그를 생성하지 않는다")
+    void updateMyPageProfile_withoutNickname_doesNotGenerateNicknameTag() {
+        User inputUser = User.builder().id(1L).build();
+        User updatedUser = User.builder()
+                .id(1L)
+                .name("기존닉네임")
+                .nickname("기존닉네임")
+                .nicknameTag("#0001")
+                .birthday(LocalDate.of(1999, 1, 1))
+                .gender(Gender.MALE)
+                .build();
+
+        given(userRepository.findById(1L)).willReturn(Optional.of(updatedUser));
+        given(userNicknameTagTransactionService.updateMyPageProfile(
+                1L,
+                null,
+                null,
+                Gender.FEMALE,
+                null
+        )).willAnswer(invocation -> {
+            updatedUser.updateMyPageProfile(null, null, null, Gender.FEMALE);
+            return updatedUser;
+        });
+
+        MyPageProfileResponse response = userService.updateMyPageProfile(
+                inputUser,
+                null,
+                Gender.FEMALE,
+                null
+        );
+
+        assertThat(response.nickname()).isEqualTo("기존닉네임");
+        assertThat(response.gender()).isEqualTo(Gender.FEMALE);
+        then(nicknameService).shouldHaveNoInteractions();
     }
 
 }

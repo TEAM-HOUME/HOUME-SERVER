@@ -55,11 +55,14 @@ class JWTServiceTest {
     @DisplayName("createToken()은 access-token을 응답 헤더에 설정한다")
     void createToken_setsAccessTokenInHeader() {
         // given
+        User user = User.builder().id(1L).role(Role.ROLE_USER).build();
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+        when(jwtConfig.getAccessTokenValidityInSeconds()).thenReturn(3600L);
         when(jwtUtil.createJwt(eq("access"), anyLong(), anyString(), anyLong()))
                 .thenReturn("accessToken");
 
         // when
-        jwtService.createToken(response);
+        jwtService.createToken(response, null);
 
         // then
         verify(response).setHeader("access-token", "accessToken");

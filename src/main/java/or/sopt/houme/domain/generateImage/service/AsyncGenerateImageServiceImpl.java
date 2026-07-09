@@ -1,5 +1,7 @@
 package or.sopt.houme.domain.generateImage.service;
 
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Timer;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import or.sopt.houme.domain.generateImage.infrastructure.gemini.service.GeminiImageService;
@@ -11,6 +13,7 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Supplier;
 
 @Slf4j
 @Service
@@ -21,39 +24,55 @@ public class AsyncGenerateImageServiceImpl implements AsyncGenerateImageService{
     private final OpenAiFacade openAiFacade;
     private final PromptService promptService;
     private final GeminiImageService geminiImageService;
+    private final MeterRegistry meterRegistry;
 
     // 비동기 이미지 생성 처리
     @Async("imageGenerationExecutor")
     @Override
     public CompletableFuture<ImageUploadResponseDTO> generateImageAsync(PromptRequestDTO promptRequestDTO) {
-
-        try {
-            // 이미지 생성
-            ImageUploadResponseDTO response = openAiFacade.makeImageByFastApi(promptRequestDTO);
-            // 비동기 타입으로 반환
-            return CompletableFuture.completedFuture(response);
-        } catch (Exception e){
-
-            // 예외 발생
-            log.error("이미지 생성 중 예외발생: {}", e.getMessage());
-            // 비동기 작업 내에서 발생한 예외를 CompletableFuture에 담아 반환
-            return CompletableFuture.failedFuture(e);
-        }
-
+        return executeAsync("openai", () -> openAiFacade.makeImageByFastApi(promptRequestDTO));
     }
 
     @Async("imageGenerationExecutor")
     @Override
     public CompletableFuture<ImageUploadResponseDTO> generateGeminiImageAsync(PromptRequestDTO promptRequestDTO) {
-
-        try {
+        return executeAsync("gemini", () -> {
             String prompt = promptService.makePrompt(promptRequestDTO);
-            ImageUploadResponseDTO response = geminiImageService.createImage(prompt);
+            return geminiImageService.createImage(prompt);
+        });
+    }
+
+    private CompletableFuture<ImageUploadResponseDTO> executeAsync(
+            String provider,
+            Supplier<ImageUploadResponseDTO> supplier
+    ) {
+        long startTime = System.nanoTime();
+        boolean success = false;
+        try {
+            ImageUploadResponseDTO response = supplier.get();
+            success = true;
             return CompletableFuture.completedFuture(response);
-        } catch (Exception e){
+        } catch (Exception e) {
             log.error("이미지 생성 중 예외발생: {}", e.getMessage());
             return CompletableFuture.failedFuture(e);
+        } finally {
+            recordAsyncMetric(provider, success, startTime);
         }
+    }
 
+    private void recordAsyncMetric(String provider, boolean success, long startTime) {
+        String result = success ? "success" : "failure";
+        meterRegistry.counter(
+                "houme.generate-image.async.requests.total",
+                "provider", provider,
+                "result", result
+        ).increment();
+        Timer.builder("houme.generate-image.async.duration")
+                .description("이미지 생성 비동기 작업 소요 시간")
+                .publishPercentileHistogram()
+                .tag("provider", provider)
+                .tag("result", result)
+                .register(meterRegistry)
+                .record(System.nanoTime() - startTime, java.util.concurrent.TimeUnit.NANOSECONDS);
     }
 }

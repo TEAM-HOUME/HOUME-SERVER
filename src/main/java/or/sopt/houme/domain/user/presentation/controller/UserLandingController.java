@@ -3,7 +3,6 @@ package or.sopt.houme.domain.user.presentation.controller;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
-import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import or.sopt.houme.domain.user.service.UserLandingService;
 import or.sopt.houme.global.api.ApiResponse;

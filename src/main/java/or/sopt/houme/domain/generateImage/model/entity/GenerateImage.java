@@ -2,7 +2,6 @@ package or.sopt.houme.domain.generateImage.model.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-import or.sopt.houme.domain.generateImage.presentation.dto.request.GenerateImageRequest;
 import or.sopt.houme.domain.house.model.entity.House;
 import or.sopt.houme.global.dto.ImageUploadResponseDTO;
 import or.sopt.houme.global.entity.BaseEntity;
@@ -34,14 +33,37 @@ public class GenerateImage extends BaseEntity {
     @JoinColumn(name = "house_id")
     private House house;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "generation_type", length = 20)
+    private GenerateImageType generationType;
+
     // 정적 메서드
     public static GenerateImage createGenerateImage(ImageUploadResponseDTO request, House house) {
+        return createGenerateImage(request, house, GenerateImageType.RECOMMEND);
+    }
+
+    public static GenerateImage createGenerateImage(
+            ImageUploadResponseDTO request,
+            House house,
+            GenerateImageType generationType
+    ) {
         return GenerateImage.builder()
                 .url(request.getImageLink())
                 .filename(request.getFilename())
                 .originalFilename(request.getOriginalFilename())
                 .fileExtension(request.getContentType())
                 .house(house)
+                .generationType(generationType)
                 .build();
+    }
+
+    public GenerateImageType getResolvedGenerationType() {
+        if (generationType != null) {
+            return generationType;
+        }
+        if (house != null && house.getBanner() != null) {
+            return GenerateImageType.LIST;
+        }
+        return GenerateImageType.RECOMMEND;
     }
 }

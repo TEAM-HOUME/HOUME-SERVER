@@ -10,7 +10,8 @@ public class BirthdayValidator implements ConstraintValidator<ValidBirthday, Str
 
     @Override
     public boolean isValid(String birthdayStr, ConstraintValidatorContext context) {
-        if (birthdayStr == null || birthdayStr.isBlank()) return false;
+        if (birthdayStr == null) return true;
+        if (birthdayStr.isBlank()) return false;
 
         LocalDate birthday;
         try {

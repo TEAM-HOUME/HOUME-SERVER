@@ -33,6 +33,8 @@ public enum ErrorCode {
     // 회원관련
     USERNAME_DUPLICATE(HttpStatus.BAD_REQUEST,40009,"username이 중복되었습니다."),
     EMAIL_ALREADY_EXISTS(HttpStatus.BAD_REQUEST, 40021, "이미 가입된 이메일입니다."),
+    DUPLICATE_CURATION_RAW_PRODUCT(HttpStatus.BAD_REQUEST, 40022, "이미 동일한 원본 상품(source/category/product_id)이 존재합니다."),
+    DUPLICATE_CURATION_RAW_PRODUCT_FURNITURE_TAG(HttpStatus.BAD_REQUEST, 40023, "이미 동일한 원본 상품 가구 태그 매핑이 존재합니다."),
 
     // 소셜 회원가입 관련
     SIGNUP_TOKEN_INVALID(HttpStatus.BAD_REQUEST, 40020, "회원가입 토큰이 유효하지 않습니다."),
@@ -42,6 +44,11 @@ public enum ErrorCode {
 
     // 이미지 관련 예외
     IMAGE_PROCESSING_ERROR(HttpStatus.BAD_REQUEST,40012 ,"이미지 컬러 해시값 계산 중 오류가 발생하였습니다."),
+    INVALID_GENERATE_IMAGE_REQUEST(HttpStatus.BAD_REQUEST, 40028, "이미지 생성 요청 값이 유효하지 않습니다."),
+    INVALID_GENERATE_IMAGE_RESULT_REQUEST(HttpStatus.BAD_REQUEST, 40029, "이미지 결과 조회 요청 값이 유효하지 않습니다."),
+    INVALID_GENERATE_IMAGE_TYPE(HttpStatus.BAD_REQUEST, 40030, "해당 API에서 지원하지 않는 이미지 생성 타입입니다."),
+    INVALID_FLOOR_PLAN_VIEW(HttpStatus.BAD_REQUEST, 40031, "도면 뷰 문자열을 찾을 수 없습니다."),
+    MISSING_SELECTED_PRODUCTS(HttpStatus.BAD_REQUEST, 40032, "상품 기반 이미지 생성에는 선택한 상품이 필요합니다."),
 
     // 네이버 쇼핑 API 관련 예외
     NAVER_API_DATA_PARSE_ERROR(HttpStatus.BAD_REQUEST, 40013, "네이버 API 응답의 productId 필드를 숫자로 변환하는 중 오류가 발생했습니다."),
@@ -57,6 +64,12 @@ public enum ErrorCode {
     DUPLICATE_FURNITURE_TYPE_KR(HttpStatus.BAD_REQUEST, 40017, "중복된 가구타입 한글명입니다."),
     DUPLICATE_FURNITURE_TYPE_ENG(HttpStatus.BAD_REQUEST, 40018, "중복된 가구타입 영어명입니다."),
     CANNOT_DELETE_FURNITURE_TYPE_IN_USE(HttpStatus.BAD_REQUEST, 40019, "해당 가구 타입을 사용하는 가구들을 먼저 삭제해주세요."),
+    INVALID_FLOOR_PLAN_NAME(HttpStatus.BAD_REQUEST, 40024, "도면 이름은 비어 있을 수 없습니다."),
+
+    // 배너 관련 예외
+    INVALID_BANNER_ANSWER_CHIP(HttpStatus.BAD_REQUEST, 40025, "배너 답변 칩 데이터가 유효하지 않습니다."),
+    INVALID_BANNER_SIZE(HttpStatus.BAD_REQUEST, 40026, "size는 1 이상의 값이어야 합니다."),
+    INVALID_FLOOR_PLAN_SIZE(HttpStatus.BAD_REQUEST, 40027, "size는 1 이상의 값이어야 합니다."),
 
 
     /**
@@ -125,6 +138,10 @@ public enum ErrorCode {
 
     // House_taste
     NOT_FOUND_HOUSE_TASTE(HttpStatus.NOT_FOUND, 40423, "집 취향을 찾을 수 없습니다."),
+    NOT_FOUND_CURATION_RAW_PRODUCT(HttpStatus.NOT_FOUND, 40424, "원본 상품 객체를 찾을 수 없습니다."),
+    NOT_FOUND_CURATION_RAW_PRODUCT_FURNITURE_TAG_MAPPING(HttpStatus.NOT_FOUND, 40425, "원본 상품 가구 태그 매핑을 찾을 수 없습니다."),
+    NOT_FOUND_BANNER(HttpStatus.NOT_FOUND, 40426, "배너 객체를 찾을 수 없습니다."),
+    NOT_FOUND_STYLE(HttpStatus.NOT_FOUND, 40427, "스타일 객체를 찾을 수 없습니다."),
 
 
     /**
@@ -153,6 +170,9 @@ public enum ErrorCode {
     IMAGE_UPLOAD_IO_EXCEPTION(HttpStatus.INTERNAL_SERVER_ERROR, 50003, "이미지 업로드 중, IO 예외가 발생하였습니다. 서버 관리자에게 문의해주세요"),
     IMAGE_STILL_EXIST(HttpStatus.INTERNAL_SERVER_ERROR,50005 ,"이미지가 삭제되지 않고 S3에 남아있습니다. 서버 관리자에게 문의해주세요" ),
     IMAGE_DELETE_EXCEPTION(HttpStatus.INTERNAL_SERVER_ERROR,50006 ,"이미지 삭제에 실패하였습니다. 서버관리자에게 문의해주세요" ),
+    IMAGE_DOWNLOAD_EXCEPTION(HttpStatus.INTERNAL_SERVER_ERROR, 50022, "이미지 다운로드 중, AWS 예외가 발생하였습니다. 서버 관리자에게 문의해주세요"),
+    IMAGE_VARIANT_UPLOAD_EXCEPTION(HttpStatus.INTERNAL_SERVER_ERROR, 50023, "최적화 이미지 업로드 중, 예외가 발생하였습니다. 서버 관리자에게 문의해주세요"),
+    IMAGE_LIST_EXCEPTION(HttpStatus.INTERNAL_SERVER_ERROR, 50024, "이미지 목록 조회 중, AWS 예외가 발생하였습니다. 서버 관리자에게 문의해주세요"),
     HTTP_MEDIA_TYPE_NOT_ACCEPTABLE(HttpStatus.INTERNAL_SERVER_ERROR,50007,"HTTP 리퀘스트 타입에 오류가 발생하였습니다"),
     INCODING_EXCEPTION(HttpStatus.INTERNAL_SERVER_ERROR,50008 ,"인코딩 과정 중 예외가 발생하였습니다" ),
     CHAT_GPT_CALL_EXCEPTION(HttpStatus.INTERNAL_SERVER_ERROR,50009 ,"챗 gpt 호출 중 예외가 발생하였습니다" ),
@@ -180,6 +200,8 @@ public enum ErrorCode {
 
     // 로그 저장시 objectMapper 에러
     OBJECTMAPPER_EXCEPTION(HttpStatus.INTERNAL_SERVER_ERROR, 50019, "생성 로그 JSON 변환에 실패, 서버 개발자에게 문의해주세요"),
+    NICKNAME_RESOURCE_EMPTY(HttpStatus.INTERNAL_SERVER_ERROR, 50020, "닉네임 리소스가 비어 있습니다. 서버 관리자에게 문의해주세요"),
+    NICKNAME_TAG_GENERATION_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, 50021, "닉네임 태그 생성에 실패했습니다. 서버 관리자에게 문의해주세요"),
 
     /**
      * 502 BAD_GATEWAY
