@@ -119,6 +119,7 @@ class UserServiceImplTest {
         user = User.builder()
                 .id(1L)
                 .name("테스트유저")
+                .email("test@example.com")
                 .build();
 
         house = House.builder()
@@ -151,6 +152,7 @@ class UserServiceImplTest {
 
         // then
         assertThat(response.name()).isEqualTo("테스트유저");
+        assertThat(response.email()).isEqualTo("test@example.com");
     }
 
     @Test
