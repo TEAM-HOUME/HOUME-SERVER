@@ -94,7 +94,7 @@ class UserControllerTest {
                 .build();
 
         mockUserDetails = new CustomUserDetails(mockUser);
-        mockResponse = MyPageInfoResponse.of(1L, "테스트유저", 10L);
+        mockResponse = MyPageInfoResponse.of(1L, "테스트유저", 10L, "test@example.com");
     }
 
     @Test
