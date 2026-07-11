@@ -54,7 +54,17 @@ mkdir -p logs && SPRING_PROFILES_ACTIVE=local,dev ./gradlew bootRun > logs/houme
 (local+dev 동시 프로파일이라 콘솔에 플레인/JSON 이중 출력되는 것도 로컬 전용 현상)
 
 ## 운영 메모
-- 보존기간 7일(`loki-config.yml` retention_period) — 디스크 상황 보고 조정
+- 보존기간 3일(`loki-config.yml` retention_period 72h) — 디스크 여유가 적어 짧게 유지, 상황 보고 조정
 - traceId 는 라벨이 아니라 JSON 필드로 검색한다 (라벨로 만들면 카디널리티 폭발)
 - promtail 메모리 64m 제한 — prod EC2 RAM 여유가 적음
 - 로컬 개발 확인: local 프로파일은 플레인 로그라 Loki 파싱 대상 아님 (dev 배포 후 확인)
+
+## 서버 적용 시 함께 할 것 (디스크 관리)
+1. **도커 로그 로테이션** (현재 무제한 — 필수): 각 앱 서버 `/etc/docker/daemon.json`
+   ```json
+   { "log-driver": "json-file", "log-opts": { "max-size": "20m", "max-file": "2" } }
+   ```
+   적용: `sudo systemctl restart docker` 후 컨테이너 재기동 (daemon.json은 신규 컨테이너부터 적용됨)
+   → 원본은 컨테이너당 최대 40MB, 과거 로그 검색은 Loki(3일)가 담당
+2. **디스크 점검**: `docker system df` 로 옛 이미지 누적 확인 → `docker image prune -a --filter "until=168h"`
+   (dev EC2 85% 사용의 주범은 로그보다 배포 이미지 누적일 가능성이 큼)

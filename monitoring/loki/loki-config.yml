@@ -28,7 +28,7 @@ schema_config:
         period: 24h
 
 limits_config:
-  retention_period: 168h   # 7일 (디스크 여유 고려 — 필요 시 늘림)
+  retention_period: 72h   # 3일 — dev/prod 디스크 여유가 적어 짧게 유지 (여유 생기면 늘림)
   ingestion_rate_mb: 8
   ingestion_burst_size_mb: 16
 
