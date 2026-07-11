@@ -56,3 +56,6 @@ seed_local_houme.sql
 ### Claude Code ###
 CLAUDE.md
 .claude/
+
+### 로컬 실행용 오버라이드 설정 무시 ###
+/config/
