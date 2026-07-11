@@ -4,6 +4,7 @@ import io.sentry.Sentry;
 import lombok.RequiredArgsConstructor;
 import or.sopt.houme.global.api.handler.ImageFallbackException;
 import or.sopt.houme.global.discord.ErrorAlertNotifier;
+import org.springframework.beans.factory.ObjectProvider;
 import jakarta.validation.ConstraintViolationException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
@@ -25,14 +26,15 @@ import java.util.concurrent.RejectedExecutionException;
 @RequiredArgsConstructor
 public class GlobalExceptionHandler {
 
-    private final ErrorAlertNotifier errorAlertNotifier;
+    // @WebMvcTest 등 슬라이스 테스트에는 이 빈이 없으므로 ObjectProvider 로 선택적 주입한다
+    private final ObjectProvider<ErrorAlertNotifier> errorAlertNotifier;
 
     // Fallback 이미지 반환 Exception Handler
     @ExceptionHandler(ImageFallbackException.class)
     public ResponseEntity<ApiResponse<Object>> handleImageFallbackException(ImageFallbackException e) {
         // 센트리 알림
         Sentry.captureException(e);
-        errorAlertNotifier.notifyServerError(e);
+        errorAlertNotifier.ifAvailable(notifier -> notifier.notifyServerError(e));
 
         ErrorCode errorCode = e.getErrorCode();
 
@@ -57,7 +59,7 @@ public class GlobalExceptionHandler {
         Sentry.captureException(e);
         // 5xx 계열만 디스코드 알림 (4xx/도메인 검증 실패는 노이즈라 제외)
         if (errorCode.getStatus().is5xxServerError()) {
-            errorAlertNotifier.notifyServerError(e);
+            errorAlertNotifier.ifAvailable(notifier -> notifier.notifyServerError(e));
         }
 
         return ResponseEntity.status(errorCode.getStatus()).body(response);
@@ -145,7 +147,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiResponse<Void>> handleUnhandledException(Exception e) {
 
         Sentry.captureException(e);
-        errorAlertNotifier.notifyServerError(e);
+        errorAlertNotifier.ifAvailable(notifier -> notifier.notifyServerError(e));
 
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(ApiResponse.fail(HttpStatus.INTERNAL_SERVER_ERROR.value(), "서버 내부 오류입니다."));
@@ -168,7 +170,7 @@ public class GlobalExceptionHandler {
         ErrorCode errorCode = ErrorCode.DB_CONSTRAINT_VIOLATION;
 
         Sentry.captureException(e);
-        errorAlertNotifier.notifyServerError(e);
+        errorAlertNotifier.ifAvailable(notifier -> notifier.notifyServerError(e));
 
         return ResponseEntity.status(errorCode.getStatus())
                 .body(ApiResponse.fail(errorCode.getCode(), errorCode.getMsg()));
@@ -180,7 +182,7 @@ public class GlobalExceptionHandler {
         ErrorCode errorCode = ErrorCode.ASYNC_POOL_OVERFLOW;
 
         Sentry.captureException(e);
-        errorAlertNotifier.notifyServerError(e);
+        errorAlertNotifier.ifAvailable(notifier -> notifier.notifyServerError(e));
 
         return ResponseEntity.status(errorCode.getStatus())
                 .body(ApiResponse.fail(errorCode.getCode(), errorCode.getMsg()));
