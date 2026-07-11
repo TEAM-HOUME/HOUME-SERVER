@@ -1,15 +1,11 @@
-# 앱 서버(dev EC2 / prod EC2)에서 실행 — houme 컨테이너 로그 수집기
-#   HOUME_ENV=dev LOKI_URL=http://10.0.1.11:3100 docker compose -f docker-compose.promtail.yml up -d
-#   (prod EC2는 loki 와 같은 호스트이므로 LOKI_URL=http://localhost:3100, HOUME_ENV=prod)
+# prod EC2(모니터링 서버와 동일 호스트)에서 실행 — blue/green 컨테이너 로그 수집
+#   cd monitoring/prod/promtail && docker compose up -d
 services:
   promtail:
     image: grafana/promtail:2.9.8
     container_name: houme-promtail
     restart: unless-stopped
-    command: -config.file=/etc/promtail/promtail-config.yml -config.expand-env=true
-    environment:
-      HOUME_ENV: ${HOUME_ENV:-dev}
-      LOKI_URL: ${LOKI_URL:-http://localhost:3100}
+    command: -config.file=/etc/promtail/promtail-config.yml
     volumes:
       - ./promtail-config.yml:/etc/promtail/promtail-config.yml:ro
       - /var/lib/docker/containers:/var/lib/docker/containers:ro

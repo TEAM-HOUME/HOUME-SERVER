@@ -1,5 +1,5 @@
-# 모니터링 서버(3.39)에서 실행 — 로그 저장소
-#   docker compose -f docker-compose.loki.yml up -d
+# prod EC2(모니터링 서버)에서 실행 — 로그 저장소
+#   cd monitoring/prod/loki && docker compose up -d
 services:
   loki:
     image: grafana/loki:2.9.8
