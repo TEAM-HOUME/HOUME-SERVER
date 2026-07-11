@@ -1,4 +1,6 @@
-# 로컬 검증용 — bootRun 출력 파일(logs/houme-local.log)을 수집
+# 내 맥 — bootRun 출력 파일(logs/houme-local.log) 수집 → 로컬 stack 의 Loki
+# 라벨 정책: 카디널리티 낮은 것만 라벨(app/env/level/container).
+#   traceId 는 라벨이 아닌 본문 필드 — 검색은 LogQL `| json | traceId="xxx"` 로 한다.
 server:
   http_listen_port: 9080
   grpc_listen_port: 0
@@ -7,10 +9,9 @@ positions:
   filename: /positions/positions.yaml
 
 clients:
-  - url: http://loki:3100/loki/api/v1/push
+  - url: http://host.docker.internal:3100/loki/api/v1/push
 
 # macOS Docker 바인드마운트는 fsnotify 이벤트가 누락되므로 폴링으로 강제
-# (리눅스 서버에서는 불필요하지만 있어도 무해)
 global:
   file_watch_config:
     min_poll_frequency: 1s

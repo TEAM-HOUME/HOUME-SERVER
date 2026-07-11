@@ -1,0 +1,65 @@
+# 중앙 모니터링 스택 — Grafana + Loki + Prometheus
+# prod EC2 에서 실행 (로컬 검증도 같은 파일로: cd monitoring/stack && docker compose up -d)
+#
+# 모든 설정(데이터소스/대시보드)은 프로비저닝으로 자동 주입된다 — UI 수동 설정 금지,
+# 대시보드 수정 시 grafana/dashboards/*.json 을 갱신할 것 (dashboard-as-code).
+services:
+  loki:
+    image: grafana/loki:2.9.8
+    container_name: houme-loki
+    restart: unless-stopped
+    command: -config.file=/etc/loki/loki-config.yml
+    ports:
+      # promtail(dev EC2 → VPC 내부, prod → 같은 호스트)만 접근 — 보안그룹에서 외부 차단 필수
+      - "3100:3100"
+    volumes:
+      - ./loki-config.yml:/etc/loki/loki-config.yml:ro
+      - loki_data:/loki
+    deploy:
+      resources:
+        limits:
+          memory: 256m
+
+  prometheus:
+    image: prom/prometheus:v2.54.1
+    container_name: houme-prometheus
+    restart: unless-stopped
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.retention.time=72h   # 로그와 동일하게 3일 (디스크 여유 부족)
+    ports:
+      - "127.0.0.1:9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    deploy:
+      resources:
+        limits:
+          memory: 192m
+
+  grafana:
+    image: grafana/grafana:11.1.4
+    container_name: houme-grafana
+    restart: unless-stopped
+    depends_on:
+      - loki
+      - prometheus
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin   # 서버 첫 기동 후 반드시 변경할 것
+      GF_USERS_ALLOW_SIGN_UP: "false"
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./grafana/dashboards:/var/lib/grafana/dashboards:ro
+      - grafana_data:/var/lib/grafana
+    deploy:
+      resources:
+        limits:
+          memory: 192m
+
+volumes:
+  loki_data:
+  prometheus_data:
+  grafana_data:
