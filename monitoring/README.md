@@ -68,3 +68,9 @@ mkdir -p logs && SPRING_PROFILES_ACTIVE=local,dev ./gradlew bootRun > logs/houme
    → 원본은 컨테이너당 최대 40MB, 과거 로그 검색은 Loki(3일)가 담당
 2. **디스크 점검**: `docker system df` 로 옛 이미지 누적 확인 → `docker image prune -a --filter "until=168h"`
    (dev EC2 85% 사용의 주범은 로그보다 배포 이미지 누적일 가능성이 큼)
+
+## 대시보드 코드 관리 (dashboard-as-code)
+- `grafana/jvm-micrometer.json` — 라이브 Grafana(모니터링 서버)에서 추출한 JVM 메트릭 대시보드 (2026-07-11)
+- `grafana/houme-logs-dashboard.json` — 로그 검색 대시보드 (이번에 신규)
+- k6 부하테스트 대시보드는 `k6/monitoring/grafana/dashboards/` 에 기존부터 관리 중
+- Grafana UI에서 대시보드를 수정하면 여기 JSON도 함께 갱신할 것 (Share > Export > Save to file)
