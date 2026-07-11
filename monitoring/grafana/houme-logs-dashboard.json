@@ -10,11 +10,12 @@
         "name": "env",
         "type": "custom",
         "label": "환경",
-        "query": "dev,prod",
+        "query": "dev,prod,local",
         "current": { "text": "dev", "value": "dev" },
         "options": [
           { "text": "dev", "value": "dev", "selected": true },
-          { "text": "prod", "value": "prod", "selected": false }
+          { "text": "prod", "value": "prod", "selected": false },
+          { "text": "local", "value": "local", "selected": false }
         ]
       },
       {

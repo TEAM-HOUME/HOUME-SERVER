@@ -1,0 +1,52 @@
+# 로컬 개발용 로그 파이프라인 전체 검증 스택 (Loki + Promtail + Grafana)
+#
+# 사용법:
+#   1) 스택 기동:  docker compose -f docker-compose.local-logging.yml up -d
+#   2) 앱을 JSON 로그 + 파일 출력으로 실행 (프로젝트 루트에서):
+#      mkdir -p logs && SPRING_PROFILES_ACTIVE=local,dev ./gradlew bootRun > logs/houme-local.log 2>&1
+#      (dev 프로파일은 logback JSON 포맷 선택용 — 설정값은 config/application-local.yml 이 우선)
+#   3) Grafana: http://localhost:3002 (익명 Admin) → "HOUME 로그 (Loki)" 대시보드
+services:
+  loki:
+    image: grafana/loki:2.9.8
+    container_name: houme-local-loki
+    restart: unless-stopped
+    command: -config.file=/etc/loki/loki-config.yml
+    ports:
+      - "127.0.0.1:3100:3100"
+    volumes:
+      - ../loki/loki-config.yml:/etc/loki/loki-config.yml:ro
+      - local_loki_data:/loki
+
+  promtail:
+    image: grafana/promtail:2.9.8
+    container_name: houme-local-promtail
+    restart: unless-stopped
+    command: -config.file=/etc/promtail/promtail-config.yml
+    depends_on:
+      - loki
+    volumes:
+      - ./promtail-local-config.yml:/etc/promtail/promtail-config.yml:ro
+      - ../../logs:/applog:ro
+      - local_promtail_positions:/positions
+
+  grafana:
+    image: grafana/grafana:11.1.4
+    container_name: houme-local-grafana
+    restart: unless-stopped
+    depends_on:
+      - loki
+    environment:
+      GF_AUTH_ANONYMOUS_ENABLED: "true"
+      GF_AUTH_ANONYMOUS_ORG_ROLE: Admin
+      GF_USERS_ALLOW_SIGN_UP: "false"
+    ports:
+      - "127.0.0.1:3002:3000"
+    volumes:
+      - ./grafana-provisioning/datasources:/etc/grafana/provisioning/datasources:ro
+      - ./grafana-provisioning/dashboards:/etc/grafana/provisioning/dashboards:ro
+      - ../grafana/houme-logs-dashboard.json:/var/lib/grafana/dashboards/houme-logs-dashboard.json:ro
+
+volumes:
+  local_loki_data:
+  local_promtail_positions:

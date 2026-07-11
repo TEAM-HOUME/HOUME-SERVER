@@ -41,6 +41,18 @@ HOUME_ENV=prod LOKI_URL=http://172.17.0.1:3100 docker compose -f docker-compose.
 - Explore 에서 직접 질의: `{app="houme", env="dev"} | json | traceId="abc12345"`
 - 에러만: `{app="houme", env="dev", level="ERROR"}`
 
+## 로컬에서 전체 파이프라인 검증
+```bash
+# 1) 스택 기동 (Loki + Promtail + Grafana(:3002, 익명 Admin, 대시보드 자동 등록))
+docker compose -f monitoring/local/docker-compose.local-logging.yml up -d
+# 2) 앱을 JSON 로그로 실행 (dev 프로파일이 logback JSON 선택용으로만 동작)
+mkdir -p logs && SPRING_PROFILES_ACTIVE=local,dev ./gradlew bootRun > logs/houme-local.log 2>&1
+# 3) http://localhost:3002 → "HOUME 로그 (Loki)" 대시보드, env=local
+```
+⚠️ macOS 한정: Docker 바인드마운트의 fsnotify 미전달로 **실시간 tail 이 멈출 수 있음** —
+`docker restart houme-local-promtail` 하면 그 시점까지 캐치업된다. 리눅스 서버에서는 발생하지 않는 문제.
+(local+dev 동시 프로파일이라 콘솔에 플레인/JSON 이중 출력되는 것도 로컬 전용 현상)
+
 ## 운영 메모
 - 보존기간 7일(`loki-config.yml` retention_period) — 디스크 상황 보고 조정
 - traceId 는 라벨이 아니라 JSON 필드로 검색한다 (라벨로 만들면 카디널리티 폭발)

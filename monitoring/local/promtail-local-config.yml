@@ -1,0 +1,36 @@
+# 로컬 검증용 — bootRun 출력 파일(logs/houme-local.log)을 수집
+server:
+  http_listen_port: 9080
+  grpc_listen_port: 0
+
+positions:
+  filename: /positions/positions.yaml
+
+clients:
+  - url: http://loki:3100/loki/api/v1/push
+
+# macOS Docker 바인드마운트는 fsnotify 이벤트가 누락되므로 폴링으로 강제
+# (리눅스 서버에서는 불필요하지만 있어도 무해)
+global:
+  file_watch_config:
+    min_poll_frequency: 1s
+    max_poll_frequency: 5s
+
+target_config:
+  sync_period: 5s
+
+scrape_configs:
+  - job_name: houme-local
+    static_configs:
+      - targets: [localhost]
+        labels:
+          app: houme
+          env: local
+          container: bootrun
+          __path__: /applog/houme-local.log
+    pipeline_stages:
+      - json:
+          expressions:
+            level: level
+      - labels:
+          level:
