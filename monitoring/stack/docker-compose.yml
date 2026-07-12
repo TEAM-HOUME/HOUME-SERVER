@@ -28,7 +28,7 @@ services:
       - --config.file=/etc/prometheus/prometheus.yml
       - --storage.tsdb.retention.time=72h   # 로그와 동일하게 3일 (디스크 여유 부족)
     ports:
-      - "127.0.0.1:9090:9090"
+      - "127.0.0.1:9091:9090"   # 호스트 9090은 기존 네이티브 prometheus가 점유 (추후 폐기)
     volumes:
       - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
       - prometheus_data:/prometheus

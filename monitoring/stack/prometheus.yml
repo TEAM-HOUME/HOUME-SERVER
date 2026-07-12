@@ -8,7 +8,7 @@ scrape_configs:
     metrics_path: /actuator/prometheus
     static_configs:
       # prod 앱 — 같은 호스트의 blue/green (호스트 포트 8080)
-      - targets: ["172.17.0.1:8080"]
+      - targets: ["172.17.0.1:8080", "172.17.0.1:8081"]   # blue/green
         labels:
           env: prod
 
