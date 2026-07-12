@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.HandlerMethodValidationException;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.servlet.NoHandlerFoundException;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import java.util.concurrent.RejectedExecutionException;
 
@@ -109,6 +110,16 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(NoHandlerFoundException.class)
     public ResponseEntity<ApiResponse<Void>> handleNoHandlerFound(NoHandlerFoundException ex) {
+        ErrorCode errorCode = ErrorCode.NOT_FOUND_URL;
+
+        Sentry.captureException(ex);
+
+        return ResponseEntity.status(errorCode.getStatus()).body(ApiResponse.fail(errorCode.getCode(), errorCode.getMsg()));
+    }
+
+    // 정적 리소스 없음(예: /swagger-ui/) — 실제 404 이므로 NoHandlerFound 와 동일하게 처리하고 5xx 알림을 보내지 않는다
+    @ExceptionHandler(NoResourceFoundException.class)
+    public ResponseEntity<ApiResponse<Void>> handleNoResourceFound(NoResourceFoundException ex) {
         ErrorCode errorCode = ErrorCode.NOT_FOUND_URL;
 
         Sentry.captureException(ex);
