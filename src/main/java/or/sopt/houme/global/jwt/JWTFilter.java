@@ -16,6 +16,8 @@ import or.sopt.houme.domain.user.repository.BlacklistTokenRepository;
 import or.sopt.houme.global.api.ErrorCode;
 import or.sopt.houme.global.config.JWTConfig;
 import or.sopt.houme.global.config.WhiteListConfig;
+import or.sopt.houme.global.logging.TraceIdFilter;
+import org.slf4j.MDC;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -164,6 +166,9 @@ public class JWTFilter extends OncePerRequestFilter {
         //세션에 사용자 등록
         SecurityContextHolder.getContext().setAuthentication(authToken);
 
+        // 인증된 사용자 ID를 MDC에 실어 이후 모든 로그 라인에 포함시킨다 (정리는 TraceIdFilter가 담당)
+        MDC.put(TraceIdFilter.USER_ID_MDC_KEY, String.valueOf(id));
+
         filterChain.doFilter(request, response);
     }
 
@@ -175,9 +180,10 @@ public class JWTFilter extends OncePerRequestFilter {
     private void setErrorResponse(HttpServletResponse response, ErrorCode errorCode) throws IOException {
         response.setStatus(errorCode.getStatus().value());
         response.setContentType("application/json;charset=UTF-8");
+        String traceId = MDC.get(TraceIdFilter.TRACE_ID_MDC_KEY);
         response.getWriter().write(String.format(
-                "{\"code\":%d, \"message\":\"%s\"}",
-                errorCode.getCode(), errorCode.getMsg()
+                "{\"code\":%d, \"message\":\"%s\", \"traceId\":\"%s\"}",
+                errorCode.getCode(), errorCode.getMsg(), traceId == null ? "" : traceId
         ));
     }
 

@@ -1,0 +1,84 @@
+{
+  "title": "HOUME 로그 (Loki)",
+  "uid": "houme-logs",
+  "schemaVersion": 39,
+  "editable": true,
+  "time": { "from": "now-6h", "to": "now" },
+  "templating": {
+    "list": [
+      {
+        "name": "env",
+        "type": "custom",
+        "label": "환경",
+        "query": "dev,prod,local",
+        "current": { "text": "dev", "value": "dev" },
+        "options": [
+          { "text": "dev", "value": "dev", "selected": true },
+          { "text": "prod", "value": "prod", "selected": false },
+          { "text": "local", "value": "local", "selected": false }
+        ]
+      },
+      {
+        "name": "traceId",
+        "type": "textbox",
+        "label": "traceId 검색",
+        "current": { "text": "", "value": "" }
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": 1,
+      "title": "레벨별 로그 볼륨",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 },
+      "datasource": { "type": "loki", "uid": "loki" },
+      "targets": [
+        {
+          "expr": "sum by (level) (count_over_time({app=\"houme\", env=\"$env\"} [$__interval]))",
+          "legendFormat": "{{level}}"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "title": "에러(ERROR) 발생 추이",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 },
+      "datasource": { "type": "loki", "uid": "loki" },
+      "targets": [
+        {
+          "expr": "sum (count_over_time({app=\"houme\", env=\"$env\", level=\"ERROR\"} [$__interval]))",
+          "legendFormat": "errors"
+        }
+      ],
+      "fieldConfig": { "defaults": { "color": { "mode": "fixed", "fixedColor": "red" } } }
+    },
+    {
+      "id": 3,
+      "title": "traceId 검색 결과 (변수에 traceId 입력)",
+      "type": "logs",
+      "gridPos": { "h": 10, "w": 24, "x": 0, "y": 8 },
+      "datasource": { "type": "loki", "uid": "loki" },
+      "options": { "showTime": true, "wrapLogMessage": true, "sortOrder": "Ascending" },
+      "targets": [
+        {
+          "expr": "{app=\"houme\", env=\"$env\"} | json | traceId=\"$traceId\""
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "title": "최근 에러 로그",
+      "type": "logs",
+      "gridPos": { "h": 10, "w": 24, "x": 0, "y": 18 },
+      "datasource": { "type": "loki", "uid": "loki" },
+      "options": { "showTime": true, "wrapLogMessage": true, "sortOrder": "Descending" },
+      "targets": [
+        {
+          "expr": "{app=\"houme\", env=\"$env\", level=\"ERROR\"}"
+        }
+      ]
+    }
+  ]
+}

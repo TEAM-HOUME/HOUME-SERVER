@@ -1,6 +1,7 @@
 package or.sopt.houme.global.config;
 
 import lombok.extern.slf4j.Slf4j;
+import or.sopt.houme.global.logging.MdcTaskDecorator;
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.Gauge;
 import io.micrometer.core.instrument.MeterRegistry;
@@ -59,6 +60,7 @@ public class AsyncConfig {
         executor.setMaxPoolSize(4);
         executor.setQueueCapacity(100);
         executor.setThreadNamePrefix("TokenRefresh-");
+        executor.setTaskDecorator(new MdcTaskDecorator());  // traceId MDC 전파
         executor.setWaitForTasksToCompleteOnShutdown(true);
         executor.setAwaitTerminationSeconds(10);
         executor.setRejectedExecutionHandler((r, e) -> log.warn("TokenRefresh 큐 포화 — 토큰 갱신 작업 유실 (active={}, queue={})", e.getActiveCount(), e.getQueue().size()));
@@ -81,6 +83,7 @@ public class AsyncConfig {
         // maxPoolSize 확장이 실제로 일어나도록 대기 큐는 더 작게 유지한다.
         executor.setQueueCapacity(platformQueueCapacity);       // 대기 큐 크기
         executor.setThreadNamePrefix("ImageGenerator-");
+        executor.setTaskDecorator(new MdcTaskDecorator());  // traceId MDC 전파
         Tags tags = executorTags("platform");
         Counter rejectedCounter = meterRegistry.counter(
                 "houme.async.executor.rejected.total",
@@ -194,13 +197,19 @@ public class AsyncConfig {
                 rejectedCounter.increment();
                 throw new RejectedExecutionException("가상 스레드 동시 실행 한도를 초과했습니다. 잠시 후 다시 시도해주세요.");
             }
+            // 커스텀 Executor 라 TaskDecorator 를 걸 수 없어 MDC(traceId) 전파를 직접 처리한다
+            java.util.Map<String, String> mdcContext = org.slf4j.MDC.getCopyOfContextMap();
             delegate.execute(() -> {
+                if (mdcContext != null) {
+                    org.slf4j.MDC.setContextMap(mdcContext);
+                }
                 activeTasks.incrementAndGet();
                 try {
                     command.run();
                 } finally {
                     activeTasks.decrementAndGet();
                     semaphore.release();
+                    org.slf4j.MDC.clear();
                 }
             });
         }
