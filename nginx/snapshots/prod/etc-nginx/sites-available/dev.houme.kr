@@ -1,0 +1,14 @@
+server {
+    listen 80;
+    server_name dev.houme.kr;
+
+    location /.well-known/acme-challenge/ {
+        root /var/www/html;
+        try_files $uri =404;
+    }
+
+    location / {
+        return 200 "nginx ok\n";
+        add_header Content-Type text/plain;
+    }
+}

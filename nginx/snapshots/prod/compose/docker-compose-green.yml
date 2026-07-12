@@ -1,0 +1,14 @@
+services:
+  green:
+    image: 528350874585.dkr.ecr.ap-northeast-2.amazonaws.com/houme:latest
+    container_name: green
+    ports:
+      - "8081:8081"
+    environment:
+      - JAVA_TOOL_OPTIONS=-Dspring.profiles.active=green -Dserver.env=green
+    networks:
+      - houme-network
+
+networks:
+  houme-network:
+    external: true

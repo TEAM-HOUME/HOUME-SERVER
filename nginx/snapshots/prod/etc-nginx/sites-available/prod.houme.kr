@@ -1,0 +1,37 @@
+server {
+    listen 80;
+    listen [::]:80;
+    server_name prod.houme.kr;
+
+    location /.well-known/acme-challenge/ {
+        root /var/www/html;
+        try_files $uri =404;
+    }
+
+    location / {
+        return 301 https://$host$request_uri;
+    }
+}
+
+server {
+    listen 443 ssl;
+    listen [::]:443 ssl;
+    server_name prod.houme.kr;
+
+    ssl_certificate     /etc/letsencrypt/live/prod.houme.kr/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/prod.houme.kr/privkey.pem;
+    include /etc/letsencrypt/options-ssl-nginx.conf;
+    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem;
+
+    include /etc/nginx/sites-enabled/service-env.inc;
+
+    location / {
+        proxy_pass http://$service_url;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header Host $http_host;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_read_timeout 120s;
+        proxy_send_timeout 120s;
+    }
+}

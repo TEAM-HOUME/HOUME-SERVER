@@ -1,0 +1,19 @@
+# 인프라 관리 docker-compose 파일
+services:
+  redis:
+    image: redis:latest
+    container_name: redis
+    command: redis-server --replicaof no one
+    ports:
+      - "6379:6379"
+    # houme-network에 참여하도록 설정
+    networks:
+      - houme-network
+    # 서버가 재시작되어도 redis는 항상 자동으로 재시작되도록 설정
+    restart: always
+
+# houme-network를 생성하고 소유
+networks:
+  houme-network:
+    driver: bridge
+    name: houme-network

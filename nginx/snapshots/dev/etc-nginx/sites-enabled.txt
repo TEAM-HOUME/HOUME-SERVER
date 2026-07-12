@@ -1,0 +1,5 @@
+total 8
+drwxr-xr-x 2 root root 4096 Feb 19 13:13 .
+drwxr-xr-x 8 root root 4096 Jul 12 02:01 ..
+lrwxrwxrwx 1 root root   39 Jan  5  2026 dev.houme.kr -> /etc/nginx/sites-available/dev.houme.kr
+
