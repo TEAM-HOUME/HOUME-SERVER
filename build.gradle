@@ -39,6 +39,11 @@ dependencies {
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 
+    // 통합 테스트 (Testcontainers)
+    testImplementation 'org.springframework.boot:spring-boot-testcontainers'
+    testImplementation 'org.testcontainers:postgresql'
+    testImplementation 'org.testcontainers:junit-jupiter'
+
     // JPA
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 
@@ -148,10 +153,11 @@ clean {
 tasks.named('test') {
     useJUnitPlatform()
     // CI 환경에서 다수의 Spring 컨텍스트 + Jacoco로 인한 OOM을 완화하기 위해 HEAPsize를 줄임
-    maxHeapSize = '2g'
-    jvmArgs '-XX:MaxMetaspaceSize=512m'
+    maxHeapSize = '3g'
+    jvmArgs '-XX:MaxMetaspaceSize=1g'
     maxParallelForks = 1
-    forkEvery = 50
+    // forkEvery 제거: Testcontainers 와 fork 재기동이 충돌(Ryuk 셧다운 훅 hang)하고,
+    // 단일 JVM 이어야 PG/Redis 컨테이너 1세트를 전체 테스트가 공유한다
     finalizedBy 'jacocoTestReport'
 }
 
