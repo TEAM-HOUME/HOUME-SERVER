@@ -141,7 +141,7 @@ jobs:
           port: 2222
           script_stop: true
           script: |
-            echo "set \$service_url ${{ env.TARGET_UPSTREAM }};" | sudo tee /etc/nginx/sites-enabled/service-env.inc
+            echo "set \$service_url ${{ env.TARGET_UPSTREAM }};" | sudo tee /etc/nginx/service-env.inc
             sudo nginx -t && sudo nginx -s reload
 
       - name: 기존 서버 중지
