@@ -69,11 +69,14 @@ public class ErrorAlertNotifier {
 
     private boolean isInCooldown(String signature) {
         Instant now = Instant.now();
-        Instant last = lastSentBySignature.get(signature);
-        if (last != null && Duration.between(last, now).toMinutes() < COOLDOWN_MINUTES) {
-            return true;
+
+        // check-then-act 를 키 단위 원자 연산(compute)으로 묶어, 동일 시그니처의 동시 에러가
+        // 쿨다운을 우회해 중복 알림을 보내는 레이스를 차단한다
+        Instant winner = lastSentBySignature.compute(signature, (key, last) ->
+                (last != null && Duration.between(last, now).toMinutes() < COOLDOWN_MINUTES) ? last : now);
+        if (winner != now) {
+            return true;   // 기존 타임스탬프가 유지됨 = 쿨다운 중
         }
-        lastSentBySignature.put(signature, now);
 
         // 시그니처 맵 무한 성장 방지
         if (lastSentBySignature.size() > 1_000) {
