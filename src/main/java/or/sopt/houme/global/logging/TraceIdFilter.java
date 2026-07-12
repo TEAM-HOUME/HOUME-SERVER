@@ -34,6 +34,10 @@ public class TraceIdFilter extends OncePerRequestFilter {
 
     private static final int TRACE_ID_LENGTH = 8;
 
+    // 외부 입력(X-Request-Id)은 영숫자/._- 만 수용 — JSON/로그 주입 원천 차단
+    private static final java.util.regex.Pattern SAFE_TRACE_ID =
+            java.util.regex.Pattern.compile("^[A-Za-z0-9._-]{1,36}$");
+
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
@@ -51,10 +55,10 @@ public class TraceIdFilter extends OncePerRequestFilter {
 
     private String resolveTraceId(HttpServletRequest request) {
         String requestId = request.getHeader(REQUEST_ID_HEADER);
-        if (requestId != null && !requestId.isBlank()) {
-            // 헤더 조작으로 로그가 오염되지 않도록 길이만 제한해 수용한다
-            return requestId.trim().substring(0, Math.min(requestId.trim().length(), 36));
+        if (requestId != null && SAFE_TRACE_ID.matcher(requestId.trim()).matches()) {
+            return requestId.trim();
         }
+        // 헤더가 없거나 허용 문자 밖이면 신뢰하지 않고 새로 발급한다 (JSON/로그 주입 차단)
         return UUID.randomUUID().toString().substring(0, TRACE_ID_LENGTH);
     }
 }

@@ -1,9 +1,9 @@
 # prod EC2(모니터링 서버와 동일 호스트)에서 실행 — blue/green 컨테이너 로그 수집
-#   cd monitoring/prod/promtail && docker compose up -d
+#   cd monitoring/prod && docker compose up -d
 services:
   promtail:
     image: grafana/promtail:2.9.8
-    container_name: houme-promtail
+    container_name: promtail
     restart: unless-stopped
     command: -config.file=/etc/promtail/promtail-config.yml
     volumes:

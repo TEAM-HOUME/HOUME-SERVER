@@ -1,4 +1,4 @@
-# Loki 단일 노드 구성 — 파일시스템 저장, 보존 7일
+# Loki 단일 노드 구성 — 파일시스템 저장, 보존 3일
 auth_enabled: false
 
 server:

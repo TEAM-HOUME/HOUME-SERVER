@@ -45,8 +45,9 @@ services:
       - loki
       - prometheus
     environment:
-      GF_SECURITY_ADMIN_USER: admin
-      GF_SECURITY_ADMIN_PASSWORD: admin   # 서버 첫 기동 후 반드시 변경할 것
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_ADMIN_USER:-admin}
+      # 서버에서는 반드시 env 로 주입: GRAFANA_ADMIN_PASSWORD=<팀비번> docker compose up -d
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:-admin}
       GF_USERS_ALLOW_SIGN_UP: "false"
     ports:
       - "3000:3000"

@@ -26,9 +26,10 @@ monitoring/
 ### 1. prod EC2 — 기존 grafana 정리 + 중앙 스택 기동
 ```bash
 docker rm -f grafana        # 기존 UI 설정은 폐기 (코드 관리로 전환, 승인됨)
-cd monitoring/stack && docker compose up -d
-curl -s localhost:3100/ready && curl -s localhost:3000/api/health
-# → 첫 로그인(admin/admin) 후 비밀번호 즉시 변경
+cd monitoring/stack
+GRAFANA_ADMIN_PASSWORD=<팀비번> docker compose up -d   # 비번 env 주입 필수 (미지정 시 admin — 로컬 전용)
+curl -fsS --retry 5 --retry-delay 2 --max-time 5 localhost:3100/ready
+curl -fsS --retry 5 --retry-delay 2 --max-time 5 localhost:3000/api/health
 ```
 
 ### 2. 각 앱 서버 — promtail
@@ -55,7 +56,7 @@ mkdir -p logs && SPRING_PROFILES_ACTIVE=local,dev ./gradlew bootRun > logs/houme
 # → http://localhost:3000 (admin/admin), env=local
 ```
 ⚠️ macOS 한정: 바인드마운트 fsnotify 미전달로 실시간 tail 이 멈출 수 있음 —
-`docker restart houme-promtail` 로 캐치업. 리눅스 서버에서는 발생하지 않음.
+`docker restart promtail` 로 캐치업. 리눅스 서버에서는 발생하지 않음.
 
 ## 운영 메모
 - 보존: 로그(Loki)·메트릭(Prometheus) 모두 **3일** — 디스크 여유 부족으로 짧게 유지
@@ -68,5 +69,5 @@ mkdir -p logs && SPRING_PROFILES_ACTIVE=local,dev ./gradlew bootRun > logs/houme
    ```json
    { "log-driver": "json-file", "log-opts": { "max-size": "20m", "max-file": "2" } }
    ```
-   `sudo systemctl restart docker` 후 컨테이너 재기동 (신규 컨테이너부터 적용)
+   `sudo systemctl restart docker` 후 **기존 컨테이너는 재생성해야 적용됨** — `docker compose up -d --force-recreate` (log-opts 는 컨테이너 생성 시점에 고정되므로 재시작만으로는 무제한 로그가 계속 쌓임)
 2. **디스크 점검**: `docker system df` → `docker image prune -a --filter "until=168h"`
