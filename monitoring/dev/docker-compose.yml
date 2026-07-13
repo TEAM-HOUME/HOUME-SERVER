@@ -2,7 +2,7 @@
 #   cd monitoring/dev && docker compose up -d
 services:
   promtail:
-    image: grafana/promtail:2.9.8
+    image: grafana/promtail:3.2.1
     container_name: promtail
     restart: unless-stopped
     command: -config.file=/etc/promtail/promtail-config.yml
