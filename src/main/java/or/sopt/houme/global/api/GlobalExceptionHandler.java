@@ -2,9 +2,12 @@ package or.sopt.houme.global.api;
 
 import io.sentry.Sentry;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import or.sopt.houme.global.api.handler.ImageFallbackException;
+import org.apache.catalina.connector.ClientAbortException;
 import or.sopt.houme.global.discord.ErrorAlertNotifier;
 import org.springframework.beans.factory.ObjectProvider;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
@@ -23,6 +26,7 @@ import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import java.util.concurrent.RejectedExecutionException;
 
+@Slf4j
 @RestControllerAdvice
 @RequiredArgsConstructor
 public class GlobalExceptionHandler {
@@ -152,6 +156,14 @@ public class GlobalExceptionHandler {
         Sentry.captureException(e);
 
         return ResponseEntity.status(errorCode.getStatus()).body(ApiResponse.fail(errorCode.getCode(), errorCode.getMsg()));
+    }
+
+    // 응답 전송 중 클라이언트(Prometheus scrape, LB 헬스체크 등)가 먼저 연결을 끊은 경우.
+    // 서버 장애가 아니므로 Sentry/디스코드 알림 없이 debug 로그만 남기고,
+    // 연결이 이미 끊겨 응답을 쓸 수 없으므로 본문도 반환하지 않는다.
+    @ExceptionHandler(ClientAbortException.class)
+    public void handleClientAbort(ClientAbortException e, HttpServletRequest request) {
+        log.debug("클라이언트가 응답 수신 중 연결을 끊음: {} {}", request.getMethod(), request.getRequestURI());
     }
 
     @ExceptionHandler(Exception.class)
