@@ -12,7 +12,9 @@ import or.sopt.houme.domain.user.presentation.controller.dto.KaKaoOAuthTokenDTO;
 import or.sopt.houme.domain.user.presentation.controller.dto.KaKaoUserInfoResponse;
 import or.sopt.houme.domain.credit.repository.CreditRepository;
 import or.sopt.houme.domain.user.model.entity.Gender;
+import or.sopt.houme.domain.user.model.entity.LoginType;
 import or.sopt.houme.domain.user.model.entity.Role;
+import or.sopt.houme.domain.user.model.entity.SocialType;
 import or.sopt.houme.domain.user.model.entity.User;
 import or.sopt.houme.domain.user.repository.BlacklistTokenRepository;
 import or.sopt.houme.domain.user.repository.RefreshTokenRepository;
@@ -71,6 +73,8 @@ class OAuthServiceTest {
     private NicknameService nicknameService;
     @Mock
     private UserNicknameTagTransactionService userNicknameTagTransactionService;
+    @Mock
+    private LoginHistoryService loginHistoryService;
 
     @Mock
     private HttpServletResponse response;
@@ -85,6 +89,7 @@ class OAuthServiceTest {
                 .nickname("느긋한펭귄")
                 .nicknameTag("#4821")
                 .role(Role.ROLE_USER)
+                .socialType(SocialType.KAKAO)
                 .build();
 
         when(signupSessionRepository.consume("signup-token")).thenReturn(Optional.of(signupSession));
@@ -122,6 +127,45 @@ class OAuthServiceTest {
                 Gender.MALE,
                 java.time.LocalDate.of(2000, 1, 1)
         );
+        verify(loginHistoryService).record(1L, LoginType.SIGN_UP, SocialType.KAKAO);
+    }
+
+    @Test
+    @DisplayName("로그인 이력 적재가 실패해도 로그인은 정상 처리된다")
+    void kakaoLogin_loginHistoryFailure_doesNotBreakLogin() {
+        String code = "authCode";
+        KaKaoOAuthTokenDTO tokenDTO = new KaKaoOAuthTokenDTO();
+        tokenDTO.setAccess_token("kakaoAccessToken");
+
+        KaKaoUserInfoResponse.KakaoAccount kakaoAccount = new KaKaoUserInfoResponse.KakaoAccount();
+        kakaoAccount.setEmail("test@houme.kr");
+        KaKaoUserInfoResponse userInfo = new KaKaoUserInfoResponse();
+        userInfo.setId(1234L);
+        userInfo.setKakao_account(kakaoAccount);
+
+        when(kaKaoOAuthClient.getToken(any(), any(), any(), any())).thenReturn(tokenDTO);
+        when(kaKaoUserInfoClient.getUserInfo("Bearer kakaoAccessToken")).thenReturn(userInfo);
+        when(userRepository.existsByEmail("test@houme.kr")).thenReturn(true);
+        when(userRepository.findByEmail("test@houme.kr")).thenReturn(Optional.of(
+                User.builder().id(1L).email("test@houme.kr").role(Role.ROLE_USER).socialType(SocialType.KAKAO).build()
+        ));
+        when(jwtUtil.createJwt(eq("access"), eq(1L), eq("ROLE_USER"), anyLong())).thenReturn("accessToken");
+        when(jwtUtil.createJwt(eq("refresh"), eq(1L), eq("ROLE_USER"), anyLong())).thenReturn("refreshToken");
+        when(jwtConfig.getAccessTokenValidityInSeconds()).thenReturn(3600L);
+        when(jwtConfig.getRefreshTokenValidityInSeconds()).thenReturn(86400L);
+        when(cookieConfig.getDomain()).thenReturn("domain");
+        when(cookieConfig.getSameSite()).thenReturn("true");
+        // 이력 적재가 예외를 던져도
+        doThrow(new RuntimeException("DB down")).when(loginHistoryService).record(anyLong(), any(), any());
+
+        HttpServletRequest request = mock(HttpServletRequest.class);
+        when(request.getHeader("Origin")).thenReturn("http://localhost:5173");
+
+        // 로그인 자체는 정상 완료되어야 한다
+        KakaoLoginResponse result = oAuthService.kakaoLogin(code, request, response);
+
+        assertFalse(result.isNewUser());
+        verify(response).setHeader("access-token", "accessToken");
     }
 
     @Test
@@ -236,6 +280,8 @@ class OAuthServiceTest {
         verify(userRepository, never()).save(any(User.class));
         verify(refreshTokenRepository, never()).saveRefreshToken(anyLong(), anyString(), anyLong());
         verify(response, never()).setHeader(eq("access-token"), anyString());
+        // 아직 회원 생성 전(임시토큰만 발급)이므로 로그인 이력을 남기지 않는다
+        verify(loginHistoryService, never()).record(anyLong(), any(), any());
     }
 
     @Test
@@ -257,7 +303,7 @@ class OAuthServiceTest {
         when(kaKaoUserInfoClient.getUserInfo("Bearer kakaoAccessToken")).thenReturn(userInfo);
         when(userRepository.existsByEmail("test@houme.kr")).thenReturn(true);
         when(userRepository.findByEmail("test@houme.kr")).thenReturn(Optional.of(
-                User.builder().id(1L).email("test@houme.kr").role(Role.ROLE_USER).build()
+                User.builder().id(1L).email("test@houme.kr").role(Role.ROLE_USER).socialType(SocialType.KAKAO).build()
         ));
 
         when(jwtUtil.createJwt(eq("access"), eq(1L), eq("ROLE_USER"), anyLong())).thenReturn("accessToken");
@@ -278,6 +324,7 @@ class OAuthServiceTest {
         assertFalse(result.isNewUser());
         verify(refreshTokenRepository).saveRefreshToken(eq(1L), eq("refreshToken"), eq(86400L));
         verify(response).setHeader("access-token", "accessToken");
+        verify(loginHistoryService).record(1L, LoginType.LOGIN, SocialType.KAKAO);
     }
 
 
