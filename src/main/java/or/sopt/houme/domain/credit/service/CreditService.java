@@ -21,4 +21,8 @@ public interface CreditService {
 
     // 락 수동 해제 메서드 추가
     void releaseLock(User user);
+
+    // 회원에게 ACTIVE 크레딧 amount 개를 지급하고, 지급 후 잔액(ACTIVE 개수)을 반환
+    @Transactional
+    long grantCredits(User user, int amount);
 }

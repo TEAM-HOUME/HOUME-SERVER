@@ -909,6 +909,11 @@
                 <i class="fas fa-drafting-compass"></i>도면 관리
             </a>
         </li>
+        <li class="nav-item">
+            <a class="nav-link" href="#" data-target="credit-management">
+                <i class="fas fa-coins"></i>회원 크레딧 추가
+            </a>
+        </li>
     </ul>
 </div>
 
@@ -2026,6 +2031,57 @@
                     </div>
                 </form>
                 <div id="floor-plan-form-result" class="api-result"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 회원 크레딧 추가 섹션 -->
+    <div id="credit-management" class="content-section">
+        <h2>회원 크레딧 추가</h2>
+
+        <div class="card">
+            <div class="card-header">1. 회원 검색</div>
+            <div class="card-body">
+                <form id="credit-member-search-form" class="d-flex flex-wrap gap-2 align-items-end">
+                    <div class="flex-grow-1" style="min-width: 260px;">
+                        <label for="credit-search-keyword" class="form-label">이메일 또는 닉네임</label>
+                        <input type="text" class="form-control" id="credit-search-keyword"
+                               placeholder="이메일 전체 또는 닉네임 일부" autocomplete="off">
+                    </div>
+                    <button type="submit" class="btn btn-secondary">검색</button>
+                </form>
+                <div class="table-responsive mt-3">
+                    <table class="table table-hover align-middle" id="credit-search-table" style="display:none;">
+                        <thead>
+                            <tr>
+                                <th>회원 ID</th>
+                                <th>닉네임</th>
+                                <th>이메일</th>
+                                <th class="text-end">현재 크레딧</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody id="credit-search-tbody"></tbody>
+                    </table>
+                </div>
+                <div id="credit-search-result" class="api-result"></div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">2. 크레딧 지급</div>
+            <div class="card-body">
+                <p id="credit-selected-member" class="text-muted mb-3">위 목록에서 회원을 선택하세요.</p>
+                <form id="credit-grant-form">
+                    <input type="hidden" id="credit-selected-member-id">
+                    <div class="mb-3" style="max-width: 220px;">
+                        <label for="credit-grant-amount" class="form-label">추가할 크레딧 개수</label>
+                        <input type="number" class="form-control" id="credit-grant-amount"
+                               min="1" max="1000" value="5" required>
+                    </div>
+                    <button type="submit" id="credit-grant-button" class="btn btn-primary" disabled>크레딧 지급</button>
+                </form>
+                <div id="credit-grant-result" class="api-result"></div>
             </div>
         </div>
     </div>
@@ -6362,6 +6418,100 @@
                 console.error('Upload Error:', error);
             });
     }
+
+    // ===== 회원 크레딧 추가 =====
+    (function () {
+        const searchForm = document.getElementById('credit-member-search-form');
+        const grantForm = document.getElementById('credit-grant-form');
+        if (!searchForm || !grantForm) return;
+
+        const searchResult = document.getElementById('credit-search-result');
+        const grantResult = document.getElementById('credit-grant-result');
+        const table = document.getElementById('credit-search-table');
+        const tbody = document.getElementById('credit-search-tbody');
+        const selectedIdInput = document.getElementById('credit-selected-member-id');
+        const selectedLabel = document.getElementById('credit-selected-member');
+        const grantButton = document.getElementById('credit-grant-button');
+
+        function escapeHtml(v) {
+            return String(v ?? '').replace(/[&<>"']/g, c =>
+                ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+        }
+
+        function renderMembers(data, resultDiv) {
+            const members = (data && data.data && data.data.members) || [];
+            if (!members.length) {
+                table.style.display = 'none';
+                tbody.innerHTML = '';
+                resultDiv.innerHTML = '<div class="alert alert-warning">일치하는 회원이 없습니다.</div>';
+                return;
+            }
+            resultDiv.innerHTML = '';
+            table.style.display = '';
+            tbody.innerHTML = members.map(m => {
+                const nick = m.nickname ? `${escapeHtml(m.nickname)} #${escapeHtml(m.nicknameTag)}` : '(닉네임 없음)';
+                return `<tr>
+                    <td>${escapeHtml(m.memberId)}</td>
+                    <td>${nick}</td>
+                    <td>${escapeHtml(m.email)}</td>
+                    <td class="text-end">${escapeHtml(m.creditBalance)}</td>
+                    <td class="text-end">
+                        <button type="button" class="btn btn-sm btn-info credit-select-btn"
+                            data-id="${escapeHtml(m.memberId)}" data-label="${nick} · ${escapeHtml(m.email)}">선택</button>
+                    </td>
+                </tr>`;
+            }).join('');
+
+            tbody.querySelectorAll('.credit-select-btn').forEach(btn => {
+                btn.addEventListener('click', function () {
+                    selectedIdInput.value = this.dataset.id;
+                    selectedLabel.textContent = `선택된 회원: ${this.dataset.label} (ID ${this.dataset.id})`;
+                    selectedLabel.classList.remove('text-muted');
+                    grantButton.disabled = false;
+                    grantResult.innerHTML = '';
+                });
+            });
+        }
+
+        searchForm.addEventListener('submit', function (e) {
+            e.preventDefault();
+            const keyword = document.getElementById('credit-search-keyword').value.trim();
+            if (!keyword) {
+                searchResult.innerHTML = '<div class="alert alert-warning">검색어를 입력해주세요.</div>';
+                return;
+            }
+            const accessToken = localStorage.getItem('accessToken');
+            testApiCall(accessToken, searchResult,
+                '/api/v1/admin/members?keyword=' + encodeURIComponent(keyword), 'GET', null, renderMembers);
+        });
+
+        grantForm.addEventListener('submit', function (e) {
+            e.preventDefault();
+            const memberId = selectedIdInput.value;
+            if (!memberId) {
+                grantResult.innerHTML = '<div class="alert alert-warning">먼저 회원을 선택해주세요.</div>';
+                return;
+            }
+            const amount = parseInt(document.getElementById('credit-grant-amount').value, 10);
+            if (!Number.isInteger(amount) || amount < 1) {
+                grantResult.innerHTML = '<div class="alert alert-warning">1 이상의 크레딧 개수를 입력해주세요.</div>';
+                return;
+            }
+            const accessToken = localStorage.getItem('accessToken');
+            testApiCall(accessToken, grantResult,
+                '/api/v1/admin/members/' + memberId + '/credits', 'POST', { amount: amount },
+                function (data, resultDiv) {
+                    const d = (data && data.data) || {};
+                    resultDiv.innerHTML = `<div class="alert alert-success">크레딧 ${escapeHtml(d.grantedAmount)}개 지급 완료 · 현재 보유 ${escapeHtml(d.creditBalance)}개</div>`;
+                    // 검색 결과 테이블의 해당 회원 잔액도 갱신
+                    const btn = tbody.querySelector(`.credit-select-btn[data-id="${memberId}"]`);
+                    if (btn) {
+                        const cell = btn.closest('tr').querySelector('td:nth-child(4)');
+                        if (cell) cell.textContent = d.creditBalance;
+                    }
+                });
+        });
+    })();
 </script>
 </body>
 </html>
