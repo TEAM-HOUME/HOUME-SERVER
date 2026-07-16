@@ -15,6 +15,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 @Service
@@ -128,6 +130,47 @@ public class CreditServiceImpl implements CreditService{
         final RLock lock = redissonClient.getLock(lockKey);
         if (lock.isLocked() && lock.isHeldByCurrentThread()) {
             lock.unlock();
+        }
+    }
+
+    // 회원에게 ACTIVE 크레딧 amount 개를 지급 (1 크레딧 = 1 row 모델).
+    // 지급은 소진과 경합하므로 소진과 동일한 락(credit_lock_user_{id})으로 동시성을 제어한다.
+    @Override
+    @Transactional
+    public long grantCredits(User user, int amount) {
+        final String lockKey = "credit_lock_user_" + user.getId();
+        final RLock lock = redissonClient.getLock(lockKey);
+
+        try {
+            boolean isLocked = lock.tryLock(10, 210, TimeUnit.SECONDS);
+
+            if (!isLocked) {
+                log.error("크레딧 지급 락 획득 실패, user: {}", user.getId());
+                throw new CreditException(ErrorCode.CREDIT_LOCK_FAILED);
+            }
+
+            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+                @Override
+                public void afterCompletion(int status) {
+                    if (lock.isLocked() && lock.isHeldByCurrentThread()) {
+                        lock.unlock();
+                    }
+                }
+            });
+
+            List<Credit> credits = new ArrayList<>();
+            for (int i = 0; i < amount; i++) {
+                credits.add(Credit.builder()
+                        .status(CreditStatus.ACTIVE)
+                        .user(user)
+                        .build());
+            }
+            creditRepository.saveAll(credits);
+
+            return creditRepository.countByUserIdAndStatus(user.getId(), CreditStatus.ACTIVE);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new CreditException(ErrorCode.CREDIT_LOCK_INTERRUPTED);
         }
     }
 }
