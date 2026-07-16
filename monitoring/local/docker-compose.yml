@@ -1,0 +1,18 @@
+# 내 맥에서 실행 — bootRun 로그 파일을 로컬 stack 의 Loki 로 전송
+# 선행: 중앙 스택 기동 (cd ../stack && docker compose up -d)
+#   cd monitoring/local && docker compose up -d
+services:
+  promtail:
+    image: grafana/promtail:3.2.1
+    container_name: promtail
+    restart: unless-stopped
+    command: -config.file=/etc/promtail/promtail-config.yml
+    volumes:
+      - ./promtail-config.yml:/etc/promtail/promtail-config.yml:ro
+      - ../../logs:/applog:ro
+      - promtail_positions:/positions
+    extra_hosts:
+      - "host.docker.internal:host-gateway"   # 리눅스 호환 (맥/윈도는 기본 제공)
+
+volumes:
+  promtail_positions:

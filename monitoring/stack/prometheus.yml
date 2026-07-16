@@ -1,0 +1,21 @@
+# HOUME 앱 메트릭 스크랩 — JVM(Micrometer) 대시보드의 데이터 소스
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  - job_name: houme-prod
+    metrics_path: /actuator/prometheus
+    static_configs:
+      # prod 앱 — 같은 호스트의 blue/green (호스트 포트 8080)
+      - targets: ["172.17.0.1:8080", "172.17.0.1:8081"]   # blue/green
+        labels:
+          env: prod
+
+  - job_name: houme-dev
+    metrics_path: /actuator/prometheus
+    static_configs:
+      # dev 앱 — dev EC2 (VPC 내부 IP)
+      - targets: ["10.0.1.217:8080"]
+        labels:
+          env: dev

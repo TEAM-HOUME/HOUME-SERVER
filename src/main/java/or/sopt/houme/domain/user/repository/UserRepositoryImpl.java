@@ -7,8 +7,10 @@ import or.sopt.houme.domain.generateImage.model.entity.GenerateImage;
 import or.sopt.houme.domain.generateImage.model.entity.QGenerateImage;
 import or.sopt.houme.domain.house.model.entity.QHouse;
 import or.sopt.houme.domain.user.model.entity.QUser;
+import or.sopt.houme.domain.user.model.entity.User;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 import static or.sopt.houme.domain.credit.model.entity.QCredit.credit;
@@ -44,5 +46,17 @@ public class UserRepositoryImpl implements UserRepositoryCustom {
                 .where(user.id.eq(userId))
                 .limit(1)
                 .fetchOne());
+    }
+
+    @Override
+    public List<User> searchMembers(String keyword, int limit) {
+        QUser user = QUser.user;
+        return queryFactory
+                .selectFrom(user)
+                .where(user.email.eq(keyword)
+                        .or(user.nickname.containsIgnoreCase(keyword)))
+                .orderBy(user.id.asc())
+                .limit(limit)
+                .fetch();
     }
 }

@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <!-- traceId/userId 는 TraceIdFilter(HTTP)·MdcTaskDecorator(비동기)·스케줄러 AOP 가 MDC 에 채운다 -->
+
+    <!-- local/test: 사람이 읽는 플레인 포맷 -->
+    <springProfile name="local | test | default">
+        <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+            <encoder>
+                <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level [%X{traceId:-}] [%X{userId:-}] %logger{36} - %msg%n</pattern>
+                <charset>UTF-8</charset>
+            </encoder>
+        </appender>
+        <root level="INFO">
+            <appender-ref ref="CONSOLE"/>
+        </root>
+    </springProfile>
+
+    <!-- dev/prod: Loki(Promtail) 수집용 JSON 포맷 -->
+    <springProfile name="dev | prod | blue | green">
+        <appender name="JSON_CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+            <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+                <includeMdcKeyName>traceId</includeMdcKeyName>
+                <includeMdcKeyName>userId</includeMdcKeyName>
+                <timeZone>Asia/Seoul</timeZone>
+                <customFields>{"app":"houme"}</customFields>
+            </encoder>
+        </appender>
+        <root level="INFO">
+            <appender-ref ref="JSON_CONSOLE"/>
+        </root>
+    </springProfile>
+</configuration>

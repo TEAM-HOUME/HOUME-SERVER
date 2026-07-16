@@ -1,7 +1,13 @@
 package or.sopt.houme.global.api;
 
 import io.sentry.Sentry;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import or.sopt.houme.global.api.handler.ImageFallbackException;
+import org.apache.catalina.connector.ClientAbortException;
+import or.sopt.houme.global.discord.ErrorAlertNotifier;
+import org.springframework.beans.factory.ObjectProvider;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
@@ -16,18 +22,24 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.HandlerMethodValidationException;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.servlet.NoHandlerFoundException;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import java.util.concurrent.RejectedExecutionException;
 
+@Slf4j
 @RestControllerAdvice
+@RequiredArgsConstructor
 public class GlobalExceptionHandler {
 
+    // @WebMvcTest 등 슬라이스 테스트에는 이 빈이 없으므로 ObjectProvider 로 선택적 주입한다
+    private final ObjectProvider<ErrorAlertNotifier> errorAlertNotifier;
 
     // Fallback 이미지 반환 Exception Handler
     @ExceptionHandler(ImageFallbackException.class)
     public ResponseEntity<ApiResponse<Object>> handleImageFallbackException(ImageFallbackException e) {
         // 센트리 알림
         Sentry.captureException(e);
+        errorAlertNotifier.ifAvailable(notifier -> notifier.notifyServerError(e));
 
         ErrorCode errorCode = e.getErrorCode();
 
@@ -50,6 +62,10 @@ public class GlobalExceptionHandler {
         ApiResponse<Void> response = ApiResponse.fail(errorCode.getCode(), errorCode.getMsg());
 
         Sentry.captureException(e);
+        // 5xx 계열만 디스코드 알림 (4xx/도메인 검증 실패는 노이즈라 제외)
+        if (errorCode.getStatus().is5xxServerError()) {
+            errorAlertNotifier.ifAvailable(notifier -> notifier.notifyServerError(e));
+        }
 
         return ResponseEntity.status(errorCode.getStatus()).body(response);
     }
@@ -105,6 +121,16 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(errorCode.getStatus()).body(ApiResponse.fail(errorCode.getCode(), errorCode.getMsg()));
     }
 
+    // 정적 리소스 없음(예: /swagger-ui/) — 실제 404 이므로 NoHandlerFound 와 동일하게 처리하고 5xx 알림을 보내지 않는다
+    @ExceptionHandler(NoResourceFoundException.class)
+    public ResponseEntity<ApiResponse<Void>> handleNoResourceFound(NoResourceFoundException ex) {
+        ErrorCode errorCode = ErrorCode.NOT_FOUND_URL;
+
+        Sentry.captureException(ex);
+
+        return ResponseEntity.status(errorCode.getStatus()).body(ApiResponse.fail(errorCode.getCode(), errorCode.getMsg()));
+    }
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ApiResponse<Void>> handleMethodArgumentNotValidException(MethodArgumentNotValidException e) {
         ErrorCode errorCode = ErrorCode.NOT_VALID_EXCEPTION;
@@ -132,10 +158,19 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(errorCode.getStatus()).body(ApiResponse.fail(errorCode.getCode(), errorCode.getMsg()));
     }
 
+    // 응답 전송 중 클라이언트(Prometheus scrape, LB 헬스체크 등)가 먼저 연결을 끊은 경우.
+    // 서버 장애가 아니므로 Sentry/디스코드 알림 없이 debug 로그만 남기고,
+    // 연결이 이미 끊겨 응답을 쓸 수 없으므로 본문도 반환하지 않는다.
+    @ExceptionHandler(ClientAbortException.class)
+    public void handleClientAbort(ClientAbortException e, HttpServletRequest request) {
+        log.debug("클라이언트가 응답 수신 중 연결을 끊음: {} {}", request.getMethod(), request.getRequestURI());
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiResponse<Void>> handleUnhandledException(Exception e) {
 
         Sentry.captureException(e);
+        errorAlertNotifier.ifAvailable(notifier -> notifier.notifyServerError(e));
 
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(ApiResponse.fail(HttpStatus.INTERNAL_SERVER_ERROR.value(), "서버 내부 오류입니다."));
@@ -158,6 +193,7 @@ public class GlobalExceptionHandler {
         ErrorCode errorCode = ErrorCode.DB_CONSTRAINT_VIOLATION;
 
         Sentry.captureException(e);
+        errorAlertNotifier.ifAvailable(notifier -> notifier.notifyServerError(e));
 
         return ResponseEntity.status(errorCode.getStatus())
                 .body(ApiResponse.fail(errorCode.getCode(), errorCode.getMsg()));
@@ -169,6 +205,7 @@ public class GlobalExceptionHandler {
         ErrorCode errorCode = ErrorCode.ASYNC_POOL_OVERFLOW;
 
         Sentry.captureException(e);
+        errorAlertNotifier.ifAvailable(notifier -> notifier.notifyServerError(e));
 
         return ResponseEntity.status(errorCode.getStatus())
                 .body(ApiResponse.fail(errorCode.getCode(), errorCode.getMsg()));

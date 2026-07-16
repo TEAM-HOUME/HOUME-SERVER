@@ -1,0 +1,20 @@
+# dev EC2 에서 실행 — houme 컨테이너 로그를 모니터링 서버 Loki 로 전송
+#   cd monitoring/dev && docker compose up -d
+services:
+  promtail:
+    image: grafana/promtail:3.2.1
+    container_name: promtail
+    restart: unless-stopped
+    command: -config.file=/etc/promtail/promtail-config.yml
+    volumes:
+      - ./promtail-config.yml:/etc/promtail/promtail-config.yml:ro
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - promtail_positions:/positions
+    deploy:
+      resources:
+        limits:
+          memory: 64m   # dev EC2(t2.micro, 1GB) — 제한 필수
+
+volumes:
+  promtail_positions:

@@ -5,6 +5,7 @@ import or.sopt.houme.domain.banner.model.entity.Banner;
 import or.sopt.houme.domain.banner.model.entity.BannerType;
 import or.sopt.houme.domain.banner.repository.BannerRepository;
 import or.sopt.houme.domain.furniture.model.entity.CurationRawProduct;
+import or.sopt.houme.domain.house.repository.HouseRepository;
 import or.sopt.houme.domain.user.presentation.admin.controller.dto.banner.request.AdminBannerImageUploadRequest;
 import or.sopt.houme.domain.user.presentation.admin.controller.dto.banner.response.AdminBannerImageUploadResponse;
 import or.sopt.houme.domain.user.presentation.admin.controller.dto.banner.response.AdminBannerRawProductSearchResponse;
@@ -27,6 +28,7 @@ import java.util.Map;
 public class AdminStyleServiceImpl implements AdminStyleService {
 
     private final BannerRepository bannerRepository;
+    private final HouseRepository houseRepository;
     private final AdminBannerSupport adminBannerSupport;
 
     @Override
@@ -108,6 +110,9 @@ public class AdminStyleServiceImpl implements AdminStyleService {
         Banner style = bannerRepository.findByIdWithRawProducts(styleId, BannerType.STYLE, false)
                 .orElseThrow(() -> new GeneralException(ErrorCode.NOT_FOUND_STYLE));
         requireStyle(style);
+        // 이 스타일로 생성된 집(House)이 banner_id로 참조 중이면 FK 제약 위반으로 삭제가 막힌다.
+        // 집 자체는 생성 이력이므로 보존하고, 스타일 연결만 끊은 뒤 삭제한다.
+        houseRepository.clearBannerReference(styleId);
         bannerRepository.delete(style);
         bannerRepository.flush();
     }

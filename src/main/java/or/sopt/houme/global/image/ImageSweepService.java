@@ -32,8 +32,10 @@ public class ImageSweepService {
     /** 변환 대상 원본 확장자 (이미 webp인 이미지나 variant는 제외) */
     private static final Set<String> TARGET_EXTENSIONS = Set.of("jpg", "jpeg", "png");
 
-    /** 디코딩 시 메모리를 과도하게 쓰는 큰 이미지를 거르기 위한 픽셀 수 상한 (약 50MP) */
-    private static final long MAX_PIXELS = 50_000_000L;
+    /**
+     * 디코딩 시 메모리를 과도하게 쓰는 큰 이미지를 거르기 위한 픽셀 수 상한 (약 51MP)
+     */
+    private static final long MAX_PIXELS = 51_000_000L;
 
     private final S3Util s3Util;
     private final ImageOptimizer imageOptimizer;
