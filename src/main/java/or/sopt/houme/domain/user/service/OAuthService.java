@@ -64,6 +64,7 @@ public class OAuthService {
     private final SignupSessionRepository signupSessionRepository;
     private final NicknameService nicknameService;
     private final UserNicknameTagTransactionService userNicknameTagTransactionService;
+    private final LoginHistoryService loginHistoryService;
 
     private final KaKaoConfig kaKaoConfig;
     private final CookieConfig cookieConfig;
@@ -162,22 +163,7 @@ public class OAuthService {
         User byEmail = userRepository.findByEmail(email)
                 .orElseThrow(()-> new UserException(ErrorCode.USER_NOT_FOUND));
 
-        String access = jwtUtil.createJwt("access", byEmail.getId(), byEmail.getRole().toString(), jwtConfig.getAccessTokenValidityInSeconds());
-        String refresh = jwtUtil.createJwt("refresh", byEmail.getId(), byEmail.getRole().toString(), jwtConfig.getRefreshTokenValidityInSeconds());
-
-        refreshTokenRepository.saveRefreshToken(byEmail.getId(),refresh,jwtConfig.getRefreshTokenValidityInSeconds());
-
-        response.setHeader("access-token", access);
-
-        CookieUtil.addSameSiteCookie(
-                response,
-                "refresh-token",
-                refresh,
-                jwtConfig.getRefreshTokenValidityInSeconds().intValue(),
-                cookieConfig.getDomain(),
-                cookieConfig.isSecure(),
-                cookieConfig.getSameSite()
-        );
+        issueTokens(byEmail, response, LoginType.LOGIN);
 
         return KakaoLoginResponse.existingUser();
     }
@@ -209,7 +195,7 @@ public class OAuthService {
         }
 
         User savedUser = createUserWithNicknameTagRetry(signupSession, nickname, gender, birthday);
-        issueTokens(savedUser, response);
+        issueTokens(savedUser, response, LoginType.SIGN_UP);
         return savedUser.getDisplayName();
     }
 
@@ -260,7 +246,7 @@ public class OAuthService {
             throw new CreditException(ErrorCode.CREDIT_CREATE_EXCEPTION);
         }
 
-        issueTokens(savedUser, response);
+        issueTokens(savedUser, response, LoginType.SIGN_UP);
 
         if (StringUtils.hasText(nickname)) {
             return savedUser.getDisplayName();
@@ -294,7 +280,7 @@ public class OAuthService {
         throw new UserException(ErrorCode.NICKNAME_TAG_GENERATION_FAILED);
     }
 
-    private void issueTokens(User savedUser, HttpServletResponse response) {
+    private void issueTokens(User savedUser, HttpServletResponse response, LoginType loginType) {
         String access = jwtUtil.createJwt("access", savedUser.getId(), savedUser.getRole().toString(), jwtConfig.getAccessTokenValidityInSeconds());
         String refresh = jwtUtil.createJwt("refresh", savedUser.getId(), savedUser.getRole().toString(), jwtConfig.getRefreshTokenValidityInSeconds());
 
@@ -311,6 +297,17 @@ public class OAuthService {
                 cookieConfig.isSecure(),
                 cookieConfig.getSameSite()
         );
+
+        recordLoginHistorySafely(savedUser.getId(), loginType, savedUser.getSocialType());
+    }
+
+    // 로그인 이력 적재. 적재 실패가 로그인/가입 자체를 깨지 않도록 예외를 삼킨다.
+    private void recordLoginHistorySafely(Long userId, LoginType loginType, SocialType socialType) {
+        try {
+            loginHistoryService.record(userId, loginType, socialType);
+        } catch (Exception e) {
+            log.warn("로그인 이력 적재 실패 (로그인/가입은 정상 처리됨) userId={}, type={}: {}", userId, loginType, e.getMessage());
+        }
     }
 
     private boolean isNicknameTagConstraintViolation(DataIntegrityViolationException exception) {
