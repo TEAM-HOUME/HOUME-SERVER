@@ -3,6 +3,16 @@ global:
   scrape_interval: 15s
   evaluation_interval: 15s
 
+# 룰 발화 시 Alertmanager 로 전달 (같은 compose 네트워크의 서비스명)
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets: ["alertmanager:9093"]
+
+# 알림 룰 파일 (rules/ 디렉토리 전체)
+rule_files:
+  - /etc/prometheus/rules/*.yml
+
 scrape_configs:
   - job_name: houme-prod
     metrics_path: /actuator/prometheus
@@ -19,3 +29,10 @@ scrape_configs:
       - targets: ["10.0.1.217:8080"]
         labels:
           env: dev
+
+  - job_name: node-exporter
+    static_configs:
+      # 같은 compose 네트워크의 node-exporter (stack 이 도는 호스트 = prod EC2 자원 지표)
+      - targets: ["node-exporter:9100"]
+        labels:
+          env: prod

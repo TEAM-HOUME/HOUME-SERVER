@@ -1,0 +1,22 @@
+# Alertmanager — Prometheus 알림을 Discord 로 전달
+# 웹훅 URL 은 코드에 넣지 않는다 → webhook_url_file 로 시크릿 파일을 읽는다.
+global:
+  resolve_timeout: 5m
+
+route:
+  receiver: discord
+  group_by: ["alertname", "job"]
+  group_wait: 30s        # 첫 발화 후 묶기 대기
+  group_interval: 5m     # 같은 그룹 추가 알림 간격
+  repeat_interval: 3h    # 미해결 알림 반복 주기 (도배 방지)
+
+receivers:
+  - name: discord
+    discord_configs:
+      # 실제 웹훅 URL 이 담긴 파일 (git 미포함, 서버에 배치)
+      - webhook_url_file: /etc/alertmanager/secrets/discord_webhook_url
+        title: '{{ template "houme.discord.title" . }}'
+        message: '{{ template "houme.discord.message" . }}'
+
+templates:
+  - /etc/alertmanager/templates/*.tmpl
