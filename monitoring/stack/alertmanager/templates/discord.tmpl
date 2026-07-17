@@ -1,9 +1,9 @@
 {{ define "houme.discord.title" -}}
-{{ .Status | toUpper }} {{ .CommonLabels.alertname }}
+{{ .Status | toUpper }} {{ .CommonLabels.alertname }} ({{ .Alerts | len }})
 {{- end }}
 
 {{ define "houme.discord.message" -}}
-{{ range .Alerts -}}
+{{ range .Alerts }}
 - 상태: {{ .Status }}
 - 심각도: {{ .Labels.severity }}
 - 서비스: {{ .Labels.service }}
