@@ -1,0 +1,11 @@
+{{ define "houme.discord.title" -}}
+[{{ .Status | toUpper }}] {{ .CommonLabels.alertname }}
+{{- end }}
+
+{{ define "houme.discord.message" -}}
+{{ range .Alerts -}}
+- service={{ .Labels.service }} severity={{ .Labels.severity }} job={{ .Labels.job }}
+  summary={{ .Annotations.summary }}
+  description={{ .Annotations.description }}
+{{ end -}}
+{{- end }}

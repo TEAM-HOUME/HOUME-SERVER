@@ -31,11 +31,46 @@ services:
       - "127.0.0.1:9090:9090"
     volumes:
       - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./rules:/etc/prometheus/rules:ro
       - prometheus_data:/prometheus
     deploy:
       resources:
         limits:
           memory: 192m
+
+  alertmanager:
+    image: prom/alertmanager:v0.28.1
+    container_name: houme-alertmanager
+    restart: unless-stopped
+    command:
+      - --config.file=/etc/alertmanager/alertmanager.yml
+      - --storage.path=/alertmanager
+    ports:
+      # 외부 노출 금지 — 로컬 바인딩만
+      - "127.0.0.1:9093:9093"
+    volumes:
+      - ./alertmanager/alertmanager.yml:/etc/alertmanager/alertmanager.yml:ro
+      - ./alertmanager/templates:/etc/alertmanager/templates:ro
+      - ./alertmanager/secrets:/etc/alertmanager/secrets:ro   # 실제 웹훅은 서버에만 배치
+      - alertmanager_data:/alertmanager
+    deploy:
+      resources:
+        limits:
+          memory: 64m
+
+  node-exporter:
+    image: prom/node-exporter:v1.8.2
+    container_name: houme-node-exporter
+    restart: unless-stopped
+    command:
+      - --path.rootfs=/host
+    pid: host
+    volumes:
+      - /:/host:ro,rslave
+    deploy:
+      resources:
+        limits:
+          memory: 64m
 
   grafana:
     image: grafana/grafana:11.1.4
@@ -64,3 +99,4 @@ volumes:
   loki_data:
   prometheus_data:
   grafana_data:
+  alertmanager_data:
