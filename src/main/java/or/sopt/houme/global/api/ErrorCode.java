@@ -153,6 +153,7 @@ public enum ErrorCode {
      * 409 CONFLICT
      */
     CREDIT_LOCK_FAILED(HttpStatus.CONFLICT, 40900, "다른 요청을 처리 중입니다. 잠시 후 다시 시도해주세요."),
+    ALREADY_EXIST_FURNITURE_TAG(HttpStatus.CONFLICT, 40901, "이미 해당 가구와 태그 조합의 스타일 태그가 존재합니다."),
 
     /**
      * 429 Too_Many_Requests

@@ -7,7 +7,13 @@ import or.sopt.houme.domain.house.model.taste.entity.Tag;
 
 @Entity
 @Getter
-@Table(name = "furniture_tags")
+@Table(
+        name = "furniture_tags",
+        uniqueConstraints = @UniqueConstraint(
+                name = "uk_furniture_tags_furniture_id_tag_id",
+                columnNames = {"furniture_id", "tag_id"}
+        )
+)
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Builder

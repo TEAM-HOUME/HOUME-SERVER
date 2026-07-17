@@ -85,6 +85,11 @@ public class AdminFurnitureServiceImpl implements AdminFurnitureService {
         Furniture byFurnitureNameKr = furnitureRepository.findByFurnitureNameKr(dto.furnitureNameKr())
                 .orElseThrow(()-> new GeneralException(ErrorCode.NOT_FOUND_FURNITURE));;
 
+        // (furniture, tag) 유니크 제약이 있으므로, 중복 등록은 raw DB 예외 대신 명확한 409 로 사전 차단한다
+        if (furnitureTagRepository.findByFurnitureAndTag(byFurnitureNameKr, byIdTag).isPresent()) {
+            throw new GeneralException(ErrorCode.ALREADY_EXIST_FURNITURE_TAG);
+        }
+
         S3PresignedUrlResponseDTO presignedUrl;
 
         try {

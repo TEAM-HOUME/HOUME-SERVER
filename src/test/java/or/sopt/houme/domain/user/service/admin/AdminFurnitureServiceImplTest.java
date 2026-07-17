@@ -162,6 +162,28 @@ class AdminFurnitureServiceImplTest {
         assertEquals(ErrorCode.NOT_FOUND_FURNITURE, exception.getErrorCode());
     }
 
+    @Test
+    @DisplayName("registerFurniturePrompt()는 이미 존재하는 (가구,태그) 조합이면 저장 없이 ALREADY_EXIST_FURNITURE_TAG 를 던진다")
+    void registerFurniturePrompt_duplicate() {
+        // given
+        AdminFurniturePromptRequestDTO requestDTO = new AdminFurniturePromptRequestDTO(
+                "테스트 가구", "테스트 프롬프트", 1L, "키워드", 0, "jpg", "orig");
+        Tag tag = Tag.builder().id(1L).build();
+        Furniture furniture = Furniture.builder().furnitureNameKr("테스트 가구").build();
+
+        when(tagRepository.findById(1L)).thenReturn(Optional.of(tag));
+        when(furnitureRepository.findByFurnitureNameKr("테스트 가구")).thenReturn(Optional.of(furniture));
+        when(furnitureTagRepository.findByFurnitureAndTag(furniture, tag))
+                .thenReturn(Optional.of(FurnitureTag.builder().id(1L).build()));
+
+        // when & then
+        GeneralException exception = assertThrows(GeneralException.class, () -> {
+            adminFurnitureService.registerFurniturePrompt(requestDTO, "image/jpeg");
+        });
+        assertEquals(ErrorCode.ALREADY_EXIST_FURNITURE_TAG, exception.getErrorCode());
+        verify(furnitureTagRepository, never()).save(any(FurnitureTag.class));
+    }
+
 
     @Test
     @DisplayName("getFurniture()는 모든 가구 정보를 성공적으로 조회한다")
