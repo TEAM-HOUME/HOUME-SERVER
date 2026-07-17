@@ -4,8 +4,7 @@ import or.sopt.houme.domain.banner.model.entity.Banner;
 import or.sopt.houme.domain.banner.model.entity.BannerCurationRawProduct;
 import or.sopt.houme.domain.banner.model.entity.BannerType;
 import or.sopt.houme.domain.banner.repository.BannerRepository;
-import or.sopt.houme.domain.credit.model.entity.Credit;
-import or.sopt.houme.domain.credit.repository.CreditRepository;
+import or.sopt.houme.credit.application.CreditUseCase;
 import or.sopt.houme.domain.furniture.model.entity.CurationRawProduct;
 import or.sopt.houme.domain.furniture.model.entity.CurationRawProductColor;
 import or.sopt.houme.domain.furniture.model.entity.CurationSource;
@@ -61,7 +60,10 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.BDDMockito.*;
 
@@ -73,7 +75,7 @@ class UserServiceImplTest {
     private final HouseFurnitureRepository houseFurnitureRepository = mock(HouseFurnitureRepository.class);
     private final TagRepository tagRepository = mock(TagRepository.class);
     private final GenerateImageRepository generateImageRepository = mock(GenerateImageRepository.class);
-    private final CreditRepository creditRepository = mock(CreditRepository.class);
+    private final CreditUseCase creditUseCase = mock(CreditUseCase.class);
     private final GenerateImagePreferenceRepository generateImagePreferenceRepository = mock(GenerateImagePreferenceRepository.class);
     private final FactorRepository factorRepository = mock(FactorRepository.class);
     private final PreferenceRepository preferenceRepository = mock(PreferenceRepository.class);
@@ -94,7 +96,7 @@ class UserServiceImplTest {
             houseFurnitureRepository,
             tagRepository,
             generateImageRepository,
-            creditRepository,
+            creditUseCase,
             generateImagePreferenceRepository,
             factorRepository,
             preferenceRepository,
@@ -145,7 +147,7 @@ class UserServiceImplTest {
     void getMyPageInfo_success() {
         // given
         given(userRepository.findById(1L)).willReturn(Optional.of(user));
-        given(userRepository.countByMemberIdAndStatus(1L)).willReturn(10L);
+        given(creditUseCase.countActive(1L)).willReturn(10L);
 
         // when
         MyPageInfoResponse response = userService.getMyPageInfo(user);
@@ -777,8 +779,7 @@ class UserServiceImplTest {
         assertEquals(Gender.MALE, dbUser.getGender());
         assertEquals(LocalDate.of(2000, 5, 15), dbUser.getBirthday());
 
-        verify(creditRepository, times(1))
-                .saveAll(argThat(credits -> credits instanceof java.util.Collection<?> c && c.size() == 5));
+        verify(creditUseCase, times(1)).grant(eq(1L), eq(5));
     }
 
 
@@ -805,9 +806,9 @@ class UserServiceImplTest {
         // 유저 조회는 정상적으로 동작
         given(userRepository.findById(1L)).willReturn(Optional.of(dbUser));
 
-        // 크레딧 저장 시 RuntimeException 발생하도록 설정
-        willThrow(new RuntimeException("DB error"))
-                .given(creditRepository).saveAll(anyList());
+        // 크레딧 지급 유스케이스에서 예외가 발생하도록 설정
+        willThrow(new CreditException(ErrorCode.CREDIT_CREATE_EXCEPTION))
+                .given(creditUseCase).grant(anyLong(), anyInt());
 
         // when & then
         assertThatThrownBy(() -> userService.updateUser(inputUser, request.name(), Gender.MALE, LocalDate.of(2000, 5, 15)

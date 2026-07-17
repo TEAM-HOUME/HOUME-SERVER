@@ -10,7 +10,7 @@ import or.sopt.houme.domain.user.presentation.controller.dto.CustomUserDetails;
 import or.sopt.houme.domain.user.presentation.controller.dto.KakaoLoginResponse;
 import or.sopt.houme.domain.user.presentation.controller.dto.KaKaoOAuthTokenDTO;
 import or.sopt.houme.domain.user.presentation.controller.dto.KaKaoUserInfoResponse;
-import or.sopt.houme.domain.credit.repository.CreditRepository;
+import or.sopt.houme.credit.application.CreditUseCase;
 import or.sopt.houme.domain.user.model.entity.Gender;
 import or.sopt.houme.domain.user.model.entity.LoginType;
 import or.sopt.houme.domain.user.model.entity.Role;
@@ -54,7 +54,7 @@ class OAuthServiceTest {
     @Mock
     private UserRepository userRepository;
     @Mock
-    private CreditRepository creditRepository;
+    private CreditUseCase creditUseCase;
     @Mock
     private JWTUtil jwtUtil;
     @Mock

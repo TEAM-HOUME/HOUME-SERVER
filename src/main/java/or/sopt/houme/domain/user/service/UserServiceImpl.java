@@ -3,9 +3,7 @@ package or.sopt.houme.domain.user.service;
 import lombok.RequiredArgsConstructor;
 import or.sopt.houme.domain.banner.model.entity.Banner;
 import or.sopt.houme.domain.banner.repository.BannerRepository;
-import or.sopt.houme.domain.credit.model.entity.Credit;
-import or.sopt.houme.domain.credit.model.entity.CreditStatus;
-import or.sopt.houme.domain.credit.repository.CreditRepository;
+import or.sopt.houme.credit.application.CreditUseCase;
 import or.sopt.houme.domain.furniture.model.entity.CurationRawProduct;
 import or.sopt.houme.domain.furniture.model.entity.CurationRawProductColor;
 import or.sopt.houme.domain.furniture.model.entity.CurationSource;
@@ -87,7 +85,7 @@ public class UserServiceImpl implements UserService {
     private final HouseFurnitureRepository houseFurnitureRepository;
     private final TagRepository tagRepository;
     private final GenerateImageRepository generateImageRepository;
-    private final CreditRepository creditRepository;
+    private final CreditUseCase creditUseCase;
     private final GenerateImagePreferenceRepository generateImagePreferenceRepository;
     private final FactorRepository factorRepository;
     private final PreferenceRepository preferenceRepository;
@@ -106,7 +104,7 @@ public class UserServiceImpl implements UserService {
     public MyPageInfoResponse getMyPageInfo(User user) {
         User findUser = findUser(user);
         String name = findUser.getDisplayName();
-        Long creditCount = userRepository.countByMemberIdAndStatus(findUser.getId());
+        Long creditCount = creditUseCase.countActive(findUser.getId());
         return MyPageInfoResponse.of(findUser.getId(), name, creditCount, findUser.getEmail());
     }
 
@@ -405,19 +403,7 @@ public class UserServiceImpl implements UserService {
     }
 
     private String createSignUpCreditAndGetDisplayName(User findUser) {
-
-        try {
-            List<Credit> newCredits = IntStream.range(0, SIGN_UP_CREDIT_COUNT)
-                    .mapToObj(i -> Credit.builder()
-                            .status(CreditStatus.ACTIVE)
-                            .user(findUser)
-                            .build())
-                    .toList();
-            creditRepository.saveAll(newCredits);
-        }catch (Exception e) {
-            throw new CreditException(ErrorCode.CREDIT_CREATE_EXCEPTION);
-        }
-
+        creditUseCase.grant(findUser.getId(), SIGN_UP_CREDIT_COUNT);
         return findUser.getDisplayName();
     }
 

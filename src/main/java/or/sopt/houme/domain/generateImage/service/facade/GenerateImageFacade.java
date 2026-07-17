@@ -10,9 +10,8 @@ import or.sopt.houme.domain.banner.model.entity.BannerCurationRawProduct;
 import or.sopt.houme.domain.banner.model.entity.BannerType;
 import or.sopt.houme.domain.banner.model.vo.BannerStyleAnswerChip;
 import or.sopt.houme.domain.banner.repository.BannerRepository;
-import or.sopt.houme.domain.credit.model.entity.Credit;
-import or.sopt.houme.domain.credit.model.entity.CreditStatus;
-import or.sopt.houme.domain.credit.service.CreditService;
+import or.sopt.houme.credit.application.CreditUseCase;
+import or.sopt.houme.credit.domain.CreditReservation;
 import or.sopt.houme.domain.furniture.model.entity.CurationRawProduct;
 import or.sopt.houme.domain.furniture.model.entity.CurationRawProductFurniture;
 import or.sopt.houme.domain.furniture.model.entity.FurnitureTag;
@@ -91,7 +90,7 @@ public class GenerateImageFacade {
     private final FloorPlanRepository floorPlanRepository;
     private final HouseService houseService;
     private final HouseFloorPlanRepository houseFloorPlanRepository;
-    private final CreditService creditService;
+    private final CreditUseCase creditUseCase;
     private final TasteTagService tasteTagService;
     private final UserService userService;
     private final TagService tagService;
@@ -135,7 +134,7 @@ public class GenerateImageFacade {
          */
 
         // 크레딧 감소
-        creditService.decreaseCreditAtomically(user);
+        creditUseCase.deductOldestActive(user.getId());
 
         // Enum 타입의 유효성 검증
         Activity activity = enumValueOf(Activity.class, generateImageRequest.activity());
@@ -271,12 +270,12 @@ public class GenerateImageFacade {
             log.info("houseId: {}로 생성된 이미지 없음", generateImageRequest.houseId());
         }
 
-        Credit lockedCredit = null;
+        CreditReservation lockedCredit = null;
         // 크레딧 감소
         try {
 
             // 크레딧 락 획득 및 상태 변경 (짧은 트랜잭션)
-            lockedCredit = creditService.tryLockAndGetCredit(user);
+            lockedCredit = creditUseCase.reserve(user.getId());
 
             // Enum 타입의 유효성 검증
             Activity activity = enumValueOf(Activity.class, generateImageRequest.activity());
@@ -327,26 +326,26 @@ public class GenerateImageFacade {
         } catch (ValidException validException) {
             // 유효값 검증 실패시
             log.error("유효값 검증 실패: {}", validException.getMessage(), validException);
-            if (lockedCredit != null && lockedCredit.getStatus() == CreditStatus.PENDING) {
-                creditService.rollbackCreditPending(lockedCredit);
+            if (lockedCredit != null) {
+                creditUseCase.rollback(lockedCredit);
             }
             throw new GenerateImageException(ErrorCode.INVALID_GENERATE_IMAGE_REQUEST);
         } catch (GenerateImageException | ImageFallbackException | CreditException e) {
             // 이미지 생성 중 어떤 예외라도 발생하면 크레딧 상태 복구
-            if (lockedCredit != null && lockedCredit.getStatus() == CreditStatus.PENDING) {
-                creditService.rollbackCreditPending(lockedCredit);
+            if (lockedCredit != null) {
+                creditUseCase.rollback(lockedCredit);
             }
             throw e;
         } catch (Exception e) {
             log.info("Image 생성 중 오류 발생 {}", e.getMessage());
-            if (lockedCredit != null && lockedCredit.getStatus() == CreditStatus.PENDING) {
-                creditService.rollbackCreditPending(lockedCredit);
+            if (lockedCredit != null) {
+                creditUseCase.rollback(lockedCredit);
             }
             throw new GenerateImageException(ErrorCode.GENERATED_IMAGE_EXCEPTION);
         } finally {
             // 어떤 경우든 락 최종 해제
             if (lockedCredit != null) {
-                creditService.releaseLock(user);
+                creditUseCase.releaseLock(user.getId());
             }
         }
     
@@ -362,12 +361,12 @@ public class GenerateImageFacade {
     }
 
     public BannerGenerateImageResponse generateBannerImageByGemini(User user, BannerGenerateImageRequest request) {
-        Credit lockedCredit = null;
+        CreditReservation lockedCredit = null;
 
         try {
             log.info("배너 템플릿 기반 인테리어 이미지 생성 시작 userId={}, bannerId={}, answerId={}, floorPlanId={}, view={}, isMirror={}",
                     user.getId(), request.bannerId(), request.answerId(), request.floorPlanId(), request.floorPlanView(), request.isMirror());
-            lockedCredit = creditService.tryLockAndGetCredit(user);
+            lockedCredit = creditUseCase.reserve(user.getId());
 
             Banner banner = bannerRepository.findByIdWithRawProducts(request.bannerId(), BannerType.BANNER, false)
                     .orElseThrow(() -> new BannerException(ErrorCode.NOT_FOUND_BANNER));
@@ -422,35 +421,35 @@ public class GenerateImageFacade {
             log.info("배너 템플릿 기반 인테리어 이미지 생성 저장 완료 imageId={}", response.imageId());
             return response;
         } catch (ValidException validException) {
-            if (lockedCredit != null && lockedCredit.getStatus() == CreditStatus.PENDING) {
-                creditService.rollbackCreditPending(lockedCredit);
+            if (lockedCredit != null) {
+                creditUseCase.rollback(lockedCredit);
             }
             throw validException;
         } catch (GeneralException e) {
-            if (lockedCredit != null && lockedCredit.getStatus() == CreditStatus.PENDING) {
-                creditService.rollbackCreditPending(lockedCredit);
+            if (lockedCredit != null) {
+                creditUseCase.rollback(lockedCredit);
             }
             throw e;
         } catch (Exception e) {
             log.error("배너 템플릿 기반 인테리어 이미지 생성 중 오류 발생: {}", e.getMessage(), e);
-            if (lockedCredit != null && lockedCredit.getStatus() == CreditStatus.PENDING) {
-                creditService.rollbackCreditPending(lockedCredit);
+            if (lockedCredit != null) {
+                creditUseCase.rollback(lockedCredit);
             }
             throw new GenerateImageException(ErrorCode.GENERATED_IMAGE_EXCEPTION);
         } finally {
             if (lockedCredit != null) {
-                creditService.releaseLock(user);
+                creditUseCase.releaseLock(user.getId());
             }
         }
     }
 
     public OtherStyleGenerateImageResponse generateOtherStyleImageByGemini(User user, OtherStyleGenerateImageRequest request) {
-        Credit lockedCredit = null;
+        CreditReservation lockedCredit = null;
 
         try {
             log.info("스타일 템플릿 기반 인테리어 이미지 생성 시작 userId={}, bannerId={}, floorPlanId={}, view={}, isMirror={}",
                     user.getId(), request.bannerId(), request.floorPlanId(), request.floorPlanView(), request.isMirror());
-            lockedCredit = creditService.tryLockAndGetCredit(user);
+            lockedCredit = creditUseCase.reserve(user.getId());
 
             Banner style = bannerRepository.findByIdWithRawProducts(request.bannerId(), BannerType.STYLE, false)
                     .orElseThrow(() -> new BannerException(ErrorCode.NOT_FOUND_STYLE));
@@ -499,30 +498,30 @@ public class GenerateImageFacade {
             log.info("스타일 템플릿 기반 인테리어 이미지 생성 저장 완료 imageId={}", response.imageId());
             return OtherStyleGenerateImageResponse.of(response.imageId(), response.imageUrl(), response.isMirror());
         } catch (ValidException validException) {
-            if (lockedCredit != null && lockedCredit.getStatus() == CreditStatus.PENDING) {
-                creditService.rollbackCreditPending(lockedCredit);
+            if (lockedCredit != null) {
+                creditUseCase.rollback(lockedCredit);
             }
             throw validException;
         } catch (GeneralException e) {
-            if (lockedCredit != null && lockedCredit.getStatus() == CreditStatus.PENDING) {
-                creditService.rollbackCreditPending(lockedCredit);
+            if (lockedCredit != null) {
+                creditUseCase.rollback(lockedCredit);
             }
             throw e;
         } catch (Exception e) {
             log.error("스타일 템플릿 기반 인테리어 이미지 생성 중 오류 발생: {}", e.getMessage(), e);
-            if (lockedCredit != null && lockedCredit.getStatus() == CreditStatus.PENDING) {
-                creditService.rollbackCreditPending(lockedCredit);
+            if (lockedCredit != null) {
+                creditUseCase.rollback(lockedCredit);
             }
             throw new GenerateImageException(ErrorCode.GENERATED_IMAGE_EXCEPTION);
         } finally {
             if (lockedCredit != null) {
-                creditService.releaseLock(user);
+                creditUseCase.releaseLock(user.getId());
             }
         }
     }
 
     public GenerateImageV4Response generateImageV4ByGemini(User user, GenerateImageV4Request request) {
-        Credit lockedCredit = null;
+        CreditReservation lockedCredit = null;
 
         try {
             log.info(
@@ -535,7 +534,7 @@ public class GenerateImageFacade {
                     request.furnitureIds().size()
             );
 
-            lockedCredit = creditService.tryLockAndGetCredit(user);
+            lockedCredit = creditUseCase.reserve(user.getId());
 
             Activity activity = enumValueOf(Activity.class, request.activity());
             Tag selectedTag = tasteTagService.getPriorityId(request.moodBoardIds());
@@ -592,33 +591,33 @@ public class GenerateImageFacade {
                     request.isMirror()
             );
         } catch (ValidException validException) {
-            if (lockedCredit != null && lockedCredit.getStatus() == CreditStatus.PENDING) {
-                creditService.rollbackCreditPending(lockedCredit);
+            if (lockedCredit != null) {
+                creditUseCase.rollback(lockedCredit);
             }
             throw validException;
         } catch (GeneralException e) {
-            if (lockedCredit != null && lockedCredit.getStatus() == CreditStatus.PENDING) {
-                creditService.rollbackCreditPending(lockedCredit);
+            if (lockedCredit != null) {
+                creditUseCase.rollback(lockedCredit);
             }
             throw e;
         } catch (Exception e) {
             log.error("V4 이미지 생성 중 오류 발생: {}", e.getMessage(), e);
-            if (lockedCredit != null && lockedCredit.getStatus() == CreditStatus.PENDING) {
-                creditService.rollbackCreditPending(lockedCredit);
+            if (lockedCredit != null) {
+                creditUseCase.rollback(lockedCredit);
             }
             throw new GenerateImageException(ErrorCode.GENERATED_IMAGE_EXCEPTION);
         } finally {
             if (lockedCredit != null) {
-                creditService.releaseLock(user);
+                creditUseCase.releaseLock(user.getId());
             }
         }
     }
 
     public GenerateImageV4Response generateImageByProducts(User user, ProductGenerateImageRequest request) {
-        Credit lockedCredit = null;
+        CreditReservation lockedCredit = null;
 
         try {
-            lockedCredit = creditService.tryLockAndGetCredit(user);
+            lockedCredit = creditUseCase.reserve(user.getId());
 
             FloorPlan floorPlan = floorPlanRepository.findById(request.floorPlanId())
                     .orElseThrow(() -> new HouseException(ErrorCode.NOT_FOUND_FLOOR_PLAN));
@@ -667,24 +666,24 @@ public class GenerateImageFacade {
                     request.isMirror()
             );
         } catch (ValidException validException) {
-            if (lockedCredit != null && lockedCredit.getStatus() == CreditStatus.PENDING) {
-                creditService.rollbackCreditPending(lockedCredit);
+            if (lockedCredit != null) {
+                creditUseCase.rollback(lockedCredit);
             }
             throw validException;
         } catch (GeneralException e) {
-            if (lockedCredit != null && lockedCredit.getStatus() == CreditStatus.PENDING) {
-                creditService.rollbackCreditPending(lockedCredit);
+            if (lockedCredit != null) {
+                creditUseCase.rollback(lockedCredit);
             }
             throw e;
         } catch (Exception e) {
             log.error("선택 상품 기반 이미지 생성 중 오류 발생: {}", e.getMessage(), e);
-            if (lockedCredit != null && lockedCredit.getStatus() == CreditStatus.PENDING) {
-                creditService.rollbackCreditPending(lockedCredit);
+            if (lockedCredit != null) {
+                creditUseCase.rollback(lockedCredit);
             }
             throw new GenerateImageException(ErrorCode.GENERATED_IMAGE_EXCEPTION);
         } finally {
             if (lockedCredit != null) {
-                creditService.releaseLock(user);
+                creditUseCase.releaseLock(user.getId());
             }
         }
     }
@@ -692,11 +691,11 @@ public class GenerateImageFacade {
     private ImageInfoListResponse generateImageBy2eaInternal(User user, GenerateImageRequest generateImageRequest, boolean useGemini) {
 
         // finally 블록에서 사용하기 위해 선언
-        Credit lockedCredit = null;
+        CreditReservation lockedCredit = null;
 
         try {
             // 크레딧 락 획득 및 상태 변경 (짧은 트랜잭션)
-            lockedCredit = creditService.tryLockAndGetCredit(user);
+            lockedCredit = creditUseCase.reserve(user.getId());
 
             // Enum 타입의 유효성 검증
             Activity activity = enumValueOf(Activity.class, generateImageRequest.activity());
@@ -829,27 +828,27 @@ public class GenerateImageFacade {
         } catch (ValidException validException) {
             // 유효값 검증 실패시
             log.error("유효값 검증 실패: {}", validException.getMessage(), validException);
-            if (lockedCredit != null && lockedCredit.getStatus() == CreditStatus.PENDING) {
-                creditService.rollbackCreditPending(lockedCredit);
+            if (lockedCredit != null) {
+                creditUseCase.rollback(lockedCredit);
             }
             throw new GenerateImageException(ErrorCode.INVALID_GENERATE_IMAGE_REQUEST);
         } catch (GenerateImageException | ImageFallbackException | CreditException e) {
             // 이미지 생성 중 어떤 예외라도 발생하면 크레딧 상태 복구
-            if (lockedCredit != null && lockedCredit.getStatus() == CreditStatus.PENDING) {
-                creditService.rollbackCreditPending(lockedCredit);
+            if (lockedCredit != null) {
+                creditUseCase.rollback(lockedCredit);
             }
             throw e;
         } catch (Exception e) {
             log.error("이미지 생성 중 예상치 못한 오류 발생: {}", e.getMessage(), e);
             // 예상치 못한 예외 발생 시에도 크레딧 상태 복구
-            if (lockedCredit != null && lockedCredit.getStatus() == CreditStatus.PENDING) {
-                creditService.rollbackCreditPending(lockedCredit);
+            if (lockedCredit != null) {
+                creditUseCase.rollback(lockedCredit);
             }
             throw new GenerateImageException(ErrorCode.GENERATED_IMAGE_EXCEPTION);
         } finally {
             // 어떤 경우든 락 최종 해제
             if (lockedCredit != null) {
-                creditService.releaseLock(user);
+                creditUseCase.releaseLock(user.getId());
             }
         }
     

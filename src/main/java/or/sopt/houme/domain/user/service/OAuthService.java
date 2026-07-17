@@ -4,9 +4,7 @@ import feign.FeignException;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import or.sopt.houme.domain.credit.model.entity.Credit;
-import or.sopt.houme.domain.credit.model.entity.CreditStatus;
-import or.sopt.houme.domain.credit.repository.CreditRepository;
+import or.sopt.houme.credit.application.CreditUseCase;
 import or.sopt.houme.domain.user.infrastructure.client.KaKaoOAuthClient;
 import or.sopt.houme.domain.user.infrastructure.client.KaKaoUserInfoClient;
 import or.sopt.houme.domain.user.presentation.controller.dto.CustomUserDetails;
@@ -55,7 +53,7 @@ public class OAuthService {
     private final KaKaoOAuthClient kaKaoOAuthClient;
     private final KaKaoUserInfoClient kaKaoUserInfoClient;
     private final UserRepository userRepository;
-    private final CreditRepository creditRepository;
+    private final CreditUseCase creditUseCase;
     private final JWTUtil jwtUtil;
     private final JWTConfig jwtConfig;
 
@@ -234,17 +232,7 @@ public class OAuthService {
                         .build()
         );
 
-        try {
-            List<Credit> newCredits = IntStream.range(0, SIGN_UP_CREDIT_COUNT)
-                    .mapToObj(i -> Credit.builder()
-                            .status(CreditStatus.ACTIVE)
-                            .user(savedUser)
-                            .build())
-                    .toList();
-            creditRepository.saveAll(newCredits);
-        } catch (Exception e) {
-            throw new CreditException(ErrorCode.CREDIT_CREATE_EXCEPTION);
-        }
+        creditUseCase.grant(savedUser.getId(), SIGN_UP_CREDIT_COUNT);
 
         issueTokens(savedUser, response, LoginType.SIGN_UP);
 

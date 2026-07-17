@@ -3,8 +3,8 @@ package or.sopt.houme.domain.generateImage.service;
 import lombok.RequiredArgsConstructor;
 import or.sopt.houme.domain.banner.model.entity.Banner;
 import or.sopt.houme.domain.banner.model.entity.BannerType;
-import or.sopt.houme.domain.credit.model.entity.Credit;
-import or.sopt.houme.domain.credit.service.CreditService;
+import or.sopt.houme.credit.domain.CreditReservation;
+import or.sopt.houme.credit.application.CreditUseCase;
 import or.sopt.houme.domain.furniture.model.entity.CurationRawProduct;
 import or.sopt.houme.domain.generateImage.presentation.dto.request.GenerateImageRequest;
 import or.sopt.houme.domain.generateImage.presentation.dto.response.BannerGenerateImageResponse;
@@ -39,7 +39,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class GenerateImageTransactionService {
 
-    private final CreditService creditService;
+    private final CreditUseCase creditUseCase;
     private final HouseService houseService;
     private final HouseFloorPlanRepository houseFloorPlanRepository;
     private final GenerateImageService generateImageService;
@@ -50,11 +50,11 @@ public class GenerateImageTransactionService {
     @Transactional
     public List<ImageInfoResponse> saveResultsAndCreateResponse(
             User user, House house, List<ImageUploadResponseDTO> results,
-            GenerateImageRequest generateImageRequest, List<TagDTO> priorityIdList, Credit credit,
+            GenerateImageRequest generateImageRequest, List<TagDTO> priorityIdList, CreditReservation credit,
             GenerateImageType generationType) {
 
         // 크레딧 차감 로직
-        creditService.commitCreditDeletion(credit);
+        creditUseCase.commit(credit);
 
         // house에 프롬프트 저장
         for (ImageUploadResponseDTO result : results) {
@@ -90,7 +90,7 @@ public class GenerateImageTransactionService {
     @Transactional(propagation = Propagation.REQUIRES_NEW) // 확실하게 분리된 트랜잭션 보장
     public ImageInfoResponse saveAllDataAndConfirmCredit(
             User user,
-            Credit lockedCredit,
+            CreditReservation lockedCredit,
             GenerateImageRequest request,
             ImageUploadResponseDTO imageResponse,
             Tag priorityTag,
@@ -114,7 +114,7 @@ public class GenerateImageTransactionService {
         );
 
         // 4. 크레딧 차감 확정 (PENDING -> DELETE)
-        creditService.commitCreditDeletion(lockedCredit);
+        creditUseCase.commit(lockedCredit);
 
         // 5. 유저 상태 업데이트
         userService.updateHasGeneratedImage(user);
@@ -135,7 +135,7 @@ public class GenerateImageTransactionService {
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public BannerGenerateImageResponse saveBannerImageAndConfirmCredit(
             User user,
-            Credit lockedCredit,
+            CreditReservation lockedCredit,
             Banner banner,
             Long floorPlanId,
             boolean isMirror,
@@ -157,7 +157,7 @@ public class GenerateImageTransactionService {
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public BannerGenerateImageResponse saveBannerImageAndConfirmCredit(
             User user,
-            Credit lockedCredit,
+            CreditReservation lockedCredit,
             Banner banner,
             Long floorPlanId,
             boolean isMirror,
@@ -213,7 +213,7 @@ public class GenerateImageTransactionService {
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public BannerGenerateImageResponse saveBannerImageAndConfirmCredit(
             User user,
-            Credit lockedCredit,
+            CreditReservation lockedCredit,
             House house,
             Banner banner,
             ImageUploadResponseDTO imageResponse,
@@ -225,7 +225,7 @@ public class GenerateImageTransactionService {
                 resolveListGenerationType(banner)
         );
 
-        creditService.commitCreditDeletion(lockedCredit);
+        creditUseCase.commit(lockedCredit);
         userService.updateHasGeneratedImage(user);
         return BannerGenerateImageResponse.of(generateImage.getId(), generateImage.getUrl(), isMirror);
     }
@@ -233,7 +233,7 @@ public class GenerateImageTransactionService {
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public GenerateImageV4Response saveV4ImageAndConfirmCredit(
             User user,
-            Credit lockedCredit,
+            CreditReservation lockedCredit,
             Long floorPlanId,
             boolean isMirror,
             String finalPrompt,
@@ -259,7 +259,7 @@ public class GenerateImageTransactionService {
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public GenerateImageV4Response saveV4ImageAndConfirmCredit(
             User user,
-            Credit lockedCredit,
+            CreditReservation lockedCredit,
             Long floorPlanId,
             boolean isMirror,
             String floorPlanView,
@@ -287,7 +287,7 @@ public class GenerateImageTransactionService {
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public GenerateImageV4Response saveV4ImageAndConfirmCredit(
             User user,
-            Credit lockedCredit,
+            CreditReservation lockedCredit,
             House house,
             ImageUploadResponseDTO imageResponse,
             boolean isMirror
@@ -298,7 +298,7 @@ public class GenerateImageTransactionService {
                 GenerateImageType.FULL_FUNNEL
         );
 
-        creditService.commitCreditDeletion(lockedCredit);
+        creditUseCase.commit(lockedCredit);
         userService.updateHasGeneratedImage(user);
         return GenerateImageV4Response.of(generateImage.getId(), generateImage.getUrl(), isMirror);
     }
@@ -306,7 +306,7 @@ public class GenerateImageTransactionService {
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public GenerateImageV4Response saveProductImageAndConfirmCredit(
             User user,
-            Credit lockedCredit,
+            CreditReservation lockedCredit,
             Long floorPlanId,
             boolean isMirror,
             String finalPrompt,
@@ -328,7 +328,7 @@ public class GenerateImageTransactionService {
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public GenerateImageV4Response saveProductImageAndConfirmCredit(
             User user,
-            Credit lockedCredit,
+            CreditReservation lockedCredit,
             Long floorPlanId,
             boolean isMirror,
             String floorPlanView,
@@ -354,7 +354,7 @@ public class GenerateImageTransactionService {
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public GenerateImageV4Response saveProductImageAndConfirmCredit(
             User user,
-            Credit lockedCredit,
+            CreditReservation lockedCredit,
             House house,
             ImageUploadResponseDTO imageResponse,
             List<CurationRawProduct> selectedProducts,
@@ -367,7 +367,7 @@ public class GenerateImageTransactionService {
         );
         saveGenerateImageRawProducts(generateImage, selectedProducts);
 
-        creditService.commitCreditDeletion(lockedCredit);
+        creditUseCase.commit(lockedCredit);
         userService.updateHasGeneratedImage(user);
         return GenerateImageV4Response.of(generateImage.getId(), generateImage.getUrl(), isMirror);
     }

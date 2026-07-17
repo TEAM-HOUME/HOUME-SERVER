@@ -1,7 +1,7 @@
 package or.sopt.houme.domain.user.service.admin;
 
 import lombok.RequiredArgsConstructor;
-import or.sopt.houme.domain.credit.service.CreditService;
+import or.sopt.houme.credit.application.CreditUseCase;
 import or.sopt.houme.domain.user.model.entity.User;
 import or.sopt.houme.domain.user.presentation.admin.controller.dto.member.response.AdminCreditGrantResponse;
 import or.sopt.houme.domain.user.presentation.admin.controller.dto.member.response.AdminMemberResponse;
@@ -22,7 +22,7 @@ public class AdminMemberServiceImpl implements AdminMemberService {
     private static final int MEMBER_SEARCH_LIMIT = 20;
 
     private final UserRepository userRepository;
-    private final CreditService creditService;
+    private final CreditUseCase creditUseCase;
 
     @Override
     public AdminMemberSearchResponse searchMembers(String keyword) {
@@ -37,7 +37,7 @@ public class AdminMemberServiceImpl implements AdminMemberService {
                         user.getNickname(),
                         user.getNicknameTag(),
                         user.getEmail(),
-                        userRepository.countByMemberIdAndStatus(user.getId())
+                        creditUseCase.countActive(user.getId())
                 ))
                 .toList();
 
@@ -50,7 +50,7 @@ public class AdminMemberServiceImpl implements AdminMemberService {
         User member = userRepository.findById(memberId)
                 .orElseThrow(() -> new GeneralException(ErrorCode.USER_NOT_FOUND));
 
-        long balance = creditService.grantCredits(member, amount);
+        long balance = creditUseCase.grant(member.getId(), amount);
 
         return new AdminCreditGrantResponse(member.getId(), amount, balance);
     }
