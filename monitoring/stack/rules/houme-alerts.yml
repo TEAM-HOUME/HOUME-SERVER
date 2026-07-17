@@ -12,6 +12,7 @@ groups:
         annotations:
           summary: "HOUME {{ $labels.job }} 전체 다운"
           description: "{{ $labels.job }}의 모든 인스턴스가 2분 이상 /actuator/prometheus 수집 불가 (서버 다운 의심)."
+          action: "서버·컨테이너 상태와 최근 배포를 확인하고, 필요 시 재기동하세요."
 
       # JVM Heap 포화: 인스턴스 단위 (standby 는 metric 없어 자동 제외)
       - alert: HoumeHighJvmHeap
@@ -27,6 +28,7 @@ groups:
         annotations:
           summary: "JVM Heap 사용률 높음 ({{ $labels.job }} {{ $labels.instance }})"
           description: "JVM Heap 사용률이 3분 이상 80%를 초과했습니다."
+          action: "힙 사용 추이·GC 로그를 확인하고 메모리 누수 또는 트래픽 급증 여부를 점검하세요."
 
       # 호스트 CPU (node-exporter 필요). instance 별로 평가 — prod/dev 호스트가 섞이지 않도록
       - alert: HighHostCpuUsage
@@ -38,6 +40,7 @@ groups:
         annotations:
           summary: "EC2 CPU 사용률 높음 ({{ $labels.instance }})"
           description: "호스트({{ $labels.instance }}) CPU 사용률이 5분 이상 80%를 초과했습니다."
+          action: "top 으로 상위 프로세스를 확인하고 비정상 부하/트래픽 급증을 점검하세요."
 
       # 호스트 루트 디스크 (node-exporter 필요). node_filesystem_* 는 instance 라벨을 포함 — 호스트별로 평가됨
       - alert: HighHostDiskUsage
@@ -54,3 +57,4 @@ groups:
         annotations:
           summary: "EC2 Disk 사용률 높음 ({{ $labels.instance }})"
           description: "호스트({{ $labels.instance }}) 루트 디스크 사용률이 5분 이상 85%를 초과했습니다."
+          action: "Docker image/container log/volume 사용량과 애플리케이션 로그를 정리하세요."
