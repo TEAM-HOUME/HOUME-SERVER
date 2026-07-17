@@ -1,5 +1,7 @@
 package or.sopt.houme.credit.domain;
 
+import lombok.Getter;
+
 import java.time.LocalDateTime;
 
 /**
@@ -8,6 +10,7 @@ import java.time.LocalDateTime;
  * <p>잔액은 "1 크레딧 = 1 레코드" 모델이므로, 이 모델은 개별 크레딧 1건을 표현한다.
  * 상태 전이 규칙(ACTIVE→PENDING 예약, PENDING→ACTIVE 복구)을 도메인이 소유한다.
  */
+@Getter
 public class Credit {
 
     private final Long id;
@@ -49,21 +52,5 @@ public class Credit {
 
     public boolean isPending() {
         return status == CreditStatus.PENDING;
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public Long getUserId() {
-        return userId;
-    }
-
-    public CreditStatus getStatus() {
-        return status;
-    }
-
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
     }
 }
