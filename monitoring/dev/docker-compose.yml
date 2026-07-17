@@ -16,5 +16,22 @@ services:
         limits:
           memory: 64m   # dev EC2(t2.micro, 1GB) — 제한 필수
 
+  # dev 호스트 자원(CPU/디스크) 지표 노출 — 중앙 Prometheus(prod)가 VPC 내부로 스크랩
+  node-exporter:
+    image: prom/node-exporter:v1.8.2
+    container_name: node-exporter
+    restart: unless-stopped
+    command:
+      - --path.rootfs=/host
+    pid: host
+    ports:
+      - "9100:9100"   # SG 에서 모니터링 호스트(같은 SG)만 허용
+    volumes:
+      - /:/host:ro,rslave
+    deploy:
+      resources:
+        limits:
+          memory: 64m
+
 volumes:
   promtail_positions:

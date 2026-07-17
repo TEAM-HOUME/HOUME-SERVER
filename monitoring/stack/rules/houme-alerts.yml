@@ -28,18 +28,18 @@ groups:
           summary: "JVM Heap 사용률 높음 ({{ $labels.job }} {{ $labels.instance }})"
           description: "JVM Heap 사용률이 3분 이상 80%를 초과했습니다."
 
-      # 호스트 CPU (node-exporter 필요)
+      # 호스트 CPU (node-exporter 필요). instance 별로 평가 — prod/dev 호스트가 섞이지 않도록
       - alert: HighHostCpuUsage
-        expr: 1 - avg(rate(node_cpu_seconds_total{mode="idle"}[5m])) > 0.8
+        expr: 1 - avg by (instance) (rate(node_cpu_seconds_total{mode="idle"}[5m])) > 0.8
         for: 5m
         labels:
           severity: warning
           service: host
         annotations:
-          summary: "EC2 CPU 사용률 높음"
-          description: "호스트 CPU 사용률이 5분 이상 80%를 초과했습니다."
+          summary: "EC2 CPU 사용률 높음 ({{ $labels.instance }})"
+          description: "호스트({{ $labels.instance }}) CPU 사용률이 5분 이상 80%를 초과했습니다."
 
-      # 호스트 루트 디스크 (node-exporter 필요)
+      # 호스트 루트 디스크 (node-exporter 필요). node_filesystem_* 는 instance 라벨을 포함 — 호스트별로 평가됨
       - alert: HighHostDiskUsage
         expr: |
           1 - (
@@ -52,5 +52,5 @@ groups:
           severity: warning
           service: host
         annotations:
-          summary: "EC2 Disk 사용률 높음"
-          description: "루트 디스크 사용률이 5분 이상 85%를 초과했습니다."
+          summary: "EC2 Disk 사용률 높음 ({{ $labels.instance }})"
+          description: "호스트({{ $labels.instance }}) 루트 디스크 사용률이 5분 이상 85%를 초과했습니다."

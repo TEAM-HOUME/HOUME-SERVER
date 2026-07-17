@@ -32,7 +32,11 @@ scrape_configs:
 
   - job_name: node-exporter
     static_configs:
-      # 같은 compose 네트워크의 node-exporter (stack 이 도는 호스트 = prod EC2 자원 지표)
+      # prod 호스트 — 같은 compose 네트워크의 node-exporter (stack 이 도는 prod EC2)
       - targets: ["node-exporter:9100"]
         labels:
           env: prod
+      # dev 호스트 — dev EC2 (VPC 내부 IP, dev 의 node-exporter 컨테이너)
+      - targets: ["10.0.1.217:9100"]
+        labels:
+          env: dev

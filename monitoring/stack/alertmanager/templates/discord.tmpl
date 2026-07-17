@@ -4,8 +4,11 @@
 
 {{ define "houme.discord.message" -}}
 {{ range .Alerts -}}
-- service={{ .Labels.service }} severity={{ .Labels.severity }} job={{ .Labels.job }}
-  summary={{ .Annotations.summary }}
-  description={{ .Annotations.description }}
+**{{ .Labels.alertname }}** ({{ .Labels.severity }})
+• service: {{ .Labels.service }}
+• target: {{ .Labels.job }}{{ with .Labels.instance }} / {{ . }}{{ end }}
+• {{ .Annotations.summary }}
+{{ .Annotations.description }}
+
 {{ end -}}
 {{- end }}
