@@ -37,11 +37,12 @@ public class CreditPersistenceAdapter implements CreditRepositoryPort {
     @Override
     public void save(Credit credit) {
         // 상태 변경(PENDING 예약/복구) 반영: 기존 레코드를 조회해 상태만 갱신한다.
-        jpaRepository.findById(credit.getId())
-                .ifPresent(entity -> {
-                    entity.updateStatus(credit.getStatus());
-                    jpaRepository.save(entity);
-                });
+        // 못 찾으면 조용히 넘기지 않고 fail-fast — 상태 갱신 실패가 조용한 버그로 이어지지 않도록.
+        CreditJpaEntity entity = jpaRepository.findById(credit.getId())
+                .orElseThrow(() -> new IllegalStateException(
+                        "상태를 갱신할 크레딧을 찾을 수 없습니다. id=" + credit.getId()));
+        // 트랜잭션 내 관리 엔티티이므로 상태 변경만으로 더티 체킹을 통해 UPDATE 가 반영된다(명시적 save 불필요).
+        entity.updateStatus(credit.getStatus());
     }
 
     @Override

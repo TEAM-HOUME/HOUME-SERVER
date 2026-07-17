@@ -58,19 +58,27 @@ public class CreditService implements CreditUseCase {
     @Transactional
     public CreditReservation reserve(Long userId) {
         acquireLockOrThrow(userId);
+        try {
+            Credit credit = creditRepository.findOldestByUserIdAndStatus(userId, CreditStatus.ACTIVE)
+                    .orElseThrow(() -> {
+                        log.error("사용 가능한 크레딧을 찾을 수 없습니다. user: {}", userId);
+                        return new CreditException(ErrorCode.CREDIT_NOT_FOUND);
+                    });
 
-        Credit credit = creditRepository.findOldestByUserIdAndStatus(userId, CreditStatus.ACTIVE)
-                .orElseGet(() -> {
-                    // 사용 가능한 크레딧이 없으면 즉시 락 해제 후 예외
-                    creditLock.unlock(userId);
-                    log.error("사용 가능한 크레딧을 찾을 수 없습니다. user: {}", userId);
-                    throw new CreditException(ErrorCode.CREDIT_NOT_FOUND);
-                });
-
-        credit.reserve();
-        creditRepository.save(credit);
-        // 락은 이미지 생성이 끝날 때까지 유지되며, 호출자가 releaseLock 으로 해제한다.
-        return new CreditReservation(credit.getId(), userId);
+            credit.reserve();
+            creditRepository.save(credit);
+            // 성공 시에만 락을 유지하고, 이미지 생성이 끝난 뒤 호출자가 releaseLock 으로 해제한다.
+            return new CreditReservation(credit.getId(), userId);
+        } catch (IllegalStateException e) {
+            // 도메인은 순수하게 IllegalStateException 을 던지고, 경계(application)에서 도메인 예외로 변환한다.
+            creditLock.unlock(userId);
+            log.error("크레딧 예약 실패(상태 오류), user: {}", userId, e);
+            throw new CreditException(ErrorCode.CREDIT_NOT_FOUND);
+        } catch (RuntimeException e) {
+            // 예약 도중 어떤 예외가 발생해도 락을 반드시 해제해 누수를 막는다.
+            creditLock.unlock(userId);
+            throw e;
+        }
     }
 
     @Override
