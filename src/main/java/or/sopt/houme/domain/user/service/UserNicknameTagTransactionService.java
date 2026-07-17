@@ -1,9 +1,7 @@
 package or.sopt.houme.domain.user.service;
 
 import lombok.RequiredArgsConstructor;
-import or.sopt.houme.domain.credit.model.entity.Credit;
-import or.sopt.houme.domain.credit.model.entity.CreditStatus;
-import or.sopt.houme.domain.credit.repository.CreditRepository;
+import or.sopt.houme.credit.application.CreditUseCase;
 import or.sopt.houme.domain.user.model.entity.Gender;
 import or.sopt.houme.domain.user.model.entity.Role;
 import or.sopt.houme.domain.user.model.entity.SocialType;
@@ -29,7 +27,7 @@ public class UserNicknameTagTransactionService {
     private static final int SIGN_UP_CREDIT_COUNT = 5;
 
     private final UserRepository userRepository;
-    private final CreditRepository creditRepository;
+    private final CreditUseCase creditUseCase;
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public User createSocialUserWithNicknameTag(
@@ -92,16 +90,6 @@ public class UserNicknameTagTransactionService {
     }
 
     private void createSignUpCredits(User user) {
-        try {
-            List<Credit> newCredits = IntStream.range(0, SIGN_UP_CREDIT_COUNT)
-                    .mapToObj(i -> Credit.builder()
-                            .status(CreditStatus.ACTIVE)
-                            .user(user)
-                            .build())
-                    .toList();
-            creditRepository.saveAll(newCredits);
-        } catch (Exception e) {
-            throw new CreditException(ErrorCode.CREDIT_CREATE_EXCEPTION);
-        }
+        creditUseCase.grant(user.getId(), SIGN_UP_CREDIT_COUNT);
     }
 }

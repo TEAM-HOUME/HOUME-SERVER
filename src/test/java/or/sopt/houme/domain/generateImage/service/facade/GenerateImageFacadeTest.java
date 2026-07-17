@@ -7,9 +7,8 @@ import or.sopt.houme.domain.banner.model.entity.BannerCurationRawProduct;
 import or.sopt.houme.domain.banner.model.entity.BannerType;
 import or.sopt.houme.domain.banner.model.vo.BannerStyleAnswerChip;
 import or.sopt.houme.domain.banner.repository.BannerRepository;
-import or.sopt.houme.domain.credit.model.entity.Credit;
-import or.sopt.houme.domain.credit.model.entity.CreditStatus;
-import or.sopt.houme.domain.credit.service.CreditService;
+import or.sopt.houme.credit.domain.CreditReservation;
+import or.sopt.houme.credit.application.CreditUseCase;
 import or.sopt.houme.domain.furniture.model.entity.ActivityFurniture;
 import or.sopt.houme.domain.furniture.model.entity.CurationRawProduct;
 import or.sopt.houme.domain.furniture.model.entity.Furniture;
@@ -131,7 +130,7 @@ class GenerateImageFacadeTest {
     HouseFloorPlanRepository houseFloorPlanRepository;
 
     @Mock
-    CreditService creditService;
+    CreditUseCase creditUseCase;
 
     @Mock
     TasteTagService tasteTagService;
@@ -302,7 +301,7 @@ class GenerateImageFacadeTest {
                 List.of(1L, 2L), "READING", List.of(1L)
         );
 
-        Credit lockedCredit = null;
+        CreditReservation lockedCredit = null;
 
         Tag tag = Tag.builder()
                 .id(1L)
@@ -384,11 +383,7 @@ class GenerateImageFacadeTest {
                 .name("test_user")
                 .build();
 
-        Credit lockedCredit = Credit.builder()
-                .id(10L)
-                .status(CreditStatus.PENDING)
-                .user(user)
-                .build();
+        CreditReservation lockedCredit = new CreditReservation(10L, user.getId());
 
         Banner banner = Banner.builder()
                 .id(100L)
@@ -422,7 +417,7 @@ class GenerateImageFacadeTest {
                 "image/webp"
         );
 
-        when(creditService.tryLockAndGetCredit(user)).thenReturn(lockedCredit);
+        when(creditUseCase.reserve(user.getId())).thenReturn(lockedCredit);
         when(bannerRepository.findByIdWithRawProducts(100L, BannerType.BANNER, false)).thenReturn(Optional.of(banner));
         when(floorPlanRepository.findById(11L)).thenReturn(Optional.of(floorPlan));
         when(objectMapper.readValue(eq("[{\"id\":1}]"), any(TypeReference.class)))
@@ -473,11 +468,7 @@ class GenerateImageFacadeTest {
                 .name("test_user")
                 .build();
 
-        Credit lockedCredit = Credit.builder()
-                .id(10L)
-                .status(CreditStatus.PENDING)
-                .user(user)
-                .build();
+        CreditReservation lockedCredit = new CreditReservation(10L, user.getId());
 
         CurationRawProduct selectedProduct = CurationRawProduct.builder()
                 .id(350L)
@@ -533,7 +524,7 @@ class GenerateImageFacadeTest {
                 "image/webp"
         );
 
-        when(creditService.tryLockAndGetCredit(user)).thenReturn(lockedCredit);
+        when(creditUseCase.reserve(user.getId())).thenReturn(lockedCredit);
         when(bannerRepository.findByIdWithRawProducts(100L, BannerType.BANNER, false)).thenReturn(Optional.of(banner));
         when(floorPlanRepository.findById(11L)).thenReturn(Optional.of(floorPlan));
         when(objectMapper.readValue(eq("[{\"id\":2}]"), any(TypeReference.class)))
@@ -592,11 +583,7 @@ class GenerateImageFacadeTest {
                 .name("test_user")
                 .build();
 
-        Credit lockedCredit = Credit.builder()
-                .id(10L)
-                .status(CreditStatus.PENDING)
-                .user(user)
-                .build();
+        CreditReservation lockedCredit = new CreditReservation(10L, user.getId());
 
         GenerateImageV4Request request = new GenerateImageV4Request(
                 11L,
@@ -656,7 +643,7 @@ class GenerateImageFacadeTest {
                 "image/webp"
         );
 
-        when(creditService.tryLockAndGetCredit(user)).thenReturn(lockedCredit);
+        when(creditUseCase.reserve(user.getId())).thenReturn(lockedCredit);
         when(tasteTagService.getPriorityId(request.moodBoardIds())).thenReturn(selectedTag);
         when(floorPlanRepository.findById(11L)).thenReturn(Optional.of(floorPlan));
         when(activityFurnitureRepository.findAllByActivityOrderByPriorityAscIdAsc(Activity.REMOTE_WORK))
@@ -715,11 +702,7 @@ class GenerateImageFacadeTest {
                 .name("test_user")
                 .build();
 
-        Credit lockedCredit = Credit.builder()
-                .id(10L)
-                .status(CreditStatus.PENDING)
-                .user(user)
-                .build();
+        CreditReservation lockedCredit = new CreditReservation(10L, user.getId());
 
         GenerateImageV4Request request = new GenerateImageV4Request(
                 11L,
@@ -759,7 +742,7 @@ class GenerateImageFacadeTest {
                 .searchKeyword("k1")
                 .build();
 
-        when(creditService.tryLockAndGetCredit(user)).thenReturn(lockedCredit);
+        when(creditUseCase.reserve(user.getId())).thenReturn(lockedCredit);
         when(tasteTagService.getPriorityId(request.moodBoardIds())).thenReturn(selectedTag);
         when(floorPlanRepository.findById(11L)).thenReturn(Optional.of(floorPlan));
         when(activityFurnitureRepository.findAllByActivityOrderByPriorityAscIdAsc(Activity.REMOTE_WORK))
@@ -774,7 +757,7 @@ class GenerateImageFacadeTest {
                 .extracting(ex -> ((HouseException) ex).getErrorCode())
                 .isEqualTo(ErrorCode.INVALID_FLOOR_PLAN_VIEW);
 
-        verify(creditService).rollbackCreditPending(lockedCredit);
+        verify(creditUseCase).rollback(lockedCredit);
         verify(geminiImageService, never()).createImageWithReferences(any(), any());
         verify(generateImageTransactionService, never()).saveV4ImageAndConfirmCredit(
                 any(),
@@ -793,7 +776,7 @@ class GenerateImageFacadeTest {
     @DisplayName("선택 상품 기반 이미지 생성은 도면+상품 이미지로 생성 후 저장한다")
     void generateImageByProducts_callsGeminiAndSaves() {
         User user = User.builder().id(1L).name("test_user").build();
-        Credit lockedCredit = Credit.builder().id(10L).status(CreditStatus.PENDING).user(user).build();
+        CreditReservation lockedCredit = new CreditReservation(10L, user.getId());
         ProductGenerateImageRequest request = new ProductGenerateImageRequest(
                 11L,
                 "창가 뷰",
@@ -819,7 +802,7 @@ class GenerateImageFacadeTest {
                 "image/webp"
         );
 
-        when(creditService.tryLockAndGetCredit(user)).thenReturn(lockedCredit);
+        when(creditUseCase.reserve(user.getId())).thenReturn(lockedCredit);
         when(floorPlanRepository.findById(11L)).thenReturn(Optional.of(floorPlan));
         when(curationRawProductRepository.findAllById(List.of(1L, 2L, 3L))).thenReturn(List.of(p1, p2, p3));
         when(curationRawProductRepository.findAllByIdWithFurnitureTags(List.of(1L, 2L, 3L))).thenReturn(List.of());

@@ -15,7 +15,7 @@ import or.sopt.houme.domain.generateImage.repository.GenerateImageRawProductRepo
 import or.sopt.houme.domain.generateImage.repository.GenerateImageRepository;
 import or.sopt.houme.domain.generateImage.repository.ImageGenerationLogRepository;
 import or.sopt.houme.domain.preference.repository.*;
-import or.sopt.houme.domain.credit.repository.CreditRepository;
+import or.sopt.houme.credit.application.CreditUseCase;
 import or.sopt.houme.domain.credit.repository.PaymentBtnClickLogRepository;
 import or.sopt.houme.domain.furniture.repository.FurnitureRecommendBtnClickLogRepository;
 import or.sopt.houme.domain.furniture.repository.JjymRepository;
@@ -54,7 +54,7 @@ public class UserDeletionService {
     private final FurnitureRecommendBtnClickLogRepository furnitureRecommendBtnClickLogRepository;
     private final CarouselLikeLogRepository carouselLikeLogRepository;
     private final InvalidHouseRequestRepository invalidHouseRequestRepository;
-    private final CreditRepository creditRepository;
+    private final CreditUseCase creditUseCase;
     private final JjymRepository jjymRepository;
 
     private final RefreshTokenRepository refreshTokenRepository;
@@ -159,7 +159,7 @@ public class UserDeletionService {
         paymentBtnClickLogRepository.deleteByUserId(userId);
         furnitureRecommendBtnClickLogRepository.deleteByUserId(userId);
         carouselLikeLogRepository.deleteByUserId(userId);
-        creditRepository.deleteByUserId(userId);
+        creditUseCase.deleteAll(userId);
 
         // 4. 마지막으로 유저 삭제
         userRepository.deleteById(userId);

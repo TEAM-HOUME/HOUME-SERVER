@@ -2,8 +2,8 @@ package or.sopt.houme.domain.generateImage.service;
 
 import or.sopt.houme.domain.banner.model.entity.Banner;
 import or.sopt.houme.domain.banner.model.entity.BannerType;
-import or.sopt.houme.domain.credit.model.entity.Credit;
-import or.sopt.houme.domain.credit.service.CreditService;
+import or.sopt.houme.credit.domain.CreditReservation;
+import or.sopt.houme.credit.application.CreditUseCase;
 import or.sopt.houme.domain.generateImage.model.entity.GenerateImage;
 import or.sopt.houme.domain.generateImage.model.entity.GenerateImageType;
 import or.sopt.houme.domain.generateImage.repository.GenerateImageRawProductRepository;
@@ -39,7 +39,7 @@ class GenerateImageTransactionServiceTest {
     private GenerateImageTransactionService generateImageTransactionService;
 
     @Mock
-    private CreditService creditService;
+    private CreditUseCase creditUseCase;
 
     @Mock
     private HouseService houseService;
@@ -58,7 +58,7 @@ class GenerateImageTransactionServiceTest {
     @DisplayName("배너 이미지 저장 성공 시 House 생성, 이미지 저장, 크레딧 확정, 사용자 상태 업데이트를 수행한다")
     void saveBannerImageAndConfirmCredit_success() {
         User user = mock(User.class);
-        Credit lockedCredit = mock(Credit.class);
+        CreditReservation lockedCredit = new CreditReservation(1L, 1L);
         Banner banner = mock(Banner.class);
         House house = mock(House.class);
 
@@ -103,7 +103,7 @@ class GenerateImageTransactionServiceTest {
         assertThat(response.isMirror()).isTrue();
         verify(houseService).createTemplateHouse(user, banner, finalPrompt, floorPlanId, isMirror, null);
         verify(generateImageService).createGenerateImage(imageResponse, house, GenerateImageType.BANNER);
-        verify(creditService).commitCreditDeletion(lockedCredit);
+        verify(creditUseCase).commit(lockedCredit);
         verify(userService).updateHasGeneratedImage(user);
     }
 
@@ -111,7 +111,7 @@ class GenerateImageTransactionServiceTest {
     @DisplayName("이미지 저장 단계에서 예외가 발생하면 크레딧 확정과 사용자 상태 업데이트를 수행하지 않는다")
     void saveBannerImageAndConfirmCredit_failBeforeCreditCommit() {
         User user = mock(User.class);
-        Credit lockedCredit = mock(Credit.class);
+        CreditReservation lockedCredit = new CreditReservation(1L, 1L);
         Banner banner = mock(Banner.class);
         House house = mock(House.class);
         ImageUploadResponseDTO imageResponse = ImageUploadResponseDTO.from(
@@ -131,7 +131,7 @@ class GenerateImageTransactionServiceTest {
         )).isInstanceOf(RuntimeException.class)
                 .hasMessageContaining("image save failed");
 
-        verify(creditService, never()).commitCreditDeletion(any());
+        verify(creditUseCase, never()).commit(any());
         verify(userService, never()).updateHasGeneratedImage(any());
     }
 
@@ -139,7 +139,7 @@ class GenerateImageTransactionServiceTest {
     @DisplayName("크레딧 확정 단계에서 예외가 발생하면 사용자 상태 업데이트를 수행하지 않는다")
     void saveBannerImageAndConfirmCredit_failOnCreditCommit() {
         User user = mock(User.class);
-        Credit lockedCredit = mock(Credit.class);
+        CreditReservation lockedCredit = new CreditReservation(1L, 1L);
         Banner banner = mock(Banner.class);
         House house = mock(House.class);
         ImageUploadResponseDTO imageResponse = ImageUploadResponseDTO.from(
@@ -164,14 +164,14 @@ class GenerateImageTransactionServiceTest {
         when(generateImageService.createGenerateImage(imageResponse, house, GenerateImageType.BANNER))
                 .thenReturn(generateImage);
         doThrow(new RuntimeException("credit commit failed"))
-                .when(creditService).commitCreditDeletion(lockedCredit);
+                .when(creditUseCase).commit(lockedCredit);
 
         assertThatThrownBy(() -> generateImageTransactionService.saveBannerImageAndConfirmCredit(
                 user, lockedCredit, banner, 2L, true, "prompt", imageResponse
         )).isInstanceOf(RuntimeException.class)
                 .hasMessageContaining("credit commit failed");
 
-        verify(creditService).commitCreditDeletion(lockedCredit);
+        verify(creditUseCase).commit(lockedCredit);
         verify(userService, never()).updateHasGeneratedImage(any());
     }
 
@@ -179,7 +179,7 @@ class GenerateImageTransactionServiceTest {
     @DisplayName("v4 이미지 저장 성공 시 FULL_FUNNEL 타입으로 저장한다")
     void saveV4ImageAndConfirmCredit_savesFullFunnelType() {
         User user = mock(User.class);
-        Credit lockedCredit = mock(Credit.class);
+        CreditReservation lockedCredit = new CreditReservation(1L, 1L);
         House house = mock(House.class);
         ImageUploadResponseDTO imageResponse = ImageUploadResponseDTO.from(
                 "file.jpg",
@@ -214,7 +214,7 @@ class GenerateImageTransactionServiceTest {
 
         assertThat(response.imageId()).isEqualTo(501L);
         verify(generateImageService).createGenerateImage(imageResponse, house, GenerateImageType.FULL_FUNNEL);
-        verify(creditService).commitCreditDeletion(lockedCredit);
+        verify(creditUseCase).commit(lockedCredit);
         verify(userService).updateHasGeneratedImage(user);
     }
 
@@ -222,7 +222,7 @@ class GenerateImageTransactionServiceTest {
     @DisplayName("PRODUCT 이미지 저장 시 선택 상품이 비어있으면 예외를 던진다")
     void saveProductImageAndConfirmCredit_throwsWhenSelectedProductsMissing() {
         User user = mock(User.class);
-        Credit lockedCredit = mock(Credit.class);
+        CreditReservation lockedCredit = new CreditReservation(1L, 1L);
         House house = mock(House.class);
         ImageUploadResponseDTO imageResponse = ImageUploadResponseDTO.from(
                 "file.jpg",
@@ -255,7 +255,7 @@ class GenerateImageTransactionServiceTest {
                 .extracting(exception -> ((GenerateImageException) exception).getErrorCode())
                 .isEqualTo(ErrorCode.MISSING_SELECTED_PRODUCTS);
 
-        verify(creditService, never()).commitCreditDeletion(any());
+        verify(creditUseCase, never()).commit(any());
         verify(userService, never()).updateHasGeneratedImage(any());
     }
 }

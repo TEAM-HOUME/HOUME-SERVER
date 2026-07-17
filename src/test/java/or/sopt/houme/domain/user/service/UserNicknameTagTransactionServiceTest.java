@@ -1,6 +1,6 @@
 package or.sopt.houme.domain.user.service;
 
-import or.sopt.houme.domain.credit.repository.CreditRepository;
+import or.sopt.houme.credit.application.CreditUseCase;
 import or.sopt.houme.domain.user.model.entity.Gender;
 import or.sopt.houme.domain.user.model.entity.User;
 import or.sopt.houme.domain.user.model.entity.record.SignupSession;
@@ -11,7 +11,8 @@ import org.junit.jupiter.api.Test;
 import java.time.LocalDate;
 import java.util.Optional;
 
-import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -20,10 +21,10 @@ import static org.mockito.Mockito.verify;
 class UserNicknameTagTransactionServiceTest {
 
     private final UserRepository userRepository = mock(UserRepository.class);
-    private final CreditRepository creditRepository = mock(CreditRepository.class);
+    private final CreditUseCase creditUseCase = mock(CreditUseCase.class);
     private final UserNicknameTagTransactionService service = new UserNicknameTagTransactionService(
             userRepository,
-            creditRepository
+            creditUseCase
     );
 
     @Test
@@ -43,8 +44,7 @@ class UserNicknameTagTransactionServiceTest {
                 LocalDate.of(2000, 1, 1)
         );
 
-        verify(creditRepository, times(1))
-                .saveAll(argThat(credits -> credits instanceof java.util.Collection<?> c && c.size() == 5));
+        verify(creditUseCase, times(1)).grant(eq(1L), eq(5));
     }
 
     @Test
@@ -62,7 +62,6 @@ class UserNicknameTagTransactionServiceTest {
                 LocalDate.of(2000, 1, 1)
         );
 
-        verify(creditRepository, times(1))
-                .saveAll(argThat(credits -> credits instanceof java.util.Collection<?> c && c.size() == 5));
+        verify(creditUseCase, times(1)).grant(eq(1L), eq(5));
     }
 }

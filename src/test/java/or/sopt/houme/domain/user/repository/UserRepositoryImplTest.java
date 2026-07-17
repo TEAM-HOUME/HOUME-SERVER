@@ -1,8 +1,6 @@
 package or.sopt.houme.domain.user.repository;
 
 import jakarta.persistence.EntityManager;
-import or.sopt.houme.domain.credit.model.entity.Credit;
-import or.sopt.houme.domain.credit.model.entity.CreditStatus;
 import or.sopt.houme.domain.generateImage.model.entity.GenerateImage;
 import or.sopt.houme.domain.house.model.entity.House;
 import or.sopt.houme.domain.house.model.entity.enums.Activity;
@@ -143,28 +141,7 @@ class UserRepositoryImplTest {
         em.clear();
     }
 
-    @Test
-    @DisplayName("사용자의 ACTIVE 상태인 크레딧 개수를 올바르게 카운트한다")
-    void countByMemberIdAndStatus_success() {
-        // given
-        // ACTIVE 상태 크레딧
-        em.persist(Credit.builder().user(mockUser).status(CreditStatus.ACTIVE).build());
-
-        // EXPIRED 상태 크레딧
-        em.persist(Credit.builder().user(mockUser).status(CreditStatus.EXPIRED).build());
-
-        // REVOKED 상태 크레딧
-        em.persist(Credit.builder().user(mockUser).status(CreditStatus.REVOKED).build());
-
-        em.flush();
-        em.clear();
-
-        // when
-        long count = userRepositoryImpl.countByMemberIdAndStatus(mockUser.getId());
-
-        // then
-        assertThat(count).isEqualTo(1L); // ✅ 실제 ACTIVE 상태는 1개
-    }
+    // 크레딧 잔액 카운트는 credit 도메인으로 이관되어 CreditApiIntegrationTest(HTTP 계약)가 검증한다 (#581).
 
     @Test
     @DisplayName("유저 ID로 이미지 히스토리 1건 조회 성공 - 여러 이미지 중 하나")
