@@ -4,14 +4,12 @@
 
 {{ define "houme.discord.message" -}}
 {{ range .Alerts -}}
-{{ $a := . -}}
-상태: {{ $a.Status }}
-심각도: {{ $a.Labels.severity }}
-서비스: {{ $a.Labels.service }}
-인스턴스: {{ with $a.Labels.instance }}{{ . }}{{ else }}{{ $a.Labels.job }}{{ end }}
-요약: {{ $a.Annotations.summary }}
-설명: {{ $a.Annotations.description }}{{ with $a.Annotations.action }}
-대응: {{ . }}{{ end }}
-
+- 상태: {{ .Status }}
+- 심각도: {{ .Labels.severity }}
+- 서비스: {{ .Labels.service }}
+- 인스턴스: {{ or .Labels.instance .Labels.job }}
+- 요약: {{ .Annotations.summary }}
+- 설명: {{ .Annotations.description }}
+- 대응: {{ .Annotations.action }}
 {{ end -}}
 {{- end }}
