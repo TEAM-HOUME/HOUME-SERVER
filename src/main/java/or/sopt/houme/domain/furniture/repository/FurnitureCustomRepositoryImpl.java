@@ -6,7 +6,6 @@ import or.sopt.houme.domain.furniture.model.entity.Furniture;
 import or.sopt.houme.domain.furniture.model.entity.QFurniture;
 import or.sopt.houme.domain.furniture.model.entity.QFurnitureTag;
 import or.sopt.houme.domain.furniture.model.entity.QFurnitureType;
-import or.sopt.houme.domain.house.model.entity.QHouse;
 import or.sopt.houme.domain.house.model.entity.mapping.QHouseFurniture;
 import org.springframework.stereotype.Repository;
 
@@ -42,17 +41,16 @@ public class FurnitureCustomRepositoryImpl implements FurnitureCustomRepository 
     // N+1 검토 필요
     @Override
     public List<Furniture> findAllByHouseId(Long houseId) {
-        QHouse house = QHouse.house;
         QHouseFurniture houseFurniture = QHouseFurniture.houseFurniture;
         QFurniture furniture = QFurniture.furniture;
 
+        // #582: HouseFurniture→Furniture 연관 절단 — id 명시 조인으로 재작성(furnitureId → furniture.id).
         return queryFactory
                 .select(furniture)
                 .distinct()
                 .from(houseFurniture)
-                .join(houseFurniture.furniture, furniture)
-                .join(houseFurniture.house, house)
-                .where(house.id.eq(houseId))
+                .join(furniture).on(houseFurniture.furnitureId.eq(furniture.id))
+                .where(houseFurniture.house.id.eq(houseId))
                 .fetch();
     }
 

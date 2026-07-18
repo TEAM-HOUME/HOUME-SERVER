@@ -11,6 +11,7 @@ import or.sopt.houme.domain.furniture.model.entity.Furniture;
 import or.sopt.houme.domain.furniture.model.entity.Jjym;
 import or.sopt.houme.domain.furniture.model.entity.RecommendFurniture;
 import or.sopt.houme.domain.furniture.repository.CurationRawProductColorRepository;
+import or.sopt.houme.domain.furniture.repository.FurnitureRepository;
 import or.sopt.houme.domain.furniture.repository.JjymRepository;
 import or.sopt.houme.domain.furniture.repository.RecommendFurnitureRepository;
 import or.sopt.houme.domain.generateImage.model.entity.GenerateImage;
@@ -94,6 +95,7 @@ public class UserServiceImpl implements UserService {
     private final GenerateImageRawProductRepository generateImageRawProductRepository;
     private final GenerateImageUsedProductRepository generateImageUsedProductRepository;
     private final RecommendFurnitureRepository recommendFurnitureRepository;
+    private final FurnitureRepository furnitureRepository;
     private final JjymRepository jjymRepository;
     private final CurationRawProductColorRepository curationRawProductColorRepository;
     private final NicknameService nicknameService;
@@ -661,14 +663,25 @@ public class UserServiceImpl implements UserService {
             return Map.of();
         }
 
-        return houseFurnitureRepository.findAllByHouseIdInWithFurniture(houseIds).stream()
+        // #582: HouseFurniture→Furniture 연관 절단 — furnitureId 로 가구명을 일괄 조회해 매핑.
+        List<HouseFurniture> mappings = houseFurnitureRepository.findAllByHouseIdInWithFurniture(houseIds).stream()
                 .filter(mapping -> mapping.getHouse() != null && mapping.getHouse().getId() != null)
-                .filter(mapping -> mapping.getFurniture() != null)
+                .filter(mapping -> mapping.getFurnitureId() != null)
+                .toList();
+
+        List<Long> furnitureIds = mappings.stream()
+                .map(HouseFurniture::getFurnitureId)
+                .distinct()
+                .toList();
+        Map<Long, String> furnitureNameById = furnitureRepository.findAllById(furnitureIds).stream()
+                .collect(Collectors.toMap(Furniture::getId, this::resolveFurnitureSummaryName, (left, right) -> left));
+
+        return mappings.stream()
                 .collect(Collectors.groupingBy(
                         mapping -> mapping.getHouse().getId(),
                         LinkedHashMap::new,
                         Collectors.mapping(
-                                mapping -> resolveFurnitureSummaryName(mapping.getFurniture()),
+                                mapping -> furnitureNameById.getOrDefault(mapping.getFurnitureId(), "가구"),
                                 Collectors.toCollection(LinkedHashSet::new)
                         )
                 ))

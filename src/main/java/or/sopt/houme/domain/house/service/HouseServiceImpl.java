@@ -189,12 +189,14 @@ public class HouseServiceImpl implements HouseService {
             return;
         }
 
+        // #582: HouseFurniture→Furniture 연관 절단 — furnitureId(Long) 로 저장.
+        // 존재하지 않는 id 를 조용히 건너뛰던 기존 동작을 보존하기 위해 findAllById 로 실존 id 만 추린다.
         List<Furniture> furnitures = furnitureRepository.findAllById(furnitureIds);
 
         List<HouseFurniture> list = furnitures.stream()
                 .map(furniture -> HouseFurniture.builder()
                         .house(house)
-                        .furniture(furniture)
+                        .furnitureId(furniture.getId())
                         .build())
                 .toList();
 

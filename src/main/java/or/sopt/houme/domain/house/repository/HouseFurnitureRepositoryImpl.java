@@ -2,8 +2,6 @@ package or.sopt.houme.domain.house.repository;
 
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
-import or.sopt.houme.domain.furniture.model.entity.QFurniture;
-import or.sopt.houme.domain.furniture.model.entity.QFurnitureType;
 import or.sopt.houme.domain.house.model.entity.mapping.HouseFurniture;
 import or.sopt.houme.domain.house.model.entity.mapping.QHouseFurniture;
 import org.springframework.stereotype.Repository;
@@ -16,16 +14,14 @@ public class HouseFurnitureRepositoryImpl implements HouseFurnitureRepositoryCus
 
     private final JPAQueryFactory queryFactory;
 
+    // #582: Furniture 연관 절단 — HouseFurniture 는 furnitureId(Long)만 보유하므로 furniture/furnitureType fetchJoin 제거.
+    // 소비처는 furnitureId 로 직접(또는 필요 시 별도 조회) 접근한다.
     @Override
     public List<HouseFurniture> findAllByHouseIdWithFurniture(Long houseId) {
         QHouseFurniture houseFurniture = QHouseFurniture.houseFurniture;
-        QFurniture furniture = QFurniture.furniture;
-        QFurnitureType furnitureType = QFurnitureType.furnitureType;
 
         return queryFactory
                 .selectFrom(houseFurniture)
-                .join(houseFurniture.furniture, furniture).fetchJoin()
-                .join(furniture.furnitureType, furnitureType).fetchJoin()
                 .where(houseFurniture.house.id.eq(houseId))
                 .orderBy(houseFurniture.id.asc())
                 .fetch();
@@ -38,13 +34,9 @@ public class HouseFurnitureRepositoryImpl implements HouseFurnitureRepositoryCus
         }
 
         QHouseFurniture houseFurniture = QHouseFurniture.houseFurniture;
-        QFurniture furniture = QFurniture.furniture;
-        QFurnitureType furnitureType = QFurnitureType.furnitureType;
 
         return queryFactory
                 .selectFrom(houseFurniture)
-                .join(houseFurniture.furniture, furniture).fetchJoin()
-                .join(furniture.furnitureType, furnitureType).fetchJoin()
                 .where(houseFurniture.house.id.in(houseIds))
                 .orderBy(houseFurniture.house.id.asc(), houseFurniture.id.asc())
                 .fetch();

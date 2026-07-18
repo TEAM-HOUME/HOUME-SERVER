@@ -13,6 +13,7 @@ import or.sopt.houme.domain.furniture.model.entity.Jjym;
 import or.sopt.houme.domain.furniture.model.entity.RecommendFurniture;
 import or.sopt.houme.domain.furniture.model.entity.SoozipCategory;
 import or.sopt.houme.domain.furniture.repository.CurationRawProductColorRepository;
+import or.sopt.houme.domain.furniture.repository.FurnitureRepository;
 import or.sopt.houme.domain.furniture.repository.JjymRepository;
 import or.sopt.houme.domain.furniture.repository.RecommendFurnitureRepository;
 import or.sopt.houme.domain.generateImage.model.entity.GenerateImage;
@@ -84,6 +85,7 @@ class UserServiceImplTest {
     private final GenerateImageRawProductRepository generateImageRawProductRepository = mock(GenerateImageRawProductRepository.class);
     private final GenerateImageUsedProductRepository generateImageUsedProductRepository = mock(GenerateImageUsedProductRepository.class);
     private final RecommendFurnitureRepository recommendFurnitureRepository = mock(RecommendFurnitureRepository.class);
+    private final FurnitureRepository furnitureRepository = mock(FurnitureRepository.class);
     private final JjymRepository jjymRepository = mock(JjymRepository.class);
     private final CurationRawProductColorRepository curationRawProductColorRepository = mock(CurationRawProductColorRepository.class);
     private final NicknameService nicknameService = mock(NicknameService.class);
@@ -105,6 +107,7 @@ class UserServiceImplTest {
             generateImageRawProductRepository,
             generateImageUsedProductRepository,
             recommendFurnitureRepository,
+            furnitureRepository,
             jjymRepository,
             curationRawProductColorRepository,
             nicknameService,
@@ -548,9 +551,11 @@ class UserServiceImplTest {
                 .willReturn(List.of());
         given(houseFurnitureRepository.findAllByHouseIdInWithFurniture(List.of(31L)))
                 .willReturn(List.of(
-                        HouseFurniture.builder().id(1L).house(fullFunnelHouse).furniture(desk).build(),
-                        HouseFurniture.builder().id(2L).house(fullFunnelHouse).furniture(chair).build()
+                        HouseFurniture.builder().id(1L).house(fullFunnelHouse).furnitureId(desk.getId()).build(),
+                        HouseFurniture.builder().id(2L).house(fullFunnelHouse).furnitureId(chair.getId()).build()
                 ));
+        given(furnitureRepository.findAllById(List.of(desk.getId(), chair.getId())))
+                .willReturn(List.of(desk, chair));
 
         MyPageGeneratedImageV2Response response = userService.getUserGeneratedImageHistoryListV2(user);
 
@@ -608,7 +613,8 @@ class UserServiceImplTest {
         given(recommendFurnitureRepository.findAllBySourceAndFurnitureProductIdIn(CurationSource.RAW, List.of(2001L)))
                 .willReturn(List.of());
         given(houseFurnitureRepository.findAllByHouseIdInWithFurniture(anyList()))
-                .willReturn(List.of(HouseFurniture.builder().id(1L).house(fullFunnelHouse).furniture(desk).build()));
+                .willReturn(List.of(HouseFurniture.builder().id(1L).house(fullFunnelHouse).furnitureId(desk.getId()).build()));
+        given(furnitureRepository.findAllById(List.of(desk.getId()))).willReturn(List.of(desk));
 
         MyPageGeneratedImageV2Response response = userService.getUserGeneratedImageHistoryListV2(user);
 
@@ -695,10 +701,12 @@ class UserServiceImplTest {
                 .willReturn(List.of());
         given(houseFurnitureRepository.findAllByHouseIdInWithFurniture(List.of(34L)))
                 .willReturn(List.of(
-                        HouseFurniture.builder().id(1L).house(fullFunnelHouse).furniture(blankNameFurniture).build(),
-                        HouseFurniture.builder().id(2L).house(fullFunnelHouse).furniture(duplicateDesk1).build(),
-                        HouseFurniture.builder().id(3L).house(fullFunnelHouse).furniture(duplicateDesk2).build()
+                        HouseFurniture.builder().id(1L).house(fullFunnelHouse).furnitureId(blankNameFurniture.getId()).build(),
+                        HouseFurniture.builder().id(2L).house(fullFunnelHouse).furnitureId(duplicateDesk1.getId()).build(),
+                        HouseFurniture.builder().id(3L).house(fullFunnelHouse).furnitureId(duplicateDesk2.getId()).build()
                 ));
+        given(furnitureRepository.findAllById(List.of(blankNameFurniture.getId(), duplicateDesk1.getId(), duplicateDesk2.getId())))
+                .willReturn(List.of(blankNameFurniture, duplicateDesk1, duplicateDesk2));
 
         MyPageGeneratedImageV2Response response = userService.getUserGeneratedImageHistoryListV2(user);
 

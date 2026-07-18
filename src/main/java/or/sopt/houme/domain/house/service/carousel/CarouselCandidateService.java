@@ -33,9 +33,7 @@ public class CarouselCandidateService {
         List<Long> furnitureIds = latestHouse == null
                 ? List.of()
                 : houseFurnitureRepository.findAllByHouseIdWithFurniture(latestHouse.getId()).stream()
-                .map(HouseFurniture::getFurniture)
-                .filter(Objects::nonNull)
-                .map(or.sopt.houme.domain.furniture.model.entity.Furniture::getId)
+                .map(HouseFurniture::getFurnitureId)
                 .filter(Objects::nonNull)
                 .distinct()
                 .toList();

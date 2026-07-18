@@ -1,7 +1,6 @@
 package or.sopt.houme.domain.house.service.carousel;
 
 import or.sopt.houme.domain.furniture.model.entity.CurationRawProduct;
-import or.sopt.houme.domain.furniture.model.entity.Furniture;
 import or.sopt.houme.domain.furniture.model.entity.SoozipCategory;
 import or.sopt.houme.domain.furniture.repository.CurationRawProductRepository;
 import or.sopt.houme.domain.house.model.entity.House;
@@ -106,10 +105,10 @@ class CarouselCandidateServiceTest {
         User user = User.builder().id(1L).build();
         House house = House.builder().id(10L).user(user).build();
         HouseFurniture sofa = HouseFurniture.builder()
-                .furniture(Furniture.builder().id(10L).build())
+                .furnitureId(10L)
                 .build();
         HouseFurniture desk = HouseFurniture.builder()
-                .furniture(Furniture.builder().id(20L).build())
+                .furnitureId(20L)
                 .build();
 
         when(houseRepository.findLatestHouse(user)).thenReturn(house);
