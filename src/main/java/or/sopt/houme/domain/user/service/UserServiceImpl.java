@@ -7,11 +7,11 @@ import or.sopt.houme.credit.application.CreditUseCase;
 import or.sopt.houme.domain.furniture.model.entity.CurationRawProduct;
 import or.sopt.houme.domain.furniture.model.entity.CurationRawProductColor;
 import or.sopt.houme.domain.furniture.model.entity.CurationSource;
-import or.sopt.houme.furniture.infra.persistence.FurnitureJpaEntity;
+import or.sopt.houme.furniture.domain.Furniture;
 import or.sopt.houme.domain.furniture.model.entity.Jjym;
 import or.sopt.houme.domain.furniture.model.entity.RecommendFurniture;
 import or.sopt.houme.domain.furniture.repository.CurationRawProductColorRepository;
-import or.sopt.houme.domain.furniture.repository.FurnitureRepository;
+import or.sopt.houme.furniture.domain.port.out.FurnitureRepositoryPort;
 import or.sopt.houme.domain.furniture.repository.JjymRepository;
 import or.sopt.houme.domain.furniture.repository.RecommendFurnitureRepository;
 import or.sopt.houme.domain.generateImage.model.entity.GenerateImage;
@@ -95,7 +95,7 @@ public class UserServiceImpl implements UserService {
     private final GenerateImageRawProductRepository generateImageRawProductRepository;
     private final GenerateImageUsedProductRepository generateImageUsedProductRepository;
     private final RecommendFurnitureRepository recommendFurnitureRepository;
-    private final FurnitureRepository furnitureRepository;
+    private final FurnitureRepositoryPort furnitureRepositoryPort;
     private final JjymRepository jjymRepository;
     private final CurationRawProductColorRepository curationRawProductColorRepository;
     private final NicknameService nicknameService;
@@ -673,8 +673,8 @@ public class UserServiceImpl implements UserService {
                 .map(HouseFurniture::getFurnitureId)
                 .distinct()
                 .toList();
-        Map<Long, String> furnitureNameById = furnitureRepository.findAllById(furnitureIds).stream()
-                .collect(Collectors.toMap(FurnitureJpaEntity::getId, this::resolveFurnitureSummaryName, (left, right) -> left));
+        Map<Long, String> furnitureNameById = furnitureRepositoryPort.findAllById(furnitureIds).stream()
+                .collect(Collectors.toMap(Furniture::getId, this::resolveFurnitureSummaryName, (left, right) -> left));
 
         return mappings.stream()
                 .collect(Collectors.groupingBy(
@@ -743,7 +743,7 @@ public class UserServiceImpl implements UserService {
         return firstName + " 외 " + remainingCount + "개 가구로 생성된 이미지";
     }
 
-    private String resolveFurnitureSummaryName(FurnitureJpaEntity furniture) {
+    private String resolveFurnitureSummaryName(Furniture furniture) {
         if (furniture.getFurnitureNameKr() != null && !furniture.getFurnitureNameKr().isBlank()) {
             return furniture.getFurnitureNameKr();
         }

@@ -8,12 +8,12 @@ import or.sopt.houme.credit.application.CreditUseCase;
 import or.sopt.houme.domain.furniture.model.entity.CurationRawProduct;
 import or.sopt.houme.domain.furniture.model.entity.CurationRawProductColor;
 import or.sopt.houme.domain.furniture.model.entity.CurationSource;
-import or.sopt.houme.furniture.infra.persistence.FurnitureJpaEntity;
+import or.sopt.houme.furniture.domain.Furniture;
 import or.sopt.houme.domain.furniture.model.entity.Jjym;
 import or.sopt.houme.domain.furniture.model.entity.RecommendFurniture;
 import or.sopt.houme.domain.furniture.model.entity.SoozipCategory;
 import or.sopt.houme.domain.furniture.repository.CurationRawProductColorRepository;
-import or.sopt.houme.domain.furniture.repository.FurnitureRepository;
+import or.sopt.houme.furniture.domain.port.out.FurnitureRepositoryPort;
 import or.sopt.houme.domain.furniture.repository.JjymRepository;
 import or.sopt.houme.domain.furniture.repository.RecommendFurnitureRepository;
 import or.sopt.houme.domain.generateImage.model.entity.GenerateImage;
@@ -85,7 +85,7 @@ class UserServiceImplTest {
     private final GenerateImageRawProductRepository generateImageRawProductRepository = mock(GenerateImageRawProductRepository.class);
     private final GenerateImageUsedProductRepository generateImageUsedProductRepository = mock(GenerateImageUsedProductRepository.class);
     private final RecommendFurnitureRepository recommendFurnitureRepository = mock(RecommendFurnitureRepository.class);
-    private final FurnitureRepository furnitureRepository = mock(FurnitureRepository.class);
+    private final FurnitureRepositoryPort furnitureRepository = mock(FurnitureRepositoryPort.class);
     private final JjymRepository jjymRepository = mock(JjymRepository.class);
     private final CurationRawProductColorRepository curationRawProductColorRepository = mock(CurationRawProductColorRepository.class);
     private final NicknameService nicknameService = mock(NicknameService.class);
@@ -532,14 +532,8 @@ class UserServiceImplTest {
                 .build();
         ReflectionTestUtils.setField(fullFunnelImage, "createdAt", LocalDateTime.of(2026, 3, 25, 9, 0));
 
-        FurnitureJpaEntity desk = FurnitureJpaEntity.builder()
-                .id(1L)
-                .furnitureNameKr("업무용 책상")
-                .build();
-        FurnitureJpaEntity chair = FurnitureJpaEntity.builder()
-                .id(2L)
-                .furnitureNameKr("의자")
-                .build();
+        Furniture desk = Furniture.reconstitute(1L, null, "업무용 책상", null, null, null);
+        Furniture chair = Furniture.reconstitute(2L, null, "의자", null, null, null);
 
         given(generateImageRepository.findAllByUserIdWithHouseAndBanner(user.getId()))
                 .willReturn(List.of(fullFunnelImage));
@@ -597,10 +591,7 @@ class UserServiceImplTest {
                 .fetchedAt(LocalDateTime.of(2026, 3, 25, 8, 0))
                 .build();
 
-        FurnitureJpaEntity desk = FurnitureJpaEntity.builder()
-                .id(1L)
-                .furnitureNameKr("업무용 책상")
-                .build();
+        Furniture desk = Furniture.reconstitute(1L, null, "업무용 책상", null, null, null);
 
         given(generateImageRepository.findAllByUserIdWithHouseAndBanner(user.getId()))
                 .willReturn(List.of(fullFunnelImage));
@@ -678,18 +669,9 @@ class UserServiceImplTest {
                 .build();
         ReflectionTestUtils.setField(fullFunnelImage, "createdAt", LocalDateTime.of(2026, 3, 25, 12, 0));
 
-        FurnitureJpaEntity blankNameFurniture = FurnitureJpaEntity.builder()
-                .id(1L)
-                .furnitureNameKr(" ")
-                .build();
-        FurnitureJpaEntity duplicateDesk1 = FurnitureJpaEntity.builder()
-                .id(2L)
-                .furnitureNameKr("책상")
-                .build();
-        FurnitureJpaEntity duplicateDesk2 = FurnitureJpaEntity.builder()
-                .id(3L)
-                .furnitureNameKr("책상")
-                .build();
+        Furniture blankNameFurniture = Furniture.reconstitute(1L, null, " ", null, null, null);
+        Furniture duplicateDesk1 = Furniture.reconstitute(2L, null, "책상", null, null, null);
+        Furniture duplicateDesk2 = Furniture.reconstitute(3L, null, "책상", null, null, null);
 
         given(generateImageRepository.findAllByUserIdWithHouseAndBanner(user.getId()))
                 .willReturn(List.of(fullFunnelImage));
