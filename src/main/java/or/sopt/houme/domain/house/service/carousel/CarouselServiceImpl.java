@@ -4,11 +4,11 @@ import lombok.RequiredArgsConstructor;
 import or.sopt.houme.domain.furniture.model.entity.CurationRawProduct;
 import or.sopt.houme.domain.furniture.repository.CurationRawProductRepository;
 import or.sopt.houme.domain.furniture.service.JjymService;
-import or.sopt.houme.domain.house.model.carousel.entity.Carousel;
+import or.sopt.houme.carousel.infra.persistence.CarouselJpaEntity;
+import or.sopt.houme.carousel.infra.persistence.CarouselJpaRepository;
 import or.sopt.houme.domain.house.presentation.carousel.controller.dto.GetCarouselListResponseDTO;
 import or.sopt.houme.domain.house.presentation.carousel.controller.dto.GetCarouselResponseDTO;
 import or.sopt.houme.domain.house.presentation.carousel.controller.dto.GetCarouselV2ListResponseDTO;
-import or.sopt.houme.domain.house.repository.carousel.CarouselRepository;
 import or.sopt.houme.domain.preference.model.entity.CarouselPreference;
 import or.sopt.houme.domain.preference.model.entity.Preference;
 import or.sopt.houme.domain.preference.repository.CarouselPreferenceRepository;
@@ -30,7 +30,7 @@ import java.util.stream.Collectors;
 @Transactional(readOnly = true)
 public class CarouselServiceImpl implements CarouselService {
     private final CarouselCacheService carouselCacheService;
-    private final CarouselRepository carouselRepository;
+    private final CarouselJpaRepository carouselRepository;
     private final PreferenceRepository preferenceRepository;
     private final CarouselPreferenceRepository carouselPreferenceRepository;
     private final CurationRawProductRepository curationRawProductRepository;
@@ -95,7 +95,7 @@ public class CarouselServiceImpl implements CarouselService {
     }
 
     private void updateLike(Long userId, Long carouselId, boolean isLike) {
-        Carousel carousel = findCarousel(carouselId);
+        CarouselJpaEntity carousel = findCarousel(carouselId);
 
         Optional<CarouselPreference> optional = carouselPreferenceRepository.findByUserIdAndCarouselId(userId, carouselId);
 
@@ -114,7 +114,7 @@ public class CarouselServiceImpl implements CarouselService {
         }
     }
 
-    private Carousel findCarousel(Long carouselId) {
+    private CarouselJpaEntity findCarousel(Long carouselId) {
         return carouselRepository.findById(carouselId)
                 .orElseThrow(() -> new CarouselException(ErrorCode.CAROUSEL_NOT_FOUND));
     }

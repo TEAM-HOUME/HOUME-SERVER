@@ -2,7 +2,7 @@ package or.sopt.houme.domain.preference.model.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-import or.sopt.houme.domain.house.model.carousel.entity.Carousel;
+import or.sopt.houme.carousel.infra.persistence.CarouselJpaEntity;
 
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -22,12 +22,12 @@ public class CarouselPreference {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "carousel_id")
-    private Carousel carousel;
+    private CarouselJpaEntity carousel;
 
     @Column(name = "user_id")
     private Long userId;
 
-    public static CarouselPreference of(Preference preference, Carousel carousel,Long userId) {
+    public static CarouselPreference of(Preference preference, CarouselJpaEntity carousel,Long userId) {
         return CarouselPreference.builder()
                 .preference(preference)
                 .carousel(carousel)

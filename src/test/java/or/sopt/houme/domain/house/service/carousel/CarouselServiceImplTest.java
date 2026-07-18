@@ -6,9 +6,9 @@ import or.sopt.houme.domain.furniture.service.JjymService;
 import or.sopt.houme.domain.house.presentation.carousel.controller.dto.GetCarouselListResponseDTO;
 import or.sopt.houme.domain.house.presentation.carousel.controller.dto.GetCarouselResponseDTO;
 import or.sopt.houme.domain.house.presentation.carousel.controller.dto.GetCarouselV2ListResponseDTO;
-import or.sopt.houme.domain.house.model.carousel.entity.Carousel;
-import or.sopt.houme.domain.house.model.carousel.entity.CarouselType;
-import or.sopt.houme.domain.house.repository.carousel.CarouselRepository;
+import or.sopt.houme.carousel.domain.Carousel;
+import or.sopt.houme.carousel.infra.persistence.CarouselJpaEntity;
+import or.sopt.houme.carousel.infra.persistence.CarouselJpaRepository;
 import or.sopt.houme.domain.house.service.carousel.dto.CarouselCandidateBundle;
 import or.sopt.houme.domain.preference.model.entity.CarouselPreference;
 import or.sopt.houme.domain.preference.model.entity.Preference;
@@ -40,7 +40,7 @@ class CarouselServiceImplTest {
     private CarouselServiceImpl carouselService;
 
     @Mock
-    private CarouselRepository carouselRepository;
+    private CarouselJpaRepository carouselRepository;
 
     @Mock
     private PreferenceRepository preferenceRepository;
@@ -64,7 +64,7 @@ class CarouselServiceImplTest {
     private CarouselShuffleService carouselShuffleService;
 
     private User user;
-    private Carousel carousel;
+    private CarouselJpaEntity carousel;
 
     @BeforeEach
     void setUp() {
@@ -72,7 +72,7 @@ class CarouselServiceImplTest {
                 .id(1L)
                 .build();
 
-        carousel = Carousel.builder()
+        carousel = CarouselJpaEntity.builder()
                 .id(10L)
                 .build();
     }
@@ -83,11 +83,10 @@ class CarouselServiceImplTest {
     void getCarousel_returnsCorrectCarouselList() {
         // given
         int page = 0;
-        CarouselType dummyType = CarouselType.builder().id(1L).build();
 
         List<Carousel> mockCarousels = List.of(
-                Carousel.builder().id(1L).url("url1").filename("file1").originalFilename("origin1").fileExtension("png").carouselType(dummyType).build(),
-                Carousel.builder().id(2L).url("url2").filename("file2").originalFilename("origin2").fileExtension("jpg").carouselType(dummyType).build()
+                Carousel.builder().id(1L).url("url1").filename("file1").originalFilename("origin1").fileExtension("png").carouselTypeId(1L).build(),
+                Carousel.builder().id(2L).url("url2").filename("file2").originalFilename("origin2").fileExtension("jpg").carouselTypeId(1L).build()
         );
 
         GetCarouselResponseDTO from1 = GetCarouselResponseDTO.from(mockCarousels.get(0));

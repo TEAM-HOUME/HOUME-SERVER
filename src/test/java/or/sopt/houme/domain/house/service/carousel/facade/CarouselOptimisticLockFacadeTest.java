@@ -1,8 +1,8 @@
 package or.sopt.houme.domain.house.service.carousel.facade;
 
 import jakarta.persistence.Column;
-import or.sopt.houme.domain.house.model.carousel.entity.Carousel;
-import or.sopt.houme.domain.house.repository.carousel.CarouselRepository;
+import or.sopt.houme.carousel.infra.persistence.CarouselJpaEntity;
+import or.sopt.houme.carousel.infra.persistence.CarouselJpaRepository;
 import or.sopt.houme.domain.house.service.carousel.CarouselServiceImpl;
 import or.sopt.houme.domain.preference.model.entity.CarouselPreference;
 import or.sopt.houme.domain.preference.repository.CarouselPreferenceRepository;
@@ -43,7 +43,7 @@ class CarouselOptimisticLockFacadeTest {
     private CarouselOptimisticLockFacade carouselOptimisticLockFacade;
 
     @Autowired
-    private CarouselRepository carouselRepository;
+    private CarouselJpaRepository carouselRepository;
 
     @Autowired
     private CarouselPreferenceRepository carouselPreferenceRepository;
@@ -55,7 +55,7 @@ class CarouselOptimisticLockFacadeTest {
     private CarouselServiceImpl carouselServiceImpl;
 
     private User savedUser;
-    private Carousel savedCarousel;
+    private CarouselJpaEntity savedCarousel;
 
     @BeforeEach
     @Transactional
@@ -77,7 +77,7 @@ class CarouselOptimisticLockFacadeTest {
 
         // 캐러셀 저장
         savedCarousel = carouselRepository.save(
-                Carousel.builder()
+                CarouselJpaEntity.builder()
                         .url("https://example.com/carousel.jpg")
                         .filename("carousel.jpg")
                         .originalFilename("carousel_original.jpg")
