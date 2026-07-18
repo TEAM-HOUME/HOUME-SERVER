@@ -10,7 +10,7 @@ import or.sopt.houme.domain.generateImage.repository.GenerateImageRawProductRepo
 import or.sopt.houme.domain.generateImage.presentation.dto.response.BannerGenerateImageResponse;
 import or.sopt.houme.domain.generateImage.presentation.dto.response.GenerateImageV4Response;
 import or.sopt.houme.domain.house.model.entity.enums.Activity;
-import or.sopt.houme.domain.house.model.entity.House;
+import or.sopt.houme.house.infra.persistence.HouseJpaEntity;
 import or.sopt.houme.domain.house.service.HouseService;
 import or.sopt.houme.domain.house.repository.HouseFloorPlanRepository;
 import or.sopt.houme.domain.user.model.entity.User;
@@ -55,12 +55,12 @@ class GenerateImageTransactionServiceTest {
     private UserService userService;
 
     @Test
-    @DisplayName("배너 이미지 저장 성공 시 House 생성, 이미지 저장, 크레딧 확정, 사용자 상태 업데이트를 수행한다")
+    @DisplayName("배너 이미지 저장 성공 시 HouseJpaEntity 생성, 이미지 저장, 크레딧 확정, 사용자 상태 업데이트를 수행한다")
     void saveBannerImageAndConfirmCredit_success() {
         User user = mock(User.class);
         CreditReservation lockedCredit = new CreditReservation(1L, 1L);
         Banner banner = mock(Banner.class);
-        House house = mock(House.class);
+        HouseJpaEntity house = mock(HouseJpaEntity.class);
 
         Long floorPlanId = 3L;
         boolean isMirror = true;
@@ -113,7 +113,7 @@ class GenerateImageTransactionServiceTest {
         User user = mock(User.class);
         CreditReservation lockedCredit = new CreditReservation(1L, 1L);
         Banner banner = mock(Banner.class);
-        House house = mock(House.class);
+        HouseJpaEntity house = mock(HouseJpaEntity.class);
         ImageUploadResponseDTO imageResponse = ImageUploadResponseDTO.from(
                 "file.jpg",
                 "origin.jpg",
@@ -141,7 +141,7 @@ class GenerateImageTransactionServiceTest {
         User user = mock(User.class);
         CreditReservation lockedCredit = new CreditReservation(1L, 1L);
         Banner banner = mock(Banner.class);
-        House house = mock(House.class);
+        HouseJpaEntity house = mock(HouseJpaEntity.class);
         ImageUploadResponseDTO imageResponse = ImageUploadResponseDTO.from(
                 "file.jpg",
                 "origin.jpg",
@@ -180,7 +180,7 @@ class GenerateImageTransactionServiceTest {
     void saveV4ImageAndConfirmCredit_savesFullFunnelType() {
         User user = mock(User.class);
         CreditReservation lockedCredit = new CreditReservation(1L, 1L);
-        House house = mock(House.class);
+        HouseJpaEntity house = mock(HouseJpaEntity.class);
         ImageUploadResponseDTO imageResponse = ImageUploadResponseDTO.from(
                 "file.jpg",
                 "origin.jpg",
@@ -223,7 +223,7 @@ class GenerateImageTransactionServiceTest {
     void saveProductImageAndConfirmCredit_throwsWhenSelectedProductsMissing() {
         User user = mock(User.class);
         CreditReservation lockedCredit = new CreditReservation(1L, 1L);
-        House house = mock(House.class);
+        HouseJpaEntity house = mock(HouseJpaEntity.class);
         ImageUploadResponseDTO imageResponse = ImageUploadResponseDTO.from(
                 "file.jpg",
                 "origin.jpg",

@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import or.sopt.houme.domain.generateImage.model.entity.GenerateImage;
 import or.sopt.houme.domain.generateImage.model.entity.GenerateImageType;
 import or.sopt.houme.domain.generateImage.repository.GenerateImageRepository;
-import or.sopt.houme.domain.house.model.entity.House;
+import or.sopt.houme.house.infra.persistence.HouseJpaEntity;
 import or.sopt.houme.global.api.ErrorCode;
 import or.sopt.houme.global.api.handler.GenerateImageException;
 import or.sopt.houme.global.dto.ImageUploadResponseDTO;
@@ -21,7 +21,7 @@ public class GenerateImageServiceImpl implements GenerateImageService {
     // 이미지 생성 서비스
     @Transactional
     @Override
-    public GenerateImage createGenerateImage(ImageUploadResponseDTO request, House house) {
+    public GenerateImage createGenerateImage(ImageUploadResponseDTO request, HouseJpaEntity house) {
         return createGenerateImage(request, house, GenerateImageType.RECOMMEND);
     }
 
@@ -29,7 +29,7 @@ public class GenerateImageServiceImpl implements GenerateImageService {
     @Override
     public GenerateImage createGenerateImage(
             ImageUploadResponseDTO request,
-            House house,
+            HouseJpaEntity house,
             GenerateImageType generationType
     ) {
         GenerateImage generateImage = GenerateImage.createGenerateImage(request, house, generationType);

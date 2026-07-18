@@ -6,7 +6,7 @@ import or.sopt.houme.domain.furniture.model.entity.SoozipCategory;
 import or.sopt.houme.domain.generateImage.model.entity.GenerateImage;
 import or.sopt.houme.domain.generateImage.model.entity.GenerateImageType;
 import or.sopt.houme.domain.generateImage.model.entity.GenerateImageUsedProduct;
-import or.sopt.houme.domain.house.model.entity.House;
+import or.sopt.houme.house.infra.persistence.HouseJpaEntity;
 import or.sopt.houme.domain.house.model.entity.enums.Activity;
 import or.sopt.houme.domain.user.model.entity.*;
 import or.sopt.houme.global.config.QuerydslConfig;
@@ -38,7 +38,7 @@ class GenerateImageRepositoryImplTest {
     private GenerateImageRepositoryImpl generateImageRepositoryImpl;
 
     private User user;
-    private House house;
+    private HouseJpaEntity house;
     private GenerateImage generateImage;
 
     @BeforeEach
@@ -55,7 +55,7 @@ class GenerateImageRepositoryImplTest {
                 .build();
         em.persist(user);
 
-        house = House.builder()
+        house = HouseJpaEntity.builder()
                 .user(user)
                 .activity(Activity.REMOTE_WORK)
                 .isValid(true)
@@ -153,7 +153,7 @@ class GenerateImageRepositoryImplTest {
                 .build();
         em.persist(related2);
 
-        House nonMatchedHouse = House.builder()
+        HouseJpaEntity nonMatchedHouse = HouseJpaEntity.builder()
                 .user(user)
                 .activity(Activity.REMOTE_WORK)
                 .isValid(true)

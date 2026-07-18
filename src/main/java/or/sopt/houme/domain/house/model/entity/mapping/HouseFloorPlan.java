@@ -3,7 +3,7 @@ package or.sopt.houme.domain.house.model.entity.mapping;
 import jakarta.persistence.*;
 import lombok.*;
 import or.sopt.houme.domain.house.model.floorPlan.entity.FloorPlan;
-import or.sopt.houme.domain.house.model.entity.House;
+import or.sopt.houme.house.infra.persistence.HouseJpaEntity;
 
 @Entity
 @Getter
@@ -22,7 +22,7 @@ public class HouseFloorPlan {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "house_id")
-    private House house;
+    private HouseJpaEntity house;
 
     @Column(name = "is_reverse", nullable = false)
     private boolean isReverse;

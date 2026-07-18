@@ -12,7 +12,7 @@ import or.sopt.houme.domain.house.presentation.dto.LatestHouseConditionDTO;
 import or.sopt.houme.domain.house.presentation.dto.request.HouseSelectRequest;
 import or.sopt.houme.domain.house.presentation.dto.response.HouseIdResponse;
 import or.sopt.houme.domain.house.presentation.dto.response.HouseOptionsResponse;
-import or.sopt.houme.domain.house.model.entity.House;
+import or.sopt.houme.house.infra.persistence.HouseJpaEntity;
 import or.sopt.houme.domain.house.model.entity.InvalidHouseRequest;
 import or.sopt.houme.domain.house.model.entity.enums.Activity;
 import or.sopt.houme.domain.house.model.entity.enums.Equilibrium;
@@ -94,10 +94,10 @@ public class HouseServiceImpl implements HouseService {
         }
     }
 
-    // 가장 최근 등록한 House 찾기
+    // 가장 최근 등록한 HouseJpaEntity 찾기
     @Override
     public LatestHouseConditionDTO findLatestHouse(User user) {
-        House latestHouse = houseRepository.findLatestHouse(user);
+        HouseJpaEntity latestHouse = houseRepository.findLatestHouse(user);
 
         if (latestHouse == null) {
             throw new GeneralException(ErrorCode.NOT_FOUND_HOUSE);
@@ -109,7 +109,7 @@ public class HouseServiceImpl implements HouseService {
     // house prompt 저장
     @Transactional
     @Override
-    public void saveHousePrompt(House house, String prompt) {
+    public void saveHousePrompt(HouseJpaEntity house, String prompt) {
         house.updatePrompt(prompt);
 
         houseRepository.save(house);
@@ -117,17 +117,17 @@ public class HouseServiceImpl implements HouseService {
 
     @Transactional
     @Override
-    public House createTemplateHouse(User user, Banner banner, String prompt, Long floorPlanId, boolean isMirror) {
+    public HouseJpaEntity createTemplateHouse(User user, Banner banner, String prompt, Long floorPlanId, boolean isMirror) {
         return createTemplateHouse(user, banner, prompt, floorPlanId, isMirror, null);
     }
 
     @Transactional
     @Override
-    public House createTemplateHouse(User user, Banner banner, String prompt, Long floorPlanId, boolean isMirror, String selectedView) {
+    public HouseJpaEntity createTemplateHouse(User user, Banner banner, String prompt, Long floorPlanId, boolean isMirror, String selectedView) {
         FloorPlan floorPlan = floorPlanRepository.findById(floorPlanId)
                 .orElseThrow(() -> new HouseException(ErrorCode.NOT_FOUND_FLOOR_PLAN));
 
-        House house = House.builder()
+        HouseJpaEntity house = HouseJpaEntity.builder()
                 .activity(null)
                 .user(user)
                 .banner(banner)
@@ -135,7 +135,7 @@ public class HouseServiceImpl implements HouseService {
                 .housePrompt(prompt)
                 .build();
 
-        House savedHouse = houseRepository.save(house);
+        HouseJpaEntity savedHouse = houseRepository.save(house);
         saveHouseFloorPlan(savedHouse, floorPlanId, isMirror, selectedView);
         return savedHouse;
     }
@@ -143,9 +143,9 @@ public class HouseServiceImpl implements HouseService {
     // house activity 업데이트
     @Transactional
     @Override
-    public House updateHouseActivity(Long houseId, Activity activity) {
+    public HouseJpaEntity updateHouseActivity(Long houseId, Activity activity) {
 
-        House house = houseRepository.findById(houseId)
+        HouseJpaEntity house = houseRepository.findById(houseId)
                 .orElseThrow(() -> new HouseException(ErrorCode.NOT_FOUND_HOUSE));
 
         house.updateActivity(activity);
@@ -155,13 +155,13 @@ public class HouseServiceImpl implements HouseService {
     // 집 도면 매핑 테이블 저장
     @Transactional
     @Override
-    public void saveHouseFloorPlan(House house, Long floorPlanId, boolean isMirror) {
+    public void saveHouseFloorPlan(HouseJpaEntity house, Long floorPlanId, boolean isMirror) {
         saveHouseFloorPlan(house, floorPlanId, isMirror, null);
     }
 
     @Transactional
     @Override
-    public void saveHouseFloorPlan(House house, Long floorPlanId, boolean isMirror, String selectedView) {
+    public void saveHouseFloorPlan(HouseJpaEntity house, Long floorPlanId, boolean isMirror, String selectedView) {
         FloorPlan floorPlan = floorPlanRepository.findById(floorPlanId)
                 .orElseThrow(() -> new HouseException(ErrorCode.NOT_FOUND_FLOOR_PLAN));
 
@@ -176,7 +176,7 @@ public class HouseServiceImpl implements HouseService {
     }
 
     @Override
-    public House findHouseById(long houseId) {
+    public HouseJpaEntity findHouseById(long houseId) {
         return houseRepository.findById(houseId)
                 .orElseThrow(() -> new HouseException(ErrorCode.NOT_FOUND_HOUSE));
     }
@@ -184,7 +184,7 @@ public class HouseServiceImpl implements HouseService {
     // house와 furniture 저장
     @Transactional
     @Override
-    public void saveHouseFurniture(House house, List<Long> furnitureIds) {
+    public void saveHouseFurniture(HouseJpaEntity house, List<Long> furnitureIds) {
         if (furnitureIds == null || furnitureIds.isEmpty()) {
             return;
         }
@@ -206,7 +206,7 @@ public class HouseServiceImpl implements HouseService {
     // house와 무드보드(taste) 저장
     @Transactional
     @Override
-    public void saveHouseTaste(House house, List<Long> tasteIds) {
+    public void saveHouseTaste(HouseJpaEntity house, List<Long> tasteIds) {
 
         // #582: HouseTaste→Taste 연관 절단 — tasteId(Long) 로 저장.
         // 존재하지 않는 id 를 조용히 건너뛰던 기존 동작을 보존하기 위해 findAllById 로 실존 id 만 추린다.
@@ -246,17 +246,17 @@ public class HouseServiceImpl implements HouseService {
         FloorPlan matchedFloorPlan = floorPlanRepository.findFirstByFormAndStructureAndEquilibrium(form, structure, equilibrium)
                 .orElseThrow(() -> new HouseException(ErrorCode.NOT_FOUND_FLOOR_PLAN));
 
-        House house = House.builder()
+        HouseJpaEntity house = HouseJpaEntity.builder()
                 .user(user)
                 .isValid(true)
                 .build();
-        House save = houseRepository.save(house);
+        HouseJpaEntity save = houseRepository.save(house);
         saveHouseFloorPlan(save, matchedFloorPlan.getId(), false);
 
         return save.getId();
     }
 
-    private FloorPlan getFloorPlanOrThrow(House house) {
+    private FloorPlan getFloorPlanOrThrow(HouseJpaEntity house) {
         return houseFloorPlanRepository.findHouseFloorPlanByHouseId(house.getId())
                 .map(HouseFloorPlan::getFloorPlan)
                 .orElseThrow(() -> new HouseException(ErrorCode.NOT_FOUND_FLOOR_PLAN));

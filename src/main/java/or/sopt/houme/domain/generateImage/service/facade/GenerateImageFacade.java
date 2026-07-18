@@ -41,7 +41,7 @@ import or.sopt.houme.domain.generateImage.service.GenerateImageService;
 import or.sopt.houme.domain.generateImage.service.GenerateImageTransactionService;
 import or.sopt.houme.domain.generateImage.service.imageGenerationLog.ImageGenerationTransactionService;
 import or.sopt.houme.domain.generateImage.infrastructure.gemini.service.GeminiImageService;
-import or.sopt.houme.domain.house.model.entity.House;
+import or.sopt.houme.house.infra.persistence.HouseJpaEntity;
 import or.sopt.houme.domain.house.model.entity.enums.Activity;
 import or.sopt.houme.domain.house.model.entity.enums.Equilibrium;
 import or.sopt.houme.domain.house.model.entity.enums.Structure;
@@ -141,7 +141,7 @@ public class GenerateImageFacade {
         Equilibrium equilibrium = enumValueOf(Equilibrium.class, generateImageRequest.equilibrium());
 
         // 주요 활동 업데이트
-        House house = houseService.updateHouseActivity(generateImageRequest.houseId(), activity);
+        HouseJpaEntity house = houseService.updateHouseActivity(generateImageRequest.houseId(), activity);
 
         // house_floor_plan 생성 및 저장
         houseService.saveHouseFloorPlan(house, generateImageRequest.floorPlan().floorPlanId(), generateImageRequest.floorPlan().isMirror());
@@ -162,7 +162,7 @@ public class GenerateImageFacade {
         // 가구 식별자 ID
         PromptFurnitureListDTO promptFurnitureListDTO = PromptFurnitureListDTO.of(generateImageRequest.selectiveIds());
 
-        // House와 무드보드들 저장
+        // HouseJpaEntity와 무드보드들 저장
         houseService.saveHouseTaste(house, generateImageRequest.moodBoardIds());
 
         // 가장 우선순위가 높은 무드보드 id 제공
@@ -381,7 +381,7 @@ public class GenerateImageFacade {
             String floorPlanImageUrl = resolveFloorPlanImageUrl(floorPlan, request.floorPlanView());
             List<String> referenceImageUrls = buildReferenceImageUrls(banner, selectedChip, floorPlanImageUrl);
             String prompt = buildBannerPrompt(banner, selectedChip, floorPlan);
-            House house = generateImageTransactionService.createTemplateHouseBeforeImageGeneration(
+            HouseJpaEntity house = generateImageTransactionService.createTemplateHouseBeforeImageGeneration(
                     user,
                     banner,
                     request.floorPlanId(),
@@ -459,7 +459,7 @@ public class GenerateImageFacade {
             String floorPlanImageUrl = resolveFloorPlanImageUrl(floorPlan, request.floorPlanView());
             List<String> referenceImageUrls = buildStyleReferenceImageUrls(style, floorPlanImageUrl);
             String prompt = buildStylePrompt(style, floorPlan);
-            House house = generateImageTransactionService.createTemplateHouseBeforeImageGeneration(
+            HouseJpaEntity house = generateImageTransactionService.createTemplateHouseBeforeImageGeneration(
                     user,
                     style,
                     request.floorPlanId(),
@@ -556,7 +556,7 @@ public class GenerateImageFacade {
             String floorPlanImageUrl = resolveFloorPlanImageUrlStrict(floorPlan, request.floorPlanView());
             List<String> referenceImageUrls = buildV4ReferenceImageUrls(floorPlanImageUrl, matchedFurnitureTags);
             String prompt = buildV4Prompt(floorPlan, selectedTag, matchedFurnitureTags);
-            House house = generateImageTransactionService.createTemplateHouseBeforeImageGeneration(
+            HouseJpaEntity house = generateImageTransactionService.createTemplateHouseBeforeImageGeneration(
                     user,
                     null,
                     request.floorPlanId(),
@@ -638,7 +638,7 @@ public class GenerateImageFacade {
             String floorPlanImageUrl = resolveFloorPlanImageUrlStrict(floorPlan, request.floorPlanView());
             List<String> referenceImageUrls = buildProductReferenceImageUrls(floorPlanImageUrl, selectedProducts);
             String prompt = buildProductBasedPrompt(floorPlan, selectedProducts);
-            House house = generateImageTransactionService.createTemplateHouseBeforeImageGeneration(
+            HouseJpaEntity house = generateImageTransactionService.createTemplateHouseBeforeImageGeneration(
                     user,
                     null,
                     request.floorPlanId(),
@@ -702,7 +702,7 @@ public class GenerateImageFacade {
             Equilibrium equilibrium = enumValueOf(Equilibrium.class, generateImageRequest.equilibrium());
 
             // 기존 house에 주요활동 업데이트하기 (저장)
-            House house = houseService.updateHouseActivity(generateImageRequest.houseId(), activity);
+            HouseJpaEntity house = houseService.updateHouseActivity(generateImageRequest.houseId(), activity);
 
             // house_floor_plan 생성 및 저장
             houseService.saveHouseFloorPlan(house, generateImageRequest.floorPlan().floorPlanId(), generateImageRequest.floorPlan().isMirror());
@@ -723,7 +723,7 @@ public class GenerateImageFacade {
             // 가구 식별자 ID
             PromptFurnitureListDTO promptFurnitureListDTO = PromptFurnitureListDTO.of(generateImageRequest.selectiveIds());
 
-            // House와 무드보드들 저장
+            // HouseJpaEntity와 무드보드들 저장
             houseService.saveHouseTaste(house, generateImageRequest.moodBoardIds());
 
             // 최고 순위 2개 찾기
@@ -1162,7 +1162,7 @@ public class GenerateImageFacade {
 
     // houseId로 결과 이미지 찾아오기
     public ImageInfoResponse getFallBackImage(User user, Long houseId) {
-        House houseById = houseService.findHouseById(houseId);
+        HouseJpaEntity houseById = houseService.findHouseById(houseId);
 
         GenerateImage generateImage;
 
@@ -1286,7 +1286,7 @@ public class GenerateImageFacade {
         }
     }
 
-    private FloorPlan requireHouseFloorPlan(House house) {
+    private FloorPlan requireHouseFloorPlan(HouseJpaEntity house) {
         return houseFloorPlanRepository.findHouseFloorPlanByHouseId(house.getId())
                 .map(HouseFloorPlan::getFloorPlan)
                 .orElseThrow(() -> new HouseException(ErrorCode.NOT_FOUND_FLOOR_PLAN));

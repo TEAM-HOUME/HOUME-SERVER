@@ -3,7 +3,7 @@ package or.sopt.houme.domain.preference.repository;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import or.sopt.houme.domain.generateImage.model.entity.QGenerateImage;
-import or.sopt.houme.domain.house.model.entity.QHouse;
+import or.sopt.houme.house.infra.persistence.QHouseJpaEntity;
 import or.sopt.houme.domain.preference.model.entity.Preference;
 import or.sopt.houme.domain.preference.model.entity.QGenerateImagePreference;
 import or.sopt.houme.domain.preference.model.entity.QPreference;
@@ -22,7 +22,7 @@ public class PreferenceRepositoryImpl implements PreferenceRepositoryCustom {
         QPreference preference = QPreference.preference;
         QGenerateImagePreference generateImagePreference = QGenerateImagePreference.generateImagePreference;
         QGenerateImage generateImage = QGenerateImage.generateImage;
-        QHouse house = QHouse.house;
+        QHouseJpaEntity house = QHouseJpaEntity.houseJpaEntity;
         QUser user = QUser.user;
 
         return Optional.ofNullable(queryFactory

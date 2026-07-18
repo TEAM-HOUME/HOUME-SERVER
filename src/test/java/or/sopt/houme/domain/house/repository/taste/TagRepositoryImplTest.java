@@ -2,7 +2,7 @@ package or.sopt.houme.domain.house.repository.taste;
 
 import jakarta.persistence.EntityManager;
 import or.sopt.houme.domain.generateImage.model.entity.GenerateImage;
-import or.sopt.houme.domain.house.model.entity.House;
+import or.sopt.houme.house.infra.persistence.HouseJpaEntity;
 import or.sopt.houme.domain.house.model.entity.enums.Activity;
 import or.sopt.houme.domain.house.model.entity.mapping.HouseTaste;
 import or.sopt.houme.taste.infra.persistence.TasteJpaEntity;
@@ -39,7 +39,7 @@ class TagRepositoryImplTest {
     private TagQueryRepository tagQueryRepository;
 
     private User mockUser;
-    private House mockHouse;
+    private HouseJpaEntity mockHouse;
     private GenerateImage mockGenerateImage;
     private TasteJpaEntity mockTaste;
     private HouseTaste mockHouseTaste;
@@ -63,7 +63,7 @@ class TagRepositoryImplTest {
         em.persist(mockUser);
 
         // 🏠 집 생성
-        mockHouse = House.builder()
+        mockHouse = HouseJpaEntity.builder()
                 .activity(Activity.READING)
                 .user(mockUser)
                 .isValid(true)

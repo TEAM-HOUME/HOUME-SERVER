@@ -14,7 +14,7 @@ import or.sopt.houme.domain.generateImage.model.entity.GenerateImage;
 import or.sopt.houme.domain.generateImage.model.entity.GenerateImageRawProduct;
 import or.sopt.houme.domain.generateImage.model.entity.GenerateImageType;
 import or.sopt.houme.domain.generateImage.repository.GenerateImageRawProductRepository;
-import or.sopt.houme.domain.house.model.entity.House;
+import or.sopt.houme.house.infra.persistence.HouseJpaEntity;
 import or.sopt.houme.domain.house.model.entity.enums.Activity;
 import or.sopt.houme.domain.house.model.entity.mapping.HouseFloorPlan;
 import or.sopt.houme.domain.house.model.floorPlan.entity.FloorPlan;
@@ -49,7 +49,7 @@ public class GenerateImageTransactionService {
     // DB 관련 로직을 위한 별도의 @Transactional 메서드 생성
     @Transactional
     public List<ImageInfoResponse> saveResultsAndCreateResponse(
-            User user, House house, List<ImageUploadResponseDTO> results,
+            User user, HouseJpaEntity house, List<ImageUploadResponseDTO> results,
             GenerateImageRequest generateImageRequest, List<TagDTO> priorityIdList, CreditReservation credit,
             GenerateImageType generationType) {
 
@@ -97,8 +97,8 @@ public class GenerateImageTransactionService {
             Activity activity,
             GenerateImageType generationType
     ) {
-        // 1. House 정보 업데이트
-        House house = houseService.updateHouseActivity(request.houseId(), activity);
+        // 1. HouseJpaEntity 정보 업데이트
+        HouseJpaEntity house = houseService.updateHouseActivity(request.houseId(), activity);
 
         // 2. 가구 및 무드보드, 프롬프트 저장
         houseService.saveHouseFloorPlan(house, request.floorPlan().floorPlanId(),request.floorPlan().isMirror());
@@ -165,7 +165,7 @@ public class GenerateImageTransactionService {
             String finalPrompt,
             ImageUploadResponseDTO imageResponse
     ) {
-        House house = createTemplateHouseBeforeImageGeneration(
+        HouseJpaEntity house = createTemplateHouseBeforeImageGeneration(
                 user,
                 banner,
                 floorPlanId,
@@ -188,7 +188,7 @@ public class GenerateImageTransactionService {
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public House createTemplateHouseBeforeImageGeneration(
+    public HouseJpaEntity createTemplateHouseBeforeImageGeneration(
             User user,
             Banner banner,
             Long floorPlanId,
@@ -199,7 +199,7 @@ public class GenerateImageTransactionService {
             List<Long> furnitureIds,
             List<Long> moodBoardIds
     ) {
-        House house = houseService.createTemplateHouse(user, banner, finalPrompt, floorPlanId, isMirror, floorPlanView);
+        HouseJpaEntity house = houseService.createTemplateHouse(user, banner, finalPrompt, floorPlanId, isMirror, floorPlanView);
         if (activity != null) {
             houseService.updateHouseActivity(house.getId(), activity);
         }
@@ -214,7 +214,7 @@ public class GenerateImageTransactionService {
     public BannerGenerateImageResponse saveBannerImageAndConfirmCredit(
             User user,
             CreditReservation lockedCredit,
-            House house,
+            HouseJpaEntity house,
             Banner banner,
             ImageUploadResponseDTO imageResponse,
             boolean isMirror
@@ -269,7 +269,7 @@ public class GenerateImageTransactionService {
             java.util.List<Long> furnitureIds,
             java.util.List<Long> moodBoardIds
     ) {
-        House house = createTemplateHouseBeforeImageGeneration(
+        HouseJpaEntity house = createTemplateHouseBeforeImageGeneration(
                 user,
                 null,
                 floorPlanId,
@@ -288,7 +288,7 @@ public class GenerateImageTransactionService {
     public GenerateImageV4Response saveV4ImageAndConfirmCredit(
             User user,
             CreditReservation lockedCredit,
-            House house,
+            HouseJpaEntity house,
             ImageUploadResponseDTO imageResponse,
             boolean isMirror
     ) {
@@ -336,7 +336,7 @@ public class GenerateImageTransactionService {
             ImageUploadResponseDTO imageResponse,
             List<CurationRawProduct> selectedProducts
     ) {
-        House house = createTemplateHouseBeforeImageGeneration(
+        HouseJpaEntity house = createTemplateHouseBeforeImageGeneration(
                 user,
                 null,
                 floorPlanId,
@@ -355,7 +355,7 @@ public class GenerateImageTransactionService {
     public GenerateImageV4Response saveProductImageAndConfirmCredit(
             User user,
             CreditReservation lockedCredit,
-            House house,
+            HouseJpaEntity house,
             ImageUploadResponseDTO imageResponse,
             List<CurationRawProduct> selectedProducts,
             boolean isMirror
@@ -411,7 +411,7 @@ public class GenerateImageTransactionService {
         }
     }
 
-    private FloorPlan getFloorPlanOrThrow(House house) {
+    private FloorPlan getFloorPlanOrThrow(HouseJpaEntity house) {
         return houseFloorPlanRepository.findHouseFloorPlanByHouseId(house.getId())
                 .map(HouseFloorPlan::getFloorPlan)
                 .orElseThrow(() -> new HouseException(ErrorCode.NOT_FOUND_FLOOR_PLAN));

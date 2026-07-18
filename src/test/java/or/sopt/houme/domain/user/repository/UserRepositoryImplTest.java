@@ -2,7 +2,7 @@ package or.sopt.houme.domain.user.repository;
 
 import jakarta.persistence.EntityManager;
 import or.sopt.houme.domain.generateImage.model.entity.GenerateImage;
-import or.sopt.houme.domain.house.model.entity.House;
+import or.sopt.houme.house.infra.persistence.HouseJpaEntity;
 import or.sopt.houme.domain.house.model.entity.enums.Activity;
 import or.sopt.houme.domain.house.model.entity.mapping.HouseTaste;
 import or.sopt.houme.tag.infra.persistence.TagJpaEntity;
@@ -38,7 +38,7 @@ class UserRepositoryImplTest {
     private UserRepositoryImpl userRepositoryImpl;
 
     private User mockUser;
-    private House mockHouse;
+    private HouseJpaEntity mockHouse;
     private GenerateImage mockGenerateImage;
     private HouseTaste mockHouseTaste;
     private TasteJpaEntity mockTaste;
@@ -99,15 +99,15 @@ class UserRepositoryImplTest {
         em.persist(TasteTagJpaEntity.forInsert(taste2.getId(), tagVintage.getId()));
         em.persist(TasteTagJpaEntity.forInsert(taste2.getId(), tagModern.getId())); // taste2는 tag 2개
 
-        // 4. House 2개 생성
-        House house1 = House.builder()
+        // 4. HouseJpaEntity 2개 생성
+        HouseJpaEntity house1 = HouseJpaEntity.builder()
                 .activity(Activity.REMOTE_WORK)
                 .user(mockUser)
                 .isValid(true)
                 .build();
         em.persist(house1);
 
-        House house2 = House.builder()
+        HouseJpaEntity house2 = HouseJpaEntity.builder()
                 .activity(Activity.READING)
                 .user(mockUser)
                 .isValid(true)

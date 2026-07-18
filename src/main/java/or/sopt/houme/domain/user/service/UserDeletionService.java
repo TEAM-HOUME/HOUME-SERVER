@@ -5,7 +5,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
-import or.sopt.houme.domain.house.model.entity.House;
+import or.sopt.houme.house.infra.persistence.HouseJpaEntity;
 import or.sopt.houme.domain.house.repository.HouseRepository;
 import or.sopt.houme.domain.house.repository.HouseFloorPlanRepository;
 import or.sopt.houme.domain.house.repository.HouseFurnitureRepository;
@@ -94,7 +94,7 @@ public class UserDeletionService {
 
         // 2. 하우스 관련 데이터 정리 (이미지, 매핑 등)
         var houses = houseRepository.findByUserId(userId);
-        for (House house : houses) {
+        for (HouseJpaEntity house : houses) {
             // 이미지별 선호도/요인/Preference 삭제
             var images = generateImageRepository.findGenerateImagesByHouseId(house.getId());
             images.forEach(image -> {

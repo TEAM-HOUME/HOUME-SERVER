@@ -3,7 +3,7 @@ package or.sopt.houme.tag.infra.persistence;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import or.sopt.houme.domain.generateImage.model.entity.QGenerateImage;
-import or.sopt.houme.domain.house.model.entity.QHouse;
+import or.sopt.houme.house.infra.persistence.QHouseJpaEntity;
 import or.sopt.houme.domain.house.model.entity.mapping.QHouseTaste;
 import or.sopt.houme.taste.infra.persistence.QTasteJpaEntity;
 import or.sopt.houme.tastetag.infra.persistence.QTasteTagJpaEntity;
@@ -22,7 +22,7 @@ public class TagQueryRepository {
     private final JPAQueryFactory queryFactory;
 
     public Optional<TagJpaEntity> findTagByUserIdAndImageId(Long userId, Long imageId) {
-        QHouse house = QHouse.house;
+        QHouseJpaEntity house = QHouseJpaEntity.houseJpaEntity;
         QGenerateImage generateImage = QGenerateImage.generateImage;
         QTagJpaEntity tag = QTagJpaEntity.tagJpaEntity;
         QTasteTagJpaEntity tasteTag = QTasteTagJpaEntity.tasteTagJpaEntity;

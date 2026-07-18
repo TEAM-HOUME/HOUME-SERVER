@@ -2,7 +2,7 @@ package or.sopt.houme.domain.house.repository;
 
 import jakarta.persistence.EntityManager;
 import or.sopt.houme.domain.generateImage.model.entity.GenerateImage;
-import or.sopt.houme.domain.house.model.entity.House;
+import or.sopt.houme.house.infra.persistence.HouseJpaEntity;
 import or.sopt.houme.domain.house.model.entity.enums.Activity;
 import or.sopt.houme.domain.user.model.entity.*;
 import or.sopt.houme.global.config.QuerydslConfig;
@@ -30,7 +30,7 @@ class HouseCustomRepositoryImplTest {
     private HouseCustomRepositoryImpl houseCustomRepositoryImpl;
 
     private User mockUser;
-    private House mockHouse;
+    private HouseJpaEntity mockHouse;
     private GenerateImage mockGenerateImage;
 
     @BeforeEach
@@ -49,8 +49,8 @@ class HouseCustomRepositoryImplTest {
                 .build();
         em.persist(mockUser);
 
-        // 🏠 House 생성 및 저장
-        mockHouse = House.builder()
+        // 🏠 HouseJpaEntity 생성 및 저장
+        mockHouse = HouseJpaEntity.builder()
                 .activity(Activity.READING)
                 .user(mockUser)
                 .isValid(true)
@@ -75,7 +75,7 @@ class HouseCustomRepositoryImplTest {
     @DisplayName("✅ userId와 imageId로 house 조회 성공")
     void findHouseByUserIdAndImageId_success() {
         // when
-        Optional<House> result = houseCustomRepositoryImpl.findHouseByUserIdAndImageId(mockUser.getId(), mockGenerateImage.getId());
+        Optional<HouseJpaEntity> result = houseCustomRepositoryImpl.findHouseByUserIdAndImageId(mockUser.getId(), mockGenerateImage.getId());
 
         // then
         assertThat(result).isPresent();
@@ -87,7 +87,7 @@ class HouseCustomRepositoryImplTest {
     @DisplayName("❌ 잘못된 imageId로 조회 시 empty 반환")
     void findHouseByUserIdAndImageId_invalidImage() {
         // when
-        Optional<House> result = houseCustomRepositoryImpl.findHouseByUserIdAndImageId(mockUser.getId(), 999L);
+        Optional<HouseJpaEntity> result = houseCustomRepositoryImpl.findHouseByUserIdAndImageId(mockUser.getId(), 999L);
 
         // then
         assertThat(result).isEmpty();

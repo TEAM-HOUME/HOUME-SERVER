@@ -2,7 +2,7 @@ package or.sopt.houme.domain.generateImage.service;
 
 import or.sopt.houme.domain.generateImage.model.entity.GenerateImage;
 import or.sopt.houme.domain.generateImage.repository.GenerateImageRepository;
-import or.sopt.houme.domain.house.model.entity.House;
+import or.sopt.houme.house.infra.persistence.HouseJpaEntity;
 import or.sopt.houme.domain.house.repository.HouseRepository;
 import or.sopt.houme.domain.user.model.entity.*;
 import or.sopt.houme.domain.user.repository.UserRepository;
@@ -39,7 +39,7 @@ class GenerateImageServiceImplTest {
     private UserRepository userRepository;
 
     private User savedUser;
-    private House savedHouse;
+    private HouseJpaEntity savedHouse;
 
     @BeforeEach
     void setUp() {
@@ -58,7 +58,7 @@ class GenerateImageServiceImplTest {
         );
 
         savedHouse = houseRepository.save(
-                House.builder()
+                HouseJpaEntity.builder()
                         .isValid(true)
                         .user(savedUser)
                         .build()

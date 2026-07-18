@@ -2,7 +2,7 @@ package or.sopt.houme.domain.preference.model.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-import or.sopt.houme.domain.house.model.entity.House;
+import or.sopt.houme.house.infra.persistence.HouseJpaEntity;
 
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -24,10 +24,10 @@ public class PromptPreference {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "house_id")
-    private House house;
+    private HouseJpaEntity house;
 
     // 정적 메서드
-    public static PromptPreference generatePreference(Preference preference, House house) {
+    public static PromptPreference generatePreference(Preference preference, HouseJpaEntity house) {
         return PromptPreference.builder()
                 .preference(preference)
                 .house(house)

@@ -10,7 +10,7 @@ import or.sopt.houme.domain.generateImage.model.entity.GenerateImageType;
 import or.sopt.houme.domain.generateImage.model.entity.QGenerateImage;
 import or.sopt.houme.domain.generateImage.model.entity.QGenerateImageRawProduct;
 import or.sopt.houme.domain.banner.model.entity.QBanner;
-import or.sopt.houme.domain.house.model.entity.QHouse;
+import or.sopt.houme.house.infra.persistence.QHouseJpaEntity;
 import or.sopt.houme.domain.user.model.entity.QUser;
 import org.springframework.stereotype.Repository;
 
@@ -29,7 +29,7 @@ public class GenerateImageRepositoryImpl implements GenerateImageRepositoryCusto
     @Override
     public Optional<GenerateImage> findByIdWithHouseAndUser(Long imageId) {
         QGenerateImage generateImage = QGenerateImage.generateImage;
-        QHouse house = QHouse.house;
+        QHouseJpaEntity house = QHouseJpaEntity.houseJpaEntity;
         QUser user = QUser.user;
 
         return Optional.ofNullable(queryFactory
@@ -69,7 +69,7 @@ public class GenerateImageRepositoryImpl implements GenerateImageRepositoryCusto
     @Override
     public Optional<GenerateImage> findMostRecentByUserId(Long userId) {
         QGenerateImage generateImage = QGenerateImage.generateImage;
-        QHouse house = QHouse.house;
+        QHouseJpaEntity house = QHouseJpaEntity.houseJpaEntity;
 
         return Optional.ofNullable(queryFactory
                 .selectFrom(generateImage)
@@ -85,7 +85,7 @@ public class GenerateImageRepositoryImpl implements GenerateImageRepositoryCusto
     @Override
     public List<GenerateImage> findGenerateImagesByHouseId(Long houseId) {
         QGenerateImage generateImage = QGenerateImage.generateImage;
-        QHouse house = QHouse.house;
+        QHouseJpaEntity house = QHouseJpaEntity.houseJpaEntity;
 
         return queryFactory
                 .selectFrom(generateImage)
@@ -98,7 +98,7 @@ public class GenerateImageRepositoryImpl implements GenerateImageRepositoryCusto
     @Override
     public List<GenerateImage> findAllByUserIdWithHouseAndBanner(Long userId) {
         QGenerateImage generateImage = QGenerateImage.generateImage;
-        QHouse house = QHouse.house;
+        QHouseJpaEntity house = QHouseJpaEntity.houseJpaEntity;
         QBanner banner = QBanner.banner;
 
         return queryFactory

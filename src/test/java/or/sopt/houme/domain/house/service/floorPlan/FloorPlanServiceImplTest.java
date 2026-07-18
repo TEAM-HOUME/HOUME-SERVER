@@ -2,7 +2,7 @@ package or.sopt.houme.domain.house.service.floorPlan;
 
 import or.sopt.houme.domain.generateImage.model.entity.GenerateImage;
 import or.sopt.houme.domain.generateImage.repository.GenerateImageRepository;
-import or.sopt.houme.domain.house.model.entity.House;
+import or.sopt.houme.house.infra.persistence.HouseJpaEntity;
 import or.sopt.houme.domain.house.model.entity.mapping.HouseFloorPlan;
 import or.sopt.houme.domain.house.presentation.floorPlan.dto.response.FloorPlanListResponse;
 import or.sopt.houme.domain.house.presentation.floorPlan.dto.response.ExploreHouseTemplateDetailResponse;
@@ -93,7 +93,7 @@ class FloorPlanServiceImplTest {
                 .floorPlan(floorPlan)
                 .selectedView("SIDE_VIEW")
                 .build();
-        House house = House.builder()
+        HouseJpaEntity house = HouseJpaEntity.builder()
                 .houseFloorPlans(List.of(houseFloorPlan))
                 .build();
         GenerateImage generateImage = GenerateImage.builder()

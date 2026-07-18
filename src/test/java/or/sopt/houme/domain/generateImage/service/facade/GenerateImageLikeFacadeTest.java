@@ -4,7 +4,7 @@ import jakarta.persistence.OptimisticLockException;
 import or.sopt.houme.domain.generateImage.model.entity.GenerateImage;
 import or.sopt.houme.domain.generateImage.service.GenerateImageService;
 import or.sopt.houme.domain.house.presentation.dto.request.IsLikeRequest;
-import or.sopt.houme.domain.house.model.entity.House;
+import or.sopt.houme.house.infra.persistence.HouseJpaEntity;
 import or.sopt.houme.domain.preference.service.FactorService;
 import or.sopt.houme.domain.preference.service.GenerateImagePreferenceService;
 import or.sopt.houme.domain.preference.service.PreferenceService;
@@ -46,7 +46,7 @@ class GenerateImageLikeFacadeTest {
 
     private User testUser;
     private User otherUser;
-    private House testHouse;
+    private HouseJpaEntity testHouse;
     private GenerateImage testGenerateImage;
     private IsLikeRequest likeRequest;
     private IsLikeRequest unlikeRequest;
@@ -56,7 +56,7 @@ class GenerateImageLikeFacadeTest {
         testUser = User.builder().id(1L).build();
         otherUser = User.builder().id(2L).build();
 
-        testHouse = House.builder().id(10L).user(testUser).build();
+        testHouse = HouseJpaEntity.builder().id(10L).user(testUser).build();
         testGenerateImage = GenerateImage.builder().id(100L).house(testHouse).build();
         likeRequest = new IsLikeRequest(true);
         unlikeRequest = new IsLikeRequest(false);

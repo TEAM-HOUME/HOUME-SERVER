@@ -21,7 +21,7 @@ import or.sopt.houme.domain.generateImage.model.entity.GenerateImageUsedProduct;
 import or.sopt.houme.domain.generateImage.repository.GenerateImageRawProductRepository;
 import or.sopt.houme.domain.generateImage.repository.GenerateImageRepository;
 import or.sopt.houme.domain.generateImage.repository.GenerateImageUsedProductRepository;
-import or.sopt.houme.domain.house.model.entity.House;
+import or.sopt.houme.house.infra.persistence.HouseJpaEntity;
 import or.sopt.houme.domain.house.model.entity.mapping.HouseFloorPlan;
 import or.sopt.houme.domain.house.model.entity.mapping.HouseFurniture;
 import or.sopt.houme.domain.house.model.floorPlan.entity.FloorPlan;
@@ -122,12 +122,12 @@ public class UserServiceImpl implements UserService {
     public UserImageHistoryListResponse getUserImageHistoryList(User user) {
         User findUser = findUser(user);
 
-        // 1. 유저가 생성한 House 목록 조회 (isValid == true)
-        List<House> houses = houseRepository.findValidHouseByUserId(findUser.getId());
+        // 1. 유저가 생성한 HouseJpaEntity 목록 조회 (isValid == true)
+        List<HouseJpaEntity> houses = houseRepository.findValidHouseByUserId(findUser.getId());
 
         List<UserImageHistoryDTO> histories = new ArrayList<>();
 
-        for (House house : houses) {
+        for (HouseJpaEntity house : houses) {
             // 2. 각 house에 연결된 이미지가 없으면 skip
             Optional<GenerateImage> generateImage = generateImageRepository.findByHouseId(house.getId());
             if (generateImage.isEmpty()) continue;
@@ -247,7 +247,7 @@ public class UserServiceImpl implements UserService {
         User findUser = findUser(user);
 
         // 1. house, tag 조회
-        House house = houseRepository.findById(houseId)
+        HouseJpaEntity house = houseRepository.findById(houseId)
                 .orElseThrow(() -> new HouseException(ErrorCode.NOT_FOUND_HOUSE_ENTITY));
 
         // 2. houseId 에 해당하는 generateImage 리스트 조회
@@ -435,7 +435,7 @@ public class UserServiceImpl implements UserService {
     private Map<Long, Banner> buildBannerMap(List<GenerateImage> generateImages) {
         Set<Long> bannerIds = generateImages.stream()
                 .map(generateImage -> {
-                    House house = generateImage.getHouse();
+                    HouseJpaEntity house = generateImage.getHouse();
                     return house != null ? house.getBanner() : null;
                 })
                 .filter(Objects::nonNull)
@@ -532,7 +532,7 @@ public class UserServiceImpl implements UserService {
         List<Long> houseIds = generateImages.stream()
                 .map(GenerateImage::getHouse)
                 .filter(Objects::nonNull)
-                .map(House::getId)
+                .map(HouseJpaEntity::getId)
                 .filter(Objects::nonNull)
                 .distinct()
                 .toList();
@@ -552,7 +552,7 @@ public class UserServiceImpl implements UserService {
     }
 
     private boolean resolveIsMirror(GenerateImage generateImage, Map<Long, Boolean> mirrorByHouseId) {
-        House house = generateImage.getHouse();
+        HouseJpaEntity house = generateImage.getHouse();
         if (house == null || house.getId() == null) {
             return false;
         }
@@ -654,7 +654,7 @@ public class UserServiceImpl implements UserService {
         List<Long> houseIds = generateImages.stream()
                 .map(GenerateImage::getHouse)
                 .filter(Objects::nonNull)
-                .map(House::getId)
+                .map(HouseJpaEntity::getId)
                 .filter(Objects::nonNull)
                 .distinct()
                 .toList();
@@ -725,7 +725,7 @@ public class UserServiceImpl implements UserService {
             GenerateImage generateImage,
             Map<Long, List<String>> selectedFurnitureNamesByHouseId
     ) {
-        House house = generateImage.getHouse();
+        HouseJpaEntity house = generateImage.getHouse();
         if (house == null || house.getId() == null) {
             return null;
         }
@@ -750,7 +750,7 @@ public class UserServiceImpl implements UserService {
         return "가구";
     }
 
-    private FloorPlan resolveFloorPlan(House house) {
+    private FloorPlan resolveFloorPlan(HouseJpaEntity house) {
         return houseFloorPlanRepository.findHouseFloorPlanByHouseId(house.getId())
                 .map(HouseFloorPlan::getFloorPlan)
                 .orElse(null);

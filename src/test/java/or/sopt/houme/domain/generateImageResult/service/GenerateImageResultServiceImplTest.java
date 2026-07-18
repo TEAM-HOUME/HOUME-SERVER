@@ -33,7 +33,7 @@ import or.sopt.houme.domain.generateImageResult.presentation.dto.response.Genera
 import or.sopt.houme.domain.generateImageResult.presentation.dto.response.GeneratedImageMetaResponse;
 import or.sopt.houme.domain.generateImageResult.presentation.dto.response.RelatedImagesResponse;
 import or.sopt.houme.domain.generateImageResult.presentation.dto.response.SimilarItemsResponse;
-import or.sopt.houme.domain.house.model.entity.House;
+import or.sopt.houme.house.infra.persistence.HouseJpaEntity;
 import or.sopt.houme.tag.infra.persistence.TagJpaEntity;
 import or.sopt.houme.domain.house.service.HouseService;
 import or.sopt.houme.domain.user.model.entity.User;
@@ -91,7 +91,7 @@ class GenerateImageResultServiceImplTest {
     @Test
     @DisplayName("이미지 메타 조회 시 imageUrl/isMirror/generationType을 반환한다")
     void getGeneratedImageMeta_returnsImageUrlAndIsMirrorAndGenerationType() {
-        House house = House.builder().id(100L).build();
+        HouseJpaEntity house = HouseJpaEntity.builder().id(100L).build();
         GenerateImage image = GenerateImage.builder()
                 .id(1L)
                 .url("https://generated-image")
@@ -135,7 +135,7 @@ class GenerateImageResultServiceImplTest {
                 .id(10L)
                 .build();
       
-        House house = House.builder()
+        HouseJpaEntity house = HouseJpaEntity.builder()
                 .id(100L)
                 .banner(bannerRef)
                 .build();

@@ -22,7 +22,7 @@ import or.sopt.houme.domain.generateImage.model.entity.GenerateImageType;
 import or.sopt.houme.domain.generateImage.repository.GenerateImageRawProductRepository;
 import or.sopt.houme.domain.generateImage.repository.GenerateImageRepository;
 import or.sopt.houme.domain.generateImage.repository.GenerateImageUsedProductRepository;
-import or.sopt.houme.domain.house.model.entity.House;
+import or.sopt.houme.house.infra.persistence.HouseJpaEntity;
 import or.sopt.houme.domain.house.model.entity.mapping.HouseFloorPlan;
 import or.sopt.houme.domain.house.model.entity.mapping.HouseFurniture;
 import or.sopt.houme.domain.house.model.entity.enums.Equilibrium;
@@ -115,7 +115,7 @@ class UserServiceImplTest {
             );
 
     private User user;
-    private House house;
+    private HouseJpaEntity house;
     private Tag tag;
     private GenerateImage generateImage;
 
@@ -127,7 +127,7 @@ class UserServiceImplTest {
                 .email("test@example.com")
                 .build();
 
-        house = House.builder()
+        house = HouseJpaEntity.builder()
                 .id(20L)
                 .user(user)
                 .build();
@@ -240,7 +240,7 @@ class UserServiceImplTest {
                 .name("테스트유저")
                 .build();
 
-        House house = House.builder()
+        HouseJpaEntity house = HouseJpaEntity.builder()
                 .id(houseId)
                 .build();
         FloorPlan floorPlan = FloorPlan.builder()
@@ -400,7 +400,7 @@ class UserServiceImplTest {
                 .build();
         banner.getBannerRawProducts().add(BannerCurationRawProduct.of(banner, bannerRawProduct));
 
-        House houseWithBanner = House.builder()
+        HouseJpaEntity houseWithBanner = HouseJpaEntity.builder()
                 .id(21L)
                 .activity(house.getActivity())
                 .user(user)
@@ -518,7 +518,7 @@ class UserServiceImplTest {
     void getUserGeneratedImageHistoryListV2_fullFunnelFallbackSummary_success() {
         given(userRepository.findById(user.getId())).willReturn(Optional.of(user));
 
-        House fullFunnelHouse = House.builder()
+        HouseJpaEntity fullFunnelHouse = HouseJpaEntity.builder()
                 .id(31L)
                 .user(user)
                 .isValid(true)
@@ -572,7 +572,7 @@ class UserServiceImplTest {
     void getUserGeneratedImageHistoryListV2_fullFunnelWithRawProducts_usesRawProducts() {
         given(userRepository.findById(user.getId())).willReturn(Optional.of(user));
 
-        House fullFunnelHouse = House.builder()
+        HouseJpaEntity fullFunnelHouse = HouseJpaEntity.builder()
                 .id(32L)
                 .user(user)
                 .isValid(true)
@@ -628,7 +628,7 @@ class UserServiceImplTest {
     void getUserGeneratedImageHistoryListV2_fullFunnelWithoutAnyProducts_returnsNullSummary() {
         given(userRepository.findById(user.getId())).willReturn(Optional.of(user));
 
-        House fullFunnelHouse = House.builder()
+        HouseJpaEntity fullFunnelHouse = HouseJpaEntity.builder()
                 .id(33L)
                 .user(user)
                 .isValid(true)
@@ -664,7 +664,7 @@ class UserServiceImplTest {
     void getUserGeneratedImageHistoryListV2_fullFunnelFallback_deduplicatesAndUsesGenericName() {
         given(userRepository.findById(user.getId())).willReturn(Optional.of(user));
 
-        House fullFunnelHouse = House.builder()
+        HouseJpaEntity fullFunnelHouse = HouseJpaEntity.builder()
                 .id(34L)
                 .user(user)
                 .isValid(true)

@@ -3,7 +3,7 @@ package or.sopt.houme.domain.house.service.carousel;
 import or.sopt.houme.domain.furniture.model.entity.CurationRawProduct;
 import or.sopt.houme.domain.furniture.model.entity.SoozipCategory;
 import or.sopt.houme.domain.furniture.repository.CurationRawProductRepository;
-import or.sopt.houme.domain.house.model.entity.House;
+import or.sopt.houme.house.infra.persistence.HouseJpaEntity;
 import or.sopt.houme.domain.house.model.entity.mapping.HouseFurniture;
 import or.sopt.houme.domain.house.repository.HouseFurnitureRepository;
 import or.sopt.houme.domain.house.repository.HouseRepository;
@@ -103,7 +103,7 @@ class CarouselCandidateServiceTest {
     @DisplayName("후보군 조회 시 최신 house에 저장된 가구 ID를 기준으로 선택 가구 후보를 조회한다")
     void collectCandidates_usesLatestHouseFurnitureIds() {
         User user = User.builder().id(1L).build();
-        House house = House.builder().id(10L).user(user).build();
+        HouseJpaEntity house = HouseJpaEntity.builder().id(10L).user(user).build();
         HouseFurniture sofa = HouseFurniture.builder()
                 .furnitureId(10L)
                 .build();

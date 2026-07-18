@@ -2,7 +2,7 @@ package or.sopt.houme.domain.user.model.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-import or.sopt.houme.domain.house.model.entity.House;
+import or.sopt.houme.house.infra.persistence.HouseJpaEntity;
 import or.sopt.houme.global.entity.BaseEntity;
 
 import java.time.LocalDate;

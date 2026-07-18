@@ -5,7 +5,7 @@ import or.sopt.houme.domain.house.presentation.dto.LatestHouseConditionDTO;
 import or.sopt.houme.domain.house.presentation.dto.request.HouseSelectRequest;
 import or.sopt.houme.domain.house.presentation.dto.response.HouseIdResponse;
 import or.sopt.houme.domain.house.presentation.dto.response.HouseOptionsResponse;
-import or.sopt.houme.domain.house.model.entity.House;
+import or.sopt.houme.house.infra.persistence.HouseJpaEntity;
 import or.sopt.houme.domain.house.model.entity.enums.Activity;
 import or.sopt.houme.domain.user.model.entity.User;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,29 +25,29 @@ public interface HouseService {
 
     // house에 주요활동 저장하기
     @Transactional
-    House updateHouseActivity(Long houseId, Activity activity);
+    HouseJpaEntity updateHouseActivity(Long houseId, Activity activity);
 
     // 생성된 이미지 가져오기 (가장 최신 1개)
-    House findHouseById(long houseId);
+    HouseJpaEntity findHouseById(long houseId);
 
     // 생성된 이미지 프롬프트 저장
-    void saveHousePrompt(House house, String prompt);
+    void saveHousePrompt(HouseJpaEntity house, String prompt);
 
     // 템플릿 기반 이미지 생성을 위한 house 저장
-    House createTemplateHouse(User user, Banner banner, String prompt, Long floorPlanId, boolean isMirror);
+    HouseJpaEntity createTemplateHouse(User user, Banner banner, String prompt, Long floorPlanId, boolean isMirror);
 
-    House createTemplateHouse(User user, Banner banner, String prompt, Long floorPlanId, boolean isMirror, String selectedView);
+    HouseJpaEntity createTemplateHouse(User user, Banner banner, String prompt, Long floorPlanId, boolean isMirror, String selectedView);
 
     // houseId와 floorPlan 저장
-    void saveHouseFloorPlan(House house, Long floorPlanId, boolean isMirror);
+    void saveHouseFloorPlan(HouseJpaEntity house, Long floorPlanId, boolean isMirror);
 
-    void saveHouseFloorPlan(House house, Long floorPlanId, boolean isMirror, String selectedView);
+    void saveHouseFloorPlan(HouseJpaEntity house, Long floorPlanId, boolean isMirror, String selectedView);
 
     // house와 furniture 저장
-    void saveHouseFurniture(House house, List<Long> furnitureIds);
+    void saveHouseFurniture(HouseJpaEntity house, List<Long> furnitureIds);
 
     // house와 무드보드(taste) 저장
-    void saveHouseTaste(House house, List<Long> tasteIds);
+    void saveHouseTaste(HouseJpaEntity house, List<Long> tasteIds);
 
     // houseFloorPlan isMirror 조회
     boolean getIsMirrorByHouseId(Long houseId);

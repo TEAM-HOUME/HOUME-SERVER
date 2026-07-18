@@ -1,4 +1,4 @@
-package or.sopt.houme.domain.house.model.entity;
+package or.sopt.houme.house.infra.persistence;
 
 import jakarta.persistence.*;
 import lombok.*;
@@ -18,7 +18,7 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 @Table(name = "houses")
-public class House extends BaseEntity {
+public class HouseJpaEntity extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

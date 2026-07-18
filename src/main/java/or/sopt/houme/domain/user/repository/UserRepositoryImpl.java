@@ -4,7 +4,7 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import or.sopt.houme.domain.generateImage.model.entity.GenerateImage;
 import or.sopt.houme.domain.generateImage.model.entity.QGenerateImage;
-import or.sopt.houme.domain.house.model.entity.QHouse;
+import or.sopt.houme.house.infra.persistence.QHouseJpaEntity;
 import or.sopt.houme.domain.user.model.entity.QUser;
 import or.sopt.houme.domain.user.model.entity.User;
 import org.springframework.stereotype.Repository;
@@ -20,7 +20,7 @@ public class UserRepositoryImpl implements UserRepositoryCustom {
     @Override
     public Optional<GenerateImage> findImageHistoryById(Long userId) {
         QUser user = QUser.user;
-        QHouse house = QHouse.house;
+        QHouseJpaEntity house = QHouseJpaEntity.houseJpaEntity;
         QGenerateImage generateImage = QGenerateImage.generateImage;
 
         return Optional.ofNullable(queryFactory

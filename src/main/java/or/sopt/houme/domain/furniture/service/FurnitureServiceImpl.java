@@ -18,7 +18,7 @@ import or.sopt.houme.domain.furniture.repository.ActivityFurnitureRepository;
 import or.sopt.houme.domain.furniture.repository.FurnitureRepository;
 import or.sopt.houme.domain.furniture.repository.FurnitureTagRepository;
 import or.sopt.houme.domain.furniture.repository.FurnitureTypeRepository;
-import or.sopt.houme.domain.house.model.entity.House;
+import or.sopt.houme.house.infra.persistence.HouseJpaEntity;
 import or.sopt.houme.domain.house.model.entity.enums.Activity;
 import or.sopt.houme.domain.house.repository.HouseRepository;
 import or.sopt.houme.tag.domain.Tag;
@@ -240,7 +240,7 @@ public class FurnitureServiceImpl implements FurnitureService {
     }
 
     private List<Furniture> findSelectedFurnitures(User user, Long imageId) {
-        House house = houseRepository.findHouseByUserIdAndImageId(user.getId(), imageId)
+        HouseJpaEntity house = houseRepository.findHouseByUserIdAndImageId(user.getId(), imageId)
                 .orElseThrow(() -> new HouseException(ErrorCode.NOT_FOUND_HOUSE_ENTITY));
         return furnitureRepository.findAllByHouseId(house.getId());
     }

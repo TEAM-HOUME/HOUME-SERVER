@@ -32,7 +32,7 @@ import or.sopt.houme.domain.generateImage.service.GenerateImageService;
 import or.sopt.houme.domain.generateImage.service.GenerateImageTransactionService;
 import or.sopt.houme.domain.generateImage.service.imageGenerationLog.ImageGenerationLogService;
 import or.sopt.houme.domain.generateImage.service.imageGenerationLog.ImageGenerationTransactionService;
-import or.sopt.houme.domain.house.model.entity.House;
+import or.sopt.houme.house.infra.persistence.HouseJpaEntity;
 import or.sopt.houme.domain.house.model.entity.enums.Activity;
 import or.sopt.houme.domain.house.model.entity.enums.Equilibrium;
 import or.sopt.houme.domain.house.model.entity.enums.Form;
@@ -181,7 +181,7 @@ class GenerateImageFacadeTest {
                 .structure(Structure.OPEN_ONE_ROOM)
                 .equilibrium(Equilibrium.UNDER_5)
                 .build();
-        House house = House.builder()
+        HouseJpaEntity house = HouseJpaEntity.builder()
                 .id(1L)
                 .activity(Activity.READING)
                 .user(user)
@@ -274,7 +274,7 @@ class GenerateImageFacadeTest {
                 .structure(Structure.OPEN_ONE_ROOM)
                 .equilibrium(Equilibrium.UNDER_5)
                 .build();
-        House house = House.builder()
+        HouseJpaEntity house = HouseJpaEntity.builder()
                 .id(1L)
                 .activity(Activity.REMOTE_WORK)
                 .user(user)
@@ -394,7 +394,7 @@ class GenerateImageFacadeTest {
                 .styleAnswerChipsJson("[{\"id\":1}]")
                 .bannerRawProducts(List.of())
                 .build();
-        House house = House.builder().id(900L).build();
+        HouseJpaEntity house = HouseJpaEntity.builder().id(900L).build();
 
         FloorPlan floorPlan = FloorPlan.builder()
                 .id(11L)
@@ -501,7 +501,7 @@ class GenerateImageFacadeTest {
                         BannerCurationRawProduct.of(null, otherProduct)
                 ))
                 .build();
-        House house = House.builder().id(901L).build();
+        HouseJpaEntity house = HouseJpaEntity.builder().id(901L).build();
 
         FloorPlan floorPlan = FloorPlan.builder()
                 .id(11L)
@@ -635,7 +635,7 @@ class GenerateImageFacadeTest {
                 .priority(2)
                 .searchKeyword("k2")
                 .build();
-        House house = House.builder().id(902L).build();
+        HouseJpaEntity house = HouseJpaEntity.builder().id(902L).build();
 
         ImageUploadResponseDTO imageUploadResponseDTO = ImageUploadResponseDTO.from(
                 "generated.webp",
@@ -790,7 +790,7 @@ class GenerateImageFacadeTest {
                 .floorPlanPrompt("도면 프롬프트")
                 .imagesJson("[]")
                 .build();
-        House house = House.builder().id(903L).build();
+        HouseJpaEntity house = HouseJpaEntity.builder().id(903L).build();
 
         CurationRawProduct p1 = CurationRawProduct.builder().id(1L).productName("소파").productImageUrl("https://p1").build();
         CurationRawProduct p2 = CurationRawProduct.builder().id(2L).productName("책상").productImageUrl("https://p2").build();

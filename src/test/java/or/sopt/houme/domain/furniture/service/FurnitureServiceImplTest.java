@@ -12,7 +12,7 @@ import or.sopt.houme.domain.furniture.model.entity.FurnitureTypes;
 import or.sopt.houme.domain.furniture.repository.ActivityFurnitureRepository;
 import or.sopt.houme.domain.furniture.repository.FurnitureRepository;
 import or.sopt.houme.domain.furniture.repository.FurnitureTagRepository;
-import or.sopt.houme.domain.house.model.entity.House;
+import or.sopt.houme.house.infra.persistence.HouseJpaEntity;
 import or.sopt.houme.domain.furniture.repository.FurnitureTypeRepository;
 import or.sopt.houme.domain.house.model.entity.enums.Activity;
 import or.sopt.houme.domain.house.repository.HouseRepository;
@@ -228,7 +228,7 @@ class FurnitureServiceImplTest {
                 .id(100L)
                 .build();
 
-        House house = House.builder()
+        HouseJpaEntity house = HouseJpaEntity.builder()
                 .id(200L)
                 .build();
 
@@ -357,7 +357,7 @@ class FurnitureServiceImplTest {
     }
 
     @Test
-    @DisplayName("House가 없을 경우 예외 발생")
+    @DisplayName("HouseJpaEntity가 없을 경우 예외 발생")
     void getFurnitureCategoriesByStyle_houseNotFound() {
         // Given
         Long imageId = 10L;
@@ -381,7 +381,7 @@ class FurnitureServiceImplTest {
         Long imageId = 10L;
 
         Tag tag = Tag.builder().id(100L).build();
-        House house = House.builder().id(200L).build();
+        HouseJpaEntity house = HouseJpaEntity.builder().id(200L).build();
 
         Furniture bed = Furniture.builder().id(1L).furnitureNameKr("침대").build();
         Furniture chair = Furniture.builder().id(2L).furnitureNameKr("의자").build();
@@ -414,7 +414,7 @@ class FurnitureServiceImplTest {
         Long imageId = 10L;
 
         Tag tag = Tag.builder().id(100L).build();
-        House house = House.builder().id(200L).build();
+        HouseJpaEntity house = HouseJpaEntity.builder().id(200L).build();
 
         Furniture sofa = Furniture.builder().id(1L).furnitureNameKr("소파").build();
         Furniture desk = Furniture.builder().id(2L).furnitureNameKr("책상").build();
@@ -444,7 +444,7 @@ class FurnitureServiceImplTest {
         Long imageId = 10L;
 
         Tag tag = Tag.builder().id(100L).build();
-        House house = House.builder().id(200L).build();
+        HouseJpaEntity house = HouseJpaEntity.builder().id(200L).build();
 
         Furniture bed = Furniture.builder().id(1L).furnitureNameKr("침대").build();
 

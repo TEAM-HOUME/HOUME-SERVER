@@ -5,7 +5,7 @@ import lombok.RequiredArgsConstructor;
 import or.sopt.houme.domain.generateImage.model.entity.GenerateImage;
 import or.sopt.houme.domain.generateImage.service.GenerateImageService;
 import or.sopt.houme.domain.house.presentation.dto.request.IsLikeRequest;
-import or.sopt.houme.domain.house.model.entity.House;
+import or.sopt.houme.house.infra.persistence.HouseJpaEntity;
 import or.sopt.houme.domain.preference.service.FactorService;
 import or.sopt.houme.domain.preference.service.GenerateImagePreferenceService;
 import or.sopt.houme.domain.preference.service.PreferenceService;
@@ -39,7 +39,7 @@ public class GenerateImageLikeFacade {
         // 도면 이미지 조회
         GenerateImage generateImage = generateImageService.findGenerateImage(generatedImageId);
 
-        House house = generateImage.getHouse();
+        HouseJpaEntity house = generateImage.getHouse();
 
         // 본인이 생성한 이미지가 아니라면 에러 처리
         if (!house.getUser().getId().equals(user.getId())) {

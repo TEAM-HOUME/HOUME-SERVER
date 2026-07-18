@@ -3,8 +3,8 @@ package or.sopt.houme.domain.house.repository;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import or.sopt.houme.domain.generateImage.model.entity.QGenerateImage;
-import or.sopt.houme.domain.house.model.entity.House;
-import or.sopt.houme.domain.house.model.entity.QHouse;
+import or.sopt.houme.house.infra.persistence.HouseJpaEntity;
+import or.sopt.houme.house.infra.persistence.QHouseJpaEntity;
 import or.sopt.houme.domain.user.model.entity.User;
 import org.springframework.stereotype.Repository;
 
@@ -18,8 +18,8 @@ public class HouseCustomRepositoryImpl implements HouseCustomRepository {
     private final JPAQueryFactory queryFactory;
 
     @Override
-    public House findLatestHouse(User user) {
-        QHouse qHouse = QHouse.house;
+    public HouseJpaEntity findLatestHouse(User user) {
+        QHouseJpaEntity qHouse = QHouseJpaEntity.houseJpaEntity;
 
         return queryFactory
                 .selectFrom(qHouse)
@@ -30,8 +30,8 @@ public class HouseCustomRepositoryImpl implements HouseCustomRepository {
     }
 
     @Override
-    public Optional<House> findHouseByUserIdAndImageId(Long userId, Long imageId) {
-        QHouse house = QHouse.house;
+    public Optional<HouseJpaEntity> findHouseByUserIdAndImageId(Long userId, Long imageId) {
+        QHouseJpaEntity house = QHouseJpaEntity.houseJpaEntity;
         QGenerateImage generateImage = QGenerateImage.generateImage;
 
         return Optional.ofNullable(
@@ -48,8 +48,8 @@ public class HouseCustomRepositoryImpl implements HouseCustomRepository {
     }
 
     @Override
-    public List<House> findValidHouseByUserId(Long userId) {
-        QHouse house = QHouse.house;
+    public List<HouseJpaEntity> findValidHouseByUserId(Long userId) {
+        QHouseJpaEntity house = QHouseJpaEntity.houseJpaEntity;
 
         return queryFactory
                 .selectFrom(house)

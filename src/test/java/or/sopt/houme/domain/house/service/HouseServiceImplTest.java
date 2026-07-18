@@ -3,7 +3,7 @@ package or.sopt.houme.domain.house.service;
 import or.sopt.houme.domain.house.presentation.dto.HouseOptionDTO;
 import or.sopt.houme.domain.house.presentation.dto.LatestHouseConditionDTO;
 import or.sopt.houme.domain.house.presentation.dto.response.HouseOptionsResponse;
-import or.sopt.houme.domain.house.model.entity.House;
+import or.sopt.houme.house.infra.persistence.HouseJpaEntity;
 import or.sopt.houme.domain.house.model.entity.enums.Activity;
 import or.sopt.houme.domain.house.model.entity.enums.Equilibrium;
 import or.sopt.houme.domain.house.model.entity.enums.Form;
@@ -33,7 +33,7 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-@DisplayName("[House Service Test]")
+@DisplayName("[HouseJpaEntity Service Test]")
 class HouseServiceImplTest {
 
     @InjectMocks
@@ -49,7 +49,7 @@ class HouseServiceImplTest {
     private HouseFloorPlanRepository houseFloorPlanRepository;
 
     private User savedUser;
-    private House savedHouse;
+    private HouseJpaEntity savedHouse;
 
     @BeforeEach
     void setUp() {
@@ -66,7 +66,7 @@ class HouseServiceImplTest {
                         .role(Role.ROLE_USER)
                         .build();
 
-        savedHouse = House.builder()
+        savedHouse = HouseJpaEntity.builder()
                 .id(1L)
                         .isValid(true)
                         .user(savedUser)
@@ -107,7 +107,7 @@ class HouseServiceImplTest {
     }
 
     @Test
-    @DisplayName("User를 받아서 최근에 입력한 House 조건들을 받을 수 있다.")
+    @DisplayName("User를 받아서 최근에 입력한 HouseJpaEntity 조건들을 받을 수 있다.")
     void getHouseOptionsResponse_ShouldReturnValidHouse() {
         // Given
         FloorPlan floorPlan = FloorPlan.builder()
@@ -151,7 +151,7 @@ class HouseServiceImplTest {
         when(houseRepository.save(savedHouse)).thenReturn(savedHouse);
 
         // When
-        House house = houseService.updateHouseActivity(savedHouse.getId(), Activity.REMOTE_WORK);
+        HouseJpaEntity house = houseService.updateHouseActivity(savedHouse.getId(), Activity.REMOTE_WORK);
 
         // Then
         assertThat(house).isNotNull();

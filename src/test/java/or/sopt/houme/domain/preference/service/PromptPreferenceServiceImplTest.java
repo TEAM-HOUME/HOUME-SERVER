@@ -2,7 +2,7 @@ package or.sopt.houme.domain.preference.service;
 
 import or.sopt.houme.domain.generateImage.model.entity.GenerateImage;
 import or.sopt.houme.domain.generateImage.repository.GenerateImageRepository;
-import or.sopt.houme.domain.house.model.entity.House;
+import or.sopt.houme.house.infra.persistence.HouseJpaEntity;
 import or.sopt.houme.domain.house.repository.HouseRepository;
 import or.sopt.houme.domain.preference.model.entity.GenerateImagePreference;
 import or.sopt.houme.domain.preference.model.entity.Preference;
@@ -65,11 +65,11 @@ class PromptPreferenceServiceImplTest {
                 .build();
         User save = userRepository.save(user);
 
-        House house = House.builder()
+        HouseJpaEntity house = HouseJpaEntity.builder()
                 .isValid(true)
                 .user(save)
                 .build();
-        House saveHouse = houseRepository.save(house);
+        HouseJpaEntity saveHouse = houseRepository.save(house);
 
         GenerateImage generateImage = GenerateImage.builder()
                 .house(saveHouse)

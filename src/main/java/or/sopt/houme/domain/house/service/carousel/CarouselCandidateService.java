@@ -2,7 +2,7 @@ package or.sopt.houme.domain.house.service.carousel;
 
 import lombok.RequiredArgsConstructor;
 import or.sopt.houme.domain.furniture.model.entity.CurationRawProduct;
-import or.sopt.houme.domain.house.model.entity.House;
+import or.sopt.houme.house.infra.persistence.HouseJpaEntity;
 import or.sopt.houme.domain.house.model.entity.mapping.HouseFurniture;
 import or.sopt.houme.domain.furniture.model.entity.SoozipCategory;
 import or.sopt.houme.domain.furniture.repository.CurationRawProductRepository;
@@ -29,7 +29,7 @@ public class CarouselCandidateService {
     private final HouseFurnitureRepository houseFurnitureRepository;
 
     public CarouselCandidateBundle collectCandidates(User user) {
-        House latestHouse = houseRepository.findLatestHouse(user);
+        HouseJpaEntity latestHouse = houseRepository.findLatestHouse(user);
         List<Long> furnitureIds = latestHouse == null
                 ? List.of()
                 : houseFurnitureRepository.findAllByHouseIdWithFurniture(latestHouse.getId()).stream()
