@@ -92,7 +92,7 @@ class TagRepositoryImplTest {
         // 🏠-🎨 매핑
         mockHouseTaste = HouseTaste.builder()
                 .house(mockHouse)
-                .taste(mockTaste)
+                .tasteId(mockTaste.getId())
                 .build();
         em.persist(mockHouseTaste);
 

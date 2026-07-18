@@ -122,10 +122,10 @@ class AdminMoodBoardServiceImplTest {
         // given
         String filename = "test.jpg";
         TasteJpaEntity taste = TasteJpaEntity.builder().id(1L).filename(filename).build();
-        HouseTaste houseTaste = HouseTaste.builder().taste(taste).build();
+        HouseTaste houseTaste = HouseTaste.builder().tasteId(taste.getId()).build();
 
         when(tasteRepository.findByFilename(filename)).thenReturn(Optional.of(taste));
-        when(houseTasteRepository.findAllByTaste(taste)).thenReturn(List.of(houseTaste));
+        when(houseTasteRepository.findAllByTasteId(taste.getId())).thenReturn(List.of(houseTaste));
 
         // when
         adminMoodBoardService.delete(filename);
@@ -158,11 +158,11 @@ class AdminMoodBoardServiceImplTest {
         // given
 //        String filename = "test.jpg";
 //        TasteJpaEntity taste = TasteJpaEntity.builder().filename(filename).build();
-//        HouseTaste houseTaste = HouseTaste.builder().taste(taste).build();
+//        HouseTaste houseTaste = HouseTaste.builder().tasteId(taste.getId()).build();
 //        List<TasteTag> tasteTags = List.of();
 //
 //        when(tasteRepository.findByFilename(filename)).thenReturn(Optional.of(taste));
-//        when(houseTasteRepository.findAllByTaste(taste)).thenReturn(List.of(houseTaste));
+//        when(houseTasteRepository.findAllByTasteId(taste.getId())).thenReturn(List.of(houseTaste));
 //        when(tasteTagRepository.findAllByTaste(taste)).thenReturn(tasteTags);
 //        doThrow(new DataIntegrityViolationException("err")).when(tasteTagRepository).deleteAll(tasteTags);
 //
@@ -215,10 +215,10 @@ class AdminMoodBoardServiceImplTest {
         // given
         String filename = "test.jpg";
         TasteJpaEntity taste = TasteJpaEntity.builder().id(1L).filename(filename).build();
-        HouseTaste houseTaste = HouseTaste.builder().taste(taste).build();
+        HouseTaste houseTaste = HouseTaste.builder().tasteId(taste.getId()).build();
 
         when(tasteRepository.findByFilename(filename)).thenReturn(Optional.of(taste));
-        when(houseTasteRepository.findAllByTaste(taste)).thenReturn(List.of(houseTaste));
+        when(houseTasteRepository.findAllByTasteId(taste.getId())).thenReturn(List.of(houseTaste));
         doThrow(new DataIntegrityViolationException("")).when(tasteTagRepository).deleteAllByTasteId(1L);
 
         // when & then
@@ -235,10 +235,10 @@ class AdminMoodBoardServiceImplTest {
         // given
         String filename = "test.jpg";
         TasteJpaEntity taste = TasteJpaEntity.builder().id(1L).filename(filename).build();
-        HouseTaste houseTaste = HouseTaste.builder().taste(taste).build();
+        HouseTaste houseTaste = HouseTaste.builder().tasteId(taste.getId()).build();
 
         when(tasteRepository.findByFilename(filename)).thenReturn(Optional.of(taste));
-        when(houseTasteRepository.findAllByTaste(taste)).thenReturn(List.of(houseTaste));
+        when(houseTasteRepository.findAllByTasteId(taste.getId())).thenReturn(List.of(houseTaste));
         doThrow(new RuntimeException()).when(s3Util).delete(filename);
 
         // when & then

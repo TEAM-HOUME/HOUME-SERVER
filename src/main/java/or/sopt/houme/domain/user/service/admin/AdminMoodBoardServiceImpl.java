@@ -115,7 +115,7 @@ public class AdminMoodBoardServiceImpl implements AdminMoodBoardService {
         TasteJpaEntity byFilename = tasteRepository.findByFilename(filename)
                 .orElseThrow(()-> new GeneralException(ErrorCode.NOT_FOUND_TASTE));
 
-        List<HouseTaste> houseTastes = houseTasteRepository.findAllByTaste(byFilename);
+        List<HouseTaste> houseTastes = houseTasteRepository.findAllByTasteId(byFilename.getId());
 
         try {
             tasteTagRepository.deleteAllByTasteId(byFilename.getId());

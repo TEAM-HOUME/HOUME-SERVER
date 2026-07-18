@@ -208,12 +208,14 @@ public class HouseServiceImpl implements HouseService {
     @Override
     public void saveHouseTaste(House house, List<Long> tasteIds) {
 
+        // #582: HouseTaste→Taste 연관 절단 — tasteId(Long) 로 저장.
+        // 존재하지 않는 id 를 조용히 건너뛰던 기존 동작을 보존하기 위해 findAllById 로 실존 id 만 추린다.
         List<TasteJpaEntity> tastes = tasteRepository.findAllById(tasteIds);
 
         List<HouseTaste> list = tastes.stream()
                 .map(taste -> HouseTaste.builder()
                         .house(house)
-                        .taste(taste)
+                        .tasteId(taste.getId())
                         .build())
                 .toList();
 
