@@ -13,6 +13,12 @@
 4. 물리 gradle 모듈 분리는 **맨 마지막 한 번**.
 5. **API 계약/DB 스키마 불변** (ddl-auto=update, JPA 매핑 기존 스키마와 정확히 일치).
 
+### 실행 방식 (strangler / 점진적 병렬 변경) — 중요
+- 목적지는 "엄격 순수 + 클러스터 전체"지만, **도달 경로는 리프부터 green 커밋**으로 쌓는다.
+- 리프 엔티티를 순수화할 때, 아직 전환 안 된 **자식은 잠정적으로 `XxxJpaEntity`를 @ManyToOne 으로 참조**(임시 seam). 그 자식이 자기 차례에 전환되면 그 연관을 **id(Long) 참조로 절단**하며 seam 제거.
+- 단일 PR이라 부분 상태가 develop에 안 나가고, PR 최종 시점엔 모든 seam이 제거되어 엄격 순수 달성.
+- 각 커밋은 `compileJava`+`compileTestJava`+영향 테스트 그린 유지.
+
 ## 기준 패턴 (credit, 이미 완료)
 - 슬라이스: `or.sopt.houme.credit.{domain, application, infra}` — domain(순수 모델+port.out), application(UseCase+Service), infra(JpaEntity+Mapper+PersistenceAdapter+LockAdapter).
 - ArchUnit: `CreditArchitectureTest` (domain→JPA/Spring 금지, application→infra 금지).
@@ -34,11 +40,12 @@
 - carousel like/hate, jjym(v1/v2), housing-selections(POST), 이미지생성 v1~v4, curation product 상세/dashboard.
 
 ### 2단계 본체 — 클러스터 순수화 (리프부터, 가리켜지는 순서 역순)
-1. **Tag** 순수화 — 단, `FurnitureTag`·`CarouselTag`·`TasteTag`가 `@ManyToOne Tag` → 이들 연관을 tagId(Long) 참조로 절단. (클러스터 통째라 함께 처리)
-2. **Taste** — `HouseTaste`·`TasteTag`가 `@ManyToOne Taste` → tasteId 참조로.
-3. **TasteTag** (Taste/Tag 참조를 id로).
-4. **Furniture / FurnitureTag**.
-5. **Carousel / CarouselTag**.
+0. **엔티티→presentation DTO 역방향 의존 제거** — 완료 (커밋 `f3ea0d6`). Tag.update/Taste.createByPreSignedURL/Furniture·FurnitureTag 팩토리를 primitive 파라미터로.
+1. **Tag** 순수화 — ✅ **완료 (커밋 `2b599c1`)**. `or.sopt.houme.tag.{domain, domain.port.out, infra.persistence}` 슬라이스 신설. 순수 `Tag`(도메인) + `TagJpaEntity`(infra, @Table tags) + `TagRepositoryPort`/`TagPersistenceAdapter`/`TagMapper`/`TagJpaRepository`/`TagQueryRepository`(6-조인 QueryDSL 이관). 소비처 28+파일 포트/도메인 재배선. 자식(TasteTag/FurnitureTag/CarouselTag)은 아직 `@ManyToOne TagJpaEntity`(임시 seam) — 각 자식 전환 시 tagId 절단 예정. `FurnitureTagRepository.findByFurnitureAndTag`→`findByFurnitureAndTagId(Furniture,Long)`. Tag 도메인/JpaEntity 둘 다 `@Builder`(테스트 편의+보일러플레이트). 단위/리포지토리/통합 테스트 green. **ArchUnit(tag 슬라이스 domain→JPA/Spring 금지) 아직 미작성 — 추가 필요.**
+2. **Taste** (다음) — `HouseTaste`·`TasteTag`가 `@ManyToOne Taste` → 전환 시 tasteId 참조로 절단. Taste 순수 모델 + 포트 + infra. AdminMoodBoard/Moodboard 조회 경로 주의(MoodboardApiIntegrationTest 안전망 있음). `TasteCustomRepositoryImpl.findTasteByCursor` 이관.
+3. **TasteTag** (Taste/Tag 참조를 id로; TagJpaEntity seam 제거 → tagId). `TasteTagCustomRepositoryImpl`(현재 QTagJpaEntity 조인 + TagMapper) 재작성.
+4. **Furniture / FurnitureTag** (FurnitureTag의 TagJpaEntity seam 제거 → tagId; `.getTag()` 5곳/DTO 2곳 read model로). Furniture QueryDSL(FurnitureCustom/CurationRawProduct/FurnitureTag Impl) 다수.
+5. **Carousel / CarouselTag** (CarouselTag의 TagJpaEntity seam 제거).
 6. **House / HouseTaste** (House는 Banner·User도 참조 — Banner/User는 클러스터 밖, 유지/보류 판단).
 - 각 엔티티: 순수 domain 모델 + `port.out` + infra(JpaEntity+Mapper+Adapter). 슬라이스 패키지 네이밍은 credit처럼 도메인 루트(`or.sopt.houme.<domain>.{domain,application,infra}`) 또는 협의.
 - 크로스도메인 QueryDSL(예: `TagRepositoryImpl.findTagByUserIdAndImageId` = House·GenerateImage·Tag·TasteTag·Taste·HouseTaste 6조인)은 infra read model로 재작성. 조회 책임 위치 결정 필요.
