@@ -1,5 +1,6 @@
 package or.sopt.houme.domain.furniture.model.entity;
 
+import or.sopt.houme.furniture.infra.persistence.FurnitureJpaEntity;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -36,9 +37,9 @@ public class CurationRawProductFurniture {
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "furniture_id", nullable = false)
-    private Furniture furniture;
+    private FurnitureJpaEntity furniture;
 
-    public static CurationRawProductFurniture of(CurationRawProduct rawProduct, Furniture furniture) {
+    public static CurationRawProductFurniture of(CurationRawProduct rawProduct, FurnitureJpaEntity furniture) {
         return CurationRawProductFurniture.builder()
                 .curationRawProduct(rawProduct)
                 .furniture(furniture)

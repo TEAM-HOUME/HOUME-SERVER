@@ -11,7 +11,7 @@ import or.sopt.houme.credit.domain.CreditReservation;
 import or.sopt.houme.credit.application.CreditUseCase;
 import or.sopt.houme.domain.furniture.model.entity.ActivityFurniture;
 import or.sopt.houme.domain.furniture.model.entity.CurationRawProduct;
-import or.sopt.houme.domain.furniture.model.entity.Furniture;
+import or.sopt.houme.furniture.infra.persistence.FurnitureJpaEntity;
 import or.sopt.houme.domain.furniture.model.entity.FurnitureTag;
 import or.sopt.houme.domain.furniture.repository.ActivityFurnitureRepository;
 import or.sopt.houme.domain.furniture.service.FurnitureService;
@@ -607,8 +607,8 @@ class GenerateImageFacadeTest {
                 .imagesJson("[]")
                 .build();
 
-        Furniture selectedFurniture = Furniture.builder().id(7L).build();
-        Furniture activityFurniture = Furniture.builder().id(8L).build();
+        FurnitureJpaEntity selectedFurniture = FurnitureJpaEntity.builder().id(7L).build();
+        FurnitureJpaEntity activityFurniture = FurnitureJpaEntity.builder().id(8L).build();
 
         ActivityFurniture mapping = ActivityFurniture.builder()
                 .id(1L)
@@ -729,13 +729,13 @@ class GenerateImageFacadeTest {
         ActivityFurniture mapping = ActivityFurniture.builder()
                 .id(1L)
                 .activity(Activity.REMOTE_WORK)
-                .furniture(Furniture.builder().id(8L).build())
+                .furniture(FurnitureJpaEntity.builder().id(8L).build())
                 .priority(1)
                 .build();
 
         FurnitureTag furnitureTag = FurnitureTag.builder()
                 .id(1L)
-                .furniture(Furniture.builder().id(7L).build())
+                .furniture(FurnitureJpaEntity.builder().id(7L).build())
                 .tagId(100L)
                 .furnitureUrl("https://furniture-7")
                 .furniturePrompt("선택 가구 프롬프트")

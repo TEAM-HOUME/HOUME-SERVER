@@ -1,10 +1,12 @@
-package or.sopt.houme.domain.furniture.model.entity;
+package or.sopt.houme.furniture.infra.persistence;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import or.sopt.houme.domain.furniture.model.entity.FurnitureTag;
+import or.sopt.houme.domain.furniture.model.entity.FurnitureType;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,7 +19,7 @@ import java.util.List;
 @Table(name = "furnitures", indexes = {
         @Index(name = "idx_furniture_name_kr", columnList = "furniture_name_kr"),
 })
-public class Furniture {
+public class FurnitureJpaEntity {
 
 
     @Id
@@ -53,8 +55,8 @@ public class Furniture {
     }
 
 
-    public static Furniture createByAdminFurnitureRequestDTO(String furnitureNameKr, String furnitureNameEng, FurnitureType furnitureType){
-        return Furniture.builder()
+    public static FurnitureJpaEntity createByAdminFurnitureRequestDTO(String furnitureNameKr, String furnitureNameEng, FurnitureType furnitureType){
+        return FurnitureJpaEntity.builder()
                 .furnitureNameKr(furnitureNameKr)
                 .furnitureNameEng(normalizeEngName(furnitureNameEng))
                 .furnitureType(furnitureType)

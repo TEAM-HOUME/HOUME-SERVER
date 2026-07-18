@@ -5,7 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import or.sopt.houme.domain.banner.model.entity.Banner;
 import or.sopt.houme.domain.house.model.floorPlan.entity.FloorPlan;
 import or.sopt.houme.domain.house.repository.floorPlan.FloorPlanRepository;
-import or.sopt.houme.domain.furniture.model.entity.Furniture;
+import or.sopt.houme.furniture.infra.persistence.FurnitureJpaEntity;
 import or.sopt.houme.domain.furniture.repository.FurnitureRepository;
 import or.sopt.houme.domain.house.presentation.dto.HouseOptionDTO;
 import or.sopt.houme.domain.house.presentation.dto.LatestHouseConditionDTO;
@@ -189,9 +189,9 @@ public class HouseServiceImpl implements HouseService {
             return;
         }
 
-        // #582: HouseFurniture→Furniture 연관 절단 — furnitureId(Long) 로 저장.
+        // #582: HouseFurniture→FurnitureJpaEntity 연관 절단 — furnitureId(Long) 로 저장.
         // 존재하지 않는 id 를 조용히 건너뛰던 기존 동작을 보존하기 위해 findAllById 로 실존 id 만 추린다.
-        List<Furniture> furnitures = furnitureRepository.findAllById(furnitureIds);
+        List<FurnitureJpaEntity> furnitures = furnitureRepository.findAllById(furnitureIds);
 
         List<HouseFurniture> list = furnitures.stream()
                 .map(furniture -> HouseFurniture.builder()

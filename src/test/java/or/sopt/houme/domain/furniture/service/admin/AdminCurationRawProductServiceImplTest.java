@@ -15,7 +15,7 @@ import or.sopt.houme.domain.furniture.model.entity.CurationRawProduct;
 import or.sopt.houme.domain.furniture.model.entity.CurationRawProductColor;
 import or.sopt.houme.domain.furniture.model.entity.CurationRawProductFurniture;
 import or.sopt.houme.domain.furniture.model.entity.CurationRawProductFurnitureTag;
-import or.sopt.houme.domain.furniture.model.entity.Furniture;
+import or.sopt.houme.furniture.infra.persistence.FurnitureJpaEntity;
 import or.sopt.houme.domain.furniture.model.entity.FurnitureTag;
 import or.sopt.houme.domain.furniture.model.entity.FurnitureType;
 import or.sopt.houme.domain.furniture.model.entity.SoozipCategory;
@@ -448,7 +448,7 @@ class AdminCurationRawProductServiceImplTest {
     }
 
     private FurnitureTag furnitureTag(Long furnitureTagId) {
-        Furniture furniture = Furniture.builder()
+        FurnitureJpaEntity furniture = FurnitureJpaEntity.builder()
                 .furnitureNameKr("침대")
                 .furnitureNameEng("BED")
                 .build();
@@ -469,14 +469,14 @@ class AdminCurationRawProductServiceImplTest {
         return furnitureTag;
     }
 
-    private Furniture furniture(Long furnitureId, String furnitureNameKr) {
+    private FurnitureJpaEntity furniture(Long furnitureId, String furnitureNameKr) {
         FurnitureType furnitureType = FurnitureType.builder()
                 .nameKr("침대")
                 .nameEng("BED")
                 .build();
         ReflectionTestUtils.setField(furnitureType, "id", 3L);
 
-        Furniture furniture = Furniture.builder()
+        FurnitureJpaEntity furniture = FurnitureJpaEntity.builder()
                 .furnitureNameKr(furnitureNameKr)
                 .furnitureNameEng("SINGLE_BED")
                 .furnitureType(furnitureType)

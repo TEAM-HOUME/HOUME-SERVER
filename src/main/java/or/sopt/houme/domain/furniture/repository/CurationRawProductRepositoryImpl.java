@@ -15,7 +15,7 @@ import or.sopt.houme.domain.furniture.model.entity.QCurationRawProductColor;
 import or.sopt.houme.domain.furniture.model.entity.QCurationRawProductFurniture;
 import or.sopt.houme.domain.furniture.model.entity.QCurationRawProductFurnitureTag;
 import or.sopt.houme.domain.furniture.model.entity.SoozipCategory;
-import or.sopt.houme.domain.furniture.model.entity.QFurniture;
+import or.sopt.houme.furniture.infra.persistence.QFurnitureJpaEntity;
 import or.sopt.houme.domain.furniture.model.entity.QFurnitureTag;
 import or.sopt.houme.domain.furniture.model.entity.QFurnitureType;
 import or.sopt.houme.domain.furniture.model.entity.QJjym;
@@ -84,7 +84,7 @@ public class CurationRawProductRepositoryImpl implements CurationRawProductRepos
         QCurationRawProduct rawProduct = QCurationRawProduct.curationRawProduct;
         QCurationRawProductFurnitureTag mapping = QCurationRawProductFurnitureTag.curationRawProductFurnitureTag;
         QFurnitureTag fTag = QFurnitureTag.furnitureTag;
-        QFurniture furniture = QFurniture.furniture;
+        QFurnitureJpaEntity furniture = QFurnitureJpaEntity.furnitureJpaEntity;
         QFurnitureType fType = QFurnitureType.furnitureType;
         QCurationRawProductColor color = QCurationRawProductColor.curationRawProductColor;
 
@@ -173,7 +173,7 @@ public class CurationRawProductRepositoryImpl implements CurationRawProductRepos
         QCurationRawProduct rawProduct = QCurationRawProduct.curationRawProduct;
         QCurationRawProductFurnitureTag mapping = QCurationRawProductFurnitureTag.curationRawProductFurnitureTag;
         QFurnitureTag fTag = QFurnitureTag.furnitureTag;
-        QFurniture furniture = QFurniture.furniture;
+        QFurnitureJpaEntity furniture = QFurnitureJpaEntity.furnitureJpaEntity;
         QFurnitureType fType = QFurnitureType.furnitureType;
         QCurationRawProductColor color = QCurationRawProductColor.curationRawProductColor;
 
@@ -392,7 +392,7 @@ public class CurationRawProductRepositoryImpl implements CurationRawProductRepos
         QCurationRawProduct rawProduct = QCurationRawProduct.curationRawProduct;
         QCurationRawProductFurnitureTag mapping = QCurationRawProductFurnitureTag.curationRawProductFurnitureTag;
         QFurnitureTag furnitureTag = QFurnitureTag.furnitureTag;
-        QFurniture furniture = QFurniture.furniture;
+        QFurnitureJpaEntity furniture = QFurnitureJpaEntity.furnitureJpaEntity;
 
         BooleanBuilder where = buildExposedRawProductBaseWhere(userId, excludedIds);
         where.and(furniture.id.in(furnitureIds));
@@ -421,7 +421,7 @@ public class CurationRawProductRepositoryImpl implements CurationRawProductRepos
         QCurationRawProduct rawProduct = QCurationRawProduct.curationRawProduct;
         QCurationRawProductFurnitureTag mapping = QCurationRawProductFurnitureTag.curationRawProductFurnitureTag;
         QFurnitureTag furnitureTag = QFurnitureTag.furnitureTag;
-        QFurniture furniture = QFurniture.furniture;
+        QFurnitureJpaEntity furniture = QFurnitureJpaEntity.furnitureJpaEntity;
         QFurnitureType furnitureType = QFurnitureType.furnitureType;
 
         BooleanBuilder where = new BooleanBuilder();
@@ -532,7 +532,7 @@ public class CurationRawProductRepositoryImpl implements CurationRawProductRepos
         QCurationRawProduct rawProduct = QCurationRawProduct.curationRawProduct;
         QCurationRawProductFurnitureTag mapping = QCurationRawProductFurnitureTag.curationRawProductFurnitureTag;
         QFurnitureTag fTag = QFurnitureTag.furnitureTag;
-        QFurniture furniture = QFurniture.furniture;
+        QFurnitureJpaEntity furniture = QFurnitureJpaEntity.furnitureJpaEntity;
         QFurnitureType fType = QFurnitureType.furnitureType;
         QCurationRawProductColor color = QCurationRawProductColor.curationRawProductColor;
 
@@ -623,7 +623,7 @@ public class CurationRawProductRepositoryImpl implements CurationRawProductRepos
         QCurationRawProduct rawProduct = QCurationRawProduct.curationRawProduct;
         QCurationRawProductFurnitureTag mapping = QCurationRawProductFurnitureTag.curationRawProductFurnitureTag;
         QFurnitureTag fTag = QFurnitureTag.furnitureTag;
-        QFurniture furniture = QFurniture.furniture;
+        QFurnitureJpaEntity furniture = QFurnitureJpaEntity.furnitureJpaEntity;
         QFurnitureType fType = QFurnitureType.furnitureType;
         QCurationRawProductFurniture directMapping = QCurationRawProductFurniture.curationRawProductFurniture;
 
@@ -691,7 +691,7 @@ public class CurationRawProductRepositoryImpl implements CurationRawProductRepos
         return field.in(brands);
     }
 
-    private com.querydsl.core.types.Predicate buildFurnitureTypeCondition(List<Long> typeIds, QFurnitureType fType, QFurniture furniture) {
+    private com.querydsl.core.types.Predicate buildFurnitureTypeCondition(List<Long> typeIds, QFurnitureType fType, QFurnitureJpaEntity furniture) {
         if (typeIds == null || typeIds.isEmpty()) return null;
 
         List<Long> typeFilterIds = typeIds.stream().filter(id -> id < FURNITURE_ID_OFFSET).toList();

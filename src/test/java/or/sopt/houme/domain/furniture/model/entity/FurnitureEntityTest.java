@@ -1,5 +1,6 @@
 package or.sopt.houme.domain.furniture.model.entity;
 
+import or.sopt.houme.furniture.infra.persistence.FurnitureJpaEntity;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import or.sopt.houme.domain.user.presentation.admin.controller.dto.furniture.AdminFurnitureRequestDTO;
@@ -16,7 +17,7 @@ class FurnitureEntityTest {
         AdminFurnitureRequestDTO dto = new AdminFurnitureRequestDTO("의자", " test chair ", 1L);
 
         // when
-        Furniture furniture = Furniture.createByAdminFurnitureRequestDTO(dto.furnitureNameKr(), dto.furnitureNameEng(), type);
+        FurnitureJpaEntity furniture = FurnitureJpaEntity.createByAdminFurnitureRequestDTO(dto.furnitureNameKr(), dto.furnitureNameEng(), type);
 
         // then
         assertThat(furniture.getFurnitureNameEng()).isEqualTo("TEST_CHAIR");
@@ -26,7 +27,7 @@ class FurnitureEntityTest {
     @DisplayName("updateFurnitureNameEng는 영어명을 대문자+언더스코어로 정규화한다")
     void update_normalizesEnglishName() {
         // given
-        Furniture furniture = Furniture.builder().furnitureNameKr("테이블").build();
+        FurnitureJpaEntity furniture = FurnitureJpaEntity.builder().furnitureNameKr("테이블").build();
 
         // when
         furniture.updateFurnitureNameEng("new table name");

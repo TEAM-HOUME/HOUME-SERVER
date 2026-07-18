@@ -6,7 +6,7 @@ import or.sopt.houme.domain.furniture.model.entity.CurationRawProduct;
 import or.sopt.houme.domain.furniture.model.entity.CurationRawProductColor;
 import or.sopt.houme.domain.furniture.model.entity.CurationRawProductFurnitureTag;
 import or.sopt.houme.domain.furniture.model.entity.CurationSource;
-import or.sopt.houme.domain.furniture.model.entity.Furniture;
+import or.sopt.houme.furniture.infra.persistence.FurnitureJpaEntity;
 import or.sopt.houme.domain.furniture.model.entity.FurnitureTag;
 import or.sopt.houme.domain.furniture.model.entity.FurnitureType;
 import or.sopt.houme.domain.furniture.model.entity.RecommendFurniture;
@@ -394,14 +394,14 @@ public class CurationProductServiceImpl implements CurationProductService {
                 .filter(tag -> tag.getFurniture() != null && tag.getFurniture().getFurnitureType() != null)
                 .findFirst()
                 .map(tag -> {
-                    Furniture furniture = tag.getFurniture();
+                    FurnitureJpaEntity furniture = tag.getFurniture();
                     FurnitureType type = furniture.getFurnitureType();
                     return mapToFriendlyLabel(type, furniture);
                 })
                 .orElse("기타");
     }
 
-    private String mapToFriendlyLabel(FurnitureType type, Furniture furniture) {
+    private String mapToFriendlyLabel(FurnitureType type, FurnitureJpaEntity furniture) {
         String typeEng = type.getNameEng() != null ? type.getNameEng().toUpperCase().trim() : "";
         String furnitureEng = furniture.getFurnitureNameEng() != null ? furniture.getFurnitureNameEng().toUpperCase().trim() : "";
 
@@ -414,7 +414,7 @@ public class CurationProductServiceImpl implements CurationProductService {
             case "CHAIR": return "의자/스툴";
             case "DRESSER":
             case "DRESSING_TABLE": return "화장대/협탁"; // [pbem22, 2026-05-28, #548] DB nameEng 실제값 DRESSING_TABLE 추가
-            case "LIGHTING": return "조명"; // [pbem22, 2026-05-28, #548] DB Furniture LIGHTING(id=24) 대응
+            case "LIGHTING": return "조명"; // [pbem22, 2026-05-28, #548] DB FurnitureJpaEntity LIGHTING(id=24) 대응
             default: break;
         }
 
@@ -430,7 +430,7 @@ public class CurationProductServiceImpl implements CurationProductService {
 
     private List<FurnitureTypeFilterResponse> getFurnitureTypeFilters() {
         List<FurnitureType> types = furnitureTypeRepository.findAll();
-        List<Furniture> furnitures = furnitureRepository.findAll();
+        List<FurnitureJpaEntity> furnitures = furnitureRepository.findAll();
 
         // [pbem22, 2026-05-28, #548] DB 실제 등록값 기준으로 고정 음수 ID → findFurniture() 전환
         return List.of(
@@ -466,15 +466,15 @@ public class CurationProductServiceImpl implements CurationProductService {
                 .map(FurnitureType::getId)
                 .findFirst().orElse(null);
 
-        List<Furniture> allFurnitures = furnitureRepository.findAll();
+        List<FurnitureJpaEntity> allFurnitures = furnitureRepository.findAll();
         List<Long> excludedFurnitureIds = allFurnitures.stream()
                 .filter(f -> f.getFurnitureNameEng() != null &&
                         INDIVIDUAL_FILTER_FURNITURE_NAMEENGS.contains(f.getFurnitureNameEng().toUpperCase()))
-                .map(Furniture::getId)
+                .map(FurnitureJpaEntity::getId)
                 .toList();
         Long etcDirectFurnitureId = allFurnitures.stream()
                 .filter(f -> ETC_TYPE_NAMEENG.equalsIgnoreCase(f.getFurnitureNameEng()))
-                .map(Furniture::getId)
+                .map(FurnitureJpaEntity::getId)
                 .findFirst().orElse(null);
 
         List<Long> productIds = curationRawProductRepository.findEtcProductIds(
@@ -490,7 +490,7 @@ public class CurationProductServiceImpl implements CurationProductService {
                 .orElse(new FurnitureTypeFilterResponse(fallbackId, labelKr, nameEng));
     }
 
-    private FurnitureTypeFilterResponse findFurniture(List<Furniture> furnitures, String nameEng, String labelKr, Long fallbackId) {
+    private FurnitureTypeFilterResponse findFurniture(List<FurnitureJpaEntity> furnitures, String nameEng, String labelKr, Long fallbackId) {
         return furnitures.stream()
                 .filter(f -> f.getFurnitureNameEng() != null && f.getFurnitureNameEng().trim().equalsIgnoreCase(nameEng))
                 .findFirst()

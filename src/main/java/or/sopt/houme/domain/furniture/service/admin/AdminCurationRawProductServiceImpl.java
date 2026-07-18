@@ -5,7 +5,7 @@ import or.sopt.houme.domain.furniture.model.entity.CurationRawProduct;
 import or.sopt.houme.domain.furniture.model.entity.CurationRawProductColor;
 import or.sopt.houme.domain.furniture.model.entity.CurationRawProductFurniture;
 import or.sopt.houme.domain.furniture.model.entity.CurationRawProductFurnitureTag;
-import or.sopt.houme.domain.furniture.model.entity.Furniture;
+import or.sopt.houme.furniture.infra.persistence.FurnitureJpaEntity;
 import or.sopt.houme.domain.furniture.model.entity.FurnitureTag;
 import or.sopt.houme.domain.furniture.model.entity.SoozipCategory;
 import or.sopt.houme.domain.furniture.presentation.dto.request.AdminCurationRawProductCreateRequest;
@@ -426,13 +426,13 @@ public class AdminCurationRawProductServiceImpl implements AdminCurationRawProdu
             throw new GeneralException(ErrorCode.NOT_VALID_EXCEPTION);
         }
 
-        List<Furniture> furnitures = furnitureRepository.findAllById(distinctFurnitureIds);
+        List<FurnitureJpaEntity> furnitures = furnitureRepository.findAllById(distinctFurnitureIds);
         if (furnitures.size() != distinctFurnitureIds.size()) {
             throw new GeneralException(ErrorCode.NOT_FOUND_FURNITURE);
         }
 
-        Map<Long, Furniture> furnitureById = furnitures.stream()
-                .collect(java.util.stream.Collectors.toMap(Furniture::getId, furniture -> furniture));
+        Map<Long, FurnitureJpaEntity> furnitureById = furnitures.stream()
+                .collect(java.util.stream.Collectors.toMap(FurnitureJpaEntity::getId, furniture -> furniture));
 
         return distinctFurnitureIds.stream()
                 .map(furnitureById::get)

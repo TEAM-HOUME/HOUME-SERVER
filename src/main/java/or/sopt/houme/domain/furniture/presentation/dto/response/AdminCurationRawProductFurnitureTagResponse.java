@@ -1,7 +1,7 @@
 package or.sopt.houme.domain.furniture.presentation.dto.response;
 
 import or.sopt.houme.domain.furniture.model.entity.CurationRawProductFurnitureTag;
-import or.sopt.houme.domain.furniture.model.entity.Furniture;
+import or.sopt.houme.furniture.infra.persistence.FurnitureJpaEntity;
 import or.sopt.houme.domain.furniture.model.entity.FurnitureTag;
 
 public record AdminCurationRawProductFurnitureTagResponse(
@@ -22,7 +22,7 @@ public record AdminCurationRawProductFurnitureTagResponse(
      */
     public static AdminCurationRawProductFurnitureTagResponse of(CurationRawProductFurnitureTag mapping, String tagNameKr) {
         FurnitureTag furnitureTag = mapping.getFurnitureTag();
-        Furniture furniture = furnitureTag != null ? furnitureTag.getFurniture() : null;
+        FurnitureJpaEntity furniture = furnitureTag != null ? furnitureTag.getFurniture() : null;
 
         return new AdminCurationRawProductFurnitureTagResponse(
                 mapping.getId(),

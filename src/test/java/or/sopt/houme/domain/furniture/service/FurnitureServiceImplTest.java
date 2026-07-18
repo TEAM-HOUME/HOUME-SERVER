@@ -5,7 +5,7 @@ import or.sopt.houme.domain.furniture.presentation.dto.response.ActivityWithFurn
 import or.sopt.houme.domain.furniture.presentation.dto.response.FurnitureCategoriesResponse;
 import or.sopt.houme.domain.furniture.presentation.dto.response.FurnitureCategoryGroup;
 import or.sopt.houme.domain.furniture.model.entity.ActivityFurniture;
-import or.sopt.houme.domain.furniture.model.entity.Furniture;
+import or.sopt.houme.furniture.infra.persistence.FurnitureJpaEntity;
 import or.sopt.houme.domain.furniture.model.entity.FurnitureTag;
 import or.sopt.houme.domain.furniture.model.entity.FurnitureType;
 import or.sopt.houme.domain.furniture.model.entity.FurnitureTypes;
@@ -39,7 +39,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-@DisplayName("[Furniture Service] Test")
+@DisplayName("[FurnitureJpaEntity Service] Test")
 class FurnitureServiceImplTest {
 
     @InjectMocks
@@ -119,7 +119,7 @@ class FurnitureServiceImplTest {
         // 가구 식별자
         Long furnitureId = 1L;
         // 2. 침대류
-        List<Furniture> furnitureList = List.of(
+        List<FurnitureJpaEntity> furnitureList = List.of(
                 createFurniture(furnitureId++, "SINGLE", "싱글", bedType),
                 createFurniture(furnitureId++, "SUPER_SINGLE", "슈퍼싱글", bedType),
                 createFurniture(furnitureId++, "DOUBLE", "더블", bedType),
@@ -169,7 +169,7 @@ class FurnitureServiceImplTest {
                 .build();
         List<FurnitureType> categoryList = List.of(bedType, sofaType);
 
-        List<Furniture> furnitureList = List.of(
+        List<FurnitureJpaEntity> furnitureList = List.of(
                 createFurniture(10L, "SINGLE", "싱글", bedType),
                 createFurniture(20L, "SINGLE_SOFA", "1인용 소파", sofaType)
         );
@@ -233,25 +233,25 @@ class FurnitureServiceImplTest {
                 .build();
 
         // 이미지 생성 과정에서 사용자가 선택한 가구
-        Furniture bed = Furniture.builder()
+        FurnitureJpaEntity bed = FurnitureJpaEntity.builder()
                 .id(1L)
                 .furnitureNameKr("침대")
                 .furnitureNameEng("DOUBLE")
                 .build();
 
-        Furniture chair = Furniture.builder()
+        FurnitureJpaEntity chair = FurnitureJpaEntity.builder()
                 .id(2L)
                 .furnitureNameKr("의자")
                 .furnitureNameEng("OFFICE_DESK")
                 .build();
 
-        Furniture tv = Furniture.builder()
+        FurnitureJpaEntity tv = FurnitureJpaEntity.builder()
                 .id(3L)
                 .furnitureNameKr("TV")
                 .furnitureNameEng("Monitor/TV")
                 .build();
 
-        Furniture dining = Furniture.builder()
+        FurnitureJpaEntity dining = FurnitureJpaEntity.builder()
                 .id(4L)
                 .furnitureNameKr("식탁")
                 .furnitureNameEng("DINING_TABLE")
@@ -307,8 +307,8 @@ class FurnitureServiceImplTest {
                 .nameEng("SELECTIVE")
                 .build();
 
-        Furniture desk = createFurniture(10L, "DESK", "업무용 책상", tableType);
-        Furniture bookshelf = createFurniture(11L, "BOOKSHELF", "책 선반", selectiveType);
+        FurnitureJpaEntity desk = createFurniture(10L, "DESK", "업무용 책상", tableType);
+        FurnitureJpaEntity bookshelf = createFurniture(11L, "BOOKSHELF", "책 선반", selectiveType);
 
         ActivityFurniture remoteWork = ActivityFurniture.builder()
                 .id(1L)
@@ -383,10 +383,10 @@ class FurnitureServiceImplTest {
         Tag tag = Tag.builder().id(100L).build();
         HouseJpaEntity house = HouseJpaEntity.builder().id(200L).build();
 
-        Furniture bed = Furniture.builder().id(1L).furnitureNameKr("침대").build();
-        Furniture chair = Furniture.builder().id(2L).furnitureNameKr("의자").build();
-        Furniture tv = Furniture.builder().id(3L).furnitureNameKr("TV").build();
-        Furniture dining = Furniture.builder().id(4L).furnitureNameKr("식탁").build();
+        FurnitureJpaEntity bed = FurnitureJpaEntity.builder().id(1L).furnitureNameKr("침대").build();
+        FurnitureJpaEntity chair = FurnitureJpaEntity.builder().id(2L).furnitureNameKr("의자").build();
+        FurnitureJpaEntity tv = FurnitureJpaEntity.builder().id(3L).furnitureNameKr("TV").build();
+        FurnitureJpaEntity dining = FurnitureJpaEntity.builder().id(4L).furnitureNameKr("식탁").build();
 
         FurnitureTag ftBed = FurnitureTag.builder().id(11L).tagId(100L).furniture(bed).priority(4).build();
         FurnitureTag ftChair = FurnitureTag.builder().id(12L).tagId(100L).furniture(chair).priority(3).build();
@@ -416,8 +416,8 @@ class FurnitureServiceImplTest {
         Tag tag = Tag.builder().id(100L).build();
         HouseJpaEntity house = HouseJpaEntity.builder().id(200L).build();
 
-        Furniture sofa = Furniture.builder().id(1L).furnitureNameKr("소파").build();
-        Furniture desk = Furniture.builder().id(2L).furnitureNameKr("책상").build();
+        FurnitureJpaEntity sofa = FurnitureJpaEntity.builder().id(1L).furnitureNameKr("소파").build();
+        FurnitureJpaEntity desk = FurnitureJpaEntity.builder().id(2L).furnitureNameKr("책상").build();
 
         FurnitureTag ftSofa = FurnitureTag.builder().id(11L).tagId(100L).furniture(sofa).priority(1).build();
 
@@ -446,7 +446,7 @@ class FurnitureServiceImplTest {
         Tag tag = Tag.builder().id(100L).build();
         HouseJpaEntity house = HouseJpaEntity.builder().id(200L).build();
 
-        Furniture bed = Furniture.builder().id(1L).furnitureNameKr("침대").build();
+        FurnitureJpaEntity bed = FurnitureJpaEntity.builder().id(1L).furnitureNameKr("침대").build();
 
         FurnitureTag ftBed = FurnitureTag.builder().id(11L).tagId(100L).furniture(bed).priority(1).build();
 
@@ -464,8 +464,8 @@ class FurnitureServiceImplTest {
         assertThat(response.categories().get(0).categoryName()).isEqualTo("침대");
     }
 
-    private Furniture createFurniture(Long id, String eng, String kr, FurnitureType type) {
-        return Furniture.builder()
+    private FurnitureJpaEntity createFurniture(Long id, String eng, String kr, FurnitureType type) {
+        return FurnitureJpaEntity.builder()
                 .id(id)
                 .furnitureNameEng(eng)
                 .furnitureNameKr(kr)

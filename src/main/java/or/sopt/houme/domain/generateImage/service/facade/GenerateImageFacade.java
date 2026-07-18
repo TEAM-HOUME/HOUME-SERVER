@@ -16,7 +16,7 @@ import or.sopt.houme.domain.furniture.model.entity.CurationRawProduct;
 import or.sopt.houme.domain.furniture.model.entity.CurationRawProductFurniture;
 import or.sopt.houme.domain.furniture.model.entity.FurnitureTag;
 import or.sopt.houme.domain.furniture.model.entity.ActivityFurniture;
-import or.sopt.houme.domain.furniture.model.entity.Furniture;
+import or.sopt.houme.furniture.infra.persistence.FurnitureJpaEntity;
 import or.sopt.houme.domain.furniture.repository.ActivityFurnitureRepository;
 import or.sopt.houme.domain.furniture.repository.CurationRawProductFurnitureRepository;
 import or.sopt.houme.domain.furniture.repository.CurationRawProductRepository;
@@ -931,14 +931,14 @@ public class GenerateImageFacade {
                 .flatMap(rawProduct -> rawProduct.getFurnitureTagMappings().stream())
                 .map(mapping -> mapping.getFurnitureTag() != null ? mapping.getFurnitureTag().getFurniture() : null)
                 .filter(Objects::nonNull)
-                .map(Furniture::getId)
+                .map(FurnitureJpaEntity::getId)
                 .filter(Objects::nonNull)
                 .forEach(furnitureIds::add);
 
         curationRawProductFurnitureRepository.findAllByCurationRawProductIdInWithFurniture(rawProductIds).stream()
                 .map(CurationRawProductFurniture::getFurniture)
                 .filter(Objects::nonNull)
-                .map(Furniture::getId)
+                .map(FurnitureJpaEntity::getId)
                 .filter(Objects::nonNull)
                 .forEach(furnitureIds::add);
 
@@ -1095,7 +1095,7 @@ public class GenerateImageFacade {
         activityMappings.stream()
                 .map(ActivityFurniture::getFurniture)
                 .filter(Objects::nonNull)
-                .map(Furniture::getId)
+                .map(FurnitureJpaEntity::getId)
                 .filter(Objects::nonNull)
                 .forEach(ids::add);
 

@@ -11,7 +11,7 @@ import or.sopt.houme.domain.furniture.presentation.dto.response.FurnitureAndActi
 import or.sopt.houme.domain.furniture.presentation.dto.response.FurnitureCategoriesResponse;
 import or.sopt.houme.domain.furniture.presentation.dto.response.FurnitureCategoryGroup;
 import or.sopt.houme.domain.furniture.model.entity.ActivityFurniture;
-import or.sopt.houme.domain.furniture.model.entity.Furniture;
+import or.sopt.houme.furniture.infra.persistence.FurnitureJpaEntity;
 import or.sopt.houme.domain.furniture.model.entity.FurnitureTag;
 import or.sopt.houme.domain.furniture.model.entity.FurnitureType;
 import or.sopt.houme.domain.furniture.repository.ActivityFurnitureRepository;
@@ -81,7 +81,7 @@ public class FurnitureServiceImpl implements FurnitureService {
                 .filter(t -> t.getNameEng() == null || !FUNNEL_EXCLUDED_TYPE_NAMEENGS.contains(t.getNameEng().toUpperCase()))
                 .toList();
 
-        List<Furniture> furnitureList = furnitureRepository.findAllWithFurnitureType().stream()
+        List<FurnitureJpaEntity> furnitureList = furnitureRepository.findAllWithFurnitureType().stream()
                 .filter(f -> f.getFurnitureNameEng() == null || !FUNNEL_EXCLUDED_FURNITURE_NAMEENGS.contains(f.getFurnitureNameEng().toUpperCase()))
                 .toList();
 
@@ -150,13 +150,13 @@ public class FurnitureServiceImpl implements FurnitureService {
         Tag tag = findTag(user, imageId);
 
         // 2. userId와 imageId로 이미지 생성시 선택했던 가구들을 조회
-        List<Furniture> selectedFurnitures = findSelectedFurnitures(user, imageId);
+        List<FurnitureJpaEntity> selectedFurnitures = findSelectedFurnitures(user, imageId);
 
         // 3. alias map 정의, 침대의 키워드의 확장
         Set<String> expandedRequestedObjects = expandKeywords(detectedObjects);
 
         // 4. selectedFurnitures와 expandedRequestedObjects의 교집합 산출
-        List<Furniture> intersectedFurnitures = filterIntersectedFurnitures(selectedFurnitures, expandedRequestedObjects);
+        List<FurnitureJpaEntity> intersectedFurnitures = filterIntersectedFurnitures(selectedFurnitures, expandedRequestedObjects);
 
         // 5. 교집합으로 산출된 가구들과 스타일 태그에 해당하는 매핑 객체를 furniture_tags에서 조회
         List<FurnitureTag> matchedTags = furnitureTagRepository.findAllByTagIdAndFurnitureIn(tag.getId(), intersectedFurnitures);
@@ -170,13 +170,13 @@ public class FurnitureServiceImpl implements FurnitureService {
         Tag tag = findTag(user, imageId);
 
         // 2. userId와 imageId로 이미지 생성시 선택했던 가구들을 조회
-        List<Furniture> selectedFurnitures = findSelectedFurnitures(user, imageId);
+        List<FurnitureJpaEntity> selectedFurnitures = findSelectedFurnitures(user, imageId);
 
         // 3. 선택 가구들과 스타일 태그에 해당하는 매핑 객체를 furniture_tags에서 조회
         List<FurnitureTag> matchedTags = furnitureTagRepository.findAllByTagIdAndFurnitureIn(tag.getId(), selectedFurnitures);
 
         // [pbem22, 2026-05-28, #541] FurnitureTag 경로에 없는 가구도 CurationRawProductFurniture로 매핑된 경우 카테고리에 포함
-        List<Long> selectedFurnitureIds = selectedFurnitures.stream().map(Furniture::getId).toList();
+        List<Long> selectedFurnitureIds = selectedFurnitures.stream().map(FurnitureJpaEntity::getId).toList();
         Set<Long> taggedFurnitureIds = matchedTags.stream()
                 .map(ft -> ft.getFurniture().getId())
                 .collect(Collectors.toSet());
@@ -184,7 +184,7 @@ public class FurnitureServiceImpl implements FurnitureService {
                 .getFurnitureIdsHavingProducts(selectedFurnitureIds).stream()
                 .filter(id -> !taggedFurnitureIds.contains(id))
                 .toList();
-        List<Furniture> extraFurnitures = extraFurnitureIds.isEmpty()
+        List<FurnitureJpaEntity> extraFurnitures = extraFurnitureIds.isEmpty()
                 ? List.of()
                 : furnitureRepository.findAllById(extraFurnitureIds);
 
@@ -198,7 +198,7 @@ public class FurnitureServiceImpl implements FurnitureService {
         return furnitureRepository.findAllById(furnitureIds)
                 .stream()
                 .filter(furniture -> BED.equals(furniture.getFurnitureType().getNameEng()))
-                .map(Furniture::getId)
+                .map(FurnitureJpaEntity::getId)
                 .findFirst();
     }
 
@@ -210,7 +210,7 @@ public class FurnitureServiceImpl implements FurnitureService {
                 .orElseThrow(() -> new TagException(ErrorCode.NOT_FOUND_TAG_ENTITY));
 
         // 2. categoryId로 furniture 객체 조회
-        Furniture furniture = furnitureRepository.findById(categoryId)
+        FurnitureJpaEntity furniture = furnitureRepository.findById(categoryId)
                 .orElseThrow(() -> new GeneralException(ErrorCode.NOT_FOUND_FURNITURE));
 
         // 3. tagId와 categoryId(=furnitureId)로 furnitureTag 매핑 객체 조회
@@ -225,7 +225,7 @@ public class FurnitureServiceImpl implements FurnitureService {
         Tag tag = tagRepositoryPort.findById(tagId).orElseThrow(() -> new TagException(ErrorCode.NOT_FOUND_TAG_ENTITY));
 
         // 2. categoryId로 furniture 객체 조회
-        Furniture furniture = furnitureRepository.findById(furnitureId).orElseThrow(() -> new GeneralException(ErrorCode.NOT_FOUND_FURNITURE));
+        FurnitureJpaEntity furniture = furnitureRepository.findById(furnitureId).orElseThrow(() -> new GeneralException(ErrorCode.NOT_FOUND_FURNITURE));
 
         // 3. tagId와 categoryId(=furnitureId)로 furnitureTag 매핑 객체 조회
         return furnitureTagRepository.findByFurnitureAndTagId(furniture, tag.getId()).orElseThrow(() -> new GeneralException(ErrorCode.NOT_FOUND_FURNITURE_TAG));
@@ -239,7 +239,7 @@ public class FurnitureServiceImpl implements FurnitureService {
                 .orElseThrow(() -> new TagException(ErrorCode.NOT_FOUND_TAG_ENTITY));
     }
 
-    private List<Furniture> findSelectedFurnitures(User user, Long imageId) {
+    private List<FurnitureJpaEntity> findSelectedFurnitures(User user, Long imageId) {
         HouseJpaEntity house = houseRepository.findHouseByUserIdAndImageId(user.getId(), imageId)
                 .orElseThrow(() -> new HouseException(ErrorCode.NOT_FOUND_HOUSE_ENTITY));
         return furnitureRepository.findAllByHouseId(house.getId());
@@ -261,7 +261,7 @@ public class FurnitureServiceImpl implements FurnitureService {
                 .collect(Collectors.toSet());
     }
 
-    private List<Furniture> filterIntersectedFurnitures(List<Furniture> furnitures, Set<String> keywords) {
+    private List<FurnitureJpaEntity> filterIntersectedFurnitures(List<FurnitureJpaEntity> furnitures, Set<String> keywords) {
         return furnitures.stream()
                 .filter(f -> f.getFurnitureNameEng() != null
                         && keywords.contains(f.getFurnitureNameEng().toLowerCase()))
@@ -283,7 +283,7 @@ public class FurnitureServiceImpl implements FurnitureService {
     // [pbem22, 2026-05-28, #541] FurnitureTag 경로 카테고리 + CurationRawProductFurniture 경로 카테고리 합산 반환
     private FurnitureCategoriesResponse buildCategoryResponseWithExtra(
             List<FurnitureTag> matchedTags,
-            List<Furniture> extraFurnitures
+            List<FurnitureJpaEntity> extraFurnitures
     ) {
         List<FurnitureCategoriesResponse.FurnitureCategoryResponse> fromTags = matchedTags.stream()
                 .sorted(Comparator.comparingInt(FurnitureTag::getPriority))

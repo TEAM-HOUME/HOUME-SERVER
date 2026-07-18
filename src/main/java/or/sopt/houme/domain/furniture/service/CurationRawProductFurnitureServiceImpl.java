@@ -5,7 +5,7 @@ import or.sopt.houme.domain.furniture.model.entity.CurationRawProduct;
 import or.sopt.houme.domain.furniture.model.entity.CurationRawProductColor;
 import or.sopt.houme.domain.furniture.model.entity.CurationRawProductFurniture;
 import or.sopt.houme.domain.furniture.model.entity.CurationSource;
-import or.sopt.houme.domain.furniture.model.entity.Furniture;
+import or.sopt.houme.furniture.infra.persistence.FurnitureJpaEntity;
 import or.sopt.houme.domain.furniture.model.entity.Jjym;
 import or.sopt.houme.domain.furniture.model.entity.RecommendFurniture;
 import or.sopt.houme.domain.furniture.presentation.dto.response.FurnitureProductsInfoResponseV2;
@@ -50,7 +50,7 @@ public class CurationRawProductFurnitureServiceImpl implements CurationRawProduc
 
     @Override
     public FurnitureProductsInfoResponseV2 buildProductsResponseByFurnitureId(User user, Long furnitureId) {
-        Furniture furniture = furnitureRepository.findById(furnitureId)
+        FurnitureJpaEntity furniture = furnitureRepository.findById(furnitureId)
                 .orElseThrow(() -> new GeneralException(ErrorCode.NOT_FOUND_FURNITURE));
 
         List<CurationRawProductFurniture> mappings =

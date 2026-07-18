@@ -1,7 +1,7 @@
 package or.sopt.houme.domain.furniture.presentation.dto.response;
 
 import or.sopt.houme.domain.furniture.model.entity.CurationRawProductFurniture;
-import or.sopt.houme.domain.furniture.model.entity.Furniture;
+import or.sopt.houme.furniture.infra.persistence.FurnitureJpaEntity;
 
 public record AdminCurationRawProductFurnitureResponse(
         Long mappingId,
@@ -12,7 +12,7 @@ public record AdminCurationRawProductFurnitureResponse(
         String furnitureTypeNameKr
 ) {
     public static AdminCurationRawProductFurnitureResponse of(CurationRawProductFurniture mapping) {
-        Furniture furniture = mapping.getFurniture();
+        FurnitureJpaEntity furniture = mapping.getFurniture();
 
         return new AdminCurationRawProductFurnitureResponse(
                 mapping.getId(),

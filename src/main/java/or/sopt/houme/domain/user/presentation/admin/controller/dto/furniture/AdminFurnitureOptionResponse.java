@@ -1,7 +1,7 @@
 package or.sopt.houme.domain.user.presentation.admin.controller.dto.furniture;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import or.sopt.houme.domain.furniture.model.entity.Furniture;
+import or.sopt.houme.furniture.infra.persistence.FurnitureJpaEntity;
 
 public record AdminFurnitureOptionResponse(
         @Schema(description = "가구 ID")
@@ -11,7 +11,7 @@ public record AdminFurnitureOptionResponse(
         @Schema(description = "가구 영어 이름")
         String furnitureNameEng
 ) {
-    public static AdminFurnitureOptionResponse of(Furniture furniture) {
+    public static AdminFurnitureOptionResponse of(FurnitureJpaEntity furniture) {
         return new AdminFurnitureOptionResponse(
                 furniture.getId(),
                 furniture.getFurnitureNameKr(),

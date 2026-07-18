@@ -8,7 +8,7 @@ import or.sopt.houme.credit.application.CreditUseCase;
 import or.sopt.houme.domain.furniture.model.entity.CurationRawProduct;
 import or.sopt.houme.domain.furniture.model.entity.CurationRawProductColor;
 import or.sopt.houme.domain.furniture.model.entity.CurationSource;
-import or.sopt.houme.domain.furniture.model.entity.Furniture;
+import or.sopt.houme.furniture.infra.persistence.FurnitureJpaEntity;
 import or.sopt.houme.domain.furniture.model.entity.Jjym;
 import or.sopt.houme.domain.furniture.model.entity.RecommendFurniture;
 import or.sopt.houme.domain.furniture.model.entity.SoozipCategory;
@@ -532,11 +532,11 @@ class UserServiceImplTest {
                 .build();
         ReflectionTestUtils.setField(fullFunnelImage, "createdAt", LocalDateTime.of(2026, 3, 25, 9, 0));
 
-        Furniture desk = Furniture.builder()
+        FurnitureJpaEntity desk = FurnitureJpaEntity.builder()
                 .id(1L)
                 .furnitureNameKr("업무용 책상")
                 .build();
-        Furniture chair = Furniture.builder()
+        FurnitureJpaEntity chair = FurnitureJpaEntity.builder()
                 .id(2L)
                 .furnitureNameKr("의자")
                 .build();
@@ -597,7 +597,7 @@ class UserServiceImplTest {
                 .fetchedAt(LocalDateTime.of(2026, 3, 25, 8, 0))
                 .build();
 
-        Furniture desk = Furniture.builder()
+        FurnitureJpaEntity desk = FurnitureJpaEntity.builder()
                 .id(1L)
                 .furnitureNameKr("업무용 책상")
                 .build();
@@ -678,15 +678,15 @@ class UserServiceImplTest {
                 .build();
         ReflectionTestUtils.setField(fullFunnelImage, "createdAt", LocalDateTime.of(2026, 3, 25, 12, 0));
 
-        Furniture blankNameFurniture = Furniture.builder()
+        FurnitureJpaEntity blankNameFurniture = FurnitureJpaEntity.builder()
                 .id(1L)
                 .furnitureNameKr(" ")
                 .build();
-        Furniture duplicateDesk1 = Furniture.builder()
+        FurnitureJpaEntity duplicateDesk1 = FurnitureJpaEntity.builder()
                 .id(2L)
                 .furnitureNameKr("책상")
                 .build();
-        Furniture duplicateDesk2 = Furniture.builder()
+        FurnitureJpaEntity duplicateDesk2 = FurnitureJpaEntity.builder()
                 .id(3L)
                 .furnitureNameKr("책상")
                 .build();

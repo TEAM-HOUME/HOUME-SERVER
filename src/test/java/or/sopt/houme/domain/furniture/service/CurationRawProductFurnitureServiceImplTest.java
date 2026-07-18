@@ -2,7 +2,7 @@ package or.sopt.houme.domain.furniture.service;
 
 import or.sopt.houme.domain.furniture.model.entity.CurationRawProduct;
 import or.sopt.houme.domain.furniture.model.entity.CurationRawProductFurniture;
-import or.sopt.houme.domain.furniture.model.entity.Furniture;
+import or.sopt.houme.furniture.infra.persistence.FurnitureJpaEntity;
 import or.sopt.houme.domain.furniture.presentation.dto.response.FurnitureProductsInfoResponseV2;
 import or.sopt.houme.domain.furniture.repository.CurationRawProductColorRepository;
 import or.sopt.houme.domain.furniture.repository.CurationRawProductFurnitureRepository;
@@ -64,7 +64,7 @@ class CurationRawProductFurnitureServiceImplTest {
     void buildProductsResponseByFurnitureId_emptyWhenNoMappings() {
         Long furnitureId = 1L;
         User user = User.builder().id(1L).name("테스트").build();
-        Furniture furniture = Furniture.builder().id(furnitureId).furnitureNameKr("소파").build();
+        FurnitureJpaEntity furniture = FurnitureJpaEntity.builder().id(furnitureId).furnitureNameKr("소파").build();
 
         given(furnitureRepository.findById(furnitureId)).willReturn(Optional.of(furniture));
         given(curationRawProductFurnitureRepository.findExposedByFurnitureId(furnitureId))
@@ -81,7 +81,7 @@ class CurationRawProductFurnitureServiceImplTest {
     void buildProductsResponseByFurnitureId_setsCategoryNameFromFurniture() {
         Long furnitureId = 1L;
         User user = User.builder().id(1L).name("홍길동").build();
-        Furniture furniture = Furniture.builder().id(furnitureId).furnitureNameKr("소파").build();
+        FurnitureJpaEntity furniture = FurnitureJpaEntity.builder().id(furnitureId).furnitureNameKr("소파").build();
 
         CurationRawProduct rawProduct = CurationRawProduct.builder()
                 .id(100L)
@@ -128,7 +128,7 @@ class CurationRawProductFurnitureServiceImplTest {
     @DisplayName("buildProductsResponseByFurnitureId()는 user가 null이면 isLiked false로 반환한다")
     void buildProductsResponseByFurnitureId_noLikedWhenUserNull() {
         Long furnitureId = 1L;
-        Furniture furniture = Furniture.builder().id(furnitureId).furnitureNameKr("침대").build();
+        FurnitureJpaEntity furniture = FurnitureJpaEntity.builder().id(furnitureId).furnitureNameKr("침대").build();
 
         CurationRawProduct rawProduct = CurationRawProduct.builder()
                 .id(200L)

@@ -4,7 +4,7 @@ import or.sopt.houme.domain.furniture.model.entity.CurationRawProduct;
 import or.sopt.houme.domain.furniture.model.entity.CurationRawProductColor;
 import or.sopt.houme.domain.furniture.model.entity.CurationRawProductFurnitureTag;
 import or.sopt.houme.domain.furniture.model.entity.CurationSource;
-import or.sopt.houme.domain.furniture.model.entity.Furniture;
+import or.sopt.houme.furniture.infra.persistence.FurnitureJpaEntity;
 import or.sopt.houme.domain.furniture.model.entity.FurnitureTag;
 import or.sopt.houme.domain.furniture.model.entity.FurnitureType;
 import or.sopt.houme.domain.furniture.model.entity.RecommendFurniture;
@@ -292,11 +292,11 @@ class CurationProductServiceImplTest {
         User user = User.builder().id(1L).build();
 
         FurnitureType bedType = FurnitureType.builder().nameEng("BED").build();
-        Furniture bed = Furniture.builder().furnitureType(bedType).build();
+        FurnitureJpaEntity bed = FurnitureJpaEntity.builder().furnitureType(bedType).build();
         FurnitureTag bedTag = FurnitureTag.builder().furniture(bed).priority(5).build();
 
         FurnitureType sofaType = FurnitureType.builder().nameEng("SOFA").build();
-        Furniture sofa = Furniture.builder().furnitureType(sofaType).build();
+        FurnitureJpaEntity sofa = FurnitureJpaEntity.builder().furnitureType(sofaType).build();
         FurnitureTag sofaTag = FurnitureTag.builder().furniture(sofa).priority(1).build();
 
         Set<CurationRawProductFurnitureTag> mappings = new HashSet<>();

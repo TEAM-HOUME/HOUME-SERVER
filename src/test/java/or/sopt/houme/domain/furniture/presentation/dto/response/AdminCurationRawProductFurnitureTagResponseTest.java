@@ -1,7 +1,7 @@
 package or.sopt.houme.domain.furniture.presentation.dto.response;
 
 import or.sopt.houme.domain.furniture.model.entity.CurationRawProductFurnitureTag;
-import or.sopt.houme.domain.furniture.model.entity.Furniture;
+import or.sopt.houme.furniture.infra.persistence.FurnitureJpaEntity;
 import or.sopt.houme.domain.furniture.model.entity.FurnitureTag;
 import or.sopt.houme.domain.furniture.model.entity.FurnitureType;
 import or.sopt.houme.tag.infra.persistence.TagJpaEntity;
@@ -26,7 +26,7 @@ class AdminCurationRawProductFurnitureTagResponseTest {
                 .nameEng("SOFA")
                 .build();
 
-        Furniture furniture = Furniture.builder()
+        FurnitureJpaEntity furniture = FurnitureJpaEntity.builder()
                 .id(3L)
                 .furnitureNameKr("2인용 소파")
                 .furnitureNameEng("TWO_SEATER_SOFA")

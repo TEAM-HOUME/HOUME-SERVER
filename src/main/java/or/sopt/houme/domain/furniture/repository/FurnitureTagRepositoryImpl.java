@@ -2,9 +2,9 @@ package or.sopt.houme.domain.furniture.repository;
 
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
-import or.sopt.houme.domain.furniture.model.entity.Furniture;
+import or.sopt.houme.furniture.infra.persistence.FurnitureJpaEntity;
 import or.sopt.houme.domain.furniture.model.entity.FurnitureTag;
-import or.sopt.houme.domain.furniture.model.entity.QFurniture;
+import or.sopt.houme.furniture.infra.persistence.QFurnitureJpaEntity;
 import or.sopt.houme.domain.furniture.model.entity.QFurnitureTag;
 import or.sopt.houme.domain.furniture.model.entity.QFurnitureType;
 import org.springframework.stereotype.Repository;
@@ -18,7 +18,7 @@ public class FurnitureTagRepositoryImpl implements FurnitureTagRepositoryCustom 
     private final JPAQueryFactory queryFactory;
 
     @Override
-    public List<FurnitureTag> findAllByTagIdAndFurnitureIn(Long tagId, List<Furniture> furnitures) {
+    public List<FurnitureTag> findAllByTagIdAndFurnitureIn(Long tagId, List<FurnitureJpaEntity> furnitures) {
         QFurnitureTag furnitureTag = QFurnitureTag.furnitureTag;
 
         return queryFactory
@@ -34,7 +34,7 @@ public class FurnitureTagRepositoryImpl implements FurnitureTagRepositoryCustom 
     @Override
     public List<FurnitureTag> findAllByFurnitureTypeIdWithFurnitureAndTag(Long furnitureTypeId) {
         QFurnitureTag furnitureTag = QFurnitureTag.furnitureTag;
-        QFurniture furniture = QFurniture.furniture;
+        QFurnitureJpaEntity furniture = QFurnitureJpaEntity.furnitureJpaEntity;
         QFurnitureType furnitureType = QFurnitureType.furnitureType;
 
         // #582: Tag 연관 절단 — tag 는 tagId(Long) 로만 참조하므로 fetchJoin 대상에서 제거.

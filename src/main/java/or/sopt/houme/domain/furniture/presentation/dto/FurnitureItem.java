@@ -1,6 +1,6 @@
 package or.sopt.houme.domain.furniture.presentation.dto;
 
-import or.sopt.houme.domain.furniture.model.entity.Furniture;
+import or.sopt.houme.furniture.infra.persistence.FurnitureJpaEntity;
 
 import java.util.Set;
 
@@ -13,11 +13,11 @@ public record FurnitureItem(
     // 이름에서 제거할 카테고리 목록 ("~~ 침대", "~~ 소파")
     private static final Set<String> REMOVABLE_CATEGORIES = Set.of("침대", "소파");
 
-    public static FurnitureItem from(Furniture furniture) {
+    public static FurnitureItem from(FurnitureJpaEntity furniture) {
         return from(furniture, furniture.getPriority());
     }
 
-    public static FurnitureItem from(Furniture furniture, Integer priority) {
+    public static FurnitureItem from(FurnitureJpaEntity furniture, Integer priority) {
         String categoryName = furniture.getFurnitureType().getNameKr();
         String rawLabel = furniture.getFurnitureNameKr();
 

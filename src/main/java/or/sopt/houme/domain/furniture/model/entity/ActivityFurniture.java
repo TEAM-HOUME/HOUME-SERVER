@@ -1,5 +1,6 @@
 package or.sopt.houme.domain.furniture.model.entity;
 
+import or.sopt.houme.furniture.infra.persistence.FurnitureJpaEntity;
 import jakarta.persistence.*;
 import lombok.*;
 import or.sopt.houme.domain.house.model.entity.enums.Activity;
@@ -29,7 +30,7 @@ public class ActivityFurniture {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "furniture_id", nullable = false)
-    private Furniture furniture;
+    private FurnitureJpaEntity furniture;
 
     @Column(name = "priority", nullable = false)
     private int priority;

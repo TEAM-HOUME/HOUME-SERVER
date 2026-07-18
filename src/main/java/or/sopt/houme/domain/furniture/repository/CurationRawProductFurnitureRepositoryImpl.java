@@ -5,7 +5,7 @@ import lombok.RequiredArgsConstructor;
 import or.sopt.houme.domain.furniture.model.entity.CurationRawProductFurniture;
 import or.sopt.houme.domain.furniture.model.entity.QCurationRawProduct;
 import or.sopt.houme.domain.furniture.model.entity.QCurationRawProductFurniture;
-import or.sopt.houme.domain.furniture.model.entity.QFurniture;
+import or.sopt.houme.furniture.infra.persistence.QFurnitureJpaEntity;
 import or.sopt.houme.domain.furniture.model.entity.QFurnitureType;
 import org.springframework.stereotype.Repository;
 
@@ -20,7 +20,7 @@ public class CurationRawProductFurnitureRepositoryImpl implements CurationRawPro
     @Override
     public List<CurationRawProductFurniture> findAllByCurationRawProductIdInWithFurniture(List<Long> rawProductIds) {
         QCurationRawProductFurniture mapping = QCurationRawProductFurniture.curationRawProductFurniture;
-        QFurniture furniture = QFurniture.furniture;
+        QFurnitureJpaEntity furniture = QFurnitureJpaEntity.furnitureJpaEntity;
         QFurnitureType furnitureType = QFurnitureType.furnitureType;
 
         return queryFactory
@@ -58,7 +58,7 @@ public class CurationRawProductFurnitureRepositoryImpl implements CurationRawPro
     public List<CurationRawProductFurniture> findExposedByFurnitureId(Long furnitureId) {
         QCurationRawProductFurniture mapping = QCurationRawProductFurniture.curationRawProductFurniture;
         QCurationRawProduct rawProduct = QCurationRawProduct.curationRawProduct;
-        QFurniture furniture = QFurniture.furniture;
+        QFurnitureJpaEntity furniture = QFurnitureJpaEntity.furnitureJpaEntity;
 
         return queryFactory
                 .selectFrom(mapping)

@@ -5,7 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import or.sopt.houme.domain.furniture.model.entity.CurationProductSearchKeyword;
 import or.sopt.houme.domain.furniture.model.entity.CurationRawProduct;
 import or.sopt.houme.domain.furniture.model.entity.CurationRawProductFurnitureTag;
-import or.sopt.houme.domain.furniture.model.entity.Furniture;
+import or.sopt.houme.furniture.infra.persistence.FurnitureJpaEntity;
 import or.sopt.houme.domain.furniture.model.entity.FurnitureType;
 import or.sopt.houme.domain.furniture.repository.CurationProductSearchKeywordRepository;
 import or.sopt.houme.domain.furniture.repository.CurationRawProductRepository;
@@ -89,7 +89,7 @@ public class CurationProductTokenService {
                 .filter(tag -> tag != null && tag.getFurniture() != null)
                 .flatMap(tag -> {
                     List<String> names = new ArrayList<>();
-                    Furniture furniture = tag.getFurniture();
+                    FurnitureJpaEntity furniture = tag.getFurniture();
                     if (furniture.getFurnitureNameKr() != null) names.add(furniture.getFurnitureNameKr());
                     FurnitureType type = furniture.getFurnitureType();
                     if (type != null && type.getNameKr() != null) names.add(type.getNameKr());

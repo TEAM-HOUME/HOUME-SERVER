@@ -2,8 +2,8 @@ package or.sopt.houme.domain.furniture.repository;
 
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
-import or.sopt.houme.domain.furniture.model.entity.Furniture;
-import or.sopt.houme.domain.furniture.model.entity.QFurniture;
+import or.sopt.houme.furniture.infra.persistence.FurnitureJpaEntity;
+import or.sopt.houme.furniture.infra.persistence.QFurnitureJpaEntity;
 import or.sopt.houme.domain.furniture.model.entity.QFurnitureTag;
 import or.sopt.houme.domain.furniture.model.entity.QFurnitureType;
 import or.sopt.houme.domain.house.model.entity.mapping.QHouseFurniture;
@@ -25,8 +25,8 @@ public class FurnitureCustomRepositoryImpl implements FurnitureCustomRepository 
      * 이를 통해 N+1을 방지할 수 있읍죠
      * */
     @Override
-    public List<Furniture> findAllWithTags() {
-        QFurniture furniture = QFurniture.furniture;
+    public List<FurnitureJpaEntity> findAllWithTags() {
+        QFurnitureJpaEntity furniture = QFurnitureJpaEntity.furnitureJpaEntity;
         QFurnitureTag furnitureTag = QFurnitureTag.furnitureTag;
 
         // #582: Tag 연관 절단 — furnitureTag.tag fetchJoin 제거(태그명은 tagId 로 별도 조회).
@@ -40,11 +40,11 @@ public class FurnitureCustomRepositoryImpl implements FurnitureCustomRepository 
 
     // N+1 검토 필요
     @Override
-    public List<Furniture> findAllByHouseId(Long houseId) {
+    public List<FurnitureJpaEntity> findAllByHouseId(Long houseId) {
         QHouseFurniture houseFurniture = QHouseFurniture.houseFurniture;
-        QFurniture furniture = QFurniture.furniture;
+        QFurnitureJpaEntity furniture = QFurnitureJpaEntity.furnitureJpaEntity;
 
-        // #582: HouseFurniture→Furniture 연관 절단 — id 명시 조인으로 재작성(furnitureId → furniture.id).
+        // #582: HouseFurniture→FurnitureJpaEntity 연관 절단 — id 명시 조인으로 재작성(furnitureId → furniture.id).
         return queryFactory
                 .select(furniture)
                 .distinct()
@@ -55,8 +55,8 @@ public class FurnitureCustomRepositoryImpl implements FurnitureCustomRepository 
     }
 
     @Override
-    public List<Furniture> findAllWithFurnitureType() {
-        QFurniture furniture = QFurniture.furniture;
+    public List<FurnitureJpaEntity> findAllWithFurnitureType() {
+        QFurnitureJpaEntity furniture = QFurnitureJpaEntity.furnitureJpaEntity;
         QFurnitureType furnitureType = QFurnitureType.furnitureType;
 
         return queryFactory

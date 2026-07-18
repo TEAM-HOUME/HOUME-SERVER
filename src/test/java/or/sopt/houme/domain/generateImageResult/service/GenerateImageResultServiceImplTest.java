@@ -13,7 +13,7 @@ import or.sopt.houme.domain.furniture.model.entity.CurationRawProduct;
 import or.sopt.houme.domain.furniture.model.entity.CurationRawProductColor;
 import or.sopt.houme.domain.furniture.model.entity.CurationRawProductFurnitureTag;
 import or.sopt.houme.domain.furniture.model.entity.CurationSource;
-import or.sopt.houme.domain.furniture.model.entity.Furniture;
+import or.sopt.houme.furniture.infra.persistence.FurnitureJpaEntity;
 import or.sopt.houme.domain.furniture.model.entity.FurnitureTag;
 import or.sopt.houme.domain.furniture.model.entity.FurnitureType;
 import or.sopt.houme.domain.furniture.model.entity.RecommendFurniture;
@@ -222,7 +222,7 @@ class GenerateImageResultServiceImplTest {
         GenerateImageRawProduct mapping = GenerateImageRawProduct.of(productImage, selected, 1);
 
         FurnitureType furnitureType = FurnitureType.builder().id(1L).build();
-        Furniture furniture = Furniture.builder().id(1L).furnitureType(furnitureType).build();
+        FurnitureJpaEntity furniture = FurnitureJpaEntity.builder().id(1L).furnitureType(furnitureType).build();
         FurnitureTag furnitureTag = FurnitureTag.builder().id(1L).furniture(furniture).tagId(1L).build();
         CurationRawProductFurnitureTag selectedProductMapping = CurationRawProductFurnitureTag.builder()
                 .id(1L)

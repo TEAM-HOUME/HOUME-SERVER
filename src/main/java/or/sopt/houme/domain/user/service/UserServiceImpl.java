@@ -7,7 +7,7 @@ import or.sopt.houme.credit.application.CreditUseCase;
 import or.sopt.houme.domain.furniture.model.entity.CurationRawProduct;
 import or.sopt.houme.domain.furniture.model.entity.CurationRawProductColor;
 import or.sopt.houme.domain.furniture.model.entity.CurationSource;
-import or.sopt.houme.domain.furniture.model.entity.Furniture;
+import or.sopt.houme.furniture.infra.persistence.FurnitureJpaEntity;
 import or.sopt.houme.domain.furniture.model.entity.Jjym;
 import or.sopt.houme.domain.furniture.model.entity.RecommendFurniture;
 import or.sopt.houme.domain.furniture.repository.CurationRawProductColorRepository;
@@ -663,7 +663,7 @@ public class UserServiceImpl implements UserService {
             return Map.of();
         }
 
-        // #582: HouseFurniture→Furniture 연관 절단 — furnitureId 로 가구명을 일괄 조회해 매핑.
+        // #582: HouseFurniture→FurnitureJpaEntity 연관 절단 — furnitureId 로 가구명을 일괄 조회해 매핑.
         List<HouseFurniture> mappings = houseFurnitureRepository.findAllByHouseIdInWithFurniture(houseIds).stream()
                 .filter(mapping -> mapping.getHouseId() != null)
                 .filter(mapping -> mapping.getFurnitureId() != null)
@@ -674,7 +674,7 @@ public class UserServiceImpl implements UserService {
                 .distinct()
                 .toList();
         Map<Long, String> furnitureNameById = furnitureRepository.findAllById(furnitureIds).stream()
-                .collect(Collectors.toMap(Furniture::getId, this::resolveFurnitureSummaryName, (left, right) -> left));
+                .collect(Collectors.toMap(FurnitureJpaEntity::getId, this::resolveFurnitureSummaryName, (left, right) -> left));
 
         return mappings.stream()
                 .collect(Collectors.groupingBy(
@@ -743,7 +743,7 @@ public class UserServiceImpl implements UserService {
         return firstName + " 외 " + remainingCount + "개 가구로 생성된 이미지";
     }
 
-    private String resolveFurnitureSummaryName(Furniture furniture) {
+    private String resolveFurnitureSummaryName(FurnitureJpaEntity furniture) {
         if (furniture.getFurnitureNameKr() != null && !furniture.getFurnitureNameKr().isBlank()) {
             return furniture.getFurnitureNameKr();
         }
