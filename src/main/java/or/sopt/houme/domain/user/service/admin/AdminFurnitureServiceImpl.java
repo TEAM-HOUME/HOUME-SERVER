@@ -24,7 +24,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -101,7 +104,7 @@ public class AdminFurnitureServiceImpl implements AdminFurnitureService {
         FurnitureTag newFurnitureTage = FurnitureTag.createByAdminFurniturePromptRequestDTO(
                 dto.prompt(),
                 byFurnitureNameKr,
-                byIdTag,
+                byIdTag.getId(),
                 presignedUrl.publicUrl(),
                 dto.searchKeyword(),
                 dto.priority()
@@ -125,13 +128,23 @@ public class AdminFurnitureServiceImpl implements AdminFurnitureService {
 
         List<Furniture> allFurnitures = furnitureRepository.findAllWithTags();
 
+        // #582: FurnitureTag→Tag 연관 절단(tagId 참조)에 맞춰, 태그명을 tagId 로 일괄 조회(N+1 회피).
+        List<Long> tagIds = allFurnitures.stream()
+                .flatMap(furniture -> furniture.getFurnitureTags().stream())
+                .map(FurnitureTag::getTagId)
+                .filter(Objects::nonNull)
+                .distinct()
+                .toList();
+        Map<Long, String> tagNameById = tagRepository.findAllById(tagIds).stream()
+                .collect(Collectors.toMap(TagJpaEntity::getId, TagJpaEntity::getTagNameKr));
+
         List<AdminFurnitureGetDTO.FurnitureInfo> furnitureInfos = allFurnitures.stream()
                 .map(furniture -> {
                     List<AdminFurnitureGetDTO.TagInfo> tagInfos = furniture.getFurnitureTags().stream()
                             .map(furnitureTag -> new AdminFurnitureGetDTO.TagInfo(
                                     furnitureTag.getId(),
-                                    furnitureTag.getTag().getId(),
-                                    furnitureTag.getTag().getTagNameKr(),
+                                    furnitureTag.getTagId(),
+                                    tagNameById.get(furnitureTag.getTagId()),
                                     furnitureTag.getFurnitureUrl(),
                                     furnitureTag.getSearchKeyword(),
                                     furnitureTag.getPriority()
@@ -173,9 +186,21 @@ public class AdminFurnitureServiceImpl implements AdminFurnitureService {
         FurnitureType furnitureType = furnitureTypeRepository.findById(furnitureTypeId)
                 .orElseThrow(() -> new AdminException(ErrorCode.NOT_FOUND_FURNITURE_TYPE));
 
-        List<AdminFurnitureTagOptionResponse> furnitureTags = furnitureTagRepository
-                .findAllByFurnitureTypeIdWithFurnitureAndTag(furnitureType.getId()).stream()
-                .map(AdminFurnitureTagOptionResponse::of)
+        List<FurnitureTag> furnitureTagEntities = furnitureTagRepository
+                .findAllByFurnitureTypeIdWithFurnitureAndTag(furnitureType.getId());
+
+        // #582: Tag 연관 절단 — 태그명을 tagId 로 일괄 조회해 응답에 주입.
+        List<Long> tagIds = furnitureTagEntities.stream()
+                .map(FurnitureTag::getTagId)
+                .filter(Objects::nonNull)
+                .distinct()
+                .toList();
+        Map<Long, String> tagNameById = tagRepository.findAllById(tagIds).stream()
+                .collect(Collectors.toMap(TagJpaEntity::getId, TagJpaEntity::getTagNameKr));
+
+        List<AdminFurnitureTagOptionResponse> furnitureTags = furnitureTagEntities.stream()
+                .map(furnitureTag -> AdminFurnitureTagOptionResponse.of(
+                        furnitureTag, tagNameById.get(furnitureTag.getTagId())))
                 .toList();
 
         return new AdminFurnitureTagOptionListResponse(furnitureTags);

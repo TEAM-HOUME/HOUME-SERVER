@@ -7,7 +7,6 @@ import or.sopt.houme.domain.furniture.model.entity.FurnitureTag;
 import or.sopt.houme.domain.furniture.model.entity.QFurniture;
 import or.sopt.houme.domain.furniture.model.entity.QFurnitureTag;
 import or.sopt.houme.domain.furniture.model.entity.QFurnitureType;
-import or.sopt.houme.tag.infra.persistence.QTagJpaEntity;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -26,7 +25,7 @@ public class FurnitureTagRepositoryImpl implements FurnitureTagRepositoryCustom 
                 .selectFrom(furnitureTag)
                 .join(furnitureTag.furniture).fetchJoin()
                 .where(
-                        furnitureTag.tag.id.eq(tagId),
+                        furnitureTag.tagId.eq(tagId),
                         furnitureTag.furniture.in(furnitures)
                 )
                 .fetch();
@@ -37,13 +36,13 @@ public class FurnitureTagRepositoryImpl implements FurnitureTagRepositoryCustom 
         QFurnitureTag furnitureTag = QFurnitureTag.furnitureTag;
         QFurniture furniture = QFurniture.furniture;
         QFurnitureType furnitureType = QFurnitureType.furnitureType;
-        QTagJpaEntity tag = QTagJpaEntity.tagJpaEntity;
 
+        // #582: Tag 연관 절단 — tag 는 tagId(Long) 로만 참조하므로 fetchJoin 대상에서 제거.
+        //       태그 이름 등은 호출 측에서 tagId 로 별도 조회한다.
         return queryFactory
                 .selectFrom(furnitureTag)
                 .join(furnitureTag.furniture, furniture).fetchJoin()
                 .join(furniture.furnitureType, furnitureType).fetchJoin()
-                .leftJoin(furnitureTag.tag, tag).fetchJoin()
                 .where(furnitureType.id.eq(furnitureTypeId))
                 .orderBy(
                         furniture.furnitureNameKr.asc(),

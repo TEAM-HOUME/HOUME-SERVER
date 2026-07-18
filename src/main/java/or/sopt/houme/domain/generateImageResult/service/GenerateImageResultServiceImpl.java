@@ -147,9 +147,7 @@ public class GenerateImageResultServiceImpl implements GenerateImageResultServic
         Set<Long> tagIds = selectedMappings.stream()
                 .map(CurationRawProductFurnitureTag::getFurnitureTag)
                 .filter(Objects::nonNull)
-                .map(furnitureTag -> furnitureTag.getTag())
-                .filter(Objects::nonNull)
-                .map(tag -> tag.getId())
+                .map(furnitureTag -> furnitureTag.getTagId())
                 .filter(Objects::nonNull)
                 .collect(LinkedHashSet::new, LinkedHashSet::add, LinkedHashSet::addAll);
 

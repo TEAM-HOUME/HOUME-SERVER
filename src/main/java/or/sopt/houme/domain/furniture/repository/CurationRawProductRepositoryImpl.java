@@ -21,7 +21,6 @@ import or.sopt.houme.domain.furniture.model.entity.QFurnitureType;
 import or.sopt.houme.domain.furniture.model.entity.QJjym;
 import or.sopt.houme.domain.furniture.model.entity.QRecommendFurniture;
 import or.sopt.houme.domain.furniture.repository.CurationRawProductRepositoryCustom.PriceRangeFilter;
-import or.sopt.houme.tag.infra.persistence.QTagJpaEntity;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -453,11 +452,11 @@ public class CurationRawProductRepositoryImpl implements CurationRawProductRepos
         QCurationRawProduct rawProduct = QCurationRawProduct.curationRawProduct;
         QCurationRawProductFurnitureTag mapping = QCurationRawProductFurnitureTag.curationRawProductFurnitureTag;
         QFurnitureTag furnitureTag = QFurnitureTag.furnitureTag;
-        QTagJpaEntity tag = QTagJpaEntity.tagJpaEntity;
 
+        // #582: Tag 연관 절단 — tag 조인 제거, furnitureTag.tagId(Long) 로 직접 필터.
         BooleanBuilder where = new BooleanBuilder();
         where.and(rawProduct.isExposed.isTrue());
-        where.and(inIds(tag.id, tagIds));
+        where.and(inIds(furnitureTag.tagId, tagIds));
         where.and(notInIds(rawProduct.id, excludeRawProductIds));
 
         return queryFactory
@@ -465,7 +464,6 @@ public class CurationRawProductRepositoryImpl implements CurationRawProductRepos
                 .from(rawProduct)
                 .join(rawProduct.furnitureTagMappings, mapping)
                 .join(mapping.furnitureTag, furnitureTag)
-                .join(furnitureTag.tag, tag)
                 .where(where)
                 .orderBy(rawProduct.id.desc())
                 .offset(pageable.getOffset())

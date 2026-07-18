@@ -2,7 +2,6 @@ package or.sopt.houme.domain.furniture.model.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-import or.sopt.houme.tag.infra.persistence.TagJpaEntity;
 
 @Entity
 @Getter
@@ -30,9 +29,9 @@ public class FurnitureTag {
     @JoinColumn(name = "furniture_id")
     private Furniture furniture;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "tag_id")
-    private TagJpaEntity tag;
+    // #582: Tag 연관 절단 — @ManyToOne 대신 tag_id(Long) 컬럼으로만 참조(도메인 경계 분리, FK 는 DB 가 계속 강제)
+    @Column(name = "tag_id")
+    private Long tagId;
 
     @Column(name = "furniture_url",columnDefinition = "varchar(2048)", nullable = false)
     private String furnitureUrl;
@@ -47,14 +46,14 @@ public class FurnitureTag {
 
     public static FurnitureTag createByAdminFurniturePromptRequestDTO(String prompt,
                                                                       Furniture furniture,
-                                                                      TagJpaEntity tag,
+                                                                      Long tagId,
                                                                       String furnitureUrl,
                                                                       String searchKeyword,
                                                                       Integer priority){
         return FurnitureTag.builder()
                 .furniturePrompt(prompt)
                 .furniture(furniture)
-                .tag(tag)
+                .tagId(tagId)
                 .furnitureUrl(furnitureUrl)
                 .searchKeyword(searchKeyword)
                 .priority(priority)

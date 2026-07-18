@@ -8,7 +8,6 @@ import or.sopt.houme.domain.furniture.model.entity.QFurnitureTag;
 import or.sopt.houme.domain.furniture.model.entity.QFurnitureType;
 import or.sopt.houme.domain.house.model.entity.QHouse;
 import or.sopt.houme.domain.house.model.entity.mapping.QHouseFurniture;
-import or.sopt.houme.tag.infra.persistence.QTagJpaEntity;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -30,12 +29,11 @@ public class FurnitureCustomRepositoryImpl implements FurnitureCustomRepository 
     public List<Furniture> findAllWithTags() {
         QFurniture furniture = QFurniture.furniture;
         QFurnitureTag furnitureTag = QFurnitureTag.furnitureTag;
-        QTagJpaEntity tag = QTagJpaEntity.tagJpaEntity;
 
+        // #582: Tag 연관 절단 — furnitureTag.tag fetchJoin 제거(태그명은 tagId 로 별도 조회).
         return queryFactory
                 .selectFrom(furniture)
                 .leftJoin(furniture.furnitureTags, furnitureTag).fetchJoin()
-                .leftJoin(furnitureTag.tag, tag).fetchJoin()
                 .orderBy(furniture.id.asc())
                 .distinct()
                 .fetch();

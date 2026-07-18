@@ -268,11 +268,11 @@ class FurnitureServiceImplTest {
         // furnitureTag 우선순위: Bed(4), Chair(3), TV(2), Dining Table(1)
         // 교집합은 Bed/Chair/Dining Table 이므로 그 3개만 반환
         FurnitureTag ftBed = FurnitureTag.builder()
-                .id(11L).tag(TagJpaEntity.builder().id(100L).build()).furniture(bed).priority(4).build();
+                .id(11L).tagId(100L).furniture(bed).priority(4).build();
         FurnitureTag ftChair = FurnitureTag.builder()
-                .id(12L).tag(TagJpaEntity.builder().id(100L).build()).furniture(chair).priority(3).build();
+                .id(12L).tagId(100L).furniture(chair).priority(3).build();
         FurnitureTag ftDining = FurnitureTag.builder()
-                .id(13L).tag(TagJpaEntity.builder().id(100L).build()).furniture(dining).priority(1).build();
+                .id(13L).tagId(100L).furniture(dining).priority(1).build();
 
         // 태그와 가구 리스트로 매핑 객체 조회
         when(furnitureTagRepository.findAllByTagIdAndFurnitureIn(tag.getId(), List.of(bed, chair, dining)))
@@ -388,10 +388,10 @@ class FurnitureServiceImplTest {
         Furniture tv = Furniture.builder().id(3L).furnitureNameKr("TV").build();
         Furniture dining = Furniture.builder().id(4L).furnitureNameKr("식탁").build();
 
-        FurnitureTag ftBed = FurnitureTag.builder().id(11L).tag(TagJpaEntity.builder().id(100L).build()).furniture(bed).priority(4).build();
-        FurnitureTag ftChair = FurnitureTag.builder().id(12L).tag(TagJpaEntity.builder().id(100L).build()).furniture(chair).priority(3).build();
-        FurnitureTag ftTv = FurnitureTag.builder().id(14L).tag(TagJpaEntity.builder().id(100L).build()).furniture(tv).priority(2).build();
-        FurnitureTag ftDining = FurnitureTag.builder().id(13L).tag(TagJpaEntity.builder().id(100L).build()).furniture(dining).priority(1).build();
+        FurnitureTag ftBed = FurnitureTag.builder().id(11L).tagId(100L).furniture(bed).priority(4).build();
+        FurnitureTag ftChair = FurnitureTag.builder().id(12L).tagId(100L).furniture(chair).priority(3).build();
+        FurnitureTag ftTv = FurnitureTag.builder().id(14L).tagId(100L).furniture(tv).priority(2).build();
+        FurnitureTag ftDining = FurnitureTag.builder().id(13L).tagId(100L).furniture(dining).priority(1).build();
 
         when(tagRepository.findTagByUserIdAndImageId(user.getId(), imageId)).thenReturn(Optional.of(tag));
         when(houseRepository.findHouseByUserIdAndImageId(user.getId(), imageId)).thenReturn(Optional.of(house));
@@ -419,7 +419,7 @@ class FurnitureServiceImplTest {
         Furniture sofa = Furniture.builder().id(1L).furnitureNameKr("소파").build();
         Furniture desk = Furniture.builder().id(2L).furnitureNameKr("책상").build();
 
-        FurnitureTag ftSofa = FurnitureTag.builder().id(11L).tag(TagJpaEntity.builder().id(100L).build()).furniture(sofa).priority(1).build();
+        FurnitureTag ftSofa = FurnitureTag.builder().id(11L).tagId(100L).furniture(sofa).priority(1).build();
 
         when(tagRepository.findTagByUserIdAndImageId(user.getId(), imageId)).thenReturn(Optional.of(tag));
         when(houseRepository.findHouseByUserIdAndImageId(user.getId(), imageId)).thenReturn(Optional.of(house));
@@ -448,7 +448,7 @@ class FurnitureServiceImplTest {
 
         Furniture bed = Furniture.builder().id(1L).furnitureNameKr("침대").build();
 
-        FurnitureTag ftBed = FurnitureTag.builder().id(11L).tag(TagJpaEntity.builder().id(100L).build()).furniture(bed).priority(1).build();
+        FurnitureTag ftBed = FurnitureTag.builder().id(11L).tagId(100L).furniture(bed).priority(1).build();
 
         when(tagRepository.findTagByUserIdAndImageId(user.getId(), imageId)).thenReturn(Optional.of(tag));
         when(houseRepository.findHouseByUserIdAndImageId(user.getId(), imageId)).thenReturn(Optional.of(house));

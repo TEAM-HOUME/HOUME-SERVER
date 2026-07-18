@@ -79,6 +79,9 @@ class AdminCurationRawProductServiceImplTest {
     private FurnitureTagRepository furnitureTagRepository;
 
     @Mock
+    private or.sopt.houme.tag.infra.persistence.TagJpaRepository tagRepository;
+
+    @Mock
     private ApplicationEventPublisher eventPublisher;
 
     @InjectMocks
@@ -457,7 +460,7 @@ class AdminCurationRawProductServiceImplTest {
         FurnitureTag furnitureTag = FurnitureTag.builder()
                 .furniturePrompt("prompt")
                 .furniture(furniture)
-                .tag(tag)
+                .tagId(tag.getId())
                 .furnitureUrl("https://example.com/furniture")
                 .searchKeyword("bed")
                 .priority(1)

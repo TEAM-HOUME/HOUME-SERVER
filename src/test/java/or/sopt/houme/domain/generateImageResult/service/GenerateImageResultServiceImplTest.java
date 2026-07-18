@@ -223,8 +223,7 @@ class GenerateImageResultServiceImplTest {
 
         FurnitureType furnitureType = FurnitureType.builder().id(1L).build();
         Furniture furniture = Furniture.builder().id(1L).furnitureType(furnitureType).build();
-        TagJpaEntity tag = TagJpaEntity.builder().id(1L).build();
-        FurnitureTag furnitureTag = FurnitureTag.builder().id(1L).furniture(furniture).tag(tag).build();
+        FurnitureTag furnitureTag = FurnitureTag.builder().id(1L).furniture(furniture).tagId(1L).build();
         CurationRawProductFurnitureTag selectedProductMapping = CurationRawProductFurnitureTag.builder()
                 .id(1L)
                 .furnitureTag(furnitureTag)

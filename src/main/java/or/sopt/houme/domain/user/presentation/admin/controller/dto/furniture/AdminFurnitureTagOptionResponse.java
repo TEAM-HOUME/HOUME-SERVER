@@ -3,7 +3,6 @@ package or.sopt.houme.domain.user.presentation.admin.controller.dto.furniture;
 import io.swagger.v3.oas.annotations.media.Schema;
 import or.sopt.houme.domain.furniture.model.entity.FurnitureTag;
 import or.sopt.houme.domain.furniture.model.entity.FurnitureType;
-import or.sopt.houme.tag.infra.persistence.TagJpaEntity;
 
 public record AdminFurnitureTagOptionResponse(
         @Schema(description = "가구 태그 식별자")
@@ -33,8 +32,11 @@ public record AdminFurnitureTagOptionResponse(
         @Schema(description = "우선순위")
         Integer priority
 ) {
-    public static AdminFurnitureTagOptionResponse of(FurnitureTag furnitureTag) {
-        TagJpaEntity tag = furnitureTag.getTag();
+    /**
+     * #582: FurnitureTag→Tag 연관 절단으로 태그명은 tagId 로 별도 조회해 주입한다.
+     * @param tagNameKr furnitureTag.getTagId() 로 조회한 태그 한글명(없으면 null)
+     */
+    public static AdminFurnitureTagOptionResponse of(FurnitureTag furnitureTag, String tagNameKr) {
         FurnitureType furnitureType = furnitureTag.getFurniture().getFurnitureType();
 
         return new AdminFurnitureTagOptionResponse(
@@ -43,8 +45,8 @@ public record AdminFurnitureTagOptionResponse(
                 furnitureTag.getFurniture().getFurnitureNameKr(),
                 furnitureType != null ? furnitureType.getId() : null,
                 furnitureType != null ? furnitureType.getNameKr() : null,
-                tag != null ? tag.getId() : null,
-                tag != null ? tag.getTagNameKr() : null,
+                furnitureTag.getTagId(),
+                tagNameKr,
                 furnitureTag.getSearchKeyword(),
                 furnitureTag.getPriority()
         );

@@ -30,6 +30,8 @@ import or.sopt.houme.domain.furniture.service.ColorHexMapper;
 import or.sopt.houme.domain.furniture.service.event.CurationRawProductTokenRefreshEvent;
 import or.sopt.houme.global.api.ErrorCode;
 import or.sopt.houme.global.api.GeneralException;
+import or.sopt.houme.tag.infra.persistence.TagJpaEntity;
+import or.sopt.houme.tag.infra.persistence.TagJpaRepository;
 import org.hibernate.exception.ConstraintViolationException;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -44,7 +46,9 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -61,6 +65,7 @@ public class AdminCurationRawProductServiceImpl implements AdminCurationRawProdu
     private final CurationRawProductFurnitureTagRepository curationRawProductFurnitureTagRepository;
     private final FurnitureRepository furnitureRepository;
     private final FurnitureTagRepository furnitureTagRepository;
+    private final TagJpaRepository tagRepository;
     private final ApplicationEventPublisher eventPublisher;
 
     @Override
@@ -229,7 +234,7 @@ public class AdminCurationRawProductServiceImpl implements AdminCurationRawProdu
 
         CurationRawProductFurnitureTag mapping = CurationRawProductFurnitureTag.of(rawProduct, furnitureTag);
         CurationRawProductFurnitureTag saved = curationRawProductFurnitureTagRepository.saveAndFlush(mapping);
-        return AdminCurationRawProductFurnitureTagResponse.of(saved);
+        return AdminCurationRawProductFurnitureTagResponse.of(saved, resolveTagName(saved.getFurnitureTag()));
     }
 
     @Override
@@ -250,7 +255,17 @@ public class AdminCurationRawProductServiceImpl implements AdminCurationRawProdu
 
         mapping.updateFurnitureTag(nextFurnitureTag);
         CurationRawProductFurnitureTag saved = curationRawProductFurnitureTagRepository.saveAndFlush(mapping);
-        return AdminCurationRawProductFurnitureTagResponse.of(saved);
+        return AdminCurationRawProductFurnitureTagResponse.of(saved, resolveTagName(saved.getFurnitureTag()));
+    }
+
+    /** #582: FurnitureTag→Tag 연관 절단으로 태그명을 tagId 로 별도 조회한다. */
+    private String resolveTagName(FurnitureTag furnitureTag) {
+        if (furnitureTag == null || furnitureTag.getTagId() == null) {
+            return null;
+        }
+        return tagRepository.findById(furnitureTag.getTagId())
+                .map(TagJpaEntity::getTagNameKr)
+                .orElse(null);
     }
 
     @Override
@@ -304,9 +319,25 @@ public class AdminCurationRawProductServiceImpl implements AdminCurationRawProdu
         Map<Long, List<AdminCurationRawProductFurnitureTagResponse>> furnitureTagsByRawProductId = new LinkedHashMap<>();
         List<CurationRawProductFurnitureTag> mappings =
                 curationRawProductFurnitureTagRepository.findAllByCurationRawProductIdInWithFurnitureTag(rawProductIds);
+
+        // #582: Tag 연관 절단 — 태그명을 tagId 로 일괄 조회해 주입(N+1 회피).
+        List<Long> tagIds = mappings.stream()
+                .map(CurationRawProductFurnitureTag::getFurnitureTag)
+                .filter(Objects::nonNull)
+                .map(FurnitureTag::getTagId)
+                .filter(Objects::nonNull)
+                .distinct()
+                .toList();
+        Map<Long, String> tagNameById = tagRepository.findAllById(tagIds).stream()
+                .collect(Collectors.toMap(TagJpaEntity::getId, TagJpaEntity::getTagNameKr));
+
         for (CurationRawProductFurnitureTag mapping : mappings) {
+            FurnitureTag furnitureTag = mapping.getFurnitureTag();
+            String tagNameKr = (furnitureTag != null && furnitureTag.getTagId() != null)
+                    ? tagNameById.get(furnitureTag.getTagId())
+                    : null;
             furnitureTagsByRawProductId.computeIfAbsent(mapping.getCurationRawProduct().getId(), key -> new ArrayList<>())
-                    .add(AdminCurationRawProductFurnitureTagResponse.of(mapping));
+                    .add(AdminCurationRawProductFurnitureTagResponse.of(mapping, tagNameKr));
         }
 
         return rawProducts.stream()
