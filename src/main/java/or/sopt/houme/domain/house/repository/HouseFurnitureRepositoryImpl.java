@@ -22,7 +22,7 @@ public class HouseFurnitureRepositoryImpl implements HouseFurnitureRepositoryCus
 
         return queryFactory
                 .selectFrom(houseFurniture)
-                .where(houseFurniture.house.id.eq(houseId))
+                .where(houseFurniture.houseId.eq(houseId))
                 .orderBy(houseFurniture.id.asc())
                 .fetch();
     }
@@ -37,8 +37,8 @@ public class HouseFurnitureRepositoryImpl implements HouseFurnitureRepositoryCus
 
         return queryFactory
                 .selectFrom(houseFurniture)
-                .where(houseFurniture.house.id.in(houseIds))
-                .orderBy(houseFurniture.house.id.asc(), houseFurniture.id.asc())
+                .where(houseFurniture.houseId.in(houseIds))
+                .orderBy(houseFurniture.houseId.asc(), houseFurniture.id.asc())
                 .fetch();
     }
 }

@@ -50,7 +50,7 @@ public class FurnitureCustomRepositoryImpl implements FurnitureCustomRepository 
                 .distinct()
                 .from(houseFurniture)
                 .join(furniture).on(houseFurniture.furnitureId.eq(furniture.id))
-                .where(houseFurniture.house.id.eq(houseId))
+                .where(houseFurniture.houseId.eq(houseId))
                 .fetch();
     }
 

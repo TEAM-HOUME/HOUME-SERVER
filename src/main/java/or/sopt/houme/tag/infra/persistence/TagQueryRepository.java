@@ -36,7 +36,7 @@ public class TagQueryRepository {
                         .join(tasteTag).on(tasteTag.tagId.eq(tag.id))
                         .join(taste).on(tasteTag.tasteId.eq(taste.id))
                         .join(houseTaste).on(houseTaste.tasteId.eq(taste.id))
-                        .join(houseTaste.house, house)
+                        .join(house).on(houseTaste.houseId.eq(house.id))
                         .join(generateImage).on(generateImage.house.eq(house))
                         .where(
                                 house.user.id.eq(userId),
@@ -64,7 +64,7 @@ public class TagQueryRepository {
                 .join(tasteTag).on(tasteTag.tagId.eq(tag.id))
                 .join(taste).on(tasteTag.tasteId.eq(taste.id))
                 .join(houseTaste).on(houseTaste.tasteId.eq(taste.id))
-                .where(houseTaste.house.id.eq(houseId))
+                .where(houseTaste.houseId.eq(houseId))
                 .groupBy(tag.id, tag.priority)
                 .orderBy(
                         tasteTag.count().desc(),

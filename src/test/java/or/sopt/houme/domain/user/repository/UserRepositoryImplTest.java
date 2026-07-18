@@ -115,8 +115,8 @@ class UserRepositoryImplTest {
         em.persist(house2);
 
         // 5. HouseTaste로 Taste 연결
-        em.persist(HouseTaste.builder().house(house1).tasteId(taste1.getId()).build());
-        em.persist(HouseTaste.builder().house(house2).tasteId(taste2.getId()).build());
+        em.persist(HouseTaste.builder().houseId(house1.getId()).tasteId(taste1.getId()).build());
+        em.persist(HouseTaste.builder().houseId(house2.getId()).tasteId(taste2.getId()).build());
 
         // 6. GenerateImage 2개 생성
         GenerateImage generateImage1 = GenerateImage.builder()

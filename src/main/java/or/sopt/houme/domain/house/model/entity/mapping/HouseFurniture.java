@@ -2,7 +2,6 @@ package or.sopt.houme.domain.house.model.entity.mapping;
 
 import jakarta.persistence.*;
 import lombok.*;
-import or.sopt.houme.domain.house.model.entity.House;
 
 @Entity
 @Getter
@@ -19,7 +18,7 @@ public class HouseFurniture {
     @Column(name = "furniture_id")
     private Long furnitureId;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "house_id")
-    private House house;
+    // #582: House 연관 절단 — @ManyToOne 대신 house_id(Long) 컬럼으로만 참조(순수 매핑, FK 는 DB 가 계속 강제)
+    @Column(name = "house_id")
+    private Long houseId;
 }

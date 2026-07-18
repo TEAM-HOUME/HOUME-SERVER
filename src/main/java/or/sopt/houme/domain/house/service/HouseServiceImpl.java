@@ -195,7 +195,7 @@ public class HouseServiceImpl implements HouseService {
 
         List<HouseFurniture> list = furnitures.stream()
                 .map(furniture -> HouseFurniture.builder()
-                        .house(house)
+                        .houseId(house.getId())
                         .furnitureId(furniture.getId())
                         .build())
                 .toList();
@@ -214,7 +214,7 @@ public class HouseServiceImpl implements HouseService {
 
         List<HouseTaste> list = tastes.stream()
                 .map(taste -> HouseTaste.builder()
-                        .house(house)
+                        .houseId(house.getId())
                         .tasteId(taste.getId())
                         .build())
                 .toList();

@@ -665,7 +665,7 @@ public class UserServiceImpl implements UserService {
 
         // #582: HouseFurniture→Furniture 연관 절단 — furnitureId 로 가구명을 일괄 조회해 매핑.
         List<HouseFurniture> mappings = houseFurnitureRepository.findAllByHouseIdInWithFurniture(houseIds).stream()
-                .filter(mapping -> mapping.getHouse() != null && mapping.getHouse().getId() != null)
+                .filter(mapping -> mapping.getHouseId() != null)
                 .filter(mapping -> mapping.getFurnitureId() != null)
                 .toList();
 
@@ -678,7 +678,7 @@ public class UserServiceImpl implements UserService {
 
         return mappings.stream()
                 .collect(Collectors.groupingBy(
-                        mapping -> mapping.getHouse().getId(),
+                        mapping -> mapping.getHouseId(),
                         LinkedHashMap::new,
                         Collectors.mapping(
                                 mapping -> furnitureNameById.getOrDefault(mapping.getFurnitureId(), "가구"),
