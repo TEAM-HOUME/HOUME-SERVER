@@ -5,8 +5,8 @@ import lombok.RequiredArgsConstructor;
 import or.sopt.houme.domain.generateImage.model.entity.QGenerateImage;
 import or.sopt.houme.domain.house.model.entity.QHouse;
 import or.sopt.houme.domain.house.model.entity.mapping.QHouseTaste;
-import or.sopt.houme.domain.house.model.taste.entity.QTasteTag;
 import or.sopt.houme.taste.infra.persistence.QTasteJpaEntity;
+import or.sopt.houme.tastetag.infra.persistence.QTasteTagJpaEntity;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
@@ -25,7 +25,7 @@ public class TagQueryRepository {
         QHouse house = QHouse.house;
         QGenerateImage generateImage = QGenerateImage.generateImage;
         QTagJpaEntity tag = QTagJpaEntity.tagJpaEntity;
-        QTasteTag tasteTag = QTasteTag.tasteTag;
+        QTasteTagJpaEntity tasteTag = QTasteTagJpaEntity.tasteTagJpaEntity;
         QTasteJpaEntity taste = QTasteJpaEntity.tasteJpaEntity;
         QHouseTaste houseTaste = QHouseTaste.houseTaste;
 
@@ -33,8 +33,8 @@ public class TagQueryRepository {
                 queryFactory
                         .select(tag)
                         .from(tag)
-                        .join(tasteTag).on(tasteTag.tag.eq(tag))
-                        .join(taste).on(tasteTag.taste.eq(taste))
+                        .join(tasteTag).on(tasteTag.tagId.eq(tag.id))
+                        .join(taste).on(tasteTag.tasteId.eq(taste.id))
                         .join(houseTaste).on(houseTaste.taste.eq(taste))
                         .join(houseTaste.house, house)
                         .join(generateImage).on(generateImage.house.eq(house))
@@ -54,15 +54,15 @@ public class TagQueryRepository {
 
     public Optional<TagJpaEntity> findMostFrequentTagByHouseId(Long houseId) {
         QTagJpaEntity tag = QTagJpaEntity.tagJpaEntity;
-        QTasteTag tasteTag = QTasteTag.tasteTag;
+        QTasteTagJpaEntity tasteTag = QTasteTagJpaEntity.tasteTagJpaEntity;
         QTasteJpaEntity taste = QTasteJpaEntity.tasteJpaEntity;
         QHouseTaste houseTaste = QHouseTaste.houseTaste;
 
         return Optional.ofNullable(queryFactory
                 .select(tag)
                 .from(tag)
-                .join(tasteTag).on(tasteTag.tag.eq(tag))
-                .join(taste).on(tasteTag.taste.eq(taste))
+                .join(tasteTag).on(tasteTag.tagId.eq(tag.id))
+                .join(taste).on(tasteTag.tasteId.eq(taste.id))
                 .join(houseTaste).on(houseTaste.taste.eq(taste))
                 .where(houseTaste.house.id.eq(houseId))
                 .groupBy(tag.id, tag.priority)
@@ -77,13 +77,13 @@ public class TagQueryRepository {
     public Optional<TagJpaEntity> findTagByTasteId(Long tasteId) {
         QTasteJpaEntity taste = QTasteJpaEntity.tasteJpaEntity;
         QTagJpaEntity tag = QTagJpaEntity.tagJpaEntity;
-        QTasteTag tasteTag = QTasteTag.tasteTag;
+        QTasteTagJpaEntity tasteTag = QTasteTagJpaEntity.tasteTagJpaEntity;
 
         return Optional.ofNullable(queryFactory
                 .select(tag)
                 .from(tasteTag)
-                .join(tasteTag.tag, tag)
-                .join(tasteTag.taste, taste)
+                .join(tag).on(tasteTag.tagId.eq(tag.id))
+                .join(taste).on(tasteTag.tasteId.eq(taste.id))
                 .where(
                         taste.id.eq(tasteId)
                 )

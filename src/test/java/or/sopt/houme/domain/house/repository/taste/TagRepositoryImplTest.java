@@ -6,7 +6,7 @@ import or.sopt.houme.domain.house.model.entity.House;
 import or.sopt.houme.domain.house.model.entity.enums.Activity;
 import or.sopt.houme.domain.house.model.entity.mapping.HouseTaste;
 import or.sopt.houme.taste.infra.persistence.TasteJpaEntity;
-import or.sopt.houme.domain.house.model.taste.entity.TasteTag;
+import or.sopt.houme.tastetag.infra.persistence.TasteTagJpaEntity;
 import or.sopt.houme.tag.infra.persistence.TagJpaEntity;
 import or.sopt.houme.tag.infra.persistence.TagQueryRepository;
 import or.sopt.houme.domain.user.model.entity.*;
@@ -43,7 +43,7 @@ class TagRepositoryImplTest {
     private GenerateImage mockGenerateImage;
     private TasteJpaEntity mockTaste;
     private HouseTaste mockHouseTaste;
-    private TasteTag mockTasteTag;
+    private TasteTagJpaEntity mockTasteTag;
     private TagJpaEntity mockTag;
 
     @BeforeEach
@@ -106,10 +106,7 @@ class TagRepositoryImplTest {
         em.persist(mockTag);
 
         // 🎨-🔖 매핑
-        mockTasteTag = TasteTag.builder()
-                .taste(mockTaste)
-                .tag(mockTag)
-                .build();
+        mockTasteTag = TasteTagJpaEntity.forInsert(mockTaste.getId(), mockTag.getId());
         em.persist(mockTasteTag);
 
         em.flush();

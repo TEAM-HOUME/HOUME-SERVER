@@ -3,7 +3,7 @@ package or.sopt.houme.domain.house.service.taste;
 import lombok.RequiredArgsConstructor;
 import or.sopt.houme.domain.house.presentation.taste.dto.response.TagDTO;
 import or.sopt.houme.tag.domain.Tag;
-import or.sopt.houme.domain.house.repository.taste.taste_tag.TasteTagRepository;
+import or.sopt.houme.tastetag.domain.port.out.TasteTagRepositoryPort;
 import or.sopt.houme.global.api.ErrorCode;
 import or.sopt.houme.global.api.GeneralException;
 import org.springframework.stereotype.Service;
@@ -14,7 +14,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class TasteTagServiceImpl implements TasteTagService {
 
-    private final TasteTagRepository tasteTagRepository;
+    private final TasteTagRepositoryPort tasteTagRepository;
 
     // 우선순위 가장 높은 TasteId 반환
     @Override

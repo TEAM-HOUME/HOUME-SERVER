@@ -8,12 +8,12 @@ import or.sopt.houme.domain.user.presentation.admin.controller.dto.moodboard.Adm
 import or.sopt.houme.domain.user.presentation.admin.controller.dto.moodboard.AdminMoodBoardGetResponseDTO;
 import or.sopt.houme.domain.house.model.entity.mapping.HouseTaste;
 import or.sopt.houme.domain.house.repository.HouseTasteRepository;
-import or.sopt.houme.domain.house.model.taste.entity.TasteTag;
+import or.sopt.houme.tastetag.domain.TasteTag;
 import or.sopt.houme.tag.infra.persistence.TagJpaEntity;
 import or.sopt.houme.tag.infra.persistence.TagJpaRepository;
 import or.sopt.houme.taste.infra.persistence.TasteJpaEntity;
 import or.sopt.houme.taste.infra.persistence.TasteJpaRepository;
-import or.sopt.houme.domain.house.repository.taste.taste_tag.TasteTagRepository;
+import or.sopt.houme.tastetag.domain.port.out.TasteTagRepositoryPort;
 import or.sopt.houme.global.api.ErrorCode;
 import or.sopt.houme.global.api.GeneralException;
 import or.sopt.houme.global.dto.S3PresignedUrlResponseDTO;
@@ -38,7 +38,7 @@ public class AdminMoodBoardServiceImpl implements AdminMoodBoardService {
     private final S3Util s3Util;
     private final TasteJpaRepository tasteRepository;
     private final TagJpaRepository tagRepository;
-    private final TasteTagRepository tasteTagRepository;
+    private final TasteTagRepositoryPort tasteTagRepository;
     private final HouseTasteRepository houseTasteRepository;
 
 
@@ -68,12 +68,12 @@ public class AdminMoodBoardServiceImpl implements AdminMoodBoardService {
         TagJpaEntity byIdTag = tagRepository.findById(requestDTO.tagId())
                 .orElseThrow(()-> new GeneralException(ErrorCode.NOT_FOUND_TAG_ENTITY));
 
-        TasteTag newTasteTag = TasteTag.of(taste,byIdTag);
         TasteJpaEntity savedTaste;
 
         try {
             savedTaste = tasteRepository.save(taste);
-            tasteTagRepository.save(newTasteTag);
+            // 매핑은 id 참조로 저장 (Taste 저장 후 발급된 id 사용)
+            tasteTagRepository.save(TasteTag.of(savedTaste.getId(), byIdTag.getId()));
         }catch (DataIntegrityViolationException e){
             throw new GeneralException(ErrorCode.DATA_INTEGRITY_VIOLATION);
         }
@@ -117,10 +117,8 @@ public class AdminMoodBoardServiceImpl implements AdminMoodBoardService {
 
         List<HouseTaste> houseTastes = houseTasteRepository.findAllByTaste(byFilename);
 
-        List<TasteTag> tasteTags = tasteTagRepository.findAllByTaste(byFilename);
-
         try {
-            tasteTagRepository.deleteAll(tasteTags);
+            tasteTagRepository.deleteAllByTasteId(byFilename.getId());
             houseTasteRepository.deleteAll(houseTastes);
             tasteRepository.delete(byFilename);
         } catch (DataIntegrityViolationException e){

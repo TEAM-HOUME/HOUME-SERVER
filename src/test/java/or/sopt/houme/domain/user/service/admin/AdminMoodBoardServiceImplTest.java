@@ -9,10 +9,9 @@ import or.sopt.houme.domain.user.presentation.admin.controller.dto.moodboard.Adm
 import or.sopt.houme.domain.user.presentation.admin.controller.dto.moodboard.AdminMoodBoardGetAllResponseDTO;
 import or.sopt.houme.tag.infra.persistence.TagJpaEntity;
 import or.sopt.houme.taste.infra.persistence.TasteJpaEntity;
-import or.sopt.houme.domain.house.model.taste.entity.TasteTag;
 import or.sopt.houme.tag.infra.persistence.TagJpaRepository;
 import or.sopt.houme.taste.infra.persistence.TasteJpaRepository;
-import or.sopt.houme.domain.house.repository.taste.taste_tag.TasteTagRepository;
+import or.sopt.houme.tastetag.domain.port.out.TasteTagRepositoryPort;
 import or.sopt.houme.global.api.ErrorCode;
 import or.sopt.houme.global.api.GeneralException;
 import or.sopt.houme.global.dto.S3PresignedUrlResponseDTO;
@@ -56,7 +55,7 @@ class AdminMoodBoardServiceImplTest {
     private HouseTasteRepository houseTasteRepository;
 
     @Mock
-    private TasteTagRepository tasteTagRepository;
+    private TasteTagRepositoryPort tasteTagRepository;
 
     @Test
     @DisplayName("create()는 무드보드를 성공적으로 생성한다")
@@ -122,19 +121,17 @@ class AdminMoodBoardServiceImplTest {
     void delete_success() {
         // given
         String filename = "test.jpg";
-        TasteJpaEntity taste = TasteJpaEntity.builder().filename(filename).build();
+        TasteJpaEntity taste = TasteJpaEntity.builder().id(1L).filename(filename).build();
         HouseTaste houseTaste = HouseTaste.builder().taste(taste).build();
-        List<TasteTag> tasteTags = List.of(TasteTag.builder().taste(taste).build());
 
         when(tasteRepository.findByFilename(filename)).thenReturn(Optional.of(taste));
         when(houseTasteRepository.findAllByTaste(taste)).thenReturn(List.of(houseTaste));
-        when(tasteTagRepository.findAllByTaste(taste)).thenReturn(tasteTags);
 
         // when
         adminMoodBoardService.delete(filename);
 
         // then
-        verify(tasteTagRepository, times(1)).deleteAll(tasteTags);
+        verify(tasteTagRepository, times(1)).deleteAllByTasteId(1L);
         verify(tasteRepository, times(1)).delete(taste);
         verify(s3Util, times(1)).delete(filename);
     }
@@ -217,14 +214,12 @@ class AdminMoodBoardServiceImplTest {
     void delete_dataIntegrityViolation() {
         // given
         String filename = "test.jpg";
-        TasteJpaEntity taste = TasteJpaEntity.builder().filename(filename).build();
+        TasteJpaEntity taste = TasteJpaEntity.builder().id(1L).filename(filename).build();
         HouseTaste houseTaste = HouseTaste.builder().taste(taste).build();
-        List<TasteTag> tasteTag = List.of(TasteTag.builder().taste(taste).build());
 
         when(tasteRepository.findByFilename(filename)).thenReturn(Optional.of(taste));
         when(houseTasteRepository.findAllByTaste(taste)).thenReturn(List.of(houseTaste));
-        when(tasteTagRepository.findAllByTaste(taste)).thenReturn(tasteTag);
-        doThrow(new DataIntegrityViolationException("")).when(tasteTagRepository).deleteAll(tasteTag);
+        doThrow(new DataIntegrityViolationException("")).when(tasteTagRepository).deleteAllByTasteId(1L);
 
         // when & then
         GeneralException exception = assertThrows(GeneralException.class, () -> {
@@ -239,13 +234,11 @@ class AdminMoodBoardServiceImplTest {
     void delete_imageDeleteException() {
         // given
         String filename = "test.jpg";
-        TasteJpaEntity taste = TasteJpaEntity.builder().filename(filename).build();
+        TasteJpaEntity taste = TasteJpaEntity.builder().id(1L).filename(filename).build();
         HouseTaste houseTaste = HouseTaste.builder().taste(taste).build();
-        TasteTag tasteTag = TasteTag.builder().taste(taste).build();
 
         when(tasteRepository.findByFilename(filename)).thenReturn(Optional.of(taste));
         when(houseTasteRepository.findAllByTaste(taste)).thenReturn(List.of(houseTaste));
-        when(tasteTagRepository.findAllByTaste(taste)).thenReturn(List.of(tasteTag));
         doThrow(new RuntimeException()).when(s3Util).delete(filename);
 
         // when & then

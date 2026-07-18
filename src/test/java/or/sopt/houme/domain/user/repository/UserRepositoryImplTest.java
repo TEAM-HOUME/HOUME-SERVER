@@ -7,7 +7,7 @@ import or.sopt.houme.domain.house.model.entity.enums.Activity;
 import or.sopt.houme.domain.house.model.entity.mapping.HouseTaste;
 import or.sopt.houme.tag.infra.persistence.TagJpaEntity;
 import or.sopt.houme.taste.infra.persistence.TasteJpaEntity;
-import or.sopt.houme.domain.house.model.taste.entity.TasteTag;
+import or.sopt.houme.tastetag.infra.persistence.TasteTagJpaEntity;
 import or.sopt.houme.domain.user.presentation.controller.dto.UserImageHistoryDTO;
 import or.sopt.houme.domain.user.model.entity.*;
 import or.sopt.houme.global.config.QuerydslConfig;
@@ -42,7 +42,7 @@ class UserRepositoryImplTest {
     private GenerateImage mockGenerateImage;
     private HouseTaste mockHouseTaste;
     private TasteJpaEntity mockTaste;
-    private TasteTag mockTasteTag;
+    private TasteTagJpaEntity mockTasteTag;
     private TagJpaEntity mockTag;
 
     @BeforeEach
@@ -95,9 +95,9 @@ class UserRepositoryImplTest {
                 .build();
         em.persist(taste2);
 
-        em.persist(TasteTag.builder().taste(taste1).tag(tagModern).build());
-        em.persist(TasteTag.builder().taste(taste2).tag(tagVintage).build());
-        em.persist(TasteTag.builder().taste(taste2).tag(tagModern).build()); // taste2는 tag 2개
+        em.persist(TasteTagJpaEntity.forInsert(taste1.getId(), tagModern.getId()));
+        em.persist(TasteTagJpaEntity.forInsert(taste2.getId(), tagVintage.getId()));
+        em.persist(TasteTagJpaEntity.forInsert(taste2.getId(), tagModern.getId())); // taste2는 tag 2개
 
         // 4. House 2개 생성
         House house1 = House.builder()
