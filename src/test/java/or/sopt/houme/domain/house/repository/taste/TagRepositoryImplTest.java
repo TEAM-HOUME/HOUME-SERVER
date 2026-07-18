@@ -5,7 +5,7 @@ import or.sopt.houme.domain.generateImage.model.entity.GenerateImage;
 import or.sopt.houme.domain.house.model.entity.House;
 import or.sopt.houme.domain.house.model.entity.enums.Activity;
 import or.sopt.houme.domain.house.model.entity.mapping.HouseTaste;
-import or.sopt.houme.domain.house.model.taste.entity.Taste;
+import or.sopt.houme.taste.infra.persistence.TasteJpaEntity;
 import or.sopt.houme.domain.house.model.taste.entity.TasteTag;
 import or.sopt.houme.tag.infra.persistence.TagJpaEntity;
 import or.sopt.houme.tag.infra.persistence.TagQueryRepository;
@@ -41,7 +41,7 @@ class TagRepositoryImplTest {
     private User mockUser;
     private House mockHouse;
     private GenerateImage mockGenerateImage;
-    private Taste mockTaste;
+    private TasteJpaEntity mockTaste;
     private HouseTaste mockHouseTaste;
     private TasteTag mockTasteTag;
     private TagJpaEntity mockTag;
@@ -81,7 +81,7 @@ class TagRepositoryImplTest {
         em.persist(mockGenerateImage);
 
         // 🎨 취향 생성
-        mockTaste = Taste.builder()
+        mockTaste = TasteJpaEntity.builder()
                 .url("https://test.com/taste.png")
                 .filename("taste.png")
                 .originalFilename("origin-taste.png")

@@ -3,8 +3,8 @@ package or.sopt.houme.domain.house.service.taste;
 import lombok.RequiredArgsConstructor;
 import or.sopt.houme.domain.house.presentation.taste.dto.response.MoodBoardListResponse;
 import or.sopt.houme.domain.house.presentation.taste.dto.response.MoodBoardResponse;
-import or.sopt.houme.domain.house.model.taste.entity.Taste;
-import or.sopt.houme.domain.house.repository.taste.taste.TasteRepository;
+import or.sopt.houme.taste.domain.Taste;
+import or.sopt.houme.taste.domain.port.out.TasteRepositoryPort;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
@@ -16,13 +16,13 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class TasteServiceImpl implements TasteService {
 
-    private final TasteRepository tasteRepository;
+    private final TasteRepositoryPort tasteRepositoryPort;
 
     // 무드보드 제공 (cursor 기반 페이지네이션)
     @Override
     public MoodBoardListResponse getMoodboard(Long cursorId, int size) {
 
-        List<MoodBoardResponse> list = tasteRepository.findAll()
+        List<MoodBoardResponse> list = tasteRepositoryPort.findAll()
                 .stream()
                 .map(MoodBoardResponse::from)
                 .collect(Collectors.toList());
@@ -36,6 +36,6 @@ public class TasteServiceImpl implements TasteService {
     @Override
     public List<Taste> getTasteList(List<Long> tasteList) {
 
-        return tasteRepository.findAllById(tasteList);
+        return tasteRepositoryPort.findAllById(tasteList);
     }
 }

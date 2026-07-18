@@ -22,8 +22,8 @@ import or.sopt.houme.domain.house.model.entity.mapping.HouseFloorPlan;
 import or.sopt.houme.domain.house.model.entity.mapping.HouseFurniture;
 import or.sopt.houme.domain.house.model.entity.mapping.HouseTaste;
 import or.sopt.houme.domain.house.repository.*;
-import or.sopt.houme.domain.house.model.taste.entity.Taste;
-import or.sopt.houme.domain.house.repository.taste.taste.TasteRepository;
+import or.sopt.houme.taste.infra.persistence.TasteJpaEntity;
+import or.sopt.houme.taste.infra.persistence.TasteJpaRepository;
 import or.sopt.houme.domain.user.model.entity.User;
 import or.sopt.houme.global.api.ErrorCode;
 import or.sopt.houme.global.api.GeneralException;
@@ -47,7 +47,7 @@ public class HouseServiceImpl implements HouseService {
     private final FloorPlanRepository floorPlanRepository;
     private final HouseFurnitureRepository houseFurnitureRepository;
     private final FurnitureRepository furnitureRepository;
-    private final TasteRepository tasteRepository;
+    private final TasteJpaRepository tasteRepository;
     private final HouseTasteRepository houseTasteRepository;
 
     // 집구조 리스트 반환 서비스
@@ -206,7 +206,7 @@ public class HouseServiceImpl implements HouseService {
     @Override
     public void saveHouseTaste(House house, List<Long> tasteIds) {
 
-        List<Taste> tastes = tasteRepository.findAllById(tasteIds);
+        List<TasteJpaEntity> tastes = tasteRepository.findAllById(tasteIds);
 
         List<HouseTaste> list = tastes.stream()
                 .map(taste -> HouseTaste.builder()

@@ -5,8 +5,8 @@ import lombok.RequiredArgsConstructor;
 import or.sopt.houme.domain.generateImage.model.entity.QGenerateImage;
 import or.sopt.houme.domain.house.model.entity.QHouse;
 import or.sopt.houme.domain.house.model.entity.mapping.QHouseTaste;
-import or.sopt.houme.domain.house.model.taste.entity.QTaste;
 import or.sopt.houme.domain.house.model.taste.entity.QTasteTag;
+import or.sopt.houme.taste.infra.persistence.QTasteJpaEntity;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
@@ -26,7 +26,7 @@ public class TagQueryRepository {
         QGenerateImage generateImage = QGenerateImage.generateImage;
         QTagJpaEntity tag = QTagJpaEntity.tagJpaEntity;
         QTasteTag tasteTag = QTasteTag.tasteTag;
-        QTaste taste = QTaste.taste;
+        QTasteJpaEntity taste = QTasteJpaEntity.tasteJpaEntity;
         QHouseTaste houseTaste = QHouseTaste.houseTaste;
 
         return Optional.ofNullable(
@@ -55,7 +55,7 @@ public class TagQueryRepository {
     public Optional<TagJpaEntity> findMostFrequentTagByHouseId(Long houseId) {
         QTagJpaEntity tag = QTagJpaEntity.tagJpaEntity;
         QTasteTag tasteTag = QTasteTag.tasteTag;
-        QTaste taste = QTaste.taste;
+        QTasteJpaEntity taste = QTasteJpaEntity.tasteJpaEntity;
         QHouseTaste houseTaste = QHouseTaste.houseTaste;
 
         return Optional.ofNullable(queryFactory
@@ -75,7 +75,7 @@ public class TagQueryRepository {
     }
 
     public Optional<TagJpaEntity> findTagByTasteId(Long tasteId) {
-        QTaste taste = QTaste.taste;
+        QTasteJpaEntity taste = QTasteJpaEntity.tasteJpaEntity;
         QTagJpaEntity tag = QTagJpaEntity.tagJpaEntity;
         QTasteTag tasteTag = QTasteTag.tasteTag;
 

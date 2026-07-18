@@ -8,10 +8,10 @@ import or.sopt.houme.domain.user.presentation.admin.controller.dto.moodboard.Adm
 import or.sopt.houme.domain.user.presentation.admin.controller.dto.moodboard.AdminMoodBoardCreateResponseDTO;
 import or.sopt.houme.domain.user.presentation.admin.controller.dto.moodboard.AdminMoodBoardGetAllResponseDTO;
 import or.sopt.houme.tag.infra.persistence.TagJpaEntity;
-import or.sopt.houme.domain.house.model.taste.entity.Taste;
+import or.sopt.houme.taste.infra.persistence.TasteJpaEntity;
 import or.sopt.houme.domain.house.model.taste.entity.TasteTag;
 import or.sopt.houme.tag.infra.persistence.TagJpaRepository;
-import or.sopt.houme.domain.house.repository.taste.taste.TasteRepository;
+import or.sopt.houme.taste.infra.persistence.TasteJpaRepository;
 import or.sopt.houme.domain.house.repository.taste.taste_tag.TasteTagRepository;
 import or.sopt.houme.global.api.ErrorCode;
 import or.sopt.houme.global.api.GeneralException;
@@ -47,7 +47,7 @@ class AdminMoodBoardServiceImplTest {
     private S3Util s3Util;
 
     @Mock
-    private TasteRepository tasteRepository;
+    private TasteJpaRepository tasteRepository;
 
     @Mock
     private TagJpaRepository tagRepository;
@@ -65,11 +65,11 @@ class AdminMoodBoardServiceImplTest {
         AdminMoodBoardCreateRequestDTO requestDTO = new AdminMoodBoardCreateRequestDTO("jpg", "image.jpg", 1L);
         S3PresignedUrlResponseDTO presignedUrl = new S3PresignedUrlResponseDTO("uploadUrl", "imageUrl", "key", "dir");
         TagJpaEntity tag = TagJpaEntity.builder().id(1L).build();
-        Taste taste = Taste.builder().id(1L).build();
+        TasteJpaEntity taste = TasteJpaEntity.builder().id(1L).build();
 
         when(s3PresignedUtil.createPresignedUrl(any(), any(), any())).thenReturn(presignedUrl);
         when(tagRepository.findById(1L)).thenReturn(Optional.of(tag));
-        when(tasteRepository.save(any(Taste.class))).thenReturn(taste);
+        when(tasteRepository.save(any(TasteJpaEntity.class))).thenReturn(taste);
 
         // when
         AdminMoodBoardCreateResponseDTO result = adminMoodBoardService.create(requestDTO, "image/jpeg");
@@ -103,8 +103,8 @@ class AdminMoodBoardServiceImplTest {
     @DisplayName("getAll()은 모든 무드보드를 성공적으로 조회한다")
     void getAll_success() {
         // given
-        Taste taste1 = Taste.builder().filename("file1").originalFilename("orig1").url("url1").build();
-        Taste taste2 = Taste.builder().filename("file2").originalFilename("orig2").url("url2").build();
+        TasteJpaEntity taste1 = TasteJpaEntity.builder().filename("file1").originalFilename("orig1").url("url1").build();
+        TasteJpaEntity taste2 = TasteJpaEntity.builder().filename("file2").originalFilename("orig2").url("url2").build();
         when(tasteRepository.findAll()).thenReturn(List.of(taste1, taste2));
 
         // when
@@ -122,7 +122,7 @@ class AdminMoodBoardServiceImplTest {
     void delete_success() {
         // given
         String filename = "test.jpg";
-        Taste taste = Taste.builder().filename(filename).build();
+        TasteJpaEntity taste = TasteJpaEntity.builder().filename(filename).build();
         HouseTaste houseTaste = HouseTaste.builder().taste(taste).build();
         List<TasteTag> tasteTags = List.of(TasteTag.builder().taste(taste).build());
 
@@ -160,7 +160,7 @@ class AdminMoodBoardServiceImplTest {
     void delete_tasteTagNotFound() {
         // given
 //        String filename = "test.jpg";
-//        Taste taste = Taste.builder().filename(filename).build();
+//        TasteJpaEntity taste = TasteJpaEntity.builder().filename(filename).build();
 //        HouseTaste houseTaste = HouseTaste.builder().taste(taste).build();
 //        List<TasteTag> tasteTags = List.of();
 //
@@ -202,7 +202,7 @@ class AdminMoodBoardServiceImplTest {
 
         when(s3PresignedUtil.createPresignedUrl(any(), any(), any())).thenReturn(presignedUrl);
         when(tagRepository.findById(1L)).thenReturn(Optional.of(tag));
-        when(tasteRepository.save(any(Taste.class))).thenThrow(new DataIntegrityViolationException(""));
+        when(tasteRepository.save(any(TasteJpaEntity.class))).thenThrow(new DataIntegrityViolationException(""));
 
         // when & then
         GeneralException exception = assertThrows(GeneralException.class, () -> {
@@ -217,7 +217,7 @@ class AdminMoodBoardServiceImplTest {
     void delete_dataIntegrityViolation() {
         // given
         String filename = "test.jpg";
-        Taste taste = Taste.builder().filename(filename).build();
+        TasteJpaEntity taste = TasteJpaEntity.builder().filename(filename).build();
         HouseTaste houseTaste = HouseTaste.builder().taste(taste).build();
         List<TasteTag> tasteTag = List.of(TasteTag.builder().taste(taste).build());
 
@@ -239,7 +239,7 @@ class AdminMoodBoardServiceImplTest {
     void delete_imageDeleteException() {
         // given
         String filename = "test.jpg";
-        Taste taste = Taste.builder().filename(filename).build();
+        TasteJpaEntity taste = TasteJpaEntity.builder().filename(filename).build();
         HouseTaste houseTaste = HouseTaste.builder().taste(taste).build();
         TasteTag tasteTag = TasteTag.builder().taste(taste).build();
 

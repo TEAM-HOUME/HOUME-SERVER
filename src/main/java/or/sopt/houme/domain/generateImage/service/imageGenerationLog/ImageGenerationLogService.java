@@ -3,7 +3,7 @@ package or.sopt.houme.domain.generateImage.service.imageGenerationLog;
 import or.sopt.houme.domain.generateImage.presentation.dto.response.ImageInfoResponse;
 import or.sopt.houme.domain.generateImage.model.entity.ImageGenerationLog;
 import or.sopt.houme.tag.domain.Tag;
-import or.sopt.houme.domain.house.model.taste.entity.Taste;
+import or.sopt.houme.taste.domain.Taste;
 
 import java.util.List;
 

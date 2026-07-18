@@ -6,7 +6,7 @@ import or.sopt.houme.domain.house.model.entity.House;
 import or.sopt.houme.domain.house.model.entity.enums.Activity;
 import or.sopt.houme.domain.house.model.entity.mapping.HouseTaste;
 import or.sopt.houme.tag.infra.persistence.TagJpaEntity;
-import or.sopt.houme.domain.house.model.taste.entity.Taste;
+import or.sopt.houme.taste.infra.persistence.TasteJpaEntity;
 import or.sopt.houme.domain.house.model.taste.entity.TasteTag;
 import or.sopt.houme.domain.user.presentation.controller.dto.UserImageHistoryDTO;
 import or.sopt.houme.domain.user.model.entity.*;
@@ -41,7 +41,7 @@ class UserRepositoryImplTest {
     private House mockHouse;
     private GenerateImage mockGenerateImage;
     private HouseTaste mockHouseTaste;
-    private Taste mockTaste;
+    private TasteJpaEntity mockTaste;
     private TasteTag mockTasteTag;
     private TagJpaEntity mockTag;
 
@@ -79,7 +79,7 @@ class UserRepositoryImplTest {
         em.persist(tagVintage);
 
         // 3. Taste 2개 생성 + 각각 Tag 연결
-        Taste taste1 = Taste.builder()
+        TasteJpaEntity taste1 = TasteJpaEntity.builder()
                 .url("https://example.com/taste1.png")
                 .filename("taste1.png")
                 .originalFilename("original-taste1.png")
@@ -87,7 +87,7 @@ class UserRepositoryImplTest {
                 .build();
         em.persist(taste1);
 
-        Taste taste2 = Taste.builder()
+        TasteJpaEntity taste2 = TasteJpaEntity.builder()
                 .url("https://example.com/taste2.png")
                 .filename("taste2.png")
                 .originalFilename("original-taste2.png")

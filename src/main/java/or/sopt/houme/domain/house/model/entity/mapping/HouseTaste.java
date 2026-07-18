@@ -3,7 +3,7 @@ package or.sopt.houme.domain.house.model.entity.mapping;
 import jakarta.persistence.*;
 import lombok.*;
 import or.sopt.houme.domain.house.model.entity.House;
-import or.sopt.houme.domain.house.model.taste.entity.Taste;
+import or.sopt.houme.taste.infra.persistence.TasteJpaEntity;
 
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -18,7 +18,7 @@ public class HouseTaste {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "taste_id")
-    private Taste taste;
+    private TasteJpaEntity taste;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "house_id")

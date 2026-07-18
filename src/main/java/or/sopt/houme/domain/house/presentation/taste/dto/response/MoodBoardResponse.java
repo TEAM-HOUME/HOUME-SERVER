@@ -1,6 +1,6 @@
 package or.sopt.houme.domain.house.presentation.taste.dto.response;
 
-import or.sopt.houme.domain.house.model.taste.entity.Taste;
+import or.sopt.houme.taste.domain.Taste;
 
 public record MoodBoardResponse(
         Long id,

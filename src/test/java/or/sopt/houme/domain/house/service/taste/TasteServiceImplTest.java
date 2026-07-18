@@ -2,8 +2,8 @@ package or.sopt.houme.domain.house.service.taste;
 
 import or.sopt.houme.domain.house.presentation.taste.dto.response.MoodBoardListResponse;
 import or.sopt.houme.domain.house.presentation.taste.dto.response.MoodBoardResponse;
-import or.sopt.houme.domain.house.model.taste.entity.Taste;
-import or.sopt.houme.domain.house.repository.taste.taste.TasteRepository;
+import or.sopt.houme.taste.domain.Taste;
+import or.sopt.houme.taste.domain.port.out.TasteRepositoryPort;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -22,7 +22,7 @@ import static org.mockito.Mockito.when;
 class TasteServiceImplTest {
 
     @Mock
-    TasteRepository tasteRepository;
+    TasteRepositoryPort tasteRepository;
 
     @InjectMocks
     TasteServiceImpl tasteService;

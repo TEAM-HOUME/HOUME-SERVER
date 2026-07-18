@@ -1,7 +1,7 @@
 package or.sopt.houme.domain.house.presentation.taste;
 
-import or.sopt.houme.domain.house.model.taste.entity.Taste;
-import or.sopt.houme.domain.house.repository.taste.taste.TasteRepository;
+import or.sopt.houme.taste.infra.persistence.TasteJpaEntity;
+import or.sopt.houme.taste.infra.persistence.TasteJpaRepository;
 import or.sopt.houme.support.IntegrationTestSupport;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -24,10 +24,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class MoodboardApiIntegrationTest extends IntegrationTestSupport {
 
     @Autowired
-    private TasteRepository tasteRepository;
+    private TasteJpaRepository tasteRepository;
 
     private void seedTaste(String url, String filename, String ext) {
-        tasteRepository.save(Taste.builder()
+        tasteRepository.save(TasteJpaEntity.builder()
                 .url(url)
                 .filename(filename)
                 .originalFilename(filename)

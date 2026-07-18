@@ -1,7 +1,7 @@
 package or.sopt.houme.domain.house.service.taste;
 
 import or.sopt.houme.domain.house.presentation.taste.dto.response.MoodBoardListResponse;
-import or.sopt.houme.domain.house.model.taste.entity.Taste;
+import or.sopt.houme.taste.domain.Taste;
 
 import java.util.List;
 

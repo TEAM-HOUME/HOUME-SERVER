@@ -10,7 +10,7 @@ import or.sopt.houme.domain.generateImage.model.entity.ImageGenerationLog;
 import or.sopt.houme.domain.generateImage.repository.ImageGenerationDetailRepository;
 import or.sopt.houme.domain.generateImage.repository.ImageGenerationLogRepository;
 import or.sopt.houme.tag.domain.Tag;
-import or.sopt.houme.domain.house.model.taste.entity.Taste;
+import or.sopt.houme.taste.domain.Taste;
 import or.sopt.houme.global.api.ErrorCode;
 import or.sopt.houme.global.api.handler.GenerateImageException;
 import org.springframework.stereotype.Service;

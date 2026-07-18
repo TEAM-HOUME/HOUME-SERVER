@@ -49,7 +49,7 @@ import or.sopt.houme.domain.generateImage.service.prompt.dto.PromptFurnitureList
 import or.sopt.houme.domain.generateImage.service.prompt.dto.PromptRequestDTO;
 import or.sopt.houme.tag.domain.Tag;
 import or.sopt.houme.tag.infra.persistence.TagJpaEntity;
-import or.sopt.houme.domain.house.model.taste.entity.Taste;
+import or.sopt.houme.taste.domain.Taste;
 import or.sopt.houme.domain.house.service.taste.TagService;
 import or.sopt.houme.domain.house.service.taste.TasteService;
 import or.sopt.houme.domain.house.service.taste.TasteTagService;

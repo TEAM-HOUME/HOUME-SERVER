@@ -3,6 +3,7 @@ package or.sopt.houme.domain.house.model.taste.entity;
 import jakarta.persistence.*;
 import lombok.*;
 import or.sopt.houme.tag.infra.persistence.TagJpaEntity;
+import or.sopt.houme.taste.infra.persistence.TasteJpaEntity;
 
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -17,14 +18,14 @@ public class TasteTag {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "taste_id")
-    private Taste taste;
+    private TasteJpaEntity taste;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "tag_id")
     private TagJpaEntity tag;
 
 
-    public static TasteTag of(Taste taste, TagJpaEntity tag) {
+    public static TasteTag of(TasteJpaEntity taste, TagJpaEntity tag) {
         return TasteTag.builder()
                 .taste(taste)
                 .tag(tag)
