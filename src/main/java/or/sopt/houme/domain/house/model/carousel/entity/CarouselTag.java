@@ -2,7 +2,7 @@ package or.sopt.houme.domain.house.model.carousel.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-import or.sopt.houme.domain.house.model.taste.entity.Tag;
+import or.sopt.houme.tag.infra.persistence.TagJpaEntity;
 
 @Getter
 @Entity
@@ -21,5 +21,5 @@ public class CarouselTag {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "tag_id")
-    private Tag tag;
+    private TagJpaEntity tag;
 }

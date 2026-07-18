@@ -7,8 +7,8 @@ import or.sopt.houme.domain.user.presentation.admin.controller.dto.tag.AdminTagD
 import or.sopt.houme.domain.user.presentation.admin.controller.dto.tag.AdminTagGetAllResponseDTO;
 import or.sopt.houme.domain.user.presentation.admin.controller.dto.tag.AdminTagRequestDTO;
 import or.sopt.houme.domain.user.presentation.admin.controller.dto.tag.AdminTagGetResponseDTO;
-import or.sopt.houme.domain.house.model.taste.entity.Tag;
-import or.sopt.houme.domain.house.repository.taste.tag.TagRepository;
+import or.sopt.houme.tag.domain.Tag;
+import or.sopt.houme.tag.domain.port.out.TagRepositoryPort;
 import or.sopt.houme.global.api.ErrorCode;
 import or.sopt.houme.global.api.GeneralException;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -24,7 +24,7 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class AdminTagServiceImpl implements AdminTagService {
 
-    private final TagRepository tagRepository;
+    private final TagRepositoryPort tagRepositoryPort;
 
 
     /**
@@ -38,13 +38,13 @@ public class AdminTagServiceImpl implements AdminTagService {
     @Override
     public void create(AdminTagRequestDTO dto){
 
-        Optional<Tag> byTagNameKr = tagRepository.findByTagNameKr(dto.tag_name_kr());
+        Optional<Tag> byTagNameKr = tagRepositoryPort.findByTagNameKr(dto.tag_name_kr());
 
         if(byTagNameKr.isPresent()){
             throw new GeneralException(ErrorCode.ALREADY_EXIST_TAG);
         }
 
-        Optional<Tag> byPriority = tagRepository.findByPriority(dto.priority());
+        Optional<Tag> byPriority = tagRepositoryPort.findByPriority(dto.priority());
 
         if (byPriority.isPresent()){
             throw new GeneralException(ErrorCode.ALREADY_EXIST_PRIORITY);
@@ -53,7 +53,7 @@ public class AdminTagServiceImpl implements AdminTagService {
         Tag newTag = Tag.of(dto.tagName(), dto.priority(), dto.tag_name_kr(), dto.tag_prompt());
 
         try {
-            tagRepository.save(newTag);
+            tagRepositoryPort.save(newTag);
         } catch (DataIntegrityViolationException e) {
             throw new GeneralException(ErrorCode.ALREADY_EXIST_TAG);
         }
@@ -67,7 +67,7 @@ public class AdminTagServiceImpl implements AdminTagService {
     @Override
     public AdminTagGetAllResponseDTO getAll() {
 
-        List<Tag> tags = tagRepository.findAllByOrderByPriorityAsc();
+        List<Tag> tags = tagRepositoryPort.findAllByOrderByPriorityAsc();
 
         List<AdminTagGetResponseDTO> responseDTOS = tags.stream()
                 .map(AdminTagGetResponseDTO::of).toList();
@@ -92,27 +92,28 @@ public class AdminTagServiceImpl implements AdminTagService {
 
         log.info("------------업데이트를 시작합니다------------");
 
-        Tag tag = tagRepository.findById(dto.tagId())
+        Tag tag = tagRepositoryPort.findById(dto.tagId())
                 .orElseThrow(() -> new GeneralException(ErrorCode.NOT_FOUND_TAG_ENTITY));
 
         log.info("------------태그 ID를 찾았습니다------------");
 
         log.info("------------우선순위를 업데이트 합니다------------");
         if (dto.newPriority() != null) {
-            Optional<Tag> byPriority = tagRepository.findByPriority(dto.newPriority());
+            Optional<Tag> byPriority = tagRepositoryPort.findByPriority(dto.newPriority());
             if (byPriority.isPresent() && (byPriority.get().getId() == null || !byPriority.get().getId().equals(tag.getId()))) {
                 throw new GeneralException(ErrorCode.ALREADY_EXIST_PRIORITY);
             }
         }
 
         if (dto.newTagNameKr() != null && !dto.newTagNameKr().isBlank()) {
-            Optional<Tag> byTagNameKr = tagRepository.findByTagNameKr(dto.newTagNameKr());
+            Optional<Tag> byTagNameKr = tagRepositoryPort.findByTagNameKr(dto.newTagNameKr());
             if (byTagNameKr.isPresent() && (byTagNameKr.get().getId() == null || !byTagNameKr.get().getId().equals(tag.getId()))) {
                 throw new GeneralException(ErrorCode.ALREADY_EXIST_TAG);
             }
         }
 
         tag.update(dto.newTagNameEng(), dto.newPriority(), dto.newTagPrompt(), dto.newTagNameKr());
+        tagRepositoryPort.save(tag);
     }
 
 
@@ -124,11 +125,11 @@ public class AdminTagServiceImpl implements AdminTagService {
      * */
     @Override
     public void delete(AdminTagDeleteRequestDTO dto){
-        Tag tag = tagRepository.findById(dto.tagId())
+        tagRepositoryPort.findById(dto.tagId())
                 .orElseThrow(() -> new GeneralException(ErrorCode.NOT_FOUND_TAG_ENTITY));
 
         try {
-            tagRepository.delete(tag);
+            tagRepositoryPort.deleteById(dto.tagId());
         } catch (DataIntegrityViolationException e) {
             throw new GeneralException(ErrorCode.FOREIGN_KEY_CONSTRAINT_FAIL);
         }

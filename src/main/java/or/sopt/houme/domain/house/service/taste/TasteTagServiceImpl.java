@@ -2,7 +2,7 @@ package or.sopt.houme.domain.house.service.taste;
 
 import lombok.RequiredArgsConstructor;
 import or.sopt.houme.domain.house.presentation.taste.dto.response.TagDTO;
-import or.sopt.houme.domain.house.model.taste.entity.Tag;
+import or.sopt.houme.tag.domain.Tag;
 import or.sopt.houme.domain.house.repository.taste.taste_tag.TasteTagRepository;
 import or.sopt.houme.global.api.ErrorCode;
 import or.sopt.houme.global.api.GeneralException;

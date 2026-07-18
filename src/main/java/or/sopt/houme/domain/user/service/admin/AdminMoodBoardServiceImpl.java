@@ -8,10 +8,10 @@ import or.sopt.houme.domain.user.presentation.admin.controller.dto.moodboard.Adm
 import or.sopt.houme.domain.user.presentation.admin.controller.dto.moodboard.AdminMoodBoardGetResponseDTO;
 import or.sopt.houme.domain.house.model.entity.mapping.HouseTaste;
 import or.sopt.houme.domain.house.repository.HouseTasteRepository;
-import or.sopt.houme.domain.house.model.taste.entity.Tag;
 import or.sopt.houme.domain.house.model.taste.entity.Taste;
 import or.sopt.houme.domain.house.model.taste.entity.TasteTag;
-import or.sopt.houme.domain.house.repository.taste.tag.TagRepository;
+import or.sopt.houme.tag.infra.persistence.TagJpaEntity;
+import or.sopt.houme.tag.infra.persistence.TagJpaRepository;
 import or.sopt.houme.domain.house.repository.taste.taste.TasteRepository;
 import or.sopt.houme.domain.house.repository.taste.taste_tag.TasteTagRepository;
 import or.sopt.houme.global.api.ErrorCode;
@@ -37,7 +37,7 @@ public class AdminMoodBoardServiceImpl implements AdminMoodBoardService {
     private final S3PresignedUtil s3PresignedUtil;
     private final S3Util s3Util;
     private final TasteRepository tasteRepository;
-    private final TagRepository tagRepository;
+    private final TagJpaRepository tagRepository;
     private final TasteTagRepository tasteTagRepository;
     private final HouseTasteRepository houseTasteRepository;
 
@@ -65,7 +65,7 @@ public class AdminMoodBoardServiceImpl implements AdminMoodBoardService {
         // 2. 이미지를 기반으로 taste와 tag 데이터를 생성 및 조회
         Taste taste = Taste.createByPreSignedURL(presignedUrl.publicUrl(), presignedUrl.keyName(),
                 requestDTO.originalFilename(), requestDTO.imageExtension());
-        Tag byIdTag = tagRepository.findById(requestDTO.tagId())
+        TagJpaEntity byIdTag = tagRepository.findById(requestDTO.tagId())
                 .orElseThrow(()-> new GeneralException(ErrorCode.NOT_FOUND_TAG_ENTITY));
 
         TasteTag newTasteTag = TasteTag.of(taste,byIdTag);

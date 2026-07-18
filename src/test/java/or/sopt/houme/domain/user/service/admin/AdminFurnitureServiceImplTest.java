@@ -10,8 +10,8 @@ import or.sopt.houme.domain.furniture.model.entity.FurnitureTypes;
 import or.sopt.houme.domain.furniture.repository.FurnitureRepository;
 import or.sopt.houme.domain.furniture.repository.FurnitureTagRepository;
 import or.sopt.houme.domain.furniture.repository.FurnitureTypeRepository;
-import or.sopt.houme.domain.house.model.taste.entity.Tag;
-import or.sopt.houme.domain.house.repository.taste.tag.TagRepository;
+import or.sopt.houme.tag.infra.persistence.TagJpaEntity;
+import or.sopt.houme.tag.infra.persistence.TagJpaRepository;
 import or.sopt.houme.global.api.ErrorCode;
 import or.sopt.houme.global.api.GeneralException;
 import org.junit.jupiter.api.BeforeEach;
@@ -49,7 +49,7 @@ class AdminFurnitureServiceImplTest {
     private FurnitureTypeRepository furnitureTypeRepository;
 
     @Mock
-    private TagRepository tagRepository;
+    private TagJpaRepository tagRepository;
 
     @Mock
     private or.sopt.houme.global.util.S3PresignedUtil s3PresignedUtil;
@@ -111,7 +111,7 @@ class AdminFurnitureServiceImplTest {
         AdminFurniturePromptRequestDTO requestDTO = new AdminFurniturePromptRequestDTO(
                 "테스트 가구", "테스트 프롬프트", 1L, "키워드", 0, "jpg", "orig"
         );
-        Tag tag = Tag.builder().id(1L).build();
+        TagJpaEntity tag = TagJpaEntity.builder().id(1L).build();
         Furniture furniture = Furniture.builder().furnitureNameKr("테스트 가구").build();
 
         when(tagRepository.findById(1L)).thenReturn(Optional.of(tag));
@@ -150,7 +150,7 @@ class AdminFurnitureServiceImplTest {
         // given
         AdminFurniturePromptRequestDTO requestDTO = new AdminFurniturePromptRequestDTO(
                 "없는 가구", "테스트 프롬프트", 1L, "키워드", 0, "jpg", "orig");
-        Tag tag = Tag.builder().id(1L).build();
+        TagJpaEntity tag = TagJpaEntity.builder().id(1L).build();
 
         when(tagRepository.findById(1L)).thenReturn(Optional.of(tag));
         when(furnitureRepository.findByFurnitureNameKr("없는 가구")).thenReturn(Optional.empty());
@@ -168,12 +168,12 @@ class AdminFurnitureServiceImplTest {
         // given
         AdminFurniturePromptRequestDTO requestDTO = new AdminFurniturePromptRequestDTO(
                 "테스트 가구", "테스트 프롬프트", 1L, "키워드", 0, "jpg", "orig");
-        Tag tag = Tag.builder().id(1L).build();
+        TagJpaEntity tag = TagJpaEntity.builder().id(1L).build();
         Furniture furniture = Furniture.builder().furnitureNameKr("테스트 가구").build();
 
         when(tagRepository.findById(1L)).thenReturn(Optional.of(tag));
         when(furnitureRepository.findByFurnitureNameKr("테스트 가구")).thenReturn(Optional.of(furniture));
-        when(furnitureTagRepository.findByFurnitureAndTag(furniture, tag))
+        when(furnitureTagRepository.findByFurnitureAndTagId(furniture, tag.getId()))
                 .thenReturn(Optional.of(FurnitureTag.builder().id(1L).build()));
 
         // when & then
@@ -189,7 +189,7 @@ class AdminFurnitureServiceImplTest {
     @DisplayName("getFurniture()는 모든 가구 정보를 성공적으로 조회한다")
     void getFurniture_success() {
         // given
-        Tag tag1 = Tag.builder().id(1L).tagNameKr("모던").build();
+        TagJpaEntity tag1 = TagJpaEntity.builder().id(1L).tagNameKr("모던").build();
 
         Furniture furniture1 = Furniture.builder().id(1L).furnitureNameKr("침대").build();
         FurnitureTag furnitureTag1 = FurnitureTag.builder().furniture(furniture1).tag(tag1).build();
@@ -218,9 +218,9 @@ class AdminFurnitureServiceImplTest {
     @DisplayName("getFurnitureTag()는 모든 가구 태그 정보를 성공적으로 조회한다")
     void getFurnitureTag_success() {
         // given
-        Tag tag1 = Tag.builder().id(1L).tagNameKr("모던").build();
-        Tag tag2 = Tag.builder().id(2L).tagNameKr("미니멀").build();
-        List<Tag> tags = List.of(tag1, tag2);
+        TagJpaEntity tag1 = TagJpaEntity.builder().id(1L).tagNameKr("모던").build();
+        TagJpaEntity tag2 = TagJpaEntity.builder().id(2L).tagNameKr("미니멀").build();
+        List<TagJpaEntity> tags = List.of(tag1, tag2);
 
         when(tagRepository.findAll()).thenReturn(tags);
 
@@ -238,7 +238,7 @@ class AdminFurnitureServiceImplTest {
     @DisplayName("getFurnitureTagsByType()는 가구 타입에 연결된 furniture_tag 목록을 조회한다")
     void getFurnitureTagsByType_success() {
         // given
-        Tag tag = Tag.builder().id(1L).tagNameKr("유니크 비비드").build();
+        TagJpaEntity tag = TagJpaEntity.builder().id(1L).tagNameKr("유니크 비비드").build();
         Furniture furniture = Furniture.builder()
                 .id(10L)
                 .furnitureNameKr("침대")
@@ -275,12 +275,12 @@ class AdminFurnitureServiceImplTest {
         AdminFurnitureUpdateRequestDTO requestDTO = new AdminFurnitureUpdateRequestDTO(
                 "침대", 1L, "new bed eng", "new prompt", null, null, null, null);
         Furniture furniture = Furniture.builder().furnitureNameKr("침대").build();
-        Tag tag = Tag.builder().id(1L).build();
+        TagJpaEntity tag = TagJpaEntity.builder().id(1L).build();
         FurnitureTag furnitureTag = FurnitureTag.builder().furniture(furniture).tag(tag).build();
 
         when(furnitureRepository.findByFurnitureNameKr("침대")).thenReturn(Optional.of(furniture));
         when(tagRepository.findById(1L)).thenReturn(Optional.of(tag));
-        when(furnitureTagRepository.findByFurnitureAndTag(furniture, tag)).thenReturn(Optional.of(furnitureTag));
+        when(furnitureTagRepository.findByFurnitureAndTagId(furniture, tag.getId())).thenReturn(Optional.of(furnitureTag));
 
         // when
         adminFurnitureService.updateFurniture(requestDTO, null);
@@ -352,11 +352,11 @@ class AdminFurnitureServiceImplTest {
         AdminFurnitureUpdateRequestDTO requestDTO = new AdminFurnitureUpdateRequestDTO(
                 "침대", 1L, "new bed eng", "new prompt", null, null, null, null);
         Furniture furniture = Furniture.builder().furnitureNameKr("침대").build();
-        Tag tag = Tag.builder().id(1L).build();
+        TagJpaEntity tag = TagJpaEntity.builder().id(1L).build();
 
         when(furnitureRepository.findByFurnitureNameKr("침대")).thenReturn(Optional.of(furniture));
         when(tagRepository.findById(1L)).thenReturn(Optional.of(tag));
-        when(furnitureTagRepository.findByFurnitureAndTag(furniture, tag)).thenReturn(Optional.empty());
+        when(furnitureTagRepository.findByFurnitureAndTagId(furniture, tag.getId())).thenReturn(Optional.empty());
 
         // when & then
         GeneralException exception = assertThrows(GeneralException.class, () -> {
@@ -372,12 +372,12 @@ class AdminFurnitureServiceImplTest {
         // given
         AdminFurnitureTagDeleteDTO requestDTO = new AdminFurnitureTagDeleteDTO("침대", 1L);
         Furniture furniture = Furniture.builder().furnitureNameKr("침대").build();
-        Tag tag = Tag.builder().id(1L).build();
+        TagJpaEntity tag = TagJpaEntity.builder().id(1L).build();
         FurnitureTag furnitureTag = FurnitureTag.builder().furniture(furniture).tag(tag).build();
 
         when(furnitureRepository.findByFurnitureNameKr("침대")).thenReturn(Optional.of(furniture));
         when(tagRepository.findById(1L)).thenReturn(Optional.of(tag));
-        when(furnitureTagRepository.findByFurnitureAndTag(furniture, tag)).thenReturn(Optional.of(furnitureTag));
+        when(furnitureTagRepository.findByFurnitureAndTagId(furniture, tag.getId())).thenReturn(Optional.of(furnitureTag));
 
         // when
         adminFurnitureService.deleteFurnitureTag(requestDTO);
@@ -426,11 +426,11 @@ class AdminFurnitureServiceImplTest {
         // given
         AdminFurnitureTagDeleteDTO requestDTO = new AdminFurnitureTagDeleteDTO("침대", 1L);
         Furniture furniture = Furniture.builder().furnitureNameKr("침대").build();
-        Tag tag = Tag.builder().id(1L).build();
+        TagJpaEntity tag = TagJpaEntity.builder().id(1L).build();
 
         when(furnitureRepository.findByFurnitureNameKr("침대")).thenReturn(Optional.of(furniture));
         when(tagRepository.findById(1L)).thenReturn(Optional.of(tag));
-        when(furnitureTagRepository.findByFurnitureAndTag(furniture, tag)).thenReturn(Optional.empty());
+        when(furnitureTagRepository.findByFurnitureAndTagId(furniture, tag.getId())).thenReturn(Optional.empty());
 
         // when & then
         GeneralException exception = assertThrows(GeneralException.class, () -> {
@@ -498,12 +498,12 @@ class AdminFurnitureServiceImplTest {
         // given
         AdminFurnitureDetailsRequestDTO requestDTO = new AdminFurnitureDetailsRequestDTO("침대", 1L);
         Furniture furniture = Furniture.builder().furnitureNameKr("침대").build();
-        Tag tag = Tag.builder().id(1L).build();
+        TagJpaEntity tag = TagJpaEntity.builder().id(1L).build();
         FurnitureTag furnitureTag = FurnitureTag.builder().furniture(furniture).tag(tag).furniturePrompt("테스트 프롬프트").build();
 
         when(furnitureRepository.findByFurnitureNameKr("침대")).thenReturn(Optional.of(furniture));
         when(tagRepository.findById(1L)).thenReturn(Optional.of(tag));
-        when(furnitureTagRepository.findByFurnitureAndTag(furniture, tag)).thenReturn(Optional.of(furnitureTag));
+        when(furnitureTagRepository.findByFurnitureAndTagId(furniture, tag.getId())).thenReturn(Optional.of(furnitureTag));
 
         // when
         AdminFurnitureDetailsResponseDTO result = adminFurnitureService.getDetails(requestDTO);
@@ -552,11 +552,11 @@ class AdminFurnitureServiceImplTest {
         // given
         AdminFurnitureDetailsRequestDTO requestDTO = new AdminFurnitureDetailsRequestDTO("침대", 1L);
         Furniture furniture = Furniture.builder().furnitureNameKr("침대").build();
-        Tag tag = Tag.builder().id(1L).build();
+        TagJpaEntity tag = TagJpaEntity.builder().id(1L).build();
 
         when(furnitureRepository.findByFurnitureNameKr("침대")).thenReturn(Optional.of(furniture));
         when(tagRepository.findById(1L)).thenReturn(Optional.of(tag));
-        when(furnitureTagRepository.findByFurnitureAndTag(furniture, tag)).thenReturn(Optional.empty());
+        when(furnitureTagRepository.findByFurnitureAndTagId(furniture, tag.getId())).thenReturn(Optional.empty());
 
         // when & then
         GeneralException exception = assertThrows(GeneralException.class, () -> {
@@ -587,12 +587,12 @@ class AdminFurnitureServiceImplTest {
         // given
         AdminFurnitureTagDeleteDTO requestDTO = new AdminFurnitureTagDeleteDTO("침대", 1L);
         Furniture furniture = Furniture.builder().furnitureNameKr("침대").build();
-        Tag tag = Tag.builder().id(1L).build();
+        TagJpaEntity tag = TagJpaEntity.builder().id(1L).build();
         FurnitureTag furnitureTag = FurnitureTag.builder().furniture(furniture).tag(tag).build();
 
         when(furnitureRepository.findByFurnitureNameKr("침대")).thenReturn(Optional.of(furniture));
         when(tagRepository.findById(1L)).thenReturn(Optional.of(tag));
-        when(furnitureTagRepository.findByFurnitureAndTag(furniture, tag)).thenReturn(Optional.of(furnitureTag));
+        when(furnitureTagRepository.findByFurnitureAndTagId(furniture, tag.getId())).thenReturn(Optional.of(furnitureTag));
         doThrow(new DataIntegrityViolationException("")).when(furnitureTagRepository).delete(furnitureTag);
 
         // when & then

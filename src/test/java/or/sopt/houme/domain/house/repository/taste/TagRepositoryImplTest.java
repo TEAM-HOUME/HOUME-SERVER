@@ -5,10 +5,10 @@ import or.sopt.houme.domain.generateImage.model.entity.GenerateImage;
 import or.sopt.houme.domain.house.model.entity.House;
 import or.sopt.houme.domain.house.model.entity.enums.Activity;
 import or.sopt.houme.domain.house.model.entity.mapping.HouseTaste;
-import or.sopt.houme.domain.house.model.taste.entity.Tag;
 import or.sopt.houme.domain.house.model.taste.entity.Taste;
 import or.sopt.houme.domain.house.model.taste.entity.TasteTag;
-import or.sopt.houme.domain.house.repository.taste.tag.TagRepositoryImpl;
+import or.sopt.houme.tag.infra.persistence.TagJpaEntity;
+import or.sopt.houme.tag.infra.persistence.TagQueryRepository;
 import or.sopt.houme.domain.user.model.entity.*;
 import or.sopt.houme.global.config.QuerydslConfig;
 import org.junit.jupiter.api.BeforeEach;
@@ -24,15 +24,19 @@ import java.util.Optional;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
+/**
+ * 태그 클러스터 조인 조회(QueryDSL) 특성화 테스트. 헥사고날 전환(#582)으로
+ * {@code TagRepositoryImpl} → {@link TagQueryRepository} 로 이관되었고, 조회 결과는 {@link TagJpaEntity} 이다.
+ */
 @DataJpaTest
-@Import({TagRepositoryImpl.class, QuerydslConfig.class})
+@Import({TagQueryRepository.class, QuerydslConfig.class})
 @ActiveProfiles("test")
 class TagRepositoryImplTest {
     @Autowired
     private EntityManager em;
 
     @Autowired
-    private TagRepositoryImpl tagRepositoryImpl;
+    private TagQueryRepository tagQueryRepository;
 
     private User mockUser;
     private House mockHouse;
@@ -40,7 +44,7 @@ class TagRepositoryImplTest {
     private Taste mockTaste;
     private HouseTaste mockHouseTaste;
     private TasteTag mockTasteTag;
-    private Tag mockTag;
+    private TagJpaEntity mockTag;
 
     @BeforeEach
     void setUp() {
@@ -93,8 +97,9 @@ class TagRepositoryImplTest {
         em.persist(mockHouseTaste);
 
         // 🔖 태그 생성
-        mockTag = Tag.builder()
+        mockTag = TagJpaEntity.builder()
                 .tagName("모던")
+                .priority(1)
                 .tagNameKr("모던 인테리어")
                 .tagPrompt("프롬프트")
                 .build();
@@ -115,11 +120,11 @@ class TagRepositoryImplTest {
     @DisplayName("userId와 imageId로 tag 조회 성공")
     void findTagByUserIdAndImageId_success() {
         // when
-        Optional<Tag> result = tagRepositoryImpl.findTagByUserIdAndImageId(mockUser.getId(), mockGenerateImage.getId());
+        Optional<TagJpaEntity> result = tagQueryRepository.findTagByUserIdAndImageId(mockUser.getId(), mockGenerateImage.getId());
 
         // then
         assertThat(result).isPresent();
-        Tag tag = result.get();
+        TagJpaEntity tag = result.get();
         assertThat(tag.getTagName()).isEqualTo("모던");
     }
 
@@ -127,7 +132,7 @@ class TagRepositoryImplTest {
     @DisplayName("존재하지 않는 imageId 조회 시 empty 반환")
     void findTagByUserIdAndImageId_invalidImage() {
         // when
-        Optional<Tag> result = tagRepositoryImpl.findTagByUserIdAndImageId(mockUser.getId(), 999L);
+        Optional<TagJpaEntity> result = tagQueryRepository.findTagByUserIdAndImageId(mockUser.getId(), 999L);
 
         // then
         assertThat(result).isEmpty();

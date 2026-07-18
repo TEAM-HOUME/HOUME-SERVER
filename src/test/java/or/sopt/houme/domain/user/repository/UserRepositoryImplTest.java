@@ -5,7 +5,7 @@ import or.sopt.houme.domain.generateImage.model.entity.GenerateImage;
 import or.sopt.houme.domain.house.model.entity.House;
 import or.sopt.houme.domain.house.model.entity.enums.Activity;
 import or.sopt.houme.domain.house.model.entity.mapping.HouseTaste;
-import or.sopt.houme.domain.house.model.taste.entity.Tag;
+import or.sopt.houme.tag.infra.persistence.TagJpaEntity;
 import or.sopt.houme.domain.house.model.taste.entity.Taste;
 import or.sopt.houme.domain.house.model.taste.entity.TasteTag;
 import or.sopt.houme.domain.user.presentation.controller.dto.UserImageHistoryDTO;
@@ -43,7 +43,7 @@ class UserRepositoryImplTest {
     private HouseTaste mockHouseTaste;
     private Taste mockTaste;
     private TasteTag mockTasteTag;
-    private Tag mockTag;
+    private TagJpaEntity mockTag;
 
     @BeforeEach
     void setUp() {
@@ -62,7 +62,7 @@ class UserRepositoryImplTest {
         em.persist(mockUser);
 
         // 2. 태그 2개 생성
-        Tag tagModern = Tag.builder()
+        TagJpaEntity tagModern = TagJpaEntity.builder()
                 .tagName("모던")
                 .tagPrompt("깔끔한 화이트톤의 거실")
                 .tagNameKr("모던")
@@ -70,7 +70,7 @@ class UserRepositoryImplTest {
                 .build();
         em.persist(tagModern);
 
-        Tag tagVintage = Tag.builder()
+        TagJpaEntity tagVintage = TagJpaEntity.builder()
                 .tagName("빈티지")
                 .tagPrompt("따뜻한 느낌의 원목 인테리어")
                 .tagNameKr("빈티지")

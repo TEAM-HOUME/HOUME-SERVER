@@ -34,7 +34,7 @@ import or.sopt.houme.domain.generateImageResult.presentation.dto.response.Genera
 import or.sopt.houme.domain.generateImageResult.presentation.dto.response.RelatedImagesResponse;
 import or.sopt.houme.domain.generateImageResult.presentation.dto.response.SimilarItemsResponse;
 import or.sopt.houme.domain.house.model.entity.House;
-import or.sopt.houme.domain.house.model.taste.entity.Tag;
+import or.sopt.houme.tag.infra.persistence.TagJpaEntity;
 import or.sopt.houme.domain.house.service.HouseService;
 import or.sopt.houme.domain.user.model.entity.User;
 import or.sopt.houme.global.api.handler.GenerateImageException;
@@ -223,7 +223,7 @@ class GenerateImageResultServiceImplTest {
 
         FurnitureType furnitureType = FurnitureType.builder().id(1L).build();
         Furniture furniture = Furniture.builder().id(1L).furnitureType(furnitureType).build();
-        Tag tag = Tag.builder().id(1L).build();
+        TagJpaEntity tag = TagJpaEntity.builder().id(1L).build();
         FurnitureTag furnitureTag = FurnitureTag.builder().id(1L).furniture(furniture).tag(tag).build();
         CurationRawProductFurnitureTag selectedProductMapping = CurationRawProductFurnitureTag.builder()
                 .id(1L)

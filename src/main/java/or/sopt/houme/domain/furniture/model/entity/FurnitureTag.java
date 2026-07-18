@@ -2,7 +2,7 @@ package or.sopt.houme.domain.furniture.model.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-import or.sopt.houme.domain.house.model.taste.entity.Tag;
+import or.sopt.houme.tag.infra.persistence.TagJpaEntity;
 
 @Entity
 @Getter
@@ -32,7 +32,7 @@ public class FurnitureTag {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "tag_id")
-    private Tag tag;
+    private TagJpaEntity tag;
 
     @Column(name = "furniture_url",columnDefinition = "varchar(2048)", nullable = false)
     private String furnitureUrl;
@@ -47,7 +47,7 @@ public class FurnitureTag {
 
     public static FurnitureTag createByAdminFurniturePromptRequestDTO(String prompt,
                                                                       Furniture furniture,
-                                                                      Tag tag,
+                                                                      TagJpaEntity tag,
                                                                       String furnitureUrl,
                                                                       String searchKeyword,
                                                                       Integer priority){

@@ -7,7 +7,7 @@ import or.sopt.houme.domain.furniture.model.entity.FurnitureTag;
 import or.sopt.houme.domain.furniture.model.entity.QFurniture;
 import or.sopt.houme.domain.furniture.model.entity.QFurnitureTag;
 import or.sopt.houme.domain.furniture.model.entity.QFurnitureType;
-import or.sopt.houme.domain.house.model.taste.entity.QTag;
+import or.sopt.houme.tag.infra.persistence.QTagJpaEntity;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -37,7 +37,7 @@ public class FurnitureTagRepositoryImpl implements FurnitureTagRepositoryCustom 
         QFurnitureTag furnitureTag = QFurnitureTag.furnitureTag;
         QFurniture furniture = QFurniture.furniture;
         QFurnitureType furnitureType = QFurnitureType.furnitureType;
-        QTag tag = QTag.tag;
+        QTagJpaEntity tag = QTagJpaEntity.tagJpaEntity;
 
         return queryFactory
                 .selectFrom(furnitureTag)

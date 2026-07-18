@@ -7,8 +7,8 @@ import or.sopt.houme.domain.user.presentation.admin.controller.dto.tag.AdminTagD
 import or.sopt.houme.domain.user.presentation.admin.controller.dto.tag.AdminTagGetAllResponseDTO;
 import or.sopt.houme.domain.user.presentation.admin.controller.dto.tag.AdminTagGetResponseDTO;
 import or.sopt.houme.domain.user.presentation.admin.controller.dto.tag.AdminTagRequestDTO;
-import or.sopt.houme.domain.house.model.taste.entity.Tag;
-import or.sopt.houme.domain.house.repository.taste.tag.TagRepository;
+import or.sopt.houme.tag.domain.Tag;
+import or.sopt.houme.tag.domain.port.out.TagRepositoryPort;
 import or.sopt.houme.global.api.ErrorCode;
 import or.sopt.houme.global.api.GeneralException;
 import org.junit.jupiter.api.DisplayName;
@@ -35,7 +35,7 @@ class AdminTagServiceImplTest {
     private AdminTagServiceImpl adminTagService;
 
     @Mock
-    private TagRepository tagRepository;
+    private TagRepositoryPort tagRepository;
 
 
 
@@ -186,7 +186,7 @@ class AdminTagServiceImplTest {
         adminTagService.delete(requestDTO);
 
         // then
-        verify(tagRepository, times(1)).delete(tag);
+        verify(tagRepository, times(1)).deleteById(1L);
     }
 
 
@@ -212,7 +212,7 @@ class AdminTagServiceImplTest {
         AdminTagDeleteRequestDTO requestDTO = new AdminTagDeleteRequestDTO(1L);
         Tag tag = Tag.builder().id(1L).build();
         when(tagRepository.findById(1L)).thenReturn(Optional.of(tag));
-        doThrow(new DataIntegrityViolationException("")).when(tagRepository).delete(tag);
+        doThrow(new DataIntegrityViolationException("")).when(tagRepository).deleteById(1L);
 
         // when & then
         GeneralException exception = assertThrows(GeneralException.class, () -> {

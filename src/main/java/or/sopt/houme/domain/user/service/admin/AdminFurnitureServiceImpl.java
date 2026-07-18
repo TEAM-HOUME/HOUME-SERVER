@@ -12,8 +12,8 @@ import or.sopt.houme.domain.furniture.model.entity.FurnitureType;
 import or.sopt.houme.domain.furniture.repository.FurnitureRepository;
 import or.sopt.houme.domain.furniture.repository.FurnitureTagRepository;
 import or.sopt.houme.domain.furniture.repository.FurnitureTypeRepository;
-import or.sopt.houme.domain.house.model.taste.entity.Tag;
-import or.sopt.houme.domain.house.repository.taste.tag.TagRepository;
+import or.sopt.houme.tag.infra.persistence.TagJpaEntity;
+import or.sopt.houme.tag.infra.persistence.TagJpaRepository;
 import or.sopt.houme.global.api.ErrorCode;
 import or.sopt.houme.global.api.GeneralException;
 import or.sopt.houme.global.api.handler.AdminException;
@@ -34,7 +34,7 @@ public class AdminFurnitureServiceImpl implements AdminFurnitureService {
     private final FurnitureRepository furnitureRepository;
     private final FurnitureTagRepository furnitureTagRepository;
     private final FurnitureTypeRepository furnitureTypeRepository;
-    private final TagRepository tagRepository;
+    private final TagJpaRepository tagRepository;
     private final S3PresignedUtil s3PresignedUtil;
 
 
@@ -78,7 +78,7 @@ public class AdminFurnitureServiceImpl implements AdminFurnitureService {
     public AdminFurniturePromptCreateResponseDTO registerFurniturePrompt(AdminFurniturePromptRequestDTO dto, String contentType){
 
 
-        Tag byIdTag = tagRepository.findById(dto.tagId())
+        TagJpaEntity byIdTag = tagRepository.findById(dto.tagId())
                 .orElseThrow(()-> new GeneralException(ErrorCode.NOT_FOUND_TAG_ENTITY));
 
 
@@ -86,7 +86,7 @@ public class AdminFurnitureServiceImpl implements AdminFurnitureService {
                 .orElseThrow(()-> new GeneralException(ErrorCode.NOT_FOUND_FURNITURE));;
 
         // (furniture, tag) 유니크 제약이 있으므로, 중복 등록은 raw DB 예외 대신 명확한 409 로 사전 차단한다
-        if (furnitureTagRepository.findByFurnitureAndTag(byFurnitureNameKr, byIdTag).isPresent()) {
+        if (furnitureTagRepository.findByFurnitureAndTagId(byFurnitureNameKr, byIdTag.getId()).isPresent()) {
             throw new GeneralException(ErrorCode.ALREADY_EXIST_FURNITURE_TAG);
         }
 
@@ -154,14 +154,14 @@ public class AdminFurnitureServiceImpl implements AdminFurnitureService {
      * */
     @Override
     public AdminFurnitureTagGetDTO getFurnitureTag() {
-        List<Tag> all = tagRepository.findAll();
+        List<TagJpaEntity> all = tagRepository.findAll();
 
         List<Long> tagIds = all.stream()
-                .map(Tag::getId)
+                .map(TagJpaEntity::getId)
                 .toList();
 
         List<String> tagNames = all.stream()
-                .map(Tag::getTagNameKr)
+                .map(TagJpaEntity::getTagNameKr)
                 .toList();
 
         return new AdminFurnitureTagGetDTO(tagIds, tagNames);
@@ -210,10 +210,10 @@ public class AdminFurnitureServiceImpl implements AdminFurnitureService {
         Furniture byFurnitureNameKr = furnitureRepository.findByFurnitureNameKr(dto.furnitureNameKr())
                 .orElseThrow(()-> new GeneralException(ErrorCode.NOT_FOUND_FURNITURE));
 
-        Tag byIdTag = tagRepository.findById(dto.tagId())
+        TagJpaEntity byIdTag = tagRepository.findById(dto.tagId())
                 .orElseThrow(()-> new GeneralException(ErrorCode.NOT_FOUND_TAG_ENTITY));
 
-        FurnitureTag byFurnitureIdAndTag = furnitureTagRepository.findByFurnitureAndTag(byFurnitureNameKr, byIdTag)
+        FurnitureTag byFurnitureIdAndTag = furnitureTagRepository.findByFurnitureAndTagId(byFurnitureNameKr, byIdTag.getId())
                 .orElseThrow(()-> new GeneralException(ErrorCode.NOT_FOUND_FURNITURE_TAG));
 
         if (dto.newFurnitureNameEng() != null && !dto.newFurnitureNameEng().isBlank()){
@@ -262,10 +262,10 @@ public class AdminFurnitureServiceImpl implements AdminFurnitureService {
         Furniture byFurnitureNameKr = furnitureRepository.findByFurnitureNameKr(dto.furnitureNameKr())
                 .orElseThrow(()-> new GeneralException(ErrorCode.NOT_FOUND_FURNITURE));
 
-        Tag byIdTag = tagRepository.findById(dto.tagId())
+        TagJpaEntity byIdTag = tagRepository.findById(dto.tagId())
                 .orElseThrow(()-> new GeneralException(ErrorCode.NOT_FOUND_TAG_ENTITY));
 
-        FurnitureTag byFurnitureIdAndTag = furnitureTagRepository.findByFurnitureAndTag(byFurnitureNameKr, byIdTag)
+        FurnitureTag byFurnitureIdAndTag = furnitureTagRepository.findByFurnitureAndTagId(byFurnitureNameKr, byIdTag.getId())
                 .orElseThrow(()-> new GeneralException(ErrorCode.NOT_FOUND_FURNITURE_TAG));
 
         try {
@@ -316,10 +316,10 @@ public class AdminFurnitureServiceImpl implements AdminFurnitureService {
         Furniture byFurnitureNameKr = furnitureRepository.findByFurnitureNameKr(dto.furnitureNameKr())
                 .orElseThrow(()-> new GeneralException(ErrorCode.NOT_FOUND_FURNITURE));
 
-        Tag byIdTag = tagRepository.findById(dto.tagId())
+        TagJpaEntity byIdTag = tagRepository.findById(dto.tagId())
                 .orElseThrow(()-> new GeneralException(ErrorCode.NOT_FOUND_TAG_ENTITY));
 
-        FurnitureTag byFurnitureIdAndTag = furnitureTagRepository.findByFurnitureAndTag(byFurnitureNameKr, byIdTag)
+        FurnitureTag byFurnitureIdAndTag = furnitureTagRepository.findByFurnitureAndTagId(byFurnitureNameKr, byIdTag.getId())
                 .orElseThrow(()-> new GeneralException(ErrorCode.NOT_FOUND_FURNITURE_TAG));
 
         String furniturePrompt = byFurnitureIdAndTag.getFurniturePrompt();

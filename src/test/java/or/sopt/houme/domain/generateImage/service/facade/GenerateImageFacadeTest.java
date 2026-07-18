@@ -47,7 +47,8 @@ import or.sopt.houme.domain.generateImage.service.openai.facade.OpenAiFacade;
 import or.sopt.houme.domain.generateImage.service.prompt.PromptService;
 import or.sopt.houme.domain.generateImage.service.prompt.dto.PromptFurnitureListDTO;
 import or.sopt.houme.domain.generateImage.service.prompt.dto.PromptRequestDTO;
-import or.sopt.houme.domain.house.model.taste.entity.Tag;
+import or.sopt.houme.tag.domain.Tag;
+import or.sopt.houme.tag.infra.persistence.TagJpaEntity;
 import or.sopt.houme.domain.house.model.taste.entity.Taste;
 import or.sopt.houme.domain.house.service.taste.TagService;
 import or.sopt.houme.domain.house.service.taste.TasteService;
@@ -619,7 +620,7 @@ class GenerateImageFacadeTest {
         FurnitureTag selectedFurnitureTag = FurnitureTag.builder()
                 .id(1L)
                 .furniture(selectedFurniture)
-                .tag(selectedTag)
+                .tag(TagJpaEntity.builder().id(100L).tagPrompt("스타일 프롬프트").build())
                 .furnitureUrl("https://furniture-7")
                 .furniturePrompt("선택 가구 프롬프트")
                 .priority(1)
@@ -628,7 +629,7 @@ class GenerateImageFacadeTest {
         FurnitureTag activityFurnitureTag = FurnitureTag.builder()
                 .id(2L)
                 .furniture(activityFurniture)
-                .tag(selectedTag)
+                .tag(TagJpaEntity.builder().id(100L).tagPrompt("스타일 프롬프트").build())
                 .furnitureUrl("https://furniture-8")
                 .furniturePrompt("활동 가구 프롬프트")
                 .priority(2)
@@ -735,7 +736,7 @@ class GenerateImageFacadeTest {
         FurnitureTag furnitureTag = FurnitureTag.builder()
                 .id(1L)
                 .furniture(Furniture.builder().id(7L).build())
-                .tag(selectedTag)
+                .tag(TagJpaEntity.builder().id(100L).tagPrompt("스타일 프롬프트").build())
                 .furnitureUrl("https://furniture-7")
                 .furniturePrompt("선택 가구 프롬프트")
                 .priority(1)

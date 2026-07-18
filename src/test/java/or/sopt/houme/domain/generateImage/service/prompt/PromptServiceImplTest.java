@@ -7,8 +7,8 @@ import or.sopt.houme.domain.furniture.repository.FurnitureTagRepository;
 import or.sopt.houme.domain.house.model.entity.enums.Equilibrium;
 import or.sopt.houme.domain.generateImage.service.prompt.dto.PromptFurnitureListDTO;
 import or.sopt.houme.domain.generateImage.service.prompt.dto.PromptRequestDTO;
-import or.sopt.houme.domain.house.model.taste.entity.Tag;
-import or.sopt.houme.domain.house.repository.taste.tag.TagRepository;
+import or.sopt.houme.tag.domain.Tag;
+import or.sopt.houme.tag.domain.port.out.TagRepositoryPort;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -30,7 +30,7 @@ class PromptServiceImplTest {
     private FloorPlanRepository floorPlanRepository;
 
     @Mock
-    private TagRepository tagRepository;
+    private TagRepositoryPort tagRepository;
 
     @Mock
     private FurnitureTagRepository furnitureTagRepository;

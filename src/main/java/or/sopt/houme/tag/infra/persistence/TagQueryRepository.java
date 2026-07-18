@@ -1,28 +1,30 @@
-package or.sopt.houme.domain.house.repository.taste.tag;
+package or.sopt.houme.tag.infra.persistence;
 
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import or.sopt.houme.domain.generateImage.model.entity.QGenerateImage;
 import or.sopt.houme.domain.house.model.entity.QHouse;
 import or.sopt.houme.domain.house.model.entity.mapping.QHouseTaste;
-import or.sopt.houme.domain.house.model.taste.entity.QTag;
 import or.sopt.houme.domain.house.model.taste.entity.QTaste;
 import or.sopt.houme.domain.house.model.taste.entity.QTasteTag;
-import or.sopt.houme.domain.house.model.taste.entity.Tag;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
 
+/**
+ * 태그 클러스터 조인 조회 (QueryDSL). 기존 {@code TagRepositoryImpl} 로직을 infra 로 이관.
+ * 반환 타입은 영속 엔티티({@link TagJpaEntity})이며, 도메인 매핑은 어댑터가 수행한다.
+ */
 @Repository
 @RequiredArgsConstructor
-public class TagRepositoryImpl implements TagRepositoryCustom {
+public class TagQueryRepository {
+
     private final JPAQueryFactory queryFactory;
 
-    @Override
-    public Optional<Tag> findTagByUserIdAndImageId(Long userId, Long imageId) {
+    public Optional<TagJpaEntity> findTagByUserIdAndImageId(Long userId, Long imageId) {
         QHouse house = QHouse.house;
         QGenerateImage generateImage = QGenerateImage.generateImage;
-        QTag tag = QTag.tag;
+        QTagJpaEntity tag = QTagJpaEntity.tagJpaEntity;
         QTasteTag tasteTag = QTasteTag.tasteTag;
         QTaste taste = QTaste.taste;
         QHouseTaste houseTaste = QHouseTaste.houseTaste;
@@ -50,9 +52,8 @@ public class TagRepositoryImpl implements TagRepositoryCustom {
         );
     }
 
-    @Override
-    public Optional<Tag> findMostFrequentTagByHouseId(Long houseId) {
-        QTag tag = QTag.tag;
+    public Optional<TagJpaEntity> findMostFrequentTagByHouseId(Long houseId) {
+        QTagJpaEntity tag = QTagJpaEntity.tagJpaEntity;
         QTasteTag tasteTag = QTasteTag.tasteTag;
         QTaste taste = QTaste.taste;
         QHouseTaste houseTaste = QHouseTaste.houseTaste;
@@ -73,11 +74,9 @@ public class TagRepositoryImpl implements TagRepositoryCustom {
                 .fetchOne());
     }
 
-    // tasteId로 Tag 반환
-    @Override
-    public Optional<Tag> findTagByTasteId(Long tasteId) {
+    public Optional<TagJpaEntity> findTagByTasteId(Long tasteId) {
         QTaste taste = QTaste.taste;
-        QTag tag = QTag.tag;
+        QTagJpaEntity tag = QTagJpaEntity.tagJpaEntity;
         QTasteTag tasteTag = QTasteTag.tasteTag;
 
         return Optional.ofNullable(queryFactory

@@ -21,8 +21,8 @@ import or.sopt.houme.domain.furniture.repository.FurnitureTypeRepository;
 import or.sopt.houme.domain.house.model.entity.House;
 import or.sopt.houme.domain.house.model.entity.enums.Activity;
 import or.sopt.houme.domain.house.repository.HouseRepository;
-import or.sopt.houme.domain.house.model.taste.entity.Tag;
-import or.sopt.houme.domain.house.repository.taste.tag.TagRepository;
+import or.sopt.houme.tag.domain.Tag;
+import or.sopt.houme.tag.domain.port.out.TagRepositoryPort;
 import or.sopt.houme.domain.user.model.entity.User;
 import or.sopt.houme.domain.user.repository.UserRepository;
 import or.sopt.houme.global.api.ErrorCode;
@@ -48,7 +48,7 @@ public class FurnitureServiceImpl implements FurnitureService {
 
     private final FurnitureRepository furnitureRepository;
     private final UserRepository userRepository;
-    private final TagRepository tagRepository;
+    private final TagRepositoryPort tagRepositoryPort;
     private final HouseRepository houseRepository;
     private final FurnitureTagRepository furnitureTagRepository;
     private final FurnitureTypeRepository furnitureTypeRepository;
@@ -206,7 +206,7 @@ public class FurnitureServiceImpl implements FurnitureService {
     public FurnitureTag findFurnitureTag(User user, Long imageId, Long categoryId) {
 
         // 1. userId와 imageId로 스타일 태그 조회
-        Tag tag = tagRepository.findTagByUserIdAndImageId(user.getId(), imageId)
+        Tag tag = tagRepositoryPort.findTagByUserIdAndImageId(user.getId(), imageId)
                 .orElseThrow(() -> new TagException(ErrorCode.NOT_FOUND_TAG_ENTITY));
 
         // 2. categoryId로 furniture 객체 조회
@@ -214,7 +214,7 @@ public class FurnitureServiceImpl implements FurnitureService {
                 .orElseThrow(() -> new GeneralException(ErrorCode.NOT_FOUND_FURNITURE));
 
         // 3. tagId와 categoryId(=furnitureId)로 furnitureTag 매핑 객체 조회
-        return furnitureTagRepository.findByFurnitureAndTag(furniture, tag)
+        return furnitureTagRepository.findByFurnitureAndTagId(furniture, tag.getId())
                 .orElseThrow(() -> new GeneralException(ErrorCode.NOT_FOUND_FURNITURE_TAG));
     }
 
@@ -222,20 +222,20 @@ public class FurnitureServiceImpl implements FurnitureService {
     @Override
     public FurnitureTag findFurnitureTagForPlan(Long tagId, Long furnitureId) {
         // 1. tagId로 스타일 태그 조회
-        Tag tag = tagRepository.findById(tagId).orElseThrow(() -> new TagException(ErrorCode.NOT_FOUND_TAG_ENTITY));
+        Tag tag = tagRepositoryPort.findById(tagId).orElseThrow(() -> new TagException(ErrorCode.NOT_FOUND_TAG_ENTITY));
 
         // 2. categoryId로 furniture 객체 조회
         Furniture furniture = furnitureRepository.findById(furnitureId).orElseThrow(() -> new GeneralException(ErrorCode.NOT_FOUND_FURNITURE));
 
         // 3. tagId와 categoryId(=furnitureId)로 furnitureTag 매핑 객체 조회
-        return furnitureTagRepository.findByFurnitureAndTag(furniture, tag).orElseThrow(() -> new GeneralException(ErrorCode.NOT_FOUND_FURNITURE_TAG));
+        return furnitureTagRepository.findByFurnitureAndTagId(furniture, tag.getId()).orElseThrow(() -> new GeneralException(ErrorCode.NOT_FOUND_FURNITURE_TAG));
     }
 
     /**
      * 보조 메서드 (비즈니스 로직 가독성을 위해 분리했습니다.)
      */
     private Tag findTag(User user, Long imageId) {
-        return tagRepository.findTagByUserIdAndImageId(user.getId(), imageId)
+        return tagRepositoryPort.findTagByUserIdAndImageId(user.getId(), imageId)
                 .orElseThrow(() -> new TagException(ErrorCode.NOT_FOUND_TAG_ENTITY));
     }
 

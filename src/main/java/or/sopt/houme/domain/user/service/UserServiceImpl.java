@@ -24,11 +24,11 @@ import or.sopt.houme.domain.house.model.entity.House;
 import or.sopt.houme.domain.house.model.entity.mapping.HouseFloorPlan;
 import or.sopt.houme.domain.house.model.entity.mapping.HouseFurniture;
 import or.sopt.houme.domain.house.model.floorPlan.entity.FloorPlan;
-import or.sopt.houme.domain.house.model.taste.entity.Tag;
+import or.sopt.houme.tag.domain.Tag;
+import or.sopt.houme.tag.domain.port.out.TagRepositoryPort;
 import or.sopt.houme.domain.house.repository.HouseFloorPlanRepository;
 import or.sopt.houme.domain.house.repository.HouseFurnitureRepository;
 import or.sopt.houme.domain.house.repository.HouseRepository;
-import or.sopt.houme.domain.house.repository.taste.tag.TagRepository;
 import or.sopt.houme.domain.preference.model.entity.Factor;
 import or.sopt.houme.domain.preference.model.entity.GenerateImagePreference;
 import or.sopt.houme.domain.preference.model.entity.Preference;
@@ -83,7 +83,7 @@ public class UserServiceImpl implements UserService {
     private final HouseRepository houseRepository;
     private final HouseFloorPlanRepository houseFloorPlanRepository;
     private final HouseFurnitureRepository houseFurnitureRepository;
-    private final TagRepository tagRepository;
+    private final TagRepositoryPort tagRepositoryPort;
     private final GenerateImageRepository generateImageRepository;
     private final CreditUseCase creditUseCase;
     private final GenerateImagePreferenceRepository generateImagePreferenceRepository;
@@ -131,7 +131,7 @@ public class UserServiceImpl implements UserService {
             if (generateImage.isEmpty()) continue;
 
             // 3. 해당 house에서 가장 많이 등장한 태그 가져오기
-            Optional<Tag> representativeTag = tagRepository.findMostFrequentTagByHouseId(house.getId());
+            Optional<Tag> representativeTag = tagRepositoryPort.findMostFrequentTagByHouseId(house.getId());
             if (representativeTag.isEmpty()) continue;
 
             // 가구 도면 객체 조회 및 isMirror(= isReverse) 값 결정
@@ -282,7 +282,7 @@ public class UserServiceImpl implements UserService {
                 likes.add(null);
             }
 
-            tags.add(tagRepository.findTagByUserIdAndImageId(user.getId(), generateImage.getId())
+            tags.add(tagRepositoryPort.findTagByUserIdAndImageId(user.getId(), generateImage.getId())
                     .orElseThrow(() -> new TagException(ErrorCode.NOT_FOUND_TAG_ENTITY)));
 
             // Preference 찾기

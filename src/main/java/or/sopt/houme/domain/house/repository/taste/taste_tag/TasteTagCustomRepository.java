@@ -1,6 +1,6 @@
 package or.sopt.houme.domain.house.repository.taste.taste_tag;
 
-import or.sopt.houme.domain.house.model.taste.entity.Tag;
+import or.sopt.houme.tag.domain.Tag;
 
 import java.util.List;
 import java.util.Optional;

@@ -8,7 +8,7 @@ import or.sopt.houme.domain.furniture.model.entity.QFurnitureTag;
 import or.sopt.houme.domain.furniture.model.entity.QFurnitureType;
 import or.sopt.houme.domain.house.model.entity.QHouse;
 import or.sopt.houme.domain.house.model.entity.mapping.QHouseFurniture;
-import or.sopt.houme.domain.house.model.taste.entity.QTag;
+import or.sopt.houme.tag.infra.persistence.QTagJpaEntity;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -30,7 +30,7 @@ public class FurnitureCustomRepositoryImpl implements FurnitureCustomRepository 
     public List<Furniture> findAllWithTags() {
         QFurniture furniture = QFurniture.furniture;
         QFurnitureTag furnitureTag = QFurnitureTag.furnitureTag;
-        QTag tag = QTag.tag;
+        QTagJpaEntity tag = QTagJpaEntity.tagJpaEntity;
 
         return queryFactory
                 .selectFrom(furniture)

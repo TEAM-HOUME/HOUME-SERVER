@@ -56,7 +56,7 @@ import or.sopt.houme.domain.generateImage.service.prompt.dto.PromptFurnitureList
 import or.sopt.houme.domain.generateImage.service.prompt.dto.PromptRequestDTO;
 import or.sopt.houme.domain.generateImage.service.prompt.PromptService;
 import or.sopt.houme.domain.house.presentation.taste.dto.response.TagDTO;
-import or.sopt.houme.domain.house.model.taste.entity.Tag;
+import or.sopt.houme.tag.domain.Tag;
 import or.sopt.houme.domain.house.model.taste.entity.Taste;
 import or.sopt.houme.domain.house.service.taste.TagService;
 import or.sopt.houme.domain.house.service.taste.TasteService;

@@ -16,7 +16,7 @@ class FurnitureEntityTest {
         AdminFurnitureRequestDTO dto = new AdminFurnitureRequestDTO("의자", " test chair ", 1L);
 
         // when
-        Furniture furniture = Furniture.createByAdminFurnitureRequestDTO(dto, type);
+        Furniture furniture = Furniture.createByAdminFurnitureRequestDTO(dto.furnitureNameKr(), dto.furnitureNameEng(), type);
 
         // then
         assertThat(furniture.getFurnitureNameEng()).isEqualTo("TEST_CHAIR");

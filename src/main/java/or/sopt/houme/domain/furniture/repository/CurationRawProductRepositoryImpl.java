@@ -21,7 +21,7 @@ import or.sopt.houme.domain.furniture.model.entity.QFurnitureType;
 import or.sopt.houme.domain.furniture.model.entity.QJjym;
 import or.sopt.houme.domain.furniture.model.entity.QRecommendFurniture;
 import or.sopt.houme.domain.furniture.repository.CurationRawProductRepositoryCustom.PriceRangeFilter;
-import or.sopt.houme.domain.house.model.taste.entity.QTag;
+import or.sopt.houme.tag.infra.persistence.QTagJpaEntity;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -453,7 +453,7 @@ public class CurationRawProductRepositoryImpl implements CurationRawProductRepos
         QCurationRawProduct rawProduct = QCurationRawProduct.curationRawProduct;
         QCurationRawProductFurnitureTag mapping = QCurationRawProductFurnitureTag.curationRawProductFurnitureTag;
         QFurnitureTag furnitureTag = QFurnitureTag.furnitureTag;
-        QTag tag = QTag.tag;
+        QTagJpaEntity tag = QTagJpaEntity.tagJpaEntity;
 
         BooleanBuilder where = new BooleanBuilder();
         where.and(rawProduct.isExposed.isTrue());

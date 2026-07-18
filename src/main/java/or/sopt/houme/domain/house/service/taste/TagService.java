@@ -1,6 +1,6 @@
 package or.sopt.houme.domain.house.service.taste;
 
-import or.sopt.houme.domain.house.model.taste.entity.Tag;
+import or.sopt.houme.tag.domain.Tag;
 
 public interface TagService {
 

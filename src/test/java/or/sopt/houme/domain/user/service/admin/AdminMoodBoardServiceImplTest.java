@@ -7,10 +7,10 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import or.sopt.houme.domain.user.presentation.admin.controller.dto.moodboard.AdminMoodBoardCreateRequestDTO;
 import or.sopt.houme.domain.user.presentation.admin.controller.dto.moodboard.AdminMoodBoardCreateResponseDTO;
 import or.sopt.houme.domain.user.presentation.admin.controller.dto.moodboard.AdminMoodBoardGetAllResponseDTO;
-import or.sopt.houme.domain.house.model.taste.entity.Tag;
+import or.sopt.houme.tag.infra.persistence.TagJpaEntity;
 import or.sopt.houme.domain.house.model.taste.entity.Taste;
 import or.sopt.houme.domain.house.model.taste.entity.TasteTag;
-import or.sopt.houme.domain.house.repository.taste.tag.TagRepository;
+import or.sopt.houme.tag.infra.persistence.TagJpaRepository;
 import or.sopt.houme.domain.house.repository.taste.taste.TasteRepository;
 import or.sopt.houme.domain.house.repository.taste.taste_tag.TasteTagRepository;
 import or.sopt.houme.global.api.ErrorCode;
@@ -50,7 +50,7 @@ class AdminMoodBoardServiceImplTest {
     private TasteRepository tasteRepository;
 
     @Mock
-    private TagRepository tagRepository;
+    private TagJpaRepository tagRepository;
 
     @Mock
     private HouseTasteRepository houseTasteRepository;
@@ -64,7 +64,7 @@ class AdminMoodBoardServiceImplTest {
         // given
         AdminMoodBoardCreateRequestDTO requestDTO = new AdminMoodBoardCreateRequestDTO("jpg", "image.jpg", 1L);
         S3PresignedUrlResponseDTO presignedUrl = new S3PresignedUrlResponseDTO("uploadUrl", "imageUrl", "key", "dir");
-        Tag tag = Tag.builder().id(1L).build();
+        TagJpaEntity tag = TagJpaEntity.builder().id(1L).build();
         Taste taste = Taste.builder().id(1L).build();
 
         when(s3PresignedUtil.createPresignedUrl(any(), any(), any())).thenReturn(presignedUrl);
@@ -198,7 +198,7 @@ class AdminMoodBoardServiceImplTest {
         // given
         AdminMoodBoardCreateRequestDTO requestDTO = new AdminMoodBoardCreateRequestDTO("jpg", "image.jpg", 1L);
         S3PresignedUrlResponseDTO presignedUrl = new S3PresignedUrlResponseDTO("uploadUrl", "imageUrl", "key", "dir");
-        Tag tag = Tag.builder().id(1L).build();
+        TagJpaEntity tag = TagJpaEntity.builder().id(1L).build();
 
         when(s3PresignedUtil.createPresignedUrl(any(), any(), any())).thenReturn(presignedUrl);
         when(tagRepository.findById(1L)).thenReturn(Optional.of(tag));

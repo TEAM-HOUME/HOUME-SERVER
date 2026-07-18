@@ -1,6 +1,6 @@
 package or.sopt.houme.domain.house.presentation.taste.dto.response;
 
-import or.sopt.houme.domain.house.model.taste.entity.Tag;
+import or.sopt.houme.tag.domain.Tag;
 
 public record TagDTO(
         Long id,

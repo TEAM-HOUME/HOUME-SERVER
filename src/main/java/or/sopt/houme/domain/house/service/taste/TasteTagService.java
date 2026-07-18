@@ -1,7 +1,7 @@
 package or.sopt.houme.domain.house.service.taste;
 
 import or.sopt.houme.domain.house.presentation.taste.dto.response.TagDTO;
-import or.sopt.houme.domain.house.model.taste.entity.Tag;
+import or.sopt.houme.tag.domain.Tag;
 
 import java.util.List;
 

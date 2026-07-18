@@ -9,8 +9,8 @@ import or.sopt.houme.domain.furniture.repository.FurnitureTagRepository;
 import or.sopt.houme.domain.house.model.entity.enums.Equilibrium;
 import or.sopt.houme.domain.generateImage.service.prompt.dto.PromptFurnitureListDTO;
 import or.sopt.houme.domain.generateImage.service.prompt.dto.PromptRequestDTO;
-import or.sopt.houme.domain.house.model.taste.entity.Tag;
-import or.sopt.houme.domain.house.repository.taste.tag.TagRepository;
+import or.sopt.houme.tag.domain.Tag;
+import or.sopt.houme.tag.domain.port.out.TagRepositoryPort;
 import or.sopt.houme.global.api.ErrorCode;
 import or.sopt.houme.global.api.GeneralException;
 import or.sopt.houme.global.api.handler.TagException;
@@ -25,7 +25,7 @@ public class PromptServiceImpl implements PromptService {
 
     private final FloorPlanRepository floorPlanRepository;
     private final FurnitureTagRepository furnitureTagRepository;
-    private final TagRepository tagRepository;
+    private final TagRepositoryPort tagRepositoryPort;
 
     @Override
     public String makePrompt(PromptRequestDTO requestDTO) {
@@ -40,7 +40,7 @@ public class PromptServiceImpl implements PromptService {
         String equilibriumPrompt = equilibrium.getDescription();
 
         // 취향 프롬프트 가져오기
-        Tag tagId = tagRepository.findById(requestDTO.tagId())
+        Tag tagId = tagRepositoryPort.findById(requestDTO.tagId())
                 .orElseThrow(() -> new TagException(ErrorCode.NOT_FOUND_TAG_ENTITY));
         String tagPrompt = tagId.getTagPrompt();
 

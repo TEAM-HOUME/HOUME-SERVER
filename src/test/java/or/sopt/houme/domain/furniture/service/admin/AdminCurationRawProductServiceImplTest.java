@@ -35,7 +35,7 @@ import or.sopt.houme.domain.furniture.repository.CurationRawProductFurnitureTagR
 import or.sopt.houme.domain.furniture.repository.CurationRawProductRepository;
 import or.sopt.houme.domain.furniture.repository.FurnitureRepository;
 import or.sopt.houme.domain.furniture.repository.FurnitureTagRepository;
-import or.sopt.houme.domain.house.model.taste.entity.Tag;
+import or.sopt.houme.tag.infra.persistence.TagJpaEntity;
 import org.springframework.context.ApplicationEventPublisher;
 import or.sopt.houme.global.api.ErrorCode;
 import or.sopt.houme.global.api.GeneralException;
@@ -451,7 +451,7 @@ class AdminCurationRawProductServiceImplTest {
                 .build();
         ReflectionTestUtils.setField(furniture, "id", 5L);
 
-        Tag tag = Tag.of("minimal", 1, "미니멀", "prompt");
+        TagJpaEntity tag = TagJpaEntity.builder().tagName("minimal").priority(1).tagNameKr("미니멀").tagPrompt("prompt").build();
         ReflectionTestUtils.setField(tag, "id", 7L);
 
         FurnitureTag furnitureTag = FurnitureTag.builder()
