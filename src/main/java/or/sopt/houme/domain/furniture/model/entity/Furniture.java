@@ -5,7 +5,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import or.sopt.houme.domain.user.presentation.admin.controller.dto.furniture.AdminFurnitureRequestDTO;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -54,10 +53,10 @@ public class Furniture {
     }
 
 
-    public static Furniture createByAdminFurnitureRequestDTO(AdminFurnitureRequestDTO dto, FurnitureType furnitureType){
+    public static Furniture createByAdminFurnitureRequestDTO(String furnitureNameKr, String furnitureNameEng, FurnitureType furnitureType){
         return Furniture.builder()
-                .furnitureNameKr(dto.furnitureNameKr())
-                .furnitureNameEng(normalizeEngName(dto.furnitureNameEng()))
+                .furnitureNameKr(furnitureNameKr)
+                .furnitureNameEng(normalizeEngName(furnitureNameEng))
                 .furnitureType(furnitureType)
                 .build();
     }

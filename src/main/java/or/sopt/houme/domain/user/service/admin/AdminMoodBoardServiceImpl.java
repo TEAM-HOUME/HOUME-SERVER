@@ -63,7 +63,8 @@ public class AdminMoodBoardServiceImpl implements AdminMoodBoardService {
         }
 
         // 2. 이미지를 기반으로 taste와 tag 데이터를 생성 및 조회
-        Taste taste = Taste.createByPreSignedURL(presignedUrl,requestDTO);
+        Taste taste = Taste.createByPreSignedURL(presignedUrl.publicUrl(), presignedUrl.keyName(),
+                requestDTO.originalFilename(), requestDTO.imageExtension());
         Tag byIdTag = tagRepository.findById(requestDTO.tagId())
                 .orElseThrow(()-> new GeneralException(ErrorCode.NOT_FOUND_TAG_ENTITY));
 

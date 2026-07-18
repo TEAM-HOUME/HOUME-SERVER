@@ -57,7 +57,7 @@ public class AdminFurnitureServiceImpl implements AdminFurnitureService {
         furnitureType = furnitureTypeRepository.findById(dto.furnitureType())
                 .orElseThrow(()-> new AdminException(ErrorCode.NOT_FOUND_FURNITURE_TYPE));
 
-        Furniture newFurniture = Furniture.createByAdminFurnitureRequestDTO(dto, furnitureType);
+        Furniture newFurniture = Furniture.createByAdminFurnitureRequestDTO(dto.furnitureNameKr(), dto.furnitureNameEng(), furnitureType);
 
         try {
             furnitureRepository.save(newFurniture);
@@ -99,7 +99,7 @@ public class AdminFurnitureServiceImpl implements AdminFurnitureService {
         }
 
         FurnitureTag newFurnitureTage = FurnitureTag.createByAdminFurniturePromptRequestDTO(
-                dto,
+                dto.prompt(),
                 byFurnitureNameKr,
                 byIdTag,
                 presignedUrl.publicUrl(),

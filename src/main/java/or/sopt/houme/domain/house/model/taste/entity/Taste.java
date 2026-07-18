@@ -2,8 +2,6 @@ package or.sopt.houme.domain.house.model.taste.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-import or.sopt.houme.domain.user.presentation.admin.controller.dto.moodboard.AdminMoodBoardCreateRequestDTO;
-import or.sopt.houme.global.dto.S3PresignedUrlResponseDTO;
 
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -34,12 +32,12 @@ public class Taste {
 
 
 
-    public static Taste createByPreSignedURL(S3PresignedUrlResponseDTO presignedUrl, AdminMoodBoardCreateRequestDTO requestDTO){
+    public static Taste createByPreSignedURL(String url, String filename, String originalFilename, String fileExtension){
         return Taste.builder()
-                .url(presignedUrl.publicUrl())
-                .filename(presignedUrl.keyName())
-                .originalFilename(requestDTO.originalFilename())
-                .fileExtension(requestDTO.imageExtension())
+                .url(url)
+                .filename(filename)
+                .originalFilename(originalFilename)
+                .fileExtension(fileExtension)
                 .build();
     }
 }

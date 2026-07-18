@@ -112,7 +112,7 @@ public class AdminTagServiceImpl implements AdminTagService {
             }
         }
 
-        tag.update(dto);
+        tag.update(dto.newTagNameEng(), dto.newPriority(), dto.newTagPrompt(), dto.newTagNameKr());
     }
 
 
