@@ -19,6 +19,7 @@ import or.sopt.houme.global.api.GeneralException;
 import or.sopt.houme.global.api.handler.AdminException;
 import or.sopt.houme.global.dto.S3PresignedUrlResponseDTO;
 import or.sopt.houme.global.util.S3PresignedUtil;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -345,6 +346,7 @@ public class AdminFurnitureServiceImpl implements AdminFurnitureService {
      * FurnitureType 등록 메서드
      */
     @Override
+    @CacheEvict(value = "curationFilterMetadataCache", allEntries = true)
     public void registerFurnitureType(AdminFurnitureTypeRequest request) {
 
         // 한글명이 이미 있는지 확인
@@ -370,6 +372,7 @@ public class AdminFurnitureServiceImpl implements AdminFurnitureService {
      * FurnitureType 삭제 메서드
      */
     @Override
+    @CacheEvict(value = "curationFilterMetadataCache", allEntries = true)
     public void deleteFurnitureType(long furnitureTypeId) {
 
         FurnitureType type = furnitureTypeRepository.findById(furnitureTypeId)
@@ -387,6 +390,7 @@ public class AdminFurnitureServiceImpl implements AdminFurnitureService {
      * FurnitureType 수정 메서드
      */
     @Override
+    @CacheEvict(value = "curationFilterMetadataCache", allEntries = true)
     public void updateFurnitureType(AdminUpdateFurnitureTypeRequest request) {
 
         FurnitureType furnitureType = furnitureTypeRepository.findById(request.id())

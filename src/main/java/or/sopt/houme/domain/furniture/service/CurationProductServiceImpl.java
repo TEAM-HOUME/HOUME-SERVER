@@ -32,6 +32,7 @@ import or.sopt.houme.global.api.handler.FurnitureException;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -60,6 +61,7 @@ public class CurationProductServiceImpl implements CurationProductService {
     private final JjymRepository jjymRepository;
 
     @Override
+    @Cacheable(value = "curationFilterMetadataCache")
     public CurationProductFilterResponse getFilterMetadata() {
         return new CurationProductFilterResponse(
                 getFurnitureTypeFilters(),
