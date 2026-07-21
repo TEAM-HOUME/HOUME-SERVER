@@ -72,6 +72,14 @@
 - **도메인 1개 사이클:** 안전망 통합테스트 선행 → 순수 모델+포트(domain)/JpaEntity·어댑터·QueryDSL(infra)/서비스→application(JpaEntity 참조 0)/나가는 cross-module @ManyToOne→Long 절단/슬라이스 ArchUnit → 타깃+전체 green → 커밋·푸시 → 이 문서+태스크 갱신.
 - **참고(조사완료, banner 차례에 활용):** BannerServiceImpl은 CurationRawProduct(getId/getProductId), CurationRawProductColor(색상명), RecommendFurniture/Jjym(좋아요), ProductColorResponse, OtherStyleDetailProductResponse.from(rawProduct,...) 에 의존. banner 자체 aggregate 는 Banner/BannerCurationRawProduct(+BannerType) 로 작음. BannerCurationRawProduct→CurationRawProduct seam 절단(curation_raw_product_id Long) + curation 조회 포트 소비로 전환 예정.
 
+### 3단계 진행현황 (도메인별)
+- **user** (진행중):
+  - ✅ **U-1 UserJpaEntity 리네임 완료 — 커밋 `0232a36`.** `User` @Entity → `or.sopt.houme.user.infra.persistence.UserJpaEntity`. QUser→QUserJpaEntity(`QUser.user`→`QUserJpaEntity.userJpaEntity`). enum(Gender/Role/SocialType/UserStatus)은 `domain.user.model.entity` 유지. 99파일, 무동작변경, 전체 green(9m55s). **주의:** User는 인증 principal이라 대부분 서비스 시그니처가 지금 `UserJpaEntity`(임시) — 순수 User로의 시그니처 이관은 Sweep 2.
+    - 리네임 함정 기록: 소비처가 명시 import뿐 아니라 **와일드카드 `entity.*`·FQN**도 있어 3패스 필요했음. import 삽입 perl은 `perl -0777 -i -pe`(‐pi ‐e 형식은 실패) 사용. 문자열 `"User-Agent"`/`"User's"` 사후복구.
+  - ⬜ **U-2 (다음):** 순수 `user.domain.User`(스칼라/enum) + `UserRepositoryPort`/`UserPersistenceAdapter`/`UserMapper` + 소비 query port. UserArchitectureTest. (통합 안전망은 U-3 로직변경 전 작성)
+  - ⬜ **U-3 (Sweep 2):** 서비스→application, principal 시그니처 `UserJpaEntity`→순수 `User`/userId 이관, mypage-history 등 cross-domain read를 각 도메인 query port로.
+- **잔여 도메인:** furniture/curation → house(12b-2) → generateImage → preference → banner → generateImageResult. 각 도메인 진입 시 incoming `@ManyToOne UserJpaEntity`→userId(Long) 절단(house/furniture/credit PaymentBtnClickLog).
+
 ### 4단계 gradle 7모듈 물리 분리 → dev 배포 검증(사용자) → prod 릴리즈(사용자)
 
 ## 재개 체크리스트
