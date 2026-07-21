@@ -64,7 +64,15 @@
 - `GenerateImageFacade`가 taste 3서비스(TasteService/TagService/TasteTagService)를 깊게 소비 → UseCase로 재배선.
 - 엔티티→presentation DTO 역방향 import 제거: `Taste.createByPreSignedURL`(AdminMoodBoardCreateRequestDTO), `Tag.update`(AdminTagUpdateRequestDTO).
 
-### 3단계 나머지 도메인 → 4단계 gradle 7모듈 물리 분리 → dev 배포 검증 → prod 릴리즈
+## 3단계 실행계획 (확정 2026-07-21, 사용자 승인)
+- **목표 모듈 = 레이어 기반 7모듈**(문서 §4): api/application/auth/infra/external/domain/common. `application`은 `infra`를 의존하지 않음 → **모든 서비스가 JpaEntity 참조 불가**. 즉 남은 전 도메인 **정석 완전 헥사고날화** 필요(단순 seam 절단 아님).
+- **작업 원칙**(사용자 지시): ① 커밋+푸시까지만(배포·릴리즈는 사용자) ② **각 API 영역 리팩터 전 통합테스트 선행**(계약 무결성 방어선) ③ 갈림길은 추천안으로 진행+기록(멈추지 않음).
+- **도메인 순서 재조정(2026-07-21):** 원래 banner→...였으나, **banner가 furniture/curation의 읽기 소비자**(CurationRawProduct 상품/색상, Jjym/RecommendFurniture 좋아요)임을 발견 → 의존도 기반으로 변경. 서비스들이 서로 cross-domain read로 얽혀 있어(순환), cross-domain read는 **소유 도메인의 조회 포트(inbound query port)** 를 infra 어댑터가 read-model 반환으로 구현해 해소(strangler).
+  - **확정 순서: user → furniture/curation → house(12b-2) → generateImage → preference → banner → generateImageResult.** (foundational 먼저; banner는 curation 의존이라 후순위)
+- **도메인 1개 사이클:** 안전망 통합테스트 선행 → 순수 모델+포트(domain)/JpaEntity·어댑터·QueryDSL(infra)/서비스→application(JpaEntity 참조 0)/나가는 cross-module @ManyToOne→Long 절단/슬라이스 ArchUnit → 타깃+전체 green → 커밋·푸시 → 이 문서+태스크 갱신.
+- **참고(조사완료, banner 차례에 활용):** BannerServiceImpl은 CurationRawProduct(getId/getProductId), CurationRawProductColor(색상명), RecommendFurniture/Jjym(좋아요), ProductColorResponse, OtherStyleDetailProductResponse.from(rawProduct,...) 에 의존. banner 자체 aggregate 는 Banner/BannerCurationRawProduct(+BannerType) 로 작음. BannerCurationRawProduct→CurationRawProduct seam 절단(curation_raw_product_id Long) + curation 조회 포트 소비로 전환 예정.
+
+### 4단계 gradle 7모듈 물리 분리 → dev 배포 검증(사용자) → prod 릴리즈(사용자)
 
 ## 재개 체크리스트
 1. `git switch feat/#582/hexagonal-multimodule` (원격에 최신) 확인.
