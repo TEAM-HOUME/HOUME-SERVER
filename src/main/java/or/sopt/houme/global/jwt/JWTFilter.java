@@ -11,7 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 import or.sopt.houme.domain.user.presentation.controller.dto.CustomUserDetails;
 import or.sopt.houme.domain.user.presentation.controller.dto.CustomUserDetailsService;
 import or.sopt.houme.domain.user.model.entity.Role;
-import or.sopt.houme.domain.user.model.entity.User;
+import or.sopt.houme.user.infra.persistence.UserJpaEntity;
 import or.sopt.houme.domain.user.repository.BlacklistTokenRepository;
 import or.sopt.houme.global.api.ErrorCode;
 import or.sopt.houme.global.config.JWTConfig;

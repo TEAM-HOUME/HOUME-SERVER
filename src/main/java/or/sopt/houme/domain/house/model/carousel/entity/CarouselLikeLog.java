@@ -17,7 +17,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import or.sopt.houme.domain.furniture.model.entity.CurationRawProduct;
-import or.sopt.houme.domain.user.model.entity.User;
+import or.sopt.houme.user.infra.persistence.UserJpaEntity;
 import or.sopt.houme.global.entity.BaseEntity;
 
 @Entity
@@ -34,7 +34,7 @@ public class CarouselLikeLog extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
-    private User user;
+    private UserJpaEntity user;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "curation_raw_product_id", nullable = false)
@@ -44,7 +44,7 @@ public class CarouselLikeLog extends BaseEntity {
     @Column(name = "action", nullable = false)
     private CarouselLikeLogAction action;
 
-    public static CarouselLikeLog of(User user, CurationRawProduct curationRawProduct, CarouselLikeLogAction action) {
+    public static CarouselLikeLog of(UserJpaEntity user, CurationRawProduct curationRawProduct, CarouselLikeLogAction action) {
         return CarouselLikeLog.builder()
                 .user(user)
                 .curationRawProduct(curationRawProduct)

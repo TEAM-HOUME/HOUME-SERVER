@@ -39,7 +39,7 @@ import or.sopt.houme.domain.preference.repository.GenerateImagePreferenceReposit
 import or.sopt.houme.domain.preference.repository.PreferenceFactorRepository;
 import or.sopt.houme.domain.preference.repository.PreferenceRepository;
 import or.sopt.houme.domain.user.model.entity.Gender;
-import or.sopt.houme.domain.user.model.entity.User;
+import or.sopt.houme.user.infra.persistence.UserJpaEntity;
 import or.sopt.houme.domain.user.presentation.controller.dto.ImageHistoriesResultPageResponse;
 import or.sopt.houme.domain.user.presentation.controller.dto.MyPageGeneratedImageV2Response;
 import or.sopt.houme.domain.user.presentation.controller.dto.MyPageInfoResponse;
@@ -103,8 +103,8 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional(readOnly = true)
-    public MyPageInfoResponse getMyPageInfo(User user) {
-        User findUser = findUser(user);
+    public MyPageInfoResponse getMyPageInfo(UserJpaEntity user) {
+        UserJpaEntity findUser = findUser(user);
         String name = findUser.getDisplayName();
         Long creditCount = creditUseCase.countActive(findUser.getId());
         return MyPageInfoResponse.of(findUser.getId(), name, creditCount, findUser.getEmail());
@@ -112,15 +112,15 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional(readOnly = true)
-    public MyPageProfileResponse getMyPageProfile(User user) {
-        User findUser = findUser(user);
+    public MyPageProfileResponse getMyPageProfile(UserJpaEntity user) {
+        UserJpaEntity findUser = findUser(user);
         return MyPageProfileResponse.from(findUser);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public UserImageHistoryListResponse getUserImageHistoryList(User user) {
-        User findUser = findUser(user);
+    public UserImageHistoryListResponse getUserImageHistoryList(UserJpaEntity user) {
+        UserJpaEntity findUser = findUser(user);
 
         // 1. 유저가 생성한 HouseJpaEntity 목록 조회 (isValid == true)
         List<HouseJpaEntity> houses = houseRepository.findValidHouseByUserId(findUser.getId());
@@ -162,8 +162,8 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     @Transactional(readOnly = true)
-    public MyPageGeneratedImageV2Response getUserGeneratedImageHistoryListV2(User user) {
-        User findUser = findUser(user);
+    public MyPageGeneratedImageV2Response getUserGeneratedImageHistoryListV2(UserJpaEntity user) {
+        UserJpaEntity findUser = findUser(user);
         List<GenerateImage> generateImages = generateImageRepository.findAllByUserIdWithHouseAndBanner(findUser.getId());
 
         if (generateImages.isEmpty()) {
@@ -243,8 +243,8 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional(readOnly = true)
-    public ImageHistoriesResultPageResponse getImageHistoryResultPage(User user, Long houseId) {
-        User findUser = findUser(user);
+    public ImageHistoriesResultPageResponse getImageHistoryResultPage(UserJpaEntity user, Long houseId) {
+        UserJpaEntity findUser = findUser(user);
 
         // 1. house, tag 조회
         HouseJpaEntity house = houseRepository.findById(houseId)
@@ -335,9 +335,9 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public String updateUser(User user, String name, Gender gender, LocalDate birthday) {
+    public String updateUser(UserJpaEntity user, String name, Gender gender, LocalDate birthday) {
 
-        User findUser = findUser(user);
+        UserJpaEntity findUser = findUser(user);
         findUser.updateUserFromSignUp(name, birthday, gender);
 
         return createSignUpCreditAndGetDisplayName(findUser);
@@ -345,7 +345,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional(propagation = Propagation.NOT_SUPPORTED)
-    public String updateUserV2(User user, String nickname, Gender gender, LocalDate birthday) {
+    public String updateUserV2(UserJpaEntity user, String nickname, Gender gender, LocalDate birthday) {
         Long userId = user.getId();
         findUser(user);
 
@@ -362,12 +362,12 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional(propagation = Propagation.NOT_SUPPORTED)
-    public MyPageProfileResponse updateMyPageProfile(User user, String nickname, Gender gender, LocalDate birthday) {
+    public MyPageProfileResponse updateMyPageProfile(UserJpaEntity user, String nickname, Gender gender, LocalDate birthday) {
         Long userId = user.getId();
         findUser(user);
 
         if (nickname == null) {
-            User updatedUser = userNicknameTagTransactionService.updateMyPageProfile(
+            UserJpaEntity updatedUser = userNicknameTagTransactionService.updateMyPageProfile(
                     userId,
                     null,
                     null,
@@ -378,7 +378,7 @@ public class UserServiceImpl implements UserService {
         }
 
         return executeWithNicknameTagRetry(nickname, nicknameTag -> {
-            User updatedUser = userNicknameTagTransactionService.updateMyPageProfile(
+            UserJpaEntity updatedUser = userNicknameTagTransactionService.updateMyPageProfile(
                     userId,
                     nickname,
                     nicknameTag,
@@ -404,7 +404,7 @@ public class UserServiceImpl implements UserService {
         throw new UserException(ErrorCode.NICKNAME_TAG_GENERATION_FAILED);
     }
 
-    private String createSignUpCreditAndGetDisplayName(User findUser) {
+    private String createSignUpCreditAndGetDisplayName(UserJpaEntity findUser) {
         creditUseCase.grant(findUser.getId(), SIGN_UP_CREDIT_COUNT);
         return findUser.getDisplayName();
     }
@@ -412,7 +412,7 @@ public class UserServiceImpl implements UserService {
     // 이미지 생성 이력 저장
     @Transactional
     @Override
-    public void updateHasGeneratedImage(User user) {
+    public void updateHasGeneratedImage(UserJpaEntity user) {
         user.updateHasGeneratedImage();
 
         userRepository.save(user);
@@ -756,7 +756,7 @@ public class UserServiceImpl implements UserService {
                 .orElse(null);
     }
 
-    private User findUser(User user) {
+    private UserJpaEntity findUser(UserJpaEntity user) {
         return userRepository.findById(user.getId()).orElseThrow(() -> new UserException(ErrorCode.USER_NOT_FOUND));
     }
 }

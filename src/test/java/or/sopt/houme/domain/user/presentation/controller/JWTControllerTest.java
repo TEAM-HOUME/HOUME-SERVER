@@ -2,6 +2,7 @@ package or.sopt.houme.domain.user.presentation.controller;
 
 import or.sopt.houme.domain.user.presentation.controller.dto.CustomUserDetails;
 import or.sopt.houme.domain.user.model.entity.*;
+import or.sopt.houme.user.infra.persistence.UserJpaEntity;
 import or.sopt.houme.domain.user.service.JWTService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -43,7 +44,7 @@ class JWTControllerTest {
 
     @BeforeEach
     void initUser() {
-        User user = User.builder()
+        UserJpaEntity user = UserJpaEntity.builder()
                 .name("테스트유저")
                 .email("test" + UUID.randomUUID() + "@example.com")
                 .password("encoded-password")

@@ -12,6 +12,7 @@ import or.sopt.houme.domain.user.presentation.controller.dto.KakaoLoginResponse;
 import or.sopt.houme.domain.user.presentation.controller.dto.KaKaoOAuthTokenDTO;
 import or.sopt.houme.domain.user.presentation.controller.dto.KaKaoUserInfoResponse;
 import or.sopt.houme.domain.user.model.entity.*;
+import or.sopt.houme.user.infra.persistence.UserJpaEntity;
 import or.sopt.houme.domain.user.model.entity.record.SignupSession;
 import or.sopt.houme.domain.user.repository.BlacklistTokenRepository;
 import or.sopt.houme.domain.user.repository.RefreshTokenRepository;
@@ -158,7 +159,7 @@ public class OAuthService {
         }
 
         // 회원정보가 존재하는 경우 -> 회원 정보를 기반으로 액세스토큰을 발급하여 헤더에 넣습니다
-        User byEmail = userRepository.findByEmail(email)
+        UserJpaEntity byEmail = userRepository.findByEmail(email)
                 .orElseThrow(()-> new UserException(ErrorCode.USER_NOT_FOUND));
 
         issueTokens(byEmail, response, LoginType.LOGIN);
@@ -192,7 +193,7 @@ public class OAuthService {
             throw new UserException(ErrorCode.EMAIL_ALREADY_EXISTS);
         }
 
-        User savedUser = createUserWithNicknameTagRetry(signupSession, nickname, gender, birthday);
+        UserJpaEntity savedUser = createUserWithNicknameTagRetry(signupSession, nickname, gender, birthday);
         issueTokens(savedUser, response, LoginType.SIGN_UP);
         return savedUser.getDisplayName();
     }
@@ -216,8 +217,8 @@ public class OAuthService {
             throw new UserException(ErrorCode.EMAIL_ALREADY_EXISTS);
         }
 
-        User savedUser = userRepository.save(
-                User.builder()
+        UserJpaEntity savedUser = userRepository.save(
+                UserJpaEntity.builder()
                         .password(null)
                         .email(signupSession.email())
                         .name(name)
@@ -242,7 +243,7 @@ public class OAuthService {
         return savedUser.getName();
     }
 
-    private User createUserWithNicknameTagRetry(
+    private UserJpaEntity createUserWithNicknameTagRetry(
             SignupSession signupSession,
             String nickname,
             Gender gender,
@@ -268,7 +269,7 @@ public class OAuthService {
         throw new UserException(ErrorCode.NICKNAME_TAG_GENERATION_FAILED);
     }
 
-    private void issueTokens(User savedUser, HttpServletResponse response, LoginType loginType) {
+    private void issueTokens(UserJpaEntity savedUser, HttpServletResponse response, LoginType loginType) {
         String access = jwtUtil.createJwt("access", savedUser.getId(), savedUser.getRole().toString(), jwtConfig.getAccessTokenValidityInSeconds());
         String refresh = jwtUtil.createJwt("refresh", savedUser.getId(), savedUser.getRole().toString(), jwtConfig.getRefreshTokenValidityInSeconds());
 

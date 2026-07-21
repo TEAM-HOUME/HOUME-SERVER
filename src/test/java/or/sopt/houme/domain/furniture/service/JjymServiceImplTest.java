@@ -11,7 +11,7 @@ import or.sopt.houme.domain.furniture.repository.CurationRawProductColorReposito
 import or.sopt.houme.domain.furniture.repository.CurationRawProductRepository;
 import or.sopt.houme.domain.furniture.repository.JjymRepository;
 import or.sopt.houme.domain.furniture.repository.RecommendFurnitureRepository;
-import or.sopt.houme.domain.user.model.entity.User;
+import or.sopt.houme.user.infra.persistence.UserJpaEntity;
 import or.sopt.houme.domain.user.repository.UserRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -46,7 +46,7 @@ class JjymServiceImplTest {
     @Test
     @DisplayName("raw product 기준 찜 토글 시 recommend furniture가 없으면 생성 후 찜 저장한다")
     void rawProductJjymToggle_createsRecommendFurnitureWhenMissing() {
-        User user = User.builder().id(1L).build();
+        UserJpaEntity user = UserJpaEntity.builder().id(1L).build();
         CurationRawProduct rawProduct = CurationRawProduct.builder()
                 .id(10L)
                 .source("soozip")
@@ -81,7 +81,7 @@ class JjymServiceImplTest {
     @Test
     @DisplayName("raw product 기반 찜 목록 조회 시 색상, 가격, 찜 개수를 포함해 반환한다")
     void getMyRawProductJjyms_returnsRawProductMetadata() {
-        User user = User.builder().id(1L).build();
+        UserJpaEntity user = UserJpaEntity.builder().id(1L).build();
         RecommendFurniture recommendFurniture = RecommendFurniture.builder()
                 .id(20L)
                 .furnitureProductId(1000L)

@@ -3,7 +3,7 @@ package or.sopt.houme.domain.house.model.address.entity;
 import jakarta.persistence.*;
 import lombok.*;
 import or.sopt.houme.domain.house.presentation.address.dto.request.AddressRequest;
-import or.sopt.houme.domain.user.model.entity.User;
+import or.sopt.houme.user.infra.persistence.UserJpaEntity;
 
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -24,10 +24,10 @@ public class Address {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
-    private User user;
+    private UserJpaEntity user;
 
     // 생성 정적 메서드
-    public static Address create(User user, AddressRequest request) {
+    public static Address create(UserJpaEntity user, AddressRequest request) {
         return Address.builder()
                 .sigungu(request.sigungu())
                 .roadName(request.roadName())

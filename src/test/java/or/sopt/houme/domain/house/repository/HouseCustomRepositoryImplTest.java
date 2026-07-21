@@ -5,6 +5,7 @@ import or.sopt.houme.domain.generateImage.model.entity.GenerateImage;
 import or.sopt.houme.house.infra.persistence.HouseJpaEntity;
 import or.sopt.houme.domain.house.model.entity.enums.Activity;
 import or.sopt.houme.domain.user.model.entity.*;
+import or.sopt.houme.user.infra.persistence.UserJpaEntity;
 import or.sopt.houme.global.config.QuerydslConfig;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -29,14 +30,14 @@ class HouseCustomRepositoryImplTest {
     @Autowired
     private HouseCustomRepositoryImpl houseCustomRepositoryImpl;
 
-    private User mockUser;
+    private UserJpaEntity mockUser;
     private HouseJpaEntity mockHouse;
     private GenerateImage mockGenerateImage;
 
     @BeforeEach
     void setUp() {
-        // 🧪 User 생성 및 저장
-        mockUser = User.builder()
+        // 🧪 UserJpaEntity 생성 및 저장
+        mockUser = UserJpaEntity.builder()
                 .name("테스트유저")
                 .birthday(LocalDate.of(1999, 12, 31))
                 .gender(Gender.MALE)

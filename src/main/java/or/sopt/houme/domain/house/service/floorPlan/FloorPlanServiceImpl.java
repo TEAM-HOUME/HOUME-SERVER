@@ -19,7 +19,7 @@ import or.sopt.houme.domain.house.model.floorPlan.vo.FloorPlanImageItem;
 import or.sopt.houme.domain.house.repository.floorPlan.FloorPlanRepository;
 import or.sopt.houme.domain.house.model.entity.enums.Form;
 import or.sopt.houme.domain.house.model.entity.enums.Structure;
-import or.sopt.houme.domain.user.model.entity.User;
+import or.sopt.houme.user.infra.persistence.UserJpaEntity;
 import or.sopt.houme.domain.user.util.floorplan.FloorPlanEquilibriumJsonCodec;
 import or.sopt.houme.domain.user.util.floorplan.FloorPlanFormJsonCodec;
 import or.sopt.houme.domain.user.util.floorplan.FloorPlanImageJsonCodec;
@@ -69,7 +69,7 @@ public class FloorPlanServiceImpl implements FloorPlanService {
     }
 
     @Override
-    public RecentFloorPlanResponse getRecentFloorPlan(User user) {
+    public RecentFloorPlanResponse getRecentFloorPlan(UserJpaEntity user) {
         if (user == null) {
             return RecentFloorPlanResponse.noRecent();
         }
@@ -112,7 +112,7 @@ public class FloorPlanServiceImpl implements FloorPlanService {
             Form residenceType,
             Structure layoutType,
             Equilibrium equilibrium,
-            User user
+            UserJpaEntity user
     ) {
         validateSize(size);
 
@@ -269,7 +269,7 @@ public class FloorPlanServiceImpl implements FloorPlanService {
         return floorPlans.stream().limit(size).toList();
     }
 
-    private Long resolveLatestFloorPlanId(User user) {
+    private Long resolveLatestFloorPlanId(UserJpaEntity user) {
         if (user == null) {
             return null;
         }

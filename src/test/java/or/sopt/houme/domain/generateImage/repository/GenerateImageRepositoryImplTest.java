@@ -9,6 +9,7 @@ import or.sopt.houme.domain.generateImage.model.entity.GenerateImageUsedProduct;
 import or.sopt.houme.house.infra.persistence.HouseJpaEntity;
 import or.sopt.houme.domain.house.model.entity.enums.Activity;
 import or.sopt.houme.domain.user.model.entity.*;
+import or.sopt.houme.user.infra.persistence.UserJpaEntity;
 import or.sopt.houme.global.config.QuerydslConfig;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -37,13 +38,13 @@ class GenerateImageRepositoryImplTest {
     @Autowired
     private GenerateImageRepositoryImpl generateImageRepositoryImpl;
 
-    private User user;
+    private UserJpaEntity user;
     private HouseJpaEntity house;
     private GenerateImage generateImage;
 
     @BeforeEach
     void setUp() {
-        user = User.builder()
+        user = UserJpaEntity.builder()
                 .name("테스트유저")
                 .email("test+" + UUID.randomUUID() + "@email.com")
                 .password("1234")

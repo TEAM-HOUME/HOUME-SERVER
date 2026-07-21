@@ -14,7 +14,7 @@ import or.sopt.houme.domain.furniture.service.CurationRawProductService;
 import or.sopt.houme.domain.furniture.service.FurnitureService;
 import or.sopt.houme.domain.furniture.service.ImageHashService;
 import or.sopt.houme.domain.furniture.service.NaverShopService;
-import or.sopt.houme.domain.user.model.entity.User;
+import or.sopt.houme.user.infra.persistence.UserJpaEntity;
 import or.sopt.houme.global.api.ErrorCode;
 import or.sopt.houme.global.api.GeneralException;
 import org.springframework.stereotype.Component;
@@ -44,7 +44,7 @@ public class FurnitureFacadeImpl implements FurnitureFacade {
     private final CurationRawProductFurnitureService curationRawProductFurnitureService;
 
     @Override
-    public FurnitureProductsInfoResponseV2 getFurnitureProductInfoFromNaverApi(User user, Long imageId, Long categoryId) {
+    public FurnitureProductsInfoResponseV2 getFurnitureProductInfoFromNaverApi(UserJpaEntity user, Long imageId, Long categoryId) {
 
 
         LocalDateTime now = LocalDateTime.now();
@@ -131,7 +131,7 @@ public class FurnitureFacadeImpl implements FurnitureFacade {
 
     // 기획의사결정용
     @Override
-    public FurnitureProductsInfoResponseForPlan getFurnitureProductInfoFromNaverApiForPlan(User user, Long tagId, Long furnitureId, String searchKeyword, int pHash) {
+    public FurnitureProductsInfoResponseForPlan getFurnitureProductInfoFromNaverApiForPlan(UserJpaEntity user, Long tagId, Long furnitureId, String searchKeyword, int pHash) {
         // 1. FurnitureTag 조회 (DB)
         FurnitureTag furnitureTag = furnitureService.findFurnitureTagForPlan(tagId, furnitureId);
 
@@ -154,7 +154,7 @@ public class FurnitureFacadeImpl implements FurnitureFacade {
 
     @Override
     public FurnitureProductsInfoResponseForPlan getFurnitureProductInfoFromNaverApiForPlanV2(
-            User user,
+            UserJpaEntity user,
             Long tagId,
             Long furnitureId,
             String searchKeyword,

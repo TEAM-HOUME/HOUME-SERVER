@@ -2,7 +2,7 @@ package or.sopt.houme.credit;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import or.sopt.houme.domain.user.model.entity.Role;
-import or.sopt.houme.domain.user.model.entity.User;
+import or.sopt.houme.user.infra.persistence.UserJpaEntity;
 import or.sopt.houme.domain.user.repository.UserRepository;
 import or.sopt.houme.global.jwt.JWTUtil;
 import or.sopt.houme.support.IntegrationTestSupport;
@@ -36,8 +36,8 @@ class CreditApiIntegrationTest extends IntegrationTestSupport {
     @Autowired
     private ObjectMapper objectMapper;
 
-    private User seedUser(String email, String nickname, String tag) {
-        return userRepository.saveAndFlush(User.builder()
+    private UserJpaEntity seedUser(String email, String nickname, String tag) {
+        return userRepository.saveAndFlush(UserJpaEntity.builder()
                 .email(email)
                 .nickname(nickname)
                 .nicknameTag(tag)
@@ -58,7 +58,7 @@ class CreditApiIntegrationTest extends IntegrationTestSupport {
     @Test
     @DisplayName("어드민 크레딧 지급 API는 지급 개수만큼 잔액을 늘리고 잔액을 반환한다 (누적)")
     void grantCredits_accumulatesBalance() throws Exception {
-        User member = seedUser("grant@houme.com", "지급대상", "0001");
+        UserJpaEntity member = seedUser("grant@houme.com", "지급대상", "0001");
         String auth = bearer(member.getId(), Role.ROLE_ADMIN);
 
         // 최초 5개 지급 → 잔액 5
@@ -84,7 +84,7 @@ class CreditApiIntegrationTest extends IntegrationTestSupport {
     @Test
     @DisplayName("어드민 회원 검색 API는 회원의 현재 ACTIVE 크레딧 잔액을 반환한다")
     void searchMembers_returnsCreditBalance() throws Exception {
-        User member = seedUser("search@houme.com", "검색대상", "0002");
+        UserJpaEntity member = seedUser("search@houme.com", "검색대상", "0002");
         String auth = bearer(member.getId(), Role.ROLE_ADMIN);
 
         mockMvc.perform(post("/api/v1/admin/members/{id}/credits", member.getId())
@@ -105,7 +105,7 @@ class CreditApiIntegrationTest extends IntegrationTestSupport {
     @Test
     @DisplayName("마이페이지 API는 사용 가능한 크레딧 개수를 반환한다")
     void myPage_returnsCreditCount() throws Exception {
-        User member = seedUser("mypage@houme.com", "마이페이지", "0003");
+        UserJpaEntity member = seedUser("mypage@houme.com", "마이페이지", "0003");
 
         // 어드민 지급으로 2개 적립
         mockMvc.perform(post("/api/v1/admin/members/{id}/credits", member.getId())
@@ -125,7 +125,7 @@ class CreditApiIntegrationTest extends IntegrationTestSupport {
     @Test
     @DisplayName("크레딧 지급 API는 잘못된 개수(0, 상한 초과)를 400으로 거부한다")
     void grantCredits_rejectsInvalidAmount() throws Exception {
-        User member = seedUser("invalid@houme.com", "검증대상", "0004");
+        UserJpaEntity member = seedUser("invalid@houme.com", "검증대상", "0004");
         String auth = bearer(member.getId(), Role.ROLE_ADMIN);
 
         mockMvc.perform(post("/api/v1/admin/members/{id}/credits", member.getId())
@@ -144,7 +144,7 @@ class CreditApiIntegrationTest extends IntegrationTestSupport {
     @Test
     @DisplayName("존재하지 않는 회원에게 지급하면 40401(USER_NOT_FOUND)")
     void grantCredits_memberNotFound() throws Exception {
-        User actor = seedUser("actor@houme.com", "액터", "0005");
+        UserJpaEntity actor = seedUser("actor@houme.com", "액터", "0005");
 
         mockMvc.perform(post("/api/v1/admin/members/{id}/credits", 999_999L)
                         .header("Authorization", bearer(actor.getId(), Role.ROLE_ADMIN))

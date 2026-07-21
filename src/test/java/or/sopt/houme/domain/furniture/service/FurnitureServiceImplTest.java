@@ -19,7 +19,7 @@ import or.sopt.houme.domain.house.repository.HouseRepository;
 import or.sopt.houme.tag.domain.Tag;
 import or.sopt.houme.tag.domain.port.out.TagRepositoryPort;
 import or.sopt.houme.tag.infra.persistence.TagJpaEntity;
-import or.sopt.houme.domain.user.model.entity.User;
+import or.sopt.houme.user.infra.persistence.UserJpaEntity;
 import or.sopt.houme.global.api.handler.HouseException;
 import or.sopt.houme.global.api.handler.TagException;
 import org.junit.jupiter.api.BeforeEach;
@@ -54,11 +54,11 @@ class FurnitureServiceImplTest {
     @Mock
     TagRepositoryPort tagRepository;
 
-    private User user;
+    private UserJpaEntity user;
 
     @BeforeEach
     void setUp() {
-        user = User.builder()
+        user = UserJpaEntity.builder()
                 .id(1L)
                 .name("최융아")
                 .email("user1@kakao.com")

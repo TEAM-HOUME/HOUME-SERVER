@@ -5,8 +5,8 @@ import lombok.RequiredArgsConstructor;
 import or.sopt.houme.domain.generateImage.model.entity.GenerateImage;
 import or.sopt.houme.domain.generateImage.model.entity.QGenerateImage;
 import or.sopt.houme.house.infra.persistence.QHouseJpaEntity;
-import or.sopt.houme.domain.user.model.entity.QUser;
-import or.sopt.houme.domain.user.model.entity.User;
+import or.sopt.houme.user.infra.persistence.QUserJpaEntity;
+import or.sopt.houme.user.infra.persistence.UserJpaEntity;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -19,7 +19,7 @@ public class UserRepositoryImpl implements UserRepositoryCustom {
 
     @Override
     public Optional<GenerateImage> findImageHistoryById(Long userId) {
-        QUser user = QUser.user;
+        QUserJpaEntity user = QUserJpaEntity.userJpaEntity;
         QHouseJpaEntity house = QHouseJpaEntity.houseJpaEntity;
         QGenerateImage generateImage = QGenerateImage.generateImage;
 
@@ -34,8 +34,8 @@ public class UserRepositoryImpl implements UserRepositoryCustom {
     }
 
     @Override
-    public List<User> searchMembers(String keyword, int limit) {
-        QUser user = QUser.user;
+    public List<UserJpaEntity> searchMembers(String keyword, int limit) {
+        QUserJpaEntity user = QUserJpaEntity.userJpaEntity;
         return queryFactory
                 .selectFrom(user)
                 .where(user.email.eq(keyword)

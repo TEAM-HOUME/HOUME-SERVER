@@ -7,7 +7,7 @@ import lombok.RequiredArgsConstructor;
 import or.sopt.houme.domain.house.presentation.address.dto.request.AddressRequest;
 import or.sopt.houme.domain.house.service.address.AddressService;
 import or.sopt.houme.domain.user.presentation.controller.dto.CustomUserDetails;
-import or.sopt.houme.domain.user.model.entity.User;
+import or.sopt.houme.user.infra.persistence.UserJpaEntity;
 import or.sopt.houme.global.api.ApiResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -30,7 +30,7 @@ public class AddressController {
     public ResponseEntity<ApiResponse<Void>> createAddress(@AuthenticationPrincipal CustomUserDetails userDetails,
                                                            @RequestBody @Valid AddressRequest addressRequest) {
 
-        User user = userDetails.getUser();
+        UserJpaEntity user = userDetails.getUser();
 
         addressService.createAddress(user, addressRequest);
 

@@ -1,7 +1,7 @@
 package or.sopt.houme.domain.user.presentation.controller.dto;
 
 import or.sopt.houme.domain.user.model.entity.Role;
-import or.sopt.houme.domain.user.model.entity.User;
+import or.sopt.houme.user.infra.persistence.UserJpaEntity;
 import or.sopt.houme.global.api.ErrorCode;
 import or.sopt.houme.global.api.handler.UserException;
 import org.junit.jupiter.api.DisplayName;
@@ -18,7 +18,7 @@ class CustomUserDetailsTest {
     @DisplayName("정상적인 user 객체로 CustomUserDetails를 생성하고 메서드 값을 검증한다")
     void customUserDetails_normalUser() {
         // given
-        User user = User.builder()
+        UserJpaEntity user = UserJpaEntity.builder()
                 .id(1L)
                 .email("test@example.com")
                 .password("encodedPassword")
@@ -54,7 +54,7 @@ class CustomUserDetailsTest {
     @Test
     @DisplayName("user의 role이 null이면 getAuthorities() 호출 시 USER_ROLE_EXCEPTION 예외가 발생한다")
     void customUserDetails_nullRole() {
-        User user = User.builder()
+        UserJpaEntity user = UserJpaEntity.builder()
                 .id(1L)
                 .email("test@example.com")
                 .password("encodedPassword")

@@ -5,7 +5,7 @@ import lombok.RequiredArgsConstructor;
 import or.sopt.houme.domain.generateImage.model.entity.QGenerateImage;
 import or.sopt.houme.house.infra.persistence.HouseJpaEntity;
 import or.sopt.houme.house.infra.persistence.QHouseJpaEntity;
-import or.sopt.houme.domain.user.model.entity.User;
+import or.sopt.houme.user.infra.persistence.UserJpaEntity;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -18,7 +18,7 @@ public class HouseCustomRepositoryImpl implements HouseCustomRepository {
     private final JPAQueryFactory queryFactory;
 
     @Override
-    public HouseJpaEntity findLatestHouse(User user) {
+    public HouseJpaEntity findLatestHouse(UserJpaEntity user) {
         QHouseJpaEntity qHouse = QHouseJpaEntity.houseJpaEntity;
 
         return queryFactory

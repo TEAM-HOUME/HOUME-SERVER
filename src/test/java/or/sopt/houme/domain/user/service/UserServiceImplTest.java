@@ -42,7 +42,7 @@ import or.sopt.houme.tag.domain.Tag;
 import or.sopt.houme.tag.domain.port.out.TagRepositoryPort;
 import or.sopt.houme.domain.user.presentation.controller.dto.*;
 import or.sopt.houme.domain.user.model.entity.Gender;
-import or.sopt.houme.domain.user.model.entity.User;
+import or.sopt.houme.user.infra.persistence.UserJpaEntity;
 import or.sopt.houme.domain.user.repository.UserRepository;
 import or.sopt.houme.global.api.ErrorCode;
 import or.sopt.houme.global.api.handler.*;
@@ -114,14 +114,14 @@ class UserServiceImplTest {
             userNicknameTagTransactionService
             );
 
-    private User user;
+    private UserJpaEntity user;
     private HouseJpaEntity house;
     private Tag tag;
     private GenerateImage generateImage;
 
     @BeforeEach
     void setUp() {
-        user = User.builder()
+        user = UserJpaEntity.builder()
                 .id(1L)
                 .name("테스트유저")
                 .email("test@example.com")
@@ -164,7 +164,7 @@ class UserServiceImplTest {
     @DisplayName("유저 정보가 없을 경우 예외 발생")
     void getMyPageInfo_userNotFound() {
         // given
-        User user = User.builder().id(99L).build();
+        UserJpaEntity user = UserJpaEntity.builder().id(99L).build();
         given(userRepository.findById(99L)).willReturn(Optional.empty());
 
         // when & then
@@ -235,7 +235,7 @@ class UserServiceImplTest {
         Long userId = 1L;
         Long imageId = 10L;
         Long houseId = 20L;
-        User user = User.builder()
+        UserJpaEntity user = UserJpaEntity.builder()
                 .id(userId)
                 .name("테스트유저")
                 .build();
@@ -703,10 +703,10 @@ class UserServiceImplTest {
         String male = "MALE";
 
         // 요청한 유저의 Id
-        User inputUser = User.builder().id(1L).build();
+        UserJpaEntity inputUser = UserJpaEntity.builder().id(1L).build();
 
         // DB에 있는 유저의 필드 값들
-        User dbUser = User.builder()
+        UserJpaEntity dbUser = UserJpaEntity.builder()
                 .id(1L)
                 .name(null)
                 .birthday(null)
@@ -740,10 +740,10 @@ class UserServiceImplTest {
         // given
         String male = "MALE";
         // 요청한 유저의 Id
-        User inputUser = User.builder().id(1L).build();
+        UserJpaEntity inputUser = UserJpaEntity.builder().id(1L).build();
 
         // DB에 있는 유저의 필드 값들
-        User dbUser = User.builder()
+        UserJpaEntity dbUser = UserJpaEntity.builder()
                 .id(1L)
                 .name(null)
                 .birthday(null)
@@ -778,9 +778,9 @@ class UserServiceImplTest {
     void updateUser_credit_create_fail() {
         // given
         String male = "MALE";
-        User inputUser = User.builder().id(1L).build();
+        UserJpaEntity inputUser = UserJpaEntity.builder().id(1L).build();
 
-        User dbUser = User.builder()
+        UserJpaEntity dbUser = UserJpaEntity.builder()
                 .id(1L)
                 .name(null)
                 .birthday(null)
@@ -811,9 +811,9 @@ class UserServiceImplTest {
     @DisplayName("v2 회원가입은 닉네임 필드를 함께 업데이트한다")
     void updateUserV2_success() {
         // given
-        User inputUser = User.builder().id(1L).build();
+        UserJpaEntity inputUser = UserJpaEntity.builder().id(1L).build();
 
-        User dbUser = User.builder()
+        UserJpaEntity dbUser = UserJpaEntity.builder()
                 .id(1L)
                 .name(null)
                 .nickname(null)
@@ -848,8 +848,8 @@ class UserServiceImplTest {
     @Test
     @DisplayName("updateUserV2는 닉네임 태그 유니크 충돌이 나면 재시도한다")
     void updateUserV2_retryOnNicknameTagConstraintViolation() {
-        User inputUser = User.builder().id(1L).build();
-        User dbUser = User.builder().id(1L).build();
+        UserJpaEntity inputUser = UserJpaEntity.builder().id(1L).build();
+        UserJpaEntity dbUser = UserJpaEntity.builder().id(1L).build();
 
         given(userRepository.findById(1L)).willReturn(Optional.of(dbUser));
         given(nicknameService.generateNicknameTag("새닉네임"))
@@ -878,8 +878,8 @@ class UserServiceImplTest {
     @Test
     @DisplayName("마이페이지 프로필 조회는 사용자 프로필 수정 화면 정보를 반환한다")
     void getMyPageProfile_success() {
-        User inputUser = User.builder().id(1L).build();
-        User dbUser = User.builder()
+        UserJpaEntity inputUser = UserJpaEntity.builder().id(1L).build();
+        UserJpaEntity dbUser = UserJpaEntity.builder()
                 .id(1L)
                 .nickname("잠자는꾸민성1470")
                 .birthday(LocalDate.of(2001, 1, 1))
@@ -899,8 +899,8 @@ class UserServiceImplTest {
     @Test
     @DisplayName("마이페이지 프로필 수정은 닉네임 태그를 생성하고 사용자 정보를 업데이트한다")
     void updateMyPageProfile_success() {
-        User inputUser = User.builder().id(1L).build();
-        User updatedUser = User.builder()
+        UserJpaEntity inputUser = UserJpaEntity.builder().id(1L).build();
+        UserJpaEntity updatedUser = UserJpaEntity.builder()
                 .id(1L)
                 .name("기존닉네임")
                 .nickname("기존닉네임")
@@ -938,8 +938,8 @@ class UserServiceImplTest {
     @Test
     @DisplayName("마이페이지 프로필 수정은 닉네임 태그 유니크 충돌이 나면 재시도한다")
     void updateMyPageProfile_retryOnNicknameTagConstraintViolation() {
-        User inputUser = User.builder().id(1L).build();
-        User updatedUser = User.builder().id(1L).build();
+        UserJpaEntity inputUser = UserJpaEntity.builder().id(1L).build();
+        UserJpaEntity updatedUser = UserJpaEntity.builder().id(1L).build();
 
         given(userRepository.findById(1L)).willReturn(Optional.of(updatedUser));
         given(nicknameService.generateNicknameTag("새닉네임"))
@@ -976,8 +976,8 @@ class UserServiceImplTest {
     @Test
     @DisplayName("마이페이지 프로필 수정은 닉네임이 없으면 닉네임 태그를 생성하지 않는다")
     void updateMyPageProfile_withoutNickname_doesNotGenerateNicknameTag() {
-        User inputUser = User.builder().id(1L).build();
-        User updatedUser = User.builder()
+        UserJpaEntity inputUser = UserJpaEntity.builder().id(1L).build();
+        UserJpaEntity updatedUser = UserJpaEntity.builder()
                 .id(1L)
                 .name("기존닉네임")
                 .nickname("기존닉네임")

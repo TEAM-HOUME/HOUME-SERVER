@@ -9,7 +9,7 @@ import or.sopt.houme.domain.furniture.repository.CurationRawProductRepository;
 import or.sopt.houme.domain.house.repository.HouseFurnitureRepository;
 import or.sopt.houme.domain.house.repository.HouseRepository;
 import or.sopt.houme.domain.house.service.carousel.dto.CarouselCandidateBundle;
-import or.sopt.houme.domain.user.model.entity.User;
+import or.sopt.houme.user.infra.persistence.UserJpaEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,7 +28,7 @@ public class CarouselCandidateService {
     private final HouseRepository houseRepository;
     private final HouseFurnitureRepository houseFurnitureRepository;
 
-    public CarouselCandidateBundle collectCandidates(User user) {
+    public CarouselCandidateBundle collectCandidates(UserJpaEntity user) {
         HouseJpaEntity latestHouse = houseRepository.findLatestHouse(user);
         List<Long> furnitureIds = latestHouse == null
                 ? List.of()

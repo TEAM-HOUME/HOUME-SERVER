@@ -5,6 +5,7 @@ import or.sopt.houme.domain.generateImage.repository.GenerateImageRepository;
 import or.sopt.houme.house.infra.persistence.HouseJpaEntity;
 import or.sopt.houme.domain.house.repository.HouseRepository;
 import or.sopt.houme.domain.user.model.entity.*;
+import or.sopt.houme.user.infra.persistence.UserJpaEntity;
 import or.sopt.houme.domain.user.repository.UserRepository;
 import or.sopt.houme.global.dto.ImageUploadResponseDTO;
 import org.junit.jupiter.api.BeforeEach;
@@ -38,13 +39,13 @@ class GenerateImageServiceImplTest {
     @Autowired
     private UserRepository userRepository;
 
-    private User savedUser;
+    private UserJpaEntity savedUser;
     private HouseJpaEntity savedHouse;
 
     @BeforeEach
     void setUp() {
         savedUser = userRepository.save(
-                User.builder()
+                UserJpaEntity.builder()
                         .name("test_user")
                         .birthday(LocalDate.of(2001, 1, 10))
                         .gender(Gender.MALE)

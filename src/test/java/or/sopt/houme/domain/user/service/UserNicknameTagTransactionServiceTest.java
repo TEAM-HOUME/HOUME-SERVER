@@ -2,7 +2,7 @@ package or.sopt.houme.domain.user.service;
 
 import or.sopt.houme.credit.application.CreditUseCase;
 import or.sopt.houme.domain.user.model.entity.Gender;
-import or.sopt.houme.domain.user.model.entity.User;
+import or.sopt.houme.user.infra.persistence.UserJpaEntity;
 import or.sopt.houme.domain.user.model.entity.record.SignupSession;
 import or.sopt.houme.domain.user.repository.UserRepository;
 import org.junit.jupiter.api.DisplayName;
@@ -31,9 +31,9 @@ class UserNicknameTagTransactionServiceTest {
     @DisplayName("소셜 회원가입 v2는 가입 크레딧 5개를 생성한다")
     void createSocialUserWithNicknameTag_createsFiveCredits() {
         SignupSession signupSession = SignupSession.of(1L, "test@houme.kr", "카카오닉네임");
-        User savedUser = User.builder().id(1L).email("test@houme.kr").build();
+        UserJpaEntity savedUser = UserJpaEntity.builder().id(1L).email("test@houme.kr").build();
 
-        given(userRepository.saveAndFlush(org.mockito.ArgumentMatchers.any(User.class))).willReturn(savedUser);
+        given(userRepository.saveAndFlush(org.mockito.ArgumentMatchers.any(UserJpaEntity.class))).willReturn(savedUser);
 
         service.createSocialUserWithNicknameTag(
                 signupSession,
@@ -50,7 +50,7 @@ class UserNicknameTagTransactionServiceTest {
     @Test
     @DisplayName("자체 회원가입 v2 완료는 가입 크레딧 5개를 생성한다")
     void completeUserSignUpV2_createsFiveCredits() {
-        User user = User.builder().id(1L).email("test@houme.kr").build();
+        UserJpaEntity user = UserJpaEntity.builder().id(1L).email("test@houme.kr").build();
         given(userRepository.findById(1L)).willReturn(Optional.of(user));
         given(userRepository.saveAndFlush(user)).willReturn(user);
 

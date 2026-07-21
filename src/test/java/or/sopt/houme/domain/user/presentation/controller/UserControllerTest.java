@@ -5,6 +5,7 @@ import or.sopt.houme.domain.user.presentation.controller.dto.CustomUserDetailsSe
 import or.sopt.houme.domain.user.presentation.controller.dto.MyPageGeneratedImageV2Response;
 import or.sopt.houme.domain.user.presentation.controller.dto.MyPageInfoResponse;
 import or.sopt.houme.domain.user.model.entity.*;
+import or.sopt.houme.user.infra.persistence.UserJpaEntity;
 import or.sopt.houme.domain.user.repository.BlacklistTokenRepository;
 import or.sopt.houme.domain.user.service.NicknameService;
 import or.sopt.houme.domain.user.service.OAuthService;
@@ -81,7 +82,7 @@ class UserControllerTest {
 
     @BeforeEach
     void setUp() {
-        User mockUser = User.builder()
+        UserJpaEntity mockUser = UserJpaEntity.builder()
                 .id(1L)
                 .name("테스트유저")
                 .birthday(LocalDate.of(2000, 1, 1))
@@ -103,7 +104,7 @@ class UserControllerTest {
     void getMyPageInfo_Success() throws Exception {
         // Given
         Long id = 1L;
-        User mockUser = mockUserDetails.getUser();
+        UserJpaEntity mockUser = mockUserDetails.getUser();
 
         // 정확히 동일한 객체를 넘겨서 mock 동작 유도
         given(customUserDetailsService.loadUserById(id)).willReturn(mockUserDetails);
@@ -126,7 +127,7 @@ class UserControllerTest {
     @WithMockUser(username = "test@example.com", roles = "USER")
     void getMyPageInfoV2_Success() throws Exception {
         Long id = 1L;
-        User mockUser = mockUserDetails.getUser();
+        UserJpaEntity mockUser = mockUserDetails.getUser();
 
         given(customUserDetailsService.loadUserById(id)).willReturn(mockUserDetails);
         given(userService.getUserGeneratedImageHistoryListV2(mockUser))

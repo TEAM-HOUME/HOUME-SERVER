@@ -5,7 +5,7 @@ import or.sopt.houme.credit.application.CreditUseCase;
 import or.sopt.houme.domain.user.model.entity.Gender;
 import or.sopt.houme.domain.user.model.entity.Role;
 import or.sopt.houme.domain.user.model.entity.SocialType;
-import or.sopt.houme.domain.user.model.entity.User;
+import or.sopt.houme.user.infra.persistence.UserJpaEntity;
 import or.sopt.houme.domain.user.model.entity.UserStatus;
 import or.sopt.houme.domain.user.model.entity.record.SignupSession;
 import or.sopt.houme.domain.user.repository.UserRepository;
@@ -30,7 +30,7 @@ public class UserNicknameTagTransactionService {
     private final CreditUseCase creditUseCase;
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public User createSocialUserWithNicknameTag(
+    public UserJpaEntity createSocialUserWithNicknameTag(
             SignupSession signupSession,
             String name,
             String nickname,
@@ -38,8 +38,8 @@ public class UserNicknameTagTransactionService {
             Gender gender,
             LocalDate birthday
     ) {
-        User savedUser = userRepository.saveAndFlush(
-                User.builder()
+        UserJpaEntity savedUser = userRepository.saveAndFlush(
+                UserJpaEntity.builder()
                         .password(null)
                         .email(signupSession.email())
                         .name(name)
@@ -65,7 +65,7 @@ public class UserNicknameTagTransactionService {
             Gender gender,
             LocalDate birthday
     ) {
-        User user = userRepository.findById(userId)
+        UserJpaEntity user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserException(ErrorCode.USER_NOT_FOUND));
 
         user.updateUserFromSignUpV2(nickname, nicknameTag, birthday, gender);
@@ -75,21 +75,21 @@ public class UserNicknameTagTransactionService {
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public User updateMyPageProfile(
+    public UserJpaEntity updateMyPageProfile(
             Long userId,
             String nickname,
             String nicknameTag,
             Gender gender,
             LocalDate birthday
     ) {
-        User user = userRepository.findById(userId)
+        UserJpaEntity user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserException(ErrorCode.USER_NOT_FOUND));
 
         user.updateMyPageProfile(nickname, nicknameTag, birthday, gender);
         return userRepository.saveAndFlush(user);
     }
 
-    private void createSignUpCredits(User user) {
+    private void createSignUpCredits(UserJpaEntity user) {
         creditUseCase.grant(user.getId(), SIGN_UP_CREDIT_COUNT);
     }
 }

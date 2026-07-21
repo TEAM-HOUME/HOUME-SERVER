@@ -10,6 +10,7 @@ import or.sopt.houme.tastetag.infra.persistence.TasteTagJpaEntity;
 import or.sopt.houme.tag.infra.persistence.TagJpaEntity;
 import or.sopt.houme.tag.infra.persistence.TagQueryRepository;
 import or.sopt.houme.domain.user.model.entity.*;
+import or.sopt.houme.user.infra.persistence.UserJpaEntity;
 import or.sopt.houme.global.config.QuerydslConfig;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -38,7 +39,7 @@ class TagRepositoryImplTest {
     @Autowired
     private TagQueryRepository tagQueryRepository;
 
-    private User mockUser;
+    private UserJpaEntity mockUser;
     private HouseJpaEntity mockHouse;
     private GenerateImage mockGenerateImage;
     private TasteJpaEntity mockTaste;
@@ -49,7 +50,7 @@ class TagRepositoryImplTest {
     @BeforeEach
     void setUp() {
         // 👤 사용자 생성
-        mockUser = User.builder()
+        mockUser = UserJpaEntity.builder()
                 .name("테스트유저")
                 .birthday(LocalDate.of(1995, 5, 5))
                 .gender(Gender.MALE)

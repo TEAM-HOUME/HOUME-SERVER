@@ -8,7 +8,7 @@ import or.sopt.houme.domain.preference.repository.FactorRepository;
 import or.sopt.houme.domain.preference.repository.PreferenceFactorRepository;
 import or.sopt.houme.domain.preference.repository.PreferenceRepository;
 import or.sopt.houme.domain.preference.service.FactorServiceImpl;
-import or.sopt.houme.domain.user.model.entity.User;
+import or.sopt.houme.user.infra.persistence.UserJpaEntity;
 import or.sopt.houme.global.api.ErrorCode;
 import or.sopt.houme.global.api.handler.PreferenceException;
 import org.junit.jupiter.api.DisplayName;
@@ -60,7 +60,7 @@ public class FactorServiceImplTest {
     @DisplayName("toggleFactorLog - preference 없음 -> 예외 발생")
     void toggleFactorLog_notFoundPreference() {
         // given
-        User user = User.builder().id(1L).build();
+        UserJpaEntity user = UserJpaEntity.builder().id(1L).build();
         when(preferenceRepository.findPreferenceByUserIdAndImageId(1L, 100L)).thenReturn(Optional.empty());
 
         // when & then
@@ -74,7 +74,7 @@ public class FactorServiceImplTest {
     void toggleFactorLog_notFoundFactor() {
         // given
         Long factorId = 10L;
-        User user = User.builder().id(1L).build();
+        UserJpaEntity user = UserJpaEntity.builder().id(1L).build();
         Preference preference = Preference.builder().id(1L).isLike(true).build();
         when(preferenceRepository.findPreferenceByUserIdAndImageId(1L, 100L)).thenReturn(Optional.of(preference));
         when(factorRepository.findById(factorId)).thenReturn(Optional.empty());
@@ -90,7 +90,7 @@ public class FactorServiceImplTest {
     void toggleFactorLog_mismatchedIsLike() {
         // given
         Long factorId = 10L;
-        User user = User.builder().id(1L).build();
+        UserJpaEntity user = UserJpaEntity.builder().id(1L).build();
         Preference preference = Preference.builder().id(1L).isLike(true).build();
         Factor factor = Factor.builder().id(factorId).isLike(false).build();
 
@@ -108,7 +108,7 @@ public class FactorServiceImplTest {
     void toggleFactorLog_deleteExisting() {
         // given
         Long factorId = 10L;
-        User user = User.builder().id(1L).build();
+        UserJpaEntity user = UserJpaEntity.builder().id(1L).build();
         Preference preference = Preference.builder().id(1L).isLike(true).build();
         Factor factor = Factor.builder().id(factorId).isLike(true).build();
         PreferenceFactor existing = PreferenceFactor.of(preference, factor);
@@ -129,7 +129,7 @@ public class FactorServiceImplTest {
     void toggleFactorLog_saveNew() {
         // given
         Long factorId = 10L;
-        User user = User.builder().id(1L).build();
+        UserJpaEntity user = UserJpaEntity.builder().id(1L).build();
         Preference preference = Preference.builder().id(1L).isLike(true).build();
         Factor factor = Factor.builder().id(factorId).isLike(true).build();
 

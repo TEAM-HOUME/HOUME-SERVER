@@ -18,7 +18,7 @@ import or.sopt.houme.domain.furniture.repository.FurnitureRepository;
 import or.sopt.houme.domain.furniture.repository.FurnitureTypeRepository;
 import or.sopt.houme.domain.furniture.repository.JjymRepository;
 import or.sopt.houme.domain.furniture.repository.RecommendFurnitureRepository;
-import or.sopt.houme.domain.user.model.entity.User;
+import or.sopt.houme.user.infra.persistence.UserJpaEntity;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -289,7 +289,7 @@ class CurationProductServiceImplTest {
     void getProductDetail_withMultipleTags() {
         // given
         Long id = 1L;
-        User user = User.builder().id(1L).build();
+        UserJpaEntity user = UserJpaEntity.builder().id(1L).build();
 
         FurnitureType bedType = FurnitureType.builder().nameEng("BED").build();
         FurnitureJpaEntity bed = FurnitureJpaEntity.builder().furnitureType(bedType).build();
@@ -326,7 +326,7 @@ class CurationProductServiceImplTest {
     void getProductDetail_withJjymCount() {
         // given
         Long id = 1L;
-        User user = User.builder().id(1L).build();
+        UserJpaEntity user = UserJpaEntity.builder().id(1L).build();
 
         CurationRawProduct product = CurationRawProduct.builder()
                 .id(id)

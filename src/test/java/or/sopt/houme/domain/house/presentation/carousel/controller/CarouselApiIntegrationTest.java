@@ -1,7 +1,7 @@
 package or.sopt.houme.domain.house.presentation.carousel.controller;
 
 import or.sopt.houme.domain.user.model.entity.Role;
-import or.sopt.houme.domain.user.model.entity.User;
+import or.sopt.houme.user.infra.persistence.UserJpaEntity;
 import or.sopt.houme.domain.user.repository.UserRepository;
 import or.sopt.houme.global.jwt.JWTUtil;
 import or.sopt.houme.support.IntegrationTestSupport;
@@ -32,7 +32,7 @@ class CarouselApiIntegrationTest extends IntegrationTestSupport {
     @Test
     @DisplayName("GET /api/v1/carousels 는 인증 하에 ApiResponse 포맷으로 200을 반환한다")
     void getCarousels_returnsApiResponse() throws Exception {
-        User user = userRepository.saveAndFlush(User.builder()
+        UserJpaEntity user = userRepository.saveAndFlush(UserJpaEntity.builder()
                 .email("carousel@houme.com").nickname("캐러셀").nicknameTag("9001").name("캐러셀")
                 .role(Role.ROLE_USER).hasGeneratedImage(false).build());
         String token = jwtUtil.createJwt("access", user.getId(), Role.ROLE_USER.name(), 86_400_000L);

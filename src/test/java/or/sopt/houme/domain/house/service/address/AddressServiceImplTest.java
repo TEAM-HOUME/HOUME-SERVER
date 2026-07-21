@@ -4,6 +4,7 @@ import or.sopt.houme.domain.house.presentation.address.dto.request.AddressReques
 import or.sopt.houme.domain.house.model.address.entity.Address;
 import or.sopt.houme.domain.house.repository.address.AddressRepository;
 import or.sopt.houme.domain.user.model.entity.*;
+import or.sopt.houme.user.infra.persistence.UserJpaEntity;
 import or.sopt.houme.domain.user.repository.UserRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -36,7 +37,7 @@ class AddressServiceImplTest {
     @DisplayName("사용자는 주소를 등록 할 수 있다.")
     void createAddress() {
         // Given
-        User user = User.builder()
+        UserJpaEntity user = UserJpaEntity.builder()
                 .name("test_user")
                 .birthday(LocalDate.of(2001, 1, 10))
                 .gender(Gender.MALE)

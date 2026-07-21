@@ -5,7 +5,7 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
-import or.sopt.houme.domain.user.model.entity.User;
+import or.sopt.houme.user.infra.persistence.UserJpaEntity;
 import or.sopt.houme.domain.user.repository.RefreshTokenRepository;
 import or.sopt.houme.domain.user.repository.UserRepository;
 import or.sopt.houme.domain.user.presentation.valid.RefreshTokenValidator;
@@ -40,7 +40,7 @@ public class JWTService {
     // 토큰 발급기를 위한 메서드입니다
     public void createToken(HttpServletResponse response, Long userId) {
         Long tokenUserId = resolveTokenUserId(userId);
-        User user = userRepository.findById(tokenUserId)
+        UserJpaEntity user = userRepository.findById(tokenUserId)
                 .orElseThrow(() -> new UserException(ErrorCode.USER_NOT_FOUND));
 
         String access = jwtUtil.createJwt("access", user.getId(), user.getRole().toString(), jwtConfig.getAccessTokenValidityInSeconds());
@@ -77,7 +77,7 @@ public class JWTService {
          *
          * 액세스 토큰과 리프레시 토큰을 새롭게 발급합니다
          * */
-        User findUser = userRepository.findById(userIdFromRefreshToken)
+        UserJpaEntity findUser = userRepository.findById(userIdFromRefreshToken)
                 .orElseThrow(() -> new UserException(ErrorCode.USER_NOT_FOUND));
 
 

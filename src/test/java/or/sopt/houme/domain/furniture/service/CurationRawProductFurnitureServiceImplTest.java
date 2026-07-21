@@ -9,7 +9,7 @@ import or.sopt.houme.domain.furniture.repository.CurationRawProductFurnitureRepo
 import or.sopt.houme.domain.furniture.repository.FurnitureRepository;
 import or.sopt.houme.domain.furniture.repository.JjymRepository;
 import or.sopt.houme.domain.furniture.repository.RecommendFurnitureRepository;
-import or.sopt.houme.domain.user.model.entity.User;
+import or.sopt.houme.user.infra.persistence.UserJpaEntity;
 import or.sopt.houme.global.api.GeneralException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -63,7 +63,7 @@ class CurationRawProductFurnitureServiceImplTest {
     @DisplayName("buildProductsResponseByFurnitureId()는 매핑 상품이 없으면 빈 products를 반환한다")
     void buildProductsResponseByFurnitureId_emptyWhenNoMappings() {
         Long furnitureId = 1L;
-        User user = User.builder().id(1L).name("테스트").build();
+        UserJpaEntity user = UserJpaEntity.builder().id(1L).name("테스트").build();
         FurnitureJpaEntity furniture = FurnitureJpaEntity.builder().id(furnitureId).furnitureNameKr("소파").build();
 
         given(furnitureRepository.findById(furnitureId)).willReturn(Optional.of(furniture));
@@ -80,7 +80,7 @@ class CurationRawProductFurnitureServiceImplTest {
     @DisplayName("buildProductsResponseByFurnitureId()는 매핑 상품의 카테고리명을 가구명으로 채운다")
     void buildProductsResponseByFurnitureId_setsCategoryNameFromFurniture() {
         Long furnitureId = 1L;
-        User user = User.builder().id(1L).name("홍길동").build();
+        UserJpaEntity user = UserJpaEntity.builder().id(1L).name("홍길동").build();
         FurnitureJpaEntity furniture = FurnitureJpaEntity.builder().id(furnitureId).furnitureNameKr("소파").build();
 
         CurationRawProduct rawProduct = CurationRawProduct.builder()
@@ -117,7 +117,7 @@ class CurationRawProductFurnitureServiceImplTest {
     @Test
     @DisplayName("buildProductsResponseByFurnitureId()는 가구가 없으면 예외를 던진다")
     void buildProductsResponseByFurnitureId_throwsWhenFurnitureNotFound() {
-        User user = User.builder().id(1L).build();
+        UserJpaEntity user = UserJpaEntity.builder().id(1L).build();
         given(furnitureRepository.findById(99L)).willReturn(Optional.empty());
 
         assertThatThrownBy(() -> service.buildProductsResponseByFurnitureId(user, 99L))

@@ -14,7 +14,7 @@ import or.sopt.houme.domain.house.repository.floorPlan.FloorPlanRepository;
 import or.sopt.houme.domain.house.model.entity.enums.Equilibrium;
 import or.sopt.houme.domain.house.model.entity.enums.Form;
 import or.sopt.houme.domain.house.model.entity.enums.Structure;
-import or.sopt.houme.domain.user.model.entity.User;
+import or.sopt.houme.user.infra.persistence.UserJpaEntity;
 import or.sopt.houme.domain.user.util.floorplan.FloorPlanEquilibriumJsonCodec;
 import or.sopt.houme.domain.user.util.floorplan.FloorPlanFormJsonCodec;
 import or.sopt.houme.domain.user.util.floorplan.FloorPlanImageJsonCodec;
@@ -75,7 +75,7 @@ class FloorPlanServiceImplTest {
     @Test
     @DisplayName("최근 생성 도면 조회 시 가장 최근 도면의 모든 view 이미지를 배열로 반환한다")
     void getRecentFloorPlan_returnsAllImages() {
-        User user = User.builder()
+        UserJpaEntity user = UserJpaEntity.builder()
                 .id(1L)
                 .build();
         FloorPlan floorPlan = FloorPlan.builder()

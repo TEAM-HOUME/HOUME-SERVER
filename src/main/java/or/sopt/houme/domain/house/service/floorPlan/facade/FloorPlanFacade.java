@@ -5,7 +5,7 @@ import or.sopt.houme.domain.house.presentation.floorPlan.dto.response.FloorPlanL
 import or.sopt.houme.domain.house.service.floorPlan.FloorPlanService;
 import or.sopt.houme.domain.house.presentation.dto.LatestHouseConditionDTO;
 import or.sopt.houme.domain.house.service.HouseService;
-import or.sopt.houme.domain.user.model.entity.User;
+import or.sopt.houme.user.infra.persistence.UserJpaEntity;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -16,7 +16,7 @@ public class FloorPlanFacade {
     private final FloorPlanService floorPlanService;
 
     // 사용자 입력에 따른 도면들 제공
-    public FloorPlanListResponse getFloorPlan(User user) {
+    public FloorPlanListResponse getFloorPlan(UserJpaEntity user) {
 
         // 가장 최근 house 가져오기
         LatestHouseConditionDTO latestHouse = houseService.findLatestHouse(user);

@@ -36,7 +36,7 @@ import or.sopt.houme.domain.generateImageResult.presentation.dto.response.Simila
 import or.sopt.houme.house.infra.persistence.HouseJpaEntity;
 import or.sopt.houme.tag.infra.persistence.TagJpaEntity;
 import or.sopt.houme.domain.house.service.HouseService;
-import or.sopt.houme.domain.user.model.entity.User;
+import or.sopt.houme.user.infra.persistence.UserJpaEntity;
 import or.sopt.houme.global.api.handler.GenerateImageException;
 
 import java.util.List;
@@ -98,7 +98,7 @@ class GenerateImageResultServiceImplTest {
                 .generationType(GenerateImageType.PRODUCT)
                 .house(house)
                 .build();
-        User user = User.builder().id(1L).build();
+        UserJpaEntity user = UserJpaEntity.builder().id(1L).build();
 
         when(generateImageService.findGenerateImage(1L)).thenReturn(image);
         when(houseService.getIsMirrorByHouseId(100L)).thenReturn(true);
@@ -122,7 +122,7 @@ class GenerateImageResultServiceImplTest {
 
         when(generateImageService.findGenerateImage(1L)).thenReturn(recommendImage);
 
-        User user = mock(User.class);
+        UserJpaEntity user = mock(UserJpaEntity.class);
 
         assertThatThrownBy(() -> generateImageResultService.getListResultItems(user, 1L))
                 .isInstanceOf(GenerateImageException.class);
@@ -191,7 +191,7 @@ class GenerateImageResultServiceImplTest {
                         .build()));
         when(jjymRepository.findAllByUserIdAndRecommendFurnitureIdIn(1L, List.of(501L))).thenReturn(List.of());
 
-        User user = User.builder().id(1L).build();
+        UserJpaEntity user = UserJpaEntity.builder().id(1L).build();
 
         GenerateImageResultResponse response = generateImageResultService.getListResultItems(user, 1L);
 
@@ -265,7 +265,7 @@ class GenerateImageResultServiceImplTest {
         when(jjymRepository.countByRecommendFurnitureIds(List.of(701L, 702L, 703L, 704L)))
                 .thenReturn(Map.of(701L, 4L, 702L, 2L));
 
-        User user = User.builder().id(1L).build();
+        UserJpaEntity user = UserJpaEntity.builder().id(1L).build();
         SimilarItemsResponse response = generateImageResultService.getSimilarItems(user, 1L);
 
         assertThat(response.products()).hasSize(4);
@@ -311,7 +311,7 @@ class GenerateImageResultServiceImplTest {
         ))
                 .thenReturn(List.of(related1));
 
-        User user = mock(User.class);
+        UserJpaEntity user = mock(UserJpaEntity.class);
         when(user.getDisplayName()).thenReturn("최윤하");
 
         RelatedImagesResponse response = generateImageResultService.getRelatedImages(user, 1L);

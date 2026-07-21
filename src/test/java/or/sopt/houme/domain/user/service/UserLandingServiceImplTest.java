@@ -2,7 +2,7 @@ package or.sopt.houme.domain.user.service;
 
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
-import or.sopt.houme.domain.user.model.entity.User;
+import or.sopt.houme.user.infra.persistence.UserJpaEntity;
 import or.sopt.houme.domain.user.repository.RefreshTokenRepository;
 import or.sopt.houme.domain.user.repository.UserRepository;
 import or.sopt.houme.global.api.ErrorCode;
@@ -99,7 +99,7 @@ class UserLandingServiceImplTest {
         Cookie[] cookies = {new Cookie("refresh-token", "token")};
         when(request.getCookies()).thenReturn(cookies);
 
-        User mockUser = User.builder()
+        UserJpaEntity mockUser = UserJpaEntity.builder()
                 .id(1L)
                 .hasGeneratedImage(true)
                 .build();
@@ -120,7 +120,7 @@ class UserLandingServiceImplTest {
         Cookie[] cookies = {new Cookie("refresh-token", "token")};
         when(request.getCookies()).thenReturn(cookies);
 
-        User mockUser = User.builder()
+        UserJpaEntity mockUser = UserJpaEntity.builder()
                 .id(1L)
                 .hasGeneratedImage(false)
                 .build();

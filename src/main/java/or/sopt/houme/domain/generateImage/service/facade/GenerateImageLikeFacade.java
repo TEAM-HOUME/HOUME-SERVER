@@ -9,7 +9,7 @@ import or.sopt.houme.house.infra.persistence.HouseJpaEntity;
 import or.sopt.houme.domain.preference.service.FactorService;
 import or.sopt.houme.domain.preference.service.GenerateImagePreferenceService;
 import or.sopt.houme.domain.preference.service.PreferenceService;
-import or.sopt.houme.domain.user.model.entity.User;
+import or.sopt.houme.user.infra.persistence.UserJpaEntity;
 import or.sopt.houme.global.api.ErrorCode;
 import or.sopt.houme.global.api.handler.GenerateImageException;
 import or.sopt.houme.global.api.handler.PreferenceException;
@@ -33,7 +33,7 @@ public class GenerateImageLikeFacade {
     private final PreferenceService preferenceService;
 
     // 생성된 이미지 선호도
-    public void isLike(User user, Long generatedImageId, IsLikeRequest request) throws InterruptedException {
+    public void isLike(UserJpaEntity user, Long generatedImageId, IsLikeRequest request) throws InterruptedException {
         int retryCount = 0;
 
         // 도면 이미지 조회
@@ -66,7 +66,7 @@ public class GenerateImageLikeFacade {
 
     // 생성된 이미지 선호도 삭제
     @Transactional
-    public void deletePreference(User user, Long generatedImageId){
+    public void deletePreference(UserJpaEntity user, Long generatedImageId){
         // 생성된 이미지 조회
         GenerateImage generateImage = generateImageService.findGenerateImage(generatedImageId);
         if (!Objects.equals(generateImage.getHouse().getUser().getId(), user.getId())) {

@@ -2,7 +2,7 @@ package or.sopt.houme.domain.user.service.admin;
 
 import lombok.RequiredArgsConstructor;
 import or.sopt.houme.credit.application.CreditUseCase;
-import or.sopt.houme.domain.user.model.entity.User;
+import or.sopt.houme.user.infra.persistence.UserJpaEntity;
 import or.sopt.houme.domain.user.presentation.admin.controller.dto.member.response.AdminCreditGrantResponse;
 import or.sopt.houme.domain.user.presentation.admin.controller.dto.member.response.AdminMemberResponse;
 import or.sopt.houme.domain.user.presentation.admin.controller.dto.member.response.AdminMemberSearchResponse;
@@ -47,7 +47,7 @@ public class AdminMemberServiceImpl implements AdminMemberService {
     @Override
     @Transactional
     public AdminCreditGrantResponse grantCredits(Long memberId, int amount) {
-        User member = userRepository.findById(memberId)
+        UserJpaEntity member = userRepository.findById(memberId)
                 .orElseThrow(() -> new GeneralException(ErrorCode.USER_NOT_FOUND));
 
         long balance = creditUseCase.grant(member.getId(), amount);

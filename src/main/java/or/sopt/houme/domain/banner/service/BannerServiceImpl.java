@@ -28,7 +28,7 @@ import or.sopt.houme.domain.furniture.presentation.dto.response.ProductColorResp
 import or.sopt.houme.domain.furniture.repository.CurationRawProductColorRepository;
 import or.sopt.houme.domain.furniture.repository.JjymRepository;
 import or.sopt.houme.domain.furniture.repository.RecommendFurnitureRepository;
-import or.sopt.houme.domain.user.model.entity.User;
+import or.sopt.houme.user.infra.persistence.UserJpaEntity;
 import or.sopt.houme.global.api.ErrorCode;
 import or.sopt.houme.global.api.GeneralException;
 import or.sopt.houme.global.api.handler.BannerException;
@@ -118,7 +118,7 @@ public class BannerServiceImpl implements BannerService {
     }
 
     @Override
-    public OtherStyleDetailResponse getOtherStyleDetail(User user, Long styleId) {
+    public OtherStyleDetailResponse getOtherStyleDetail(UserJpaEntity user, Long styleId) {
         Banner style = bannerRepository.findByIdWithRawProducts(styleId, BannerType.STYLE, false)
                 .orElseThrow(() -> new BannerException(ErrorCode.NOT_FOUND_STYLE));
 
@@ -209,7 +209,7 @@ public class BannerServiceImpl implements BannerService {
         return colorsByRawProductId;
     }
 
-    private Set<Long> resolveLikedRawProductIds(User user, List<CurationRawProduct> rawProducts) {
+    private Set<Long> resolveLikedRawProductIds(UserJpaEntity user, List<CurationRawProduct> rawProducts) {
         if (user == null || rawProducts.isEmpty()) {
             return Set.of();
         }

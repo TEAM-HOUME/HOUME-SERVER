@@ -22,7 +22,7 @@ import or.sopt.houme.domain.house.repository.HouseFloorPlanRepository;
 import or.sopt.houme.domain.house.service.HouseService;
 import or.sopt.houme.domain.house.presentation.taste.dto.response.TagDTO;
 import or.sopt.houme.tag.domain.Tag;
-import or.sopt.houme.domain.user.model.entity.User;
+import or.sopt.houme.user.infra.persistence.UserJpaEntity;
 import or.sopt.houme.domain.user.service.UserService;
 import or.sopt.houme.global.api.ErrorCode;
 import or.sopt.houme.global.api.handler.GenerateImageException;
@@ -49,7 +49,7 @@ public class GenerateImageTransactionService {
     // DB 관련 로직을 위한 별도의 @Transactional 메서드 생성
     @Transactional
     public List<ImageInfoResponse> saveResultsAndCreateResponse(
-            User user, HouseJpaEntity house, List<ImageUploadResponseDTO> results,
+            UserJpaEntity user, HouseJpaEntity house, List<ImageUploadResponseDTO> results,
             GenerateImageRequest generateImageRequest, List<TagDTO> priorityIdList, CreditReservation credit,
             GenerateImageType generationType) {
 
@@ -89,7 +89,7 @@ public class GenerateImageTransactionService {
 
     @Transactional(propagation = Propagation.REQUIRES_NEW) // 확실하게 분리된 트랜잭션 보장
     public ImageInfoResponse saveAllDataAndConfirmCredit(
-            User user,
+            UserJpaEntity user,
             CreditReservation lockedCredit,
             GenerateImageRequest request,
             ImageUploadResponseDTO imageResponse,
@@ -134,7 +134,7 @@ public class GenerateImageTransactionService {
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public BannerGenerateImageResponse saveBannerImageAndConfirmCredit(
-            User user,
+            UserJpaEntity user,
             CreditReservation lockedCredit,
             Banner banner,
             Long floorPlanId,
@@ -156,7 +156,7 @@ public class GenerateImageTransactionService {
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public BannerGenerateImageResponse saveBannerImageAndConfirmCredit(
-            User user,
+            UserJpaEntity user,
             CreditReservation lockedCredit,
             Banner banner,
             Long floorPlanId,
@@ -189,7 +189,7 @@ public class GenerateImageTransactionService {
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public HouseJpaEntity createTemplateHouseBeforeImageGeneration(
-            User user,
+            UserJpaEntity user,
             Banner banner,
             Long floorPlanId,
             boolean isMirror,
@@ -212,7 +212,7 @@ public class GenerateImageTransactionService {
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public BannerGenerateImageResponse saveBannerImageAndConfirmCredit(
-            User user,
+            UserJpaEntity user,
             CreditReservation lockedCredit,
             HouseJpaEntity house,
             Banner banner,
@@ -232,7 +232,7 @@ public class GenerateImageTransactionService {
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public GenerateImageV4Response saveV4ImageAndConfirmCredit(
-            User user,
+            UserJpaEntity user,
             CreditReservation lockedCredit,
             Long floorPlanId,
             boolean isMirror,
@@ -258,7 +258,7 @@ public class GenerateImageTransactionService {
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public GenerateImageV4Response saveV4ImageAndConfirmCredit(
-            User user,
+            UserJpaEntity user,
             CreditReservation lockedCredit,
             Long floorPlanId,
             boolean isMirror,
@@ -286,7 +286,7 @@ public class GenerateImageTransactionService {
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public GenerateImageV4Response saveV4ImageAndConfirmCredit(
-            User user,
+            UserJpaEntity user,
             CreditReservation lockedCredit,
             HouseJpaEntity house,
             ImageUploadResponseDTO imageResponse,
@@ -305,7 +305,7 @@ public class GenerateImageTransactionService {
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public GenerateImageV4Response saveProductImageAndConfirmCredit(
-            User user,
+            UserJpaEntity user,
             CreditReservation lockedCredit,
             Long floorPlanId,
             boolean isMirror,
@@ -327,7 +327,7 @@ public class GenerateImageTransactionService {
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public GenerateImageV4Response saveProductImageAndConfirmCredit(
-            User user,
+            UserJpaEntity user,
             CreditReservation lockedCredit,
             Long floorPlanId,
             boolean isMirror,
@@ -353,7 +353,7 @@ public class GenerateImageTransactionService {
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public GenerateImageV4Response saveProductImageAndConfirmCredit(
-            User user,
+            UserJpaEntity user,
             CreditReservation lockedCredit,
             HouseJpaEntity house,
             ImageUploadResponseDTO imageResponse,

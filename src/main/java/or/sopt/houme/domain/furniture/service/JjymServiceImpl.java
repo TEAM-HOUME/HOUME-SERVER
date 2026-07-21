@@ -14,7 +14,7 @@ import or.sopt.houme.domain.furniture.repository.CurationRawProductColorReposito
 import or.sopt.houme.domain.furniture.repository.CurationRawProductRepository;
 import or.sopt.houme.domain.furniture.repository.JjymRepository;
 import or.sopt.houme.domain.furniture.repository.RecommendFurnitureRepository;
-import or.sopt.houme.domain.user.model.entity.User;
+import or.sopt.houme.user.infra.persistence.UserJpaEntity;
 import or.sopt.houme.domain.user.repository.UserRepository;
 import or.sopt.houme.global.api.ErrorCode;
 import or.sopt.houme.global.api.GeneralException;
@@ -48,7 +48,7 @@ public class JjymServiceImpl implements JjymService {
 
     @Override
     public boolean jjymToggle(Long userId, Long recommendFurnitureId) {
-        User user = userRepository.findById(userId)
+        UserJpaEntity user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserException(ErrorCode.USER_NOT_FOUND));
 
         RecommendFurniture furniture = recommendFurnitureRepository.findById(recommendFurnitureId)
@@ -68,7 +68,7 @@ public class JjymServiceImpl implements JjymService {
 
     @Override
     public boolean rawProductJjymToggle(Long userId, Long rawProductId) {
-        User user = userRepository.findById(userId)
+        UserJpaEntity user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserException(ErrorCode.USER_NOT_FOUND));
 
         RecommendFurniture recommendFurniture = resolveRawProductRecommendFurniture(rawProductId);
@@ -85,7 +85,7 @@ public class JjymServiceImpl implements JjymService {
 
     @Override
     public void likeRawProduct(Long userId, Long rawProductId) {
-        User user = userRepository.findById(userId)
+        UserJpaEntity user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserException(ErrorCode.USER_NOT_FOUND));
         RecommendFurniture recommendFurniture = resolveRawProductRecommendFurniture(rawProductId);
 

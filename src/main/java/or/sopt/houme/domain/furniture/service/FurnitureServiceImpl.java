@@ -23,7 +23,7 @@ import or.sopt.houme.domain.house.model.entity.enums.Activity;
 import or.sopt.houme.domain.house.repository.HouseRepository;
 import or.sopt.houme.tag.domain.Tag;
 import or.sopt.houme.tag.domain.port.out.TagRepositoryPort;
-import or.sopt.houme.domain.user.model.entity.User;
+import or.sopt.houme.user.infra.persistence.UserJpaEntity;
 import or.sopt.houme.domain.user.repository.UserRepository;
 import or.sopt.houme.global.api.ErrorCode;
 import or.sopt.houme.global.api.GeneralException;
@@ -144,7 +144,7 @@ public class FurnitureServiceImpl implements FurnitureService {
     }
 
     @Override
-    public FurnitureCategoriesResponse getFurnitureCategoriesByStyle(User user, Long imageId, List<String> detectedObjects) {
+    public FurnitureCategoriesResponse getFurnitureCategoriesByStyle(UserJpaEntity user, Long imageId, List<String> detectedObjects) {
 
         // 1. userId와 imageId로 해당하는 스타일 태그 조회
         Tag tag = findTag(user, imageId);
@@ -164,7 +164,7 @@ public class FurnitureServiceImpl implements FurnitureService {
     }
 
     @Override
-    public FurnitureCategoriesResponse getFurnitureCategoriesByStyleV2(User user, Long imageId) {
+    public FurnitureCategoriesResponse getFurnitureCategoriesByStyleV2(UserJpaEntity user, Long imageId) {
 
         // 1. userId와 imageId로 해당하는 스타일 태그 조회
         Tag tag = findTag(user, imageId);
@@ -203,7 +203,7 @@ public class FurnitureServiceImpl implements FurnitureService {
     }
 
     @Override
-    public FurnitureTag findFurnitureTag(User user, Long imageId, Long categoryId) {
+    public FurnitureTag findFurnitureTag(UserJpaEntity user, Long imageId, Long categoryId) {
 
         // 1. userId와 imageId로 스타일 태그 조회
         Tag tag = tagRepositoryPort.findTagByUserIdAndImageId(user.getId(), imageId)
@@ -234,12 +234,12 @@ public class FurnitureServiceImpl implements FurnitureService {
     /**
      * 보조 메서드 (비즈니스 로직 가독성을 위해 분리했습니다.)
      */
-    private Tag findTag(User user, Long imageId) {
+    private Tag findTag(UserJpaEntity user, Long imageId) {
         return tagRepositoryPort.findTagByUserIdAndImageId(user.getId(), imageId)
                 .orElseThrow(() -> new TagException(ErrorCode.NOT_FOUND_TAG_ENTITY));
     }
 
-    private List<FurnitureJpaEntity> findSelectedFurnitures(User user, Long imageId) {
+    private List<FurnitureJpaEntity> findSelectedFurnitures(UserJpaEntity user, Long imageId) {
         HouseJpaEntity house = houseRepository.findHouseByUserIdAndImageId(user.getId(), imageId)
                 .orElseThrow(() -> new HouseException(ErrorCode.NOT_FOUND_HOUSE_ENTITY));
         return furnitureRepository.findAllByHouseId(house.getId());

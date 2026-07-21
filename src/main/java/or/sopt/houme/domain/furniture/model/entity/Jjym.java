@@ -2,7 +2,7 @@ package or.sopt.houme.domain.furniture.model.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-import or.sopt.houme.domain.user.model.entity.User;
+import or.sopt.houme.user.infra.persistence.UserJpaEntity;
 import or.sopt.houme.global.entity.BaseEntity;
 
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -28,13 +28,13 @@ public class Jjym extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "user_id", nullable = false)
-    private User user;
+    private UserJpaEntity user;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "recommend_furniture_id", nullable = false)
     private RecommendFurniture recommendFurniture;
 
-    public static Jjym of(User user, RecommendFurniture recommendFurniture) {
+    public static Jjym of(UserJpaEntity user, RecommendFurniture recommendFurniture) {
         return Jjym.builder()
                 .user(user)
                 .recommendFurniture(recommendFurniture)

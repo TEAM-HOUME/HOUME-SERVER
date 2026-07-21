@@ -3,7 +3,7 @@ package or.sopt.houme.domain.user.service;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
-import or.sopt.houme.domain.user.model.entity.User;
+import or.sopt.houme.user.infra.persistence.UserJpaEntity;
 import or.sopt.houme.domain.user.repository.RefreshTokenRepository;
 import or.sopt.houme.domain.user.repository.UserRepository;
 import or.sopt.houme.global.api.ErrorCode;
@@ -56,7 +56,7 @@ public class UserLandingServiceImpl implements UserLandingService {
             throw new TokenException(ErrorCode.REFRESH_TOKEN_NULL);
         }
 
-        User findUser = userRepository.findById(userId)
+        UserJpaEntity findUser = userRepository.findById(userId)
                 .orElseThrow(()-> new UserException(ErrorCode.USER_NOT_FOUND));
 
         if (!findUser.getHasGeneratedImage()){

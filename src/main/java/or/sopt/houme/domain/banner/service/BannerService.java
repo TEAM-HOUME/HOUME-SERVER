@@ -5,7 +5,7 @@ import or.sopt.houme.domain.banner.presentation.dto.response.BannerExploreListRe
 import or.sopt.houme.domain.banner.presentation.dto.response.LandingListResponse;
 import or.sopt.houme.domain.banner.presentation.dto.response.OtherStyleDetailResponse;
 import or.sopt.houme.domain.banner.presentation.dto.response.OtherStyleListResponse;
-import or.sopt.houme.domain.user.model.entity.User;
+import or.sopt.houme.user.infra.persistence.UserJpaEntity;
 
 public interface BannerService {
     LandingListResponse getLandings();
@@ -16,5 +16,5 @@ public interface BannerService {
 
     OtherStyleListResponse getOtherStyles(Integer size);
 
-    OtherStyleDetailResponse getOtherStyleDetail(User user, Long styleId);
+    OtherStyleDetailResponse getOtherStyleDetail(UserJpaEntity user, Long styleId);
 }

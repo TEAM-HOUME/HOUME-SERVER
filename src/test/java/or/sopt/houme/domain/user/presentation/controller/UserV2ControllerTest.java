@@ -3,7 +3,7 @@ package or.sopt.houme.domain.user.presentation.controller;
 import jakarta.servlet.http.HttpServletResponse;
 import or.sopt.houme.domain.user.model.entity.Gender;
 import or.sopt.houme.domain.user.model.entity.Role;
-import or.sopt.houme.domain.user.model.entity.User;
+import or.sopt.houme.user.infra.persistence.UserJpaEntity;
 import or.sopt.houme.domain.user.presentation.controller.dto.CustomUserDetails;
 import or.sopt.houme.domain.user.presentation.controller.dto.CustomUserDetailsService;
 import or.sopt.houme.domain.user.presentation.controller.dto.MyPageProfileResponse;
@@ -75,7 +75,7 @@ class UserV2ControllerTest {
     @Test
     @DisplayName("PATCH /api/v2/sign-up 요청 시 자체 회원가입 v2가 처리된다")
     void selfSignUpV2_success() throws Exception {
-        User user = User.builder()
+        UserJpaEntity user = UserJpaEntity.builder()
                 .id(1L)
                 .email("test@example.com")
                 .role(Role.ROLE_USER)
@@ -153,7 +153,7 @@ class UserV2ControllerTest {
     @Test
     @DisplayName("GET /api/v2/mypage/user 요청 시 마이페이지 프로필을 조회한다")
     void getMyPageProfile_success() throws Exception {
-        User user = User.builder()
+        UserJpaEntity user = UserJpaEntity.builder()
                 .id(1L)
                 .email("test@example.com")
                 .role(Role.ROLE_USER)
@@ -188,7 +188,7 @@ class UserV2ControllerTest {
     @Test
     @DisplayName("PATCH /api/v2/mypage/user 요청 시 마이페이지 프로필을 수정한다")
     void updateMyPageProfile_success() throws Exception {
-        User user = User.builder()
+        UserJpaEntity user = UserJpaEntity.builder()
                 .id(1L)
                 .email("test@example.com")
                 .role(Role.ROLE_USER)
@@ -235,7 +235,7 @@ class UserV2ControllerTest {
     @Test
     @DisplayName("PATCH /api/v2/mypage/user 요청은 전달된 필드만 수정할 수 있다")
     void updateMyPageProfile_partialSuccess() throws Exception {
-        User user = User.builder()
+        UserJpaEntity user = UserJpaEntity.builder()
                 .id(1L)
                 .email("test@example.com")
                 .role(Role.ROLE_USER)

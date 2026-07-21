@@ -1,14 +1,20 @@
-package or.sopt.houme.domain.user.model.entity;
+package or.sopt.houme.user.infra.persistence;
 
 import jakarta.persistence.*;
 import lombok.*;
-import or.sopt.houme.house.infra.persistence.HouseJpaEntity;
+import or.sopt.houme.domain.user.model.entity.Gender;
+import or.sopt.houme.domain.user.model.entity.Role;
+import or.sopt.houme.domain.user.model.entity.SocialType;
+import or.sopt.houme.domain.user.model.entity.UserStatus;
 import or.sopt.houme.global.entity.BaseEntity;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
 
+/**
+ * 유저 영속 엔티티. 순수 도메인 모델({@link or.sopt.houme.user.domain.User})과 분리된 infra 전용 타입.
+ *
+ * <p>기존 {@code users} 테이블 스키마와 매핑이 완전히 동일하다. cross-domain 연관은 없다(스칼라/enum 뿐).
+ */
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
@@ -21,7 +27,7 @@ import java.util.List;
                 columnNames = {"nickname", "nickname_tag"}
         )
 )
-public class User extends BaseEntity {
+public class UserJpaEntity extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

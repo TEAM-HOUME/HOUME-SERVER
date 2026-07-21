@@ -7,7 +7,7 @@ import or.sopt.houme.house.infra.persistence.QHouseJpaEntity;
 import or.sopt.houme.domain.preference.model.entity.Preference;
 import or.sopt.houme.domain.preference.model.entity.QGenerateImagePreference;
 import or.sopt.houme.domain.preference.model.entity.QPreference;
-import or.sopt.houme.domain.user.model.entity.QUser;
+import or.sopt.houme.user.infra.persistence.QUserJpaEntity;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
@@ -23,7 +23,7 @@ public class PreferenceRepositoryImpl implements PreferenceRepositoryCustom {
         QGenerateImagePreference generateImagePreference = QGenerateImagePreference.generateImagePreference;
         QGenerateImage generateImage = QGenerateImage.generateImage;
         QHouseJpaEntity house = QHouseJpaEntity.houseJpaEntity;
-        QUser user = QUser.user;
+        QUserJpaEntity user = QUserJpaEntity.userJpaEntity;
 
         return Optional.ofNullable(queryFactory
                 .selectFrom(preference) // Preference 엔티티 선택

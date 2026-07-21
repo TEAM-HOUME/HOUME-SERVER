@@ -7,6 +7,7 @@ import or.sopt.houme.domain.house.service.carousel.CarouselServiceImpl;
 import or.sopt.houme.domain.preference.model.entity.CarouselPreference;
 import or.sopt.houme.domain.preference.repository.CarouselPreferenceRepository;
 import or.sopt.houme.domain.user.model.entity.*;
+import or.sopt.houme.user.infra.persistence.UserJpaEntity;
 import or.sopt.houme.domain.user.repository.UserRepository;
 import or.sopt.houme.global.api.ErrorCode;
 import or.sopt.houme.global.api.handler.CarouselException;
@@ -54,7 +55,7 @@ class CarouselOptimisticLockFacadeTest {
     @SpyBean // 이 부분 추가
     private CarouselServiceImpl carouselServiceImpl;
 
-    private User savedUser;
+    private UserJpaEntity savedUser;
     private CarouselJpaEntity savedCarousel;
 
     @BeforeEach
@@ -62,7 +63,7 @@ class CarouselOptimisticLockFacadeTest {
     void setUp() {
         // 유저 저장
         savedUser = userRepository.save(
-                User.builder()
+                UserJpaEntity.builder()
                         .name("테스트유저")
                         .email("test" + UUID.randomUUID() + "@example.com")
                         .password("encoded-password")
@@ -139,7 +140,7 @@ class CarouselOptimisticLockFacadeTest {
         // given: 항상 예외 발생하도록 스텁 설정
         doThrow(new jakarta.persistence.OptimisticLockException("강제 예외"))
                 .when(carouselServiceImpl)
-                .likeCarousel(any(User.class), anyLong());
+                .likeCarousel(any(UserJpaEntity.class), anyLong());
 
         // when & then
         CarouselException thrown = org.junit.jupiter.api.Assertions.assertThrows(
@@ -158,7 +159,7 @@ class CarouselOptimisticLockFacadeTest {
         // given: 항상 예외 발생하도록 스텁 설정
         doThrow(new jakarta.persistence.OptimisticLockException("강제 예외"))
                 .when(carouselServiceImpl)
-                .hateCarousel(any(User.class), anyLong());
+                .hateCarousel(any(UserJpaEntity.class), anyLong());
 
         // when & then
         CarouselException thrown = org.junit.jupiter.api.Assertions.assertThrows(

@@ -5,7 +5,7 @@ import or.sopt.houme.domain.furniture.presentation.dto.response.JjymV2ListRespon
 import or.sopt.houme.domain.furniture.service.JjymService;
 import or.sopt.houme.domain.furniture.service.facade.JjymOptimisticLockFacade;
 import or.sopt.houme.domain.user.model.entity.Role;
-import or.sopt.houme.domain.user.model.entity.User;
+import or.sopt.houme.user.infra.persistence.UserJpaEntity;
 import or.sopt.houme.domain.user.presentation.controller.dto.CustomUserDetails;
 import or.sopt.houme.domain.user.presentation.controller.dto.CustomUserDetailsService;
 import or.sopt.houme.domain.user.repository.BlacklistTokenRepository;
@@ -118,7 +118,7 @@ class JjymV2ControllerTest {
     }
 
     private UsernamePasswordAuthenticationToken authToken() {
-        User user = User.builder()
+        UserJpaEntity user = UserJpaEntity.builder()
                 .id(1L)
                 .email("test@example.com")
                 .role(Role.ROLE_USER)

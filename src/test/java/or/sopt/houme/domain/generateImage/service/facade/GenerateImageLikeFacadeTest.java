@@ -8,7 +8,7 @@ import or.sopt.houme.house.infra.persistence.HouseJpaEntity;
 import or.sopt.houme.domain.preference.service.FactorService;
 import or.sopt.houme.domain.preference.service.GenerateImagePreferenceService;
 import or.sopt.houme.domain.preference.service.PreferenceService;
-import or.sopt.houme.domain.user.model.entity.User;
+import or.sopt.houme.user.infra.persistence.UserJpaEntity;
 import or.sopt.houme.global.api.ErrorCode;
 import or.sopt.houme.global.api.handler.GenerateImageException;
 import or.sopt.houme.global.api.handler.PreferenceException;
@@ -44,8 +44,8 @@ class GenerateImageLikeFacadeTest {
     @Mock
     private PreferenceService preferenceService;
 
-    private User testUser;
-    private User otherUser;
+    private UserJpaEntity testUser;
+    private UserJpaEntity otherUser;
     private HouseJpaEntity testHouse;
     private GenerateImage testGenerateImage;
     private IsLikeRequest likeRequest;
@@ -53,8 +53,8 @@ class GenerateImageLikeFacadeTest {
 
     @BeforeEach
     void setUp() {
-        testUser = User.builder().id(1L).build();
-        otherUser = User.builder().id(2L).build();
+        testUser = UserJpaEntity.builder().id(1L).build();
+        otherUser = UserJpaEntity.builder().id(2L).build();
 
         testHouse = HouseJpaEntity.builder().id(10L).user(testUser).build();
         testGenerateImage = GenerateImage.builder().id(100L).house(testHouse).build();

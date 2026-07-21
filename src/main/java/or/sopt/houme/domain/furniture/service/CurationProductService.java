@@ -3,7 +3,7 @@ package or.sopt.houme.domain.furniture.service;
 import or.sopt.houme.domain.furniture.presentation.dto.response.CurationProductDetailResponse;
 import or.sopt.houme.domain.furniture.presentation.dto.response.CurationProductFilterResponse;
 import or.sopt.houme.domain.furniture.presentation.dto.response.CurationProductListResponse;
-import or.sopt.houme.domain.user.model.entity.User;
+import or.sopt.houme.user.infra.persistence.UserJpaEntity;
 
 import java.util.List;
 
@@ -28,5 +28,5 @@ public interface CurationProductService {
             Integer size
     );
 
-    CurationProductDetailResponse getProductDetail(Long id, User user);
+    CurationProductDetailResponse getProductDetail(Long id, UserJpaEntity user);
 }

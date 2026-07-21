@@ -6,33 +6,33 @@ import or.sopt.houme.domain.user.presentation.controller.dto.MyPageGeneratedImag
 import or.sopt.houme.domain.user.presentation.controller.dto.MyPageProfileResponse;
 import or.sopt.houme.domain.user.presentation.controller.dto.UserImageHistoryListResponse;
 import or.sopt.houme.domain.user.model.entity.Gender;
-import or.sopt.houme.domain.user.model.entity.User;
+import or.sopt.houme.user.infra.persistence.UserJpaEntity;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 
 public interface UserService {
-    MyPageInfoResponse getMyPageInfo(User user);
+    MyPageInfoResponse getMyPageInfo(UserJpaEntity user);
 
-    UserImageHistoryListResponse getUserImageHistoryList(User user);
+    UserImageHistoryListResponse getUserImageHistoryList(UserJpaEntity user);
 
     /**
      * 마이페이지 생성 이미지 이력 v2 응답을 조회합니다.
      */
-    MyPageGeneratedImageV2Response getUserGeneratedImageHistoryListV2(User user);
+    MyPageGeneratedImageV2Response getUserGeneratedImageHistoryListV2(UserJpaEntity user);
 
-    MyPageProfileResponse getMyPageProfile(User user);
+    MyPageProfileResponse getMyPageProfile(UserJpaEntity user);
 
-    ImageHistoriesResultPageResponse getImageHistoryResultPage(User user, Long houseId);
+    ImageHistoriesResultPageResponse getImageHistoryResultPage(UserJpaEntity user, Long houseId);
 
-    String updateUser(User user, String name, Gender gender, LocalDate birthday);
+    String updateUser(UserJpaEntity user, String name, Gender gender, LocalDate birthday);
 
-    String updateUserV2(User user, String nickname, Gender gender, LocalDate birthday);
+    String updateUserV2(UserJpaEntity user, String nickname, Gender gender, LocalDate birthday);
 
-    MyPageProfileResponse updateMyPageProfile(User user, String nickname, Gender gender, LocalDate birthday);
+    MyPageProfileResponse updateMyPageProfile(UserJpaEntity user, String nickname, Gender gender, LocalDate birthday);
 
     // 사용자 이미지 생성 여부 저장
     @Transactional
-    void updateHasGeneratedImage(User user);
+    void updateHasGeneratedImage(UserJpaEntity user);
 
 }

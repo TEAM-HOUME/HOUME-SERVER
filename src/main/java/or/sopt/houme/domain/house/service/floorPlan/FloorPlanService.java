@@ -7,21 +7,21 @@ import or.sopt.houme.domain.house.presentation.floorPlan.dto.response.RecentFloo
 import or.sopt.houme.domain.house.model.entity.enums.Equilibrium;
 import or.sopt.houme.domain.house.model.entity.enums.Form;
 import or.sopt.houme.domain.house.model.entity.enums.Structure;
-import or.sopt.houme.domain.user.model.entity.User;
+import or.sopt.houme.user.infra.persistence.UserJpaEntity;
 
 public interface FloorPlanService {
 
     // 집 구조 도면 서비스 제공 (Form, Structure)
     FloorPlanListResponse getHousingPlan(Form form, Structure structure);
 
-    RecentFloorPlanResponse getRecentFloorPlan(User user);
+    RecentFloorPlanResponse getRecentFloorPlan(UserJpaEntity user);
 
     ExploreHouseTemplateListResponse getExploreHouseTemplates(
             Integer size,
             Form residenceType,
             Structure layoutType,
             Equilibrium equilibrium,
-            User user
+            UserJpaEntity user
     );
 
     ExploreHouseTemplateDetailResponse getExploreHouseTemplateDetail(Long floorPlanId);

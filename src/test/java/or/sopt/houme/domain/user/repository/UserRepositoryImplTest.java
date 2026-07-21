@@ -10,6 +10,7 @@ import or.sopt.houme.taste.infra.persistence.TasteJpaEntity;
 import or.sopt.houme.tastetag.infra.persistence.TasteTagJpaEntity;
 import or.sopt.houme.domain.user.presentation.controller.dto.UserImageHistoryDTO;
 import or.sopt.houme.domain.user.model.entity.*;
+import or.sopt.houme.user.infra.persistence.UserJpaEntity;
 import or.sopt.houme.global.config.QuerydslConfig;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -37,7 +38,7 @@ class UserRepositoryImplTest {
     @Autowired
     private UserRepositoryImpl userRepositoryImpl;
 
-    private User mockUser;
+    private UserJpaEntity mockUser;
     private HouseJpaEntity mockHouse;
     private GenerateImage mockGenerateImage;
     private HouseTaste mockHouseTaste;
@@ -48,7 +49,7 @@ class UserRepositoryImplTest {
     @BeforeEach
     void setUp() {
         // 1. 유저 생성
-        mockUser = User.builder()
+        mockUser = UserJpaEntity.builder()
                 .name("테스트유저")
                 .birthday(LocalDate.of(1999, 12, 31))
                 .gender(Gender.MALE)

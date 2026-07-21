@@ -2,7 +2,7 @@ package or.sopt.houme.domain.credit.model.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-import or.sopt.houme.domain.user.model.entity.User;
+import or.sopt.houme.user.infra.persistence.UserJpaEntity;
 import or.sopt.houme.global.entity.BaseEntity;
 
 @Entity
@@ -18,9 +18,9 @@ public class PaymentBtnClickLog extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
-    private User user;
+    private UserJpaEntity user;
 
-    public static PaymentBtnClickLog of(User user) {
+    public static PaymentBtnClickLog of(UserJpaEntity user) {
         return PaymentBtnClickLog.builder()
                 .user(user)
                 .build();

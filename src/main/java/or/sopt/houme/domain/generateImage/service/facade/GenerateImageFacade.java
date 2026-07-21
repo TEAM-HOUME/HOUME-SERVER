@@ -61,7 +61,7 @@ import or.sopt.houme.taste.domain.Taste;
 import or.sopt.houme.domain.house.service.taste.TagService;
 import or.sopt.houme.domain.house.service.taste.TasteService;
 import or.sopt.houme.domain.house.service.taste.TasteTagService;
-import or.sopt.houme.domain.user.model.entity.User;
+import or.sopt.houme.user.infra.persistence.UserJpaEntity;
 import or.sopt.houme.domain.user.service.UserService;
 import or.sopt.houme.domain.user.util.floorplan.FloorPlanImageJsonCodec;
 import or.sopt.houme.global.api.ErrorCode;
@@ -116,16 +116,16 @@ public class GenerateImageFacade {
 
     // 스프링을 이용한 이미지 생성
     @Transactional
-    public ImageInfoResponse generateImage(User user, GenerateImageRequest generateImageRequest) {
+    public ImageInfoResponse generateImage(UserJpaEntity user, GenerateImageRequest generateImageRequest) {
         return generateImageInternal(user, generateImageRequest, false);
     }
 
     @Transactional
-    public ImageInfoResponse generateImageByGemini(User user, GenerateImageRequest generateImageRequest) {
+    public ImageInfoResponse generateImageByGemini(UserJpaEntity user, GenerateImageRequest generateImageRequest) {
         return generateImageInternal(user, generateImageRequest, true);
     }
 
-    private ImageInfoResponse generateImageInternal(User user, GenerateImageRequest generateImageRequest, boolean useGemini) {
+    private ImageInfoResponse generateImageInternal(UserJpaEntity user, GenerateImageRequest generateImageRequest, boolean useGemini) {
 
         /**
          * redis 저장 (user랑 상태값)
@@ -232,15 +232,15 @@ public class GenerateImageFacade {
     
     }
 
-    public ImageInfoResponse generateImageByFastApi(User user, GenerateImageRequest generateImageRequest) {
+    public ImageInfoResponse generateImageByFastApi(UserJpaEntity user, GenerateImageRequest generateImageRequest) {
         return generateImageByFastApiInternal(user, generateImageRequest, false);
     }
 
-    public ImageInfoResponse generateImageByFastApiGemini(User user, GenerateImageRequest generateImageRequest) {
+    public ImageInfoResponse generateImageByFastApiGemini(UserJpaEntity user, GenerateImageRequest generateImageRequest) {
         return generateImageByFastApiInternal(user, generateImageRequest, true);
     }
 
-    private ImageInfoResponse generateImageByFastApiInternal(User user, GenerateImageRequest generateImageRequest, boolean useGemini) {
+    private ImageInfoResponse generateImageByFastApiInternal(UserJpaEntity user, GenerateImageRequest generateImageRequest, boolean useGemini) {
 
         /**
          * [짧은 트랜잭션이 일어나는 부분] (하나의 로직으로 처리)
@@ -352,15 +352,15 @@ public class GenerateImageFacade {
     }
 
     // 비동기 이미지 생성 요청
-    public ImageInfoListResponse generateImageBy2ea(User user, GenerateImageRequest generateImageRequest) {
+    public ImageInfoListResponse generateImageBy2ea(UserJpaEntity user, GenerateImageRequest generateImageRequest) {
         return generateImageBy2eaInternal(user, generateImageRequest, false);
     }
 
-    public ImageInfoListResponse generateImageBy2eaGemini(User user, GenerateImageRequest generateImageRequest) {
+    public ImageInfoListResponse generateImageBy2eaGemini(UserJpaEntity user, GenerateImageRequest generateImageRequest) {
         return generateImageBy2eaInternal(user, generateImageRequest, true);
     }
 
-    public BannerGenerateImageResponse generateBannerImageByGemini(User user, BannerGenerateImageRequest request) {
+    public BannerGenerateImageResponse generateBannerImageByGemini(UserJpaEntity user, BannerGenerateImageRequest request) {
         CreditReservation lockedCredit = null;
 
         try {
@@ -443,7 +443,7 @@ public class GenerateImageFacade {
         }
     }
 
-    public OtherStyleGenerateImageResponse generateOtherStyleImageByGemini(User user, OtherStyleGenerateImageRequest request) {
+    public OtherStyleGenerateImageResponse generateOtherStyleImageByGemini(UserJpaEntity user, OtherStyleGenerateImageRequest request) {
         CreditReservation lockedCredit = null;
 
         try {
@@ -520,7 +520,7 @@ public class GenerateImageFacade {
         }
     }
 
-    public GenerateImageV4Response generateImageV4ByGemini(User user, GenerateImageV4Request request) {
+    public GenerateImageV4Response generateImageV4ByGemini(UserJpaEntity user, GenerateImageV4Request request) {
         CreditReservation lockedCredit = null;
 
         try {
@@ -613,7 +613,7 @@ public class GenerateImageFacade {
         }
     }
 
-    public GenerateImageV4Response generateImageByProducts(User user, ProductGenerateImageRequest request) {
+    public GenerateImageV4Response generateImageByProducts(UserJpaEntity user, ProductGenerateImageRequest request) {
         CreditReservation lockedCredit = null;
 
         try {
@@ -688,7 +688,7 @@ public class GenerateImageFacade {
         }
     }
 
-    private ImageInfoListResponse generateImageBy2eaInternal(User user, GenerateImageRequest generateImageRequest, boolean useGemini) {
+    private ImageInfoListResponse generateImageBy2eaInternal(UserJpaEntity user, GenerateImageRequest generateImageRequest, boolean useGemini) {
 
         // finally 블록에서 사용하기 위해 선언
         CreditReservation lockedCredit = null;
@@ -1161,7 +1161,7 @@ public class GenerateImageFacade {
     }
 
     // houseId로 결과 이미지 찾아오기
-    public ImageInfoResponse getFallBackImage(User user, Long houseId) {
+    public ImageInfoResponse getFallBackImage(UserJpaEntity user, Long houseId) {
         HouseJpaEntity houseById = houseService.findHouseById(houseId);
 
         GenerateImage generateImage;

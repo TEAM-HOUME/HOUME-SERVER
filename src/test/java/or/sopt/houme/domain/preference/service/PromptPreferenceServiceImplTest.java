@@ -9,6 +9,7 @@ import or.sopt.houme.domain.preference.model.entity.Preference;
 import or.sopt.houme.domain.preference.repository.GenerateImagePreferenceRepository;
 import or.sopt.houme.domain.preference.repository.PreferenceRepository;
 import or.sopt.houme.domain.user.model.entity.*;
+import or.sopt.houme.user.infra.persistence.UserJpaEntity;
 import or.sopt.houme.domain.user.repository.UserRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -52,7 +53,7 @@ class PromptPreferenceServiceImplTest {
         Preference preference = Preference.of(true);
         preferenceRepository.save(preference);
 
-        User user = User.builder()
+        UserJpaEntity user = UserJpaEntity.builder()
                 .name("test_user")
                 .birthday(LocalDate.of(2001, 1, 10))
                 .gender(Gender.MALE)
@@ -63,7 +64,7 @@ class PromptPreferenceServiceImplTest {
                 .status(UserStatus.ACTIVE)
                 .role(Role.ROLE_USER)
                 .build();
-        User save = userRepository.save(user);
+        UserJpaEntity save = userRepository.save(user);
 
         HouseJpaEntity house = HouseJpaEntity.builder()
                 .isValid(true)

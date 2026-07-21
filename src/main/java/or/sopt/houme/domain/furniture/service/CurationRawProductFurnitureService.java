@@ -1,7 +1,7 @@
 package or.sopt.houme.domain.furniture.service;
 
 import or.sopt.houme.domain.furniture.presentation.dto.response.FurnitureProductsInfoResponseV2;
-import or.sopt.houme.domain.user.model.entity.User;
+import or.sopt.houme.user.infra.persistence.UserJpaEntity;
 
 import java.util.List;
 
@@ -14,5 +14,5 @@ public interface CurationRawProductFurnitureService {
 
     List<Long> getFurnitureIdsHavingProducts(List<Long> furnitureIds);
 
-    FurnitureProductsInfoResponseV2 buildProductsResponseByFurnitureId(User user, Long furnitureId);
+    FurnitureProductsInfoResponseV2 buildProductsResponseByFurnitureId(UserJpaEntity user, Long furnitureId);
 }

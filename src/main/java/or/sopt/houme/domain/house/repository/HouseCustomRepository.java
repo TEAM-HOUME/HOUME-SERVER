@@ -1,14 +1,14 @@
 package or.sopt.houme.domain.house.repository;
 
 import or.sopt.houme.house.infra.persistence.HouseJpaEntity;
-import or.sopt.houme.domain.user.model.entity.User;
+import or.sopt.houme.user.infra.persistence.UserJpaEntity;
 
 import java.util.List;
 import java.util.Optional;
 
 public interface HouseCustomRepository {
 
-    HouseJpaEntity findLatestHouse(User user);
+    HouseJpaEntity findLatestHouse(UserJpaEntity user);
 
     Optional<HouseJpaEntity> findHouseByUserIdAndImageId(Long userId, Long imageId);
 

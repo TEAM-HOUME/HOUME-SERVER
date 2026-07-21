@@ -13,6 +13,7 @@ import or.sopt.houme.domain.house.model.floorPlan.entity.FloorPlan;
 import or.sopt.houme.domain.house.repository.HouseFloorPlanRepository;
 import or.sopt.houme.domain.house.repository.HouseRepository;
 import or.sopt.houme.domain.user.model.entity.*;
+import or.sopt.houme.user.infra.persistence.UserJpaEntity;
 import or.sopt.houme.domain.user.repository.UserRepository;
 import or.sopt.houme.global.api.ErrorCode;
 import or.sopt.houme.global.api.GeneralException;
@@ -48,12 +49,12 @@ class HouseServiceImplTest {
     @Mock
     private HouseFloorPlanRepository houseFloorPlanRepository;
 
-    private User savedUser;
+    private UserJpaEntity savedUser;
     private HouseJpaEntity savedHouse;
 
     @BeforeEach
     void setUp() {
-        savedUser = User.builder()
+        savedUser = UserJpaEntity.builder()
                 .id(1L)
                         .name("test_user")
                         .birthday(LocalDate.of(2001, 1, 10))
@@ -107,7 +108,7 @@ class HouseServiceImplTest {
     }
 
     @Test
-    @DisplayName("User를 받아서 최근에 입력한 HouseJpaEntity 조건들을 받을 수 있다.")
+    @DisplayName("UserJpaEntity를 받아서 최근에 입력한 HouseJpaEntity 조건들을 받을 수 있다.")
     void getHouseOptionsResponse_ShouldReturnValidHouse() {
         // Given
         FloorPlan floorPlan = FloorPlan.builder()
@@ -133,7 +134,7 @@ class HouseServiceImplTest {
     @DisplayName("[Exception] 생성되어있는 house가 없는 경우 예외가 발생한다.")
     void getHousingPlanNoHouse() {
         // Given
-        User user = User.builder()
+        UserJpaEntity user = UserJpaEntity.builder()
                 .id(2L)
                 .build();
 
