@@ -90,3 +90,10 @@
 
 ## 참고 운영 이슈 (별건, 코드무관)
 - prod Gemini v4 이미지생성이 "월 지출 상한(spending cap) 초과 429"로 실패 중 — AI Studio에서 상한 상향 필요(운영). 알림이 ChatGptException으로 오탐(이름 오해). 개선 후보: 예외 cause 체이닝/알림명 정정/429 전용 처리.
+
+## 핵심 설계 결정 (2026-07-22, 레이어 7모듈 확정 이후)
+- **레이어 분리에서 절단 대상은 "서비스(application)→엔티티/리포" 의존이지, infra 내부 엔티티↔엔티티 연관이 아니다.** FurnitureTag→Furniture, CurationRawProduct↔매핑, Carousel→CarouselType 같은 **동일-infra 내부 JPA 연관은 유지**한다(전부 houme-infra 한 모듈에 같이 살게 됨). cross-domain 연관은 스테이지2에서 이미 전부 절단됨.
+- **패턴:** application 서비스는 `<domain>.domain.port.out.XxxPort`(순수 모델/View 반환)만 소비. **어댑터는 infra 에서 엔티티 그래프(fetch join 포함)를 자유롭게 순회**해 View 로 평탄화(N+1 회피 유지). 무거운 QueryDSL 은 재작성하지 않고 어댑터 뒤로 숨김.
+- View 네이밍: `XxxView`(flat record/불변). DTO 팩토리(presentation)는 View/순수 모델만 받는다.
+- 서비스별 전환 레시피: ①사용 리포 메서드 목록화 ②포트에 미러 메서드(View 반환) ③어댑터 위임+매핑 ④서비스 타입/임포트 스왑 ⑤DTO 팩토리 View 화 ⑥목 테스트 플립.
+- P2 모듈 배정(패키지 이동 아님, source-set 배정): 엔티티/리포/어댑터/QueryDSL/크롤러·외부클라이언트 오케스트레이션=infra, 서비스·파사드·response DTO=application, 컨트롤러=api, JWT/Security=auth, 순수 도메인+포트=domain.
