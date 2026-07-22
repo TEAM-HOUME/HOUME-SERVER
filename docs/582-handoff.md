@@ -133,3 +133,9 @@ houme-common ────▶ (없음)  [ApiResponse/ErrorCode/예외타입/공�
   - 테스트 클래스패스: houme-api testImplementation 에 JPA/AWS/QueryDSL/Redisson/PG/H2 부여.
   - Jacoco/test 설정(maxParallelForks=1 등) houme-api 로 이식. jib 는 houme-api 플러그인.
 - 다음: 전체 스위트 게이트(진행 중) → 실패 수정 → 커밋·푸시. **동시 gradle 실행 절대 금지(게이트 오염 2회 발생)**.
+
+## ✅ P2 완료 (2026-07-22) — #582 코드 작업 종료
+- 커밋 `1682afc`(7모듈 분리) + `b9c5b8f`(generated ignore). **전체 스위트 green(10m24s), bootJar green, 실패 0.** 원격 푸시됨.
+- 결정적 버그와 해결: **부트 플러그인이 api 에만 있어 타 모듈이 `-parameters` 없이 컴파일 → @AuthenticationPrincipal(CustomUserDetails 생성자) DataBinder 파라미터명 소실로 슬라이스 테스트 500.** 루트 subprojects 에 `-parameters` 전역 적용으로 해결.
+- 남은 것(코드 외): dev 배포 검증→prod 릴리즈(사용자 몫). jib 이미지 빌드는 `:houme-api:jib*`. CI 스크립트가 `./gradlew build`/`test` 경로 가정이면 그대로 동작(루트 위임), bootJar 산출물 경로만 houme-api/build/libs 로 변경 주의.
+- 후속(선택): application→external 직접 소비의 포트화, ArchUnit 모듈경계 테스트는 이제 불필요(컴파일 강제)하나 슬라이스 규칙 테스트는 유지.
