@@ -1,0 +1,18 @@
+// houme-application: 엔티티-프리 서비스·파사드·인터페이스·presentation DTO
+dependencies {
+    api project(':houme-domain')
+    implementation project(':houme-common')
+
+    implementation 'org.springframework:spring-context'
+    implementation 'org.springframework:spring-tx'
+    implementation 'org.springframework.boot:spring-boot-starter-cache'
+    implementation 'org.springframework.data:spring-data-commons' // Pageable 등
+    implementation 'org.springframework:spring-web' // 일부 서비스의 웹 타입(점진 제거 대상)
+    implementation 'org.springframework.security:spring-security-core' // principal 소비
+    implementation 'org.springframework.boot:spring-boot-starter-aop'
+    implementation 'io.swagger.core.v3:swagger-annotations-jakarta:2.2.20'
+    implementation 'jakarta.validation:jakarta.validation-api:3.0.2'
+    implementation 'jakarta.servlet:jakarta.servlet-api:6.0.0' // OAuth 서비스 Http(Servlet)Request/Response
+    implementation 'com.fasterxml.jackson.core:jackson-databind'
+    implementation 'io.github.resilience4j:resilience4j-spring-boot3'
+}

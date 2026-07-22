@@ -1,0 +1,9 @@
+rootProject.name = 'houme'
+
+include 'houme-common'
+include 'houme-domain'
+include 'houme-application'
+include 'houme-external'
+include 'houme-auth'
+include 'houme-infra'
+include 'houme-api'

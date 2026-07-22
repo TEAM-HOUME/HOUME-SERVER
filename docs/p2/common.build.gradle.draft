@@ -1,0 +1,8 @@
+// houme-common: 무프레임워크 공용 (ApiResponse/ErrorCode/예외/유틸/공유 DTO 레코드)
+dependencies {
+    // Swagger @Schema 어노테이션(컴파일 전용, 프레임워크 아님)
+    implementation 'io.swagger.core.v3:swagger-annotations-jakarta:2.2.20'
+    // jakarta validation 어노테이션 (request DTO)
+    implementation 'jakarta.validation:jakarta.validation-api:3.0.2'
+    implementation 'com.fasterxml.jackson.core:jackson-annotations'
+}
