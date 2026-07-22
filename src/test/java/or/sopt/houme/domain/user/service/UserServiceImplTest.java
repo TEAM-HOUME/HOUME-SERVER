@@ -9,12 +9,12 @@ import or.sopt.houme.domain.furniture.model.entity.CurationRawProduct;
 import or.sopt.houme.domain.furniture.model.entity.CurationRawProductColor;
 import or.sopt.houme.domain.furniture.model.entity.CurationSource;
 import or.sopt.houme.furniture.domain.Furniture;
-import or.sopt.houme.domain.furniture.model.entity.Jjym;
+import or.sopt.houme.furniture.domain.Jjym;
 import or.sopt.houme.furniture.domain.RecommendFurniture;
 import or.sopt.houme.domain.furniture.model.entity.SoozipCategory;
 import or.sopt.houme.domain.furniture.repository.CurationRawProductColorRepository;
 import or.sopt.houme.furniture.domain.port.out.FurnitureRepositoryPort;
-import or.sopt.houme.domain.furniture.repository.JjymRepository;
+import or.sopt.houme.furniture.domain.port.out.JjymRepositoryPort;
 import or.sopt.houme.furniture.domain.port.out.RecommendFurniturePort;
 import or.sopt.houme.domain.generateImage.model.entity.GenerateImage;
 import or.sopt.houme.domain.generateImage.model.entity.GenerateImageRawProduct;
@@ -86,7 +86,7 @@ class UserServiceImplTest {
     private final GenerateImageUsedProductRepository generateImageUsedProductRepository = mock(GenerateImageUsedProductRepository.class);
     private final RecommendFurniturePort recommendFurniturePort = mock(RecommendFurniturePort.class);
     private final FurnitureRepositoryPort furnitureRepository = mock(FurnitureRepositoryPort.class);
-    private final JjymRepository jjymRepository = mock(JjymRepository.class);
+    private final JjymRepositoryPort jjymRepositoryPort = mock(JjymRepositoryPort.class);
     private final CurationRawProductColorRepository curationRawProductColorRepository = mock(CurationRawProductColorRepository.class);
     private final NicknameService nicknameService = mock(NicknameService.class);
     private final UserNicknameTagTransactionService userNicknameTagTransactionService = mock(UserNicknameTagTransactionService.class);
@@ -108,7 +108,7 @@ class UserServiceImplTest {
             generateImageUsedProductRepository,
             recommendFurniturePort,
             furnitureRepository,
-            jjymRepository,
+            jjymRepositoryPort,
             curationRawProductColorRepository,
             nicknameService,
             userNicknameTagTransactionService
@@ -478,12 +478,8 @@ class UserServiceImplTest {
         given(recommendFurniturePort.findAllBySourceAndFurnitureProductIdIn(CurationSource.RAW, List.of(1001L, 1002L)))
                 .willReturn(List.of(bannerRecommendFurniture, regularRecommendFurniture));
 
-        Jjym jjym = Jjym.builder()
-                .id(1L)
-                .userId(user.getId())
-                .recommendFurnitureId(regularRecommendFurniture.getId())
-                .build();
-        given(jjymRepository.findAllByUserIdAndRecommendFurnitureIdIn(user.getId(), List.of(501L, 502L)))
+        Jjym jjym = Jjym.reconstitute(1L, user.getId(), regularRecommendFurniture.getId());
+        given(jjymRepositoryPort.findAllByUserIdAndRecommendFurnitureIdIn(user.getId(), List.of(501L, 502L)))
                 .willReturn(List.of(jjym));
 
         // when

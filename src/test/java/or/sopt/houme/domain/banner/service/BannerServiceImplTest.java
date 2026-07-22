@@ -18,7 +18,7 @@ import or.sopt.houme.domain.furniture.model.entity.CurationRawProduct;
 import or.sopt.houme.domain.furniture.model.entity.CurationRawProductColor;
 import or.sopt.houme.furniture.domain.RecommendFurniture;
 import or.sopt.houme.domain.furniture.repository.CurationRawProductColorRepository;
-import or.sopt.houme.domain.furniture.repository.JjymRepository;
+import or.sopt.houme.furniture.domain.port.out.JjymRepositoryPort;
 import or.sopt.houme.furniture.domain.port.out.RecommendFurniturePort;
 
 import java.util.List;
@@ -43,7 +43,7 @@ class BannerServiceImplTest {
     private RecommendFurniturePort recommendFurniturePort;
 
     @Mock
-    private JjymRepository jjymRepository;
+    private JjymRepositoryPort jjymRepositoryPort;
 
     @Mock
     private ObjectMapper objectMapper;
@@ -116,7 +116,7 @@ class BannerServiceImplTest {
                         .source(CurationSource.RAW)
                         .furnitureProductId(1000L)
                         .build()));
-        when(jjymRepository.findAllByUserIdAndRecommendFurnitureIdIn(1L, List.of(1L))).thenReturn(List.of());
+        when(jjymRepositoryPort.findAllByUserIdAndRecommendFurnitureIdIn(1L, List.of(1L))).thenReturn(List.of());
 
         or.sopt.houme.user.domain.User user = or.sopt.houme.user.domain.User.builder().id(1L).build();
         OtherStyleDetailResponse response = bannerService.getOtherStyleDetail(user, 1L);

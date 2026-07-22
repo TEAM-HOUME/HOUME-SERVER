@@ -6,14 +6,14 @@ import or.sopt.houme.domain.furniture.model.entity.CurationRawProductColor;
 import or.sopt.houme.domain.furniture.model.entity.CurationRawProductFurniture;
 import or.sopt.houme.domain.furniture.model.entity.CurationSource;
 import or.sopt.houme.furniture.infra.persistence.FurnitureJpaEntity;
-import or.sopt.houme.domain.furniture.model.entity.Jjym;
+import or.sopt.houme.furniture.domain.Jjym;
 import or.sopt.houme.furniture.domain.RecommendFurniture;
 import or.sopt.houme.domain.furniture.presentation.dto.response.FurnitureProductsInfoResponseV2;
 import or.sopt.houme.domain.furniture.presentation.dto.response.ProductColorResponse;
 import or.sopt.houme.domain.furniture.repository.CurationRawProductColorRepository;
 import or.sopt.houme.domain.furniture.repository.CurationRawProductFurnitureRepository;
 import or.sopt.houme.domain.furniture.repository.FurnitureRepository;
-import or.sopt.houme.domain.furniture.repository.JjymRepository;
+import or.sopt.houme.furniture.domain.port.out.JjymRepositoryPort;
 import or.sopt.houme.furniture.domain.port.out.RecommendFurniturePort;
 import or.sopt.houme.user.domain.User;
 import or.sopt.houme.global.api.ErrorCode;
@@ -40,7 +40,7 @@ public class CurationRawProductFurnitureServiceImpl implements CurationRawProduc
     private final CurationRawProductFurnitureRepository curationRawProductFurnitureRepository;
     private final CurationRawProductColorRepository curationRawProductColorRepository;
     private final RecommendFurniturePort recommendFurniturePort;
-    private final JjymRepository jjymRepository;
+    private final JjymRepositoryPort jjymRepositoryPort;
     private final FurnitureRepository furnitureRepository;
 
     @Override
@@ -156,7 +156,7 @@ public class CurationRawProductFurnitureServiceImpl implements CurationRawProduc
                 .collect(Collectors.toMap(RecommendFurniture::getId, RecommendFurniture::getFurnitureProductId, (left, right) -> left));
 
                 // #582: Jjym→RecommendFurniture 연관 절단 — recommendFurnitureId 로 역매핑
-                return jjymRepository.findAllByUserIdAndRecommendFurnitureIdIn(user.getId(), recommendIds).stream()
+                return jjymRepositoryPort.findAllByUserIdAndRecommendFurnitureIdIn(user.getId(), recommendIds).stream()
                         .map(Jjym::getRecommendFurnitureId)
                         .map(productIdByRecommendId::get)
                         .filter(Objects::nonNull)

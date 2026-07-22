@@ -8,14 +8,14 @@ import or.sopt.houme.domain.furniture.model.entity.CurationRawProduct;
 import or.sopt.houme.domain.furniture.model.entity.CurationRawProductColor;
 import or.sopt.houme.domain.furniture.model.entity.CurationSource;
 import or.sopt.houme.domain.furniture.model.entity.FurnitureTag;
-import or.sopt.houme.domain.furniture.model.entity.Jjym;
+import or.sopt.houme.furniture.domain.Jjym;
 import or.sopt.houme.domain.furniture.model.entity.RecommendFurniture;
 import or.sopt.houme.domain.furniture.presentation.dto.response.FurnitureProductsInfoResponseV2;
 import or.sopt.houme.domain.furniture.presentation.dto.response.ProductColorResponse;
 import or.sopt.houme.domain.furniture.repository.CurationRawProductColorRepository;
 import or.sopt.houme.domain.furniture.repository.CurationRawProductRepository;
 import or.sopt.houme.domain.furniture.repository.CurationFurnitureRepository;
-import or.sopt.houme.domain.furniture.repository.JjymRepository;
+import or.sopt.houme.furniture.domain.port.out.JjymRepositoryPort;
 import or.sopt.houme.domain.furniture.repository.RecommendFurnitureRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -40,7 +40,7 @@ public class CurationFurnitureServiceImpl implements CurationFurnitureService {
     private final RecommendFurnitureService recommendFurnitureService;
     private final CurationRawProductRepository curationRawProductRepository;
     private final CurationRawProductColorRepository curationRawProductColorRepository;
-    private final JjymRepository jjymRepository;
+    private final JjymRepositoryPort jjymRepositoryPort;
 
     @Transactional(readOnly = true)
     @Override
@@ -175,7 +175,7 @@ public class CurationFurnitureServiceImpl implements CurationFurnitureService {
                 .map(curation -> curation.getRecommendFurniture().getId())
                 .distinct()
                 .toList();
-        return jjymRepository.countByRecommendFurnitureIds(recommendFurnitureIds);
+        return jjymRepositoryPort.countByRecommendFurnitureIds(recommendFurnitureIds);
     }
 
     private Set<Long> findLikedRecommendIds(Long userId, List<FurnitureProductsInfoResponse.FurnitureProductInfo> rawInfos) {
@@ -188,7 +188,7 @@ public class CurationFurnitureServiceImpl implements CurationFurnitureService {
             return Set.of();
         }
 
-        return jjymRepository.findAllByUserIdAndRecommendFurnitureIdIn(userId, recommendFurnitureIds).stream()
+        return jjymRepositoryPort.findAllByUserIdAndRecommendFurnitureIdIn(userId, recommendFurnitureIds).stream()
                 .map(Jjym::getRecommendFurnitureId)
                 .filter(Objects::nonNull)
                 .collect(Collectors.toSet());

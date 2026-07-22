@@ -16,7 +16,7 @@ import or.sopt.houme.domain.furniture.repository.CurationRawProductRepository;
 import or.sopt.houme.domain.furniture.repository.CurationRawProductRepositoryCustom;
 import or.sopt.houme.domain.furniture.repository.FurnitureRepository;
 import or.sopt.houme.domain.furniture.repository.FurnitureTypeRepository;
-import or.sopt.houme.domain.furniture.repository.JjymRepository;
+import or.sopt.houme.furniture.domain.port.out.JjymRepositoryPort;
 import or.sopt.houme.furniture.domain.port.out.RecommendFurniturePort;
 import or.sopt.houme.user.domain.User;
 import org.junit.jupiter.api.DisplayName;
@@ -62,7 +62,7 @@ class CurationProductServiceImplTest {
     private RecommendFurniturePort recommendFurniturePort;
 
     @Mock
-    private JjymRepository jjymRepository;
+    private JjymRepositoryPort jjymRepositoryPort;
 
     @Test
     @DisplayName("getFilterMetadata()는 DB 데이터와 정적 필터를 조합하여 반환한다")
@@ -341,8 +341,8 @@ class CurationProductServiceImplTest {
         given(curationRawProductColorRepository.findAllByCurationRawProductId(id)).willReturn(List.of());
         given(recommendFurniturePort.findBySourceAndFurnitureProductId(eq(CurationSource.RAW), eq(3003L)))
                 .willReturn(Optional.of(recommendFurniture));
-        given(jjymRepository.existsByUserIdAndRecommendFurnitureId(1L, 10L)).willReturn(true);
-        given(jjymRepository.countByRecommendFurnitureId(10L)).willReturn(5L);
+        given(jjymRepositoryPort.existsByUserIdAndRecommendFurnitureId(1L, 10L)).willReturn(true);
+        given(jjymRepositoryPort.countByRecommendFurnitureId(10L)).willReturn(5L);
 
         // when
         CurationProductDetailResponse response = curationProductService.getProductDetail(id, user);

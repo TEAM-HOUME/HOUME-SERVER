@@ -8,11 +8,11 @@ import or.sopt.houme.domain.furniture.model.entity.CurationRawProduct;
 import or.sopt.houme.domain.furniture.model.entity.CurationRawProductColor;
 import or.sopt.houme.domain.furniture.model.entity.CurationSource;
 import or.sopt.houme.furniture.domain.Furniture;
-import or.sopt.houme.domain.furniture.model.entity.Jjym;
+import or.sopt.houme.furniture.domain.Jjym;
 import or.sopt.houme.furniture.domain.RecommendFurniture;
 import or.sopt.houme.domain.furniture.repository.CurationRawProductColorRepository;
 import or.sopt.houme.furniture.domain.port.out.FurnitureRepositoryPort;
-import or.sopt.houme.domain.furniture.repository.JjymRepository;
+import or.sopt.houme.furniture.domain.port.out.JjymRepositoryPort;
 import or.sopt.houme.furniture.domain.port.out.RecommendFurniturePort;
 import or.sopt.houme.domain.generateImage.model.entity.GenerateImage;
 import or.sopt.houme.domain.generateImage.model.entity.GenerateImageRawProduct;
@@ -96,7 +96,7 @@ public class UserServiceImpl implements UserService {
     private final GenerateImageUsedProductRepository generateImageUsedProductRepository;
     private final RecommendFurniturePort recommendFurniturePort;
     private final FurnitureRepositoryPort furnitureRepositoryPort;
-    private final JjymRepository jjymRepository;
+    private final JjymRepositoryPort jjymRepositoryPort;
     private final CurationRawProductColorRepository curationRawProductColorRepository;
     private final NicknameService nicknameService;
     private final UserNicknameTagTransactionService userNicknameTagTransactionService;
@@ -632,7 +632,7 @@ public class UserServiceImpl implements UserService {
             return rawProducts.stream().collect(Collectors.toMap(CurationRawProduct::getId, ignored -> Boolean.FALSE));
         }
 
-        Set<Long> jjymRecommendFurnitureIds = jjymRepository.findAllByUserIdAndRecommendFurnitureIdIn(userId, recommendFurnitureIds)
+        Set<Long> jjymRecommendFurnitureIds = jjymRepositoryPort.findAllByUserIdAndRecommendFurnitureIdIn(userId, recommendFurnitureIds)
                 .stream()
                 .map(Jjym::getRecommendFurnitureId)
                 .filter(java.util.Objects::nonNull)

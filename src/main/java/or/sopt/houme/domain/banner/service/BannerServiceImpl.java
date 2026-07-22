@@ -22,11 +22,11 @@ import or.sopt.houme.domain.furniture.model.entity.CurationSource;
 import or.sopt.houme.domain.banner.repository.BannerRepository;
 import or.sopt.houme.domain.furniture.model.entity.CurationRawProduct;
 import or.sopt.houme.domain.furniture.model.entity.CurationRawProductColor;
-import or.sopt.houme.domain.furniture.model.entity.Jjym;
+import or.sopt.houme.furniture.domain.Jjym;
 import or.sopt.houme.furniture.domain.RecommendFurniture;
 import or.sopt.houme.domain.furniture.presentation.dto.response.ProductColorResponse;
 import or.sopt.houme.domain.furniture.repository.CurationRawProductColorRepository;
-import or.sopt.houme.domain.furniture.repository.JjymRepository;
+import or.sopt.houme.furniture.domain.port.out.JjymRepositoryPort;
 import or.sopt.houme.furniture.domain.port.out.RecommendFurniturePort;
 import or.sopt.houme.user.domain.User;
 import or.sopt.houme.global.api.ErrorCode;
@@ -53,7 +53,7 @@ public class BannerServiceImpl implements BannerService {
     private final BannerRepository bannerRepository;
     private final CurationRawProductColorRepository curationRawProductColorRepository;
     private final RecommendFurniturePort recommendFurniturePort;
-    private final JjymRepository jjymRepository;
+    private final JjymRepositoryPort jjymRepositoryPort;
     private final ObjectMapper objectMapper;
 
     @Override
@@ -245,7 +245,7 @@ public class BannerServiceImpl implements BannerService {
             return Set.of();
         }
 
-        Set<Long> likedRecommendFurnitureIds = jjymRepository
+        Set<Long> likedRecommendFurnitureIds = jjymRepositoryPort
                 .findAllByUserIdAndRecommendFurnitureIdIn(user.getId(), recommendFurnitureIds)
                 .stream()
                 .map(Jjym::getRecommendFurnitureId)

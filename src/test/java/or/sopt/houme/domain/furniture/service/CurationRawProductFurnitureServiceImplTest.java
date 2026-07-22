@@ -7,7 +7,7 @@ import or.sopt.houme.domain.furniture.presentation.dto.response.FurnitureProduct
 import or.sopt.houme.domain.furniture.repository.CurationRawProductColorRepository;
 import or.sopt.houme.domain.furniture.repository.CurationRawProductFurnitureRepository;
 import or.sopt.houme.domain.furniture.repository.FurnitureRepository;
-import or.sopt.houme.domain.furniture.repository.JjymRepository;
+import or.sopt.houme.furniture.domain.port.out.JjymRepositoryPort;
 import or.sopt.houme.furniture.domain.port.out.RecommendFurniturePort;
 import or.sopt.houme.user.domain.User;
 import or.sopt.houme.global.api.GeneralException;
@@ -43,7 +43,7 @@ class CurationRawProductFurnitureServiceImplTest {
     private RecommendFurniturePort recommendFurniturePort;
 
     @Mock
-    private JjymRepository jjymRepository;
+    private JjymRepositoryPort jjymRepositoryPort;
 
     @Mock
     private FurnitureRepository furnitureRepository;

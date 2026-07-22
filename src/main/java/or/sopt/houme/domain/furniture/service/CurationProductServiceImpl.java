@@ -9,7 +9,7 @@ import or.sopt.houme.domain.furniture.model.entity.CurationSource;
 import or.sopt.houme.furniture.infra.persistence.FurnitureJpaEntity;
 import or.sopt.houme.domain.furniture.model.entity.FurnitureTag;
 import or.sopt.houme.domain.furniture.model.entity.FurnitureType;
-import or.sopt.houme.domain.furniture.model.entity.RecommendFurniture;
+import or.sopt.houme.furniture.domain.RecommendFurniture;
 import or.sopt.houme.domain.furniture.presentation.dto.response.ColorFilterResponse;
 import or.sopt.houme.domain.furniture.presentation.dto.response.CurationProductAppliedFilterResponse;
 import or.sopt.houme.domain.furniture.presentation.dto.response.CurationProductDetailResponse;
@@ -24,8 +24,8 @@ import or.sopt.houme.domain.furniture.repository.CurationRawProductRepository;
 import or.sopt.houme.domain.furniture.repository.CurationRawProductRepositoryCustom;
 import or.sopt.houme.domain.furniture.repository.FurnitureRepository;
 import or.sopt.houme.domain.furniture.repository.FurnitureTypeRepository;
-import or.sopt.houme.domain.furniture.repository.JjymRepository;
-import or.sopt.houme.domain.furniture.repository.RecommendFurnitureRepository;
+import or.sopt.houme.furniture.domain.port.out.JjymRepositoryPort;
+import or.sopt.houme.furniture.domain.port.out.RecommendFurniturePort;
 import or.sopt.houme.user.domain.User;
 import or.sopt.houme.global.api.ErrorCode;
 import or.sopt.houme.global.api.handler.FurnitureException;
@@ -56,8 +56,8 @@ public class CurationProductServiceImpl implements CurationProductService {
     private final FurnitureRepository furnitureRepository;
     private final CurationRawProductRepository curationRawProductRepository;
     private final CurationRawProductColorRepository curationRawProductColorRepository;
-    private final RecommendFurnitureRepository recommendFurnitureRepository;
-    private final JjymRepository jjymRepository;
+    private final RecommendFurniturePort recommendFurniturePort;
+    private final JjymRepositoryPort jjymRepositoryPort;
 
     @Override
     public CurationProductFilterResponse getFilterMetadata() {
@@ -328,14 +328,14 @@ public class CurationProductServiceImpl implements CurationProductService {
         String categoryName = extractCategoryName(product);
         List<CurationProductDetailResponse.ProductColorDetail> colors = extractColorDetails(id);
 
-        Optional<RecommendFurniture> recommendFurniture = recommendFurnitureRepository
+        Optional<RecommendFurniture> recommendFurniture = recommendFurniturePort
                 .findBySourceAndFurnitureProductId(CurationSource.RAW, product.getProductId());
 
         boolean isLiked = recommendFurniture
-                .map(rf -> user != null && jjymRepository.existsByUserIdAndRecommendFurnitureId(user.getId(), rf.getId()))
+                .map(rf -> user != null && jjymRepositoryPort.existsByUserIdAndRecommendFurnitureId(user.getId(), rf.getId()))
                 .orElse(false);
         long jjymCount = recommendFurniture
-                .map(rf -> jjymRepository.countByRecommendFurnitureId(rf.getId()))
+                .map(rf -> jjymRepositoryPort.countByRecommendFurnitureId(rf.getId()))
                 .orElse(0L);
 
         return new CurationProductDetailResponse(

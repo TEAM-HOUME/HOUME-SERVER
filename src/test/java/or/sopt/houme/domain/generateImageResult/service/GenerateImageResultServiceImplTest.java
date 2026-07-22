@@ -20,7 +20,7 @@ import or.sopt.houme.furniture.domain.RecommendFurniture;
 import or.sopt.houme.domain.furniture.repository.CurationRawProductColorRepository;
 import or.sopt.houme.domain.furniture.repository.CurationRawProductFurnitureTagRepository;
 import or.sopt.houme.domain.furniture.repository.CurationRawProductRepository;
-import or.sopt.houme.domain.furniture.repository.JjymRepository;
+import or.sopt.houme.furniture.domain.port.out.JjymRepositoryPort;
 import or.sopt.houme.furniture.domain.port.out.RecommendFurniturePort;
 import or.sopt.houme.domain.generateImage.model.entity.GenerateImage;
 import or.sopt.houme.domain.generateImage.model.entity.GenerateImageRawProduct;
@@ -83,7 +83,7 @@ class GenerateImageResultServiceImplTest {
     private RecommendFurniturePort recommendFurniturePort;
 
     @Mock
-    private JjymRepository jjymRepository;
+    private JjymRepositoryPort jjymRepositoryPort;
 
     @Mock
     private HouseService houseService;
@@ -189,7 +189,7 @@ class GenerateImageResultServiceImplTest {
                         .source(CurationSource.RAW)
                         .furnitureProductId(1001L)
                         .build()));
-        when(jjymRepository.findAllByUserIdAndRecommendFurnitureIdIn(1L, List.of(501L))).thenReturn(List.of());
+        when(jjymRepositoryPort.findAllByUserIdAndRecommendFurnitureIdIn(1L, List.of(501L))).thenReturn(List.of());
 
         User user = User.builder().id(1L).build();
 
@@ -261,8 +261,8 @@ class GenerateImageResultServiceImplTest {
                         RecommendFurniture.builder().id(703L).source(CurationSource.RAW).furnitureProductId(2003L).build(),
                         RecommendFurniture.builder().id(704L).source(CurationSource.RAW).furnitureProductId(2004L).build()
                 ));
-        when(jjymRepository.findAllByUserIdAndRecommendFurnitureIdIn(1L, List.of(701L, 702L, 703L, 704L))).thenReturn(List.of());
-        when(jjymRepository.countByRecommendFurnitureIds(List.of(701L, 702L, 703L, 704L)))
+        when(jjymRepositoryPort.findAllByUserIdAndRecommendFurnitureIdIn(1L, List.of(701L, 702L, 703L, 704L))).thenReturn(List.of());
+        when(jjymRepositoryPort.countByRecommendFurnitureIds(List.of(701L, 702L, 703L, 704L)))
                 .thenReturn(Map.of(701L, 4L, 702L, 2L));
 
         User user = User.builder().id(1L).build();

@@ -18,7 +18,7 @@ import or.sopt.houme.domain.preference.repository.*;
 import or.sopt.houme.credit.application.CreditUseCase;
 import or.sopt.houme.domain.credit.repository.PaymentBtnClickLogRepository;
 import or.sopt.houme.domain.furniture.repository.FurnitureRecommendBtnClickLogRepository;
-import or.sopt.houme.domain.furniture.repository.JjymRepository;
+import or.sopt.houme.furniture.domain.port.out.JjymRepositoryPort;
 import or.sopt.houme.domain.house.repository.InvalidHouseRequestRepository;
 import or.sopt.houme.domain.house.repository.address.AddressRepository;
 import or.sopt.houme.domain.house.repository.carousel.CarouselLikeLogRepository;
@@ -55,7 +55,7 @@ public class UserDeletionService {
     private final CarouselLikeLogRepository carouselLikeLogRepository;
     private final InvalidHouseRequestRepository invalidHouseRequestRepository;
     private final CreditUseCase creditUseCase;
-    private final JjymRepository jjymRepository;
+    private final JjymRepositoryPort jjymRepositoryPort;
 
     private final RefreshTokenRepository refreshTokenRepository;
     private final BlacklistTokenRepository blacklistTokenRepository;
@@ -152,7 +152,7 @@ public class UserDeletionService {
 
         // 3. 유저 직접 참조 로그/데이터 삭제
         // 3-0. 찜 데이터(jjyms) 선삭제로 FK 제약 해소
-        jjymRepository.deleteByUserId(userId);
+        jjymRepositoryPort.deleteByUserId(userId);
         imageGenerationLogRepository.deleteByUserId(userId);
         invalidHouseRequestRepository.deleteByUserId(userId);
         addressRepository.deleteByUserId(userId);
