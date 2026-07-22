@@ -34,3 +34,9 @@ api global/logging/LoggingInterceptor.java
 common global/util/constant/OptimisticLockConstant.java
 common global/util/constant/S3Constant.java
 common global/util/constant/S3ExtensionConstant.java
+# ── 추가 오버라이드 (컴파일 방향 사전 교정)
+auth domain/user/presentation/controller/dto/CustomUserDetails.java
+auth domain/user/presentation/controller/dto/CustomUserDetailsService.java
+application global/config/JWTConfig.java
+application global/config/CookieConfig.java
+application global/util/CookieUtil.java
