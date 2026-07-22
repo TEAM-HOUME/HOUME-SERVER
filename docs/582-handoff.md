@@ -121,3 +121,15 @@ houme-common ────▶ (없음)  [ApiResponse/ErrorCode/예외타입/공�
 **테스트**: 전부 houme-api/src/test 로 이동(통합·@DataJpaTest 가 전체 클래스패스 필요; api 는 testImplementation 으로 infra/external 접근). Testcontainers/Jacoco/jib 설정도 api 로.
 **QueryDSL**: annotationProcessor 는 infra 모듈에만; generated dir 도 infra.
 **순서**: settings.gradle→모듈 build.gradle 뼈대→분류 스크립트로 git mv→모듈별 컴파일 에러 순회 수정→bootJar→전체 테스트→커밋·푸시.
+
+## P2 실행 로그 (2026-07-22)
+- 650파일 git mv 완료(7모듈), 테스트 전체 houme-api/src/test 로, 리소스 houme-api/src/main/resources.
+- **zsh 함정: 루프 변수명 `path` 금지($PATH 클로버)** — `src_file` 등으로.
+- 전 모듈 main 컴파일 green + bootJar green. 컴파일 캐스케이드에서 확정된 조정:
+  - **의존 편차(기록)**: application→external(클라이언트 직접 소비, 포트화 후속), application→auth(JWTUtil/CustomUserDetails), infra→auth(BCrypt/JWTUtil), api→external(플랜용 외부 DTO 반환 컨트롤러), common 은 경량 spring-web/context/boot+jackson+slf4j 허용.
+  - 재배정: GlobalExceptionHandler·SecurityConfig→api(부트 조립), TraceIdFilter→auth(JWTFilter 가 사용), JWTConfig/CookieConfig→common, KaKao DTO 3종→common, 히스토리 응답 DTO 4종+Prompt DTO 2종→domain, OAuth/JWT/UserLanding 서비스→application(포트 인터페이스 import 가 리포 규칙 오탐), AdminServiceImpl/UserDeletionServiceImpl/FurnitureFacadeImpl/openai 파사드 Impl→infra.
+  - 추가 인터페이스 추출: SoozipCrawlingService, CurationRawProductService(컨트롤러 소비 인바운드 계약; Impl 은 infra).
+  - 락 파사드는 Impl 대신 인터페이스(JjymService/CarouselService) 소비로 수정.
+  - 테스트 클래스패스: houme-api testImplementation 에 JPA/AWS/QueryDSL/Redisson/PG/H2 부여.
+  - Jacoco/test 설정(maxParallelForks=1 등) houme-api 로 이식. jib 는 houme-api 플러그인.
+- 다음: 전체 스위트 게이트(진행 중) → 실패 수정 → 커밋·푸시. **동시 gradle 실행 절대 금지(게이트 오염 2회 발생)**.
