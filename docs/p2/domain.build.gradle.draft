@@ -1,5 +1,0 @@
-// houme-domain: 순수 도메인 + 포트 + View. Spring/JPA 의존 0 (컴파일 자체가 강제).
-dependencies {
-    implementation project(':houme-common')
-    implementation 'io.swagger.core.v3:swagger-annotations-jakarta:2.2.20'
-}
