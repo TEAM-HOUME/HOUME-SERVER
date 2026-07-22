@@ -6,6 +6,7 @@ import or.sopt.houme.domain.furniture.infrastructure.dto.external.naverShop.Furn
 import or.sopt.houme.domain.furniture.infrastructure.dto.external.naverShop.NaverFurnitureProductDto;
 import or.sopt.houme.domain.furniture.model.entity.CurationSource;
 import or.sopt.houme.domain.furniture.model.entity.FurnitureTag;
+import or.sopt.houme.furniture.domain.FurnitureTagView;
 import or.sopt.houme.domain.furniture.repository.FurnitureTagRepository;
 import or.sopt.houme.domain.furniture.service.CurationFurnitureService;
 import or.sopt.houme.domain.furniture.service.CurationRawProductService;
@@ -146,7 +147,7 @@ public class CurationFurnitureScheduler {
     }
 
     private List<FurnitureProductsInfoResponse.FurnitureProductInfo> fetchRawCurationInfos(FurnitureTag furnitureTag) {
-        List<NaverFurnitureProductDto> candidates = curationRawProductService.getCandidatesByFurnitureTag(furnitureTag);
+        List<NaverFurnitureProductDto> candidates = curationRawProductService.getCandidatesByFurnitureTag(toView(furnitureTag));
         if (candidates.isEmpty()) {
             return List.of();
         }
@@ -160,5 +161,19 @@ public class CurationFurnitureScheduler {
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }
+    }
+
+    /** #582: 서비스 공개 계약이 View 로 바뀌어 스케줄러(infra)에서 엔티티→View 변환 후 호출한다. */
+    private FurnitureTagView toView(FurnitureTag furnitureTag) {
+        return new FurnitureTagView(
+                furnitureTag.getId(),
+                furnitureTag.getFurniturePrompt(),
+                furnitureTag.getFurniture() != null ? furnitureTag.getFurniture().getId() : null,
+                furnitureTag.getFurniture() != null ? furnitureTag.getFurniture().getFurnitureNameKr() : null,
+                furnitureTag.getTagId(),
+                furnitureTag.getFurnitureUrl(),
+                furnitureTag.getSearchKeyword(),
+                furnitureTag.getPriority()
+        );
     }
 }

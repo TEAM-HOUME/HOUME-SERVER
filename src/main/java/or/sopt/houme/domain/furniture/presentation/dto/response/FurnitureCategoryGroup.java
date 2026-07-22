@@ -1,6 +1,6 @@
 package or.sopt.houme.domain.furniture.presentation.dto.response;
 
-import or.sopt.houme.domain.furniture.model.entity.FurnitureType;
+import or.sopt.houme.furniture.domain.FurnitureTypeView;
 
 import java.util.List;
 
@@ -12,11 +12,11 @@ public record FurnitureCategoryGroup(
         List<FurnitureCategoryItem> furnitures
 ) {
 
-    public static FurnitureCategoryGroup from(FurnitureType furnitureType, List<FurnitureCategoryItem> furnitures) {
+    public static FurnitureCategoryGroup from(FurnitureTypeView furnitureType, List<FurnitureCategoryItem> furnitures) {
         return new FurnitureCategoryGroup(
-                furnitureType.getId(),
-                furnitureType.getNameKr(),
-                furnitureType.getNameEng(),
+                furnitureType.id(),
+                furnitureType.nameKr(),
+                furnitureType.nameEng(),
                 furnitures
         );
     }

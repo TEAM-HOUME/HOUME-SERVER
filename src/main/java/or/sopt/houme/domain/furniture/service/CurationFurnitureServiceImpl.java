@@ -7,7 +7,7 @@ import or.sopt.houme.domain.furniture.model.entity.CurationFurniture;
 import or.sopt.houme.domain.furniture.model.entity.CurationRawProduct;
 import or.sopt.houme.domain.furniture.model.entity.CurationRawProductColor;
 import or.sopt.houme.domain.furniture.model.entity.CurationSource;
-import or.sopt.houme.domain.furniture.model.entity.FurnitureTag;
+import or.sopt.houme.furniture.domain.FurnitureTagView;
 import or.sopt.houme.furniture.domain.Jjym;
 import or.sopt.houme.domain.furniture.model.entity.RecommendFurniture;
 import or.sopt.houme.domain.furniture.presentation.dto.response.FurnitureProductsInfoResponseV2;
@@ -36,6 +36,7 @@ import java.util.stream.Collectors;
 public class CurationFurnitureServiceImpl implements CurationFurnitureService {
 
     private final CurationFurnitureRepository curationFurnitureRepository;
+    private final or.sopt.houme.domain.furniture.repository.FurnitureTagRepository furnitureTagRepository;
     private final RecommendFurnitureRepository recommendFurnitureRepository;
     private final RecommendFurnitureService recommendFurnitureService;
     private final CurationRawProductRepository curationRawProductRepository;
@@ -45,11 +46,11 @@ public class CurationFurnitureServiceImpl implements CurationFurnitureService {
     @Transactional(readOnly = true)
     @Override
     public List<FurnitureProductsInfoResponse.FurnitureProductInfo> getCurationProducts(
-            FurnitureTag furnitureTag,
+            FurnitureTagView furnitureTag,
             CurationSource source
     ) {
         List<CurationFurniture> curations =
-                curationFurnitureRepository.findAllByFurnitureTagAndSourceOrderByRankAsc(furnitureTag, source);
+                curationFurnitureRepository.findAllByFurnitureTagIdAndSourceOrderByRankAsc(furnitureTag.id(), source);
         if (curations.isEmpty()) {
             return List.of();
         }
@@ -87,7 +88,7 @@ public class CurationFurnitureServiceImpl implements CurationFurnitureService {
     @Transactional
     @Override
     public List<FurnitureProductsInfoResponse.FurnitureProductInfo> saveCurationResults(
-            FurnitureTag furnitureTag,
+            FurnitureTagView furnitureTag,
             List<FurnitureProductsInfoResponse.FurnitureProductInfo> infos,
             CurationSource source
     ) {
@@ -109,7 +110,7 @@ public class CurationFurnitureServiceImpl implements CurationFurnitureService {
 
             RecommendFurniture recommendFurniture = recommendFurnitureRepository.getReferenceById(recommendFurnitureId);
             curations.add(CurationFurniture.of(
-                    furnitureTag,
+                    furnitureTagRepository.getReferenceById(furnitureTag.id()),
                     recommendFurniture,
                     rank,
                     source,
@@ -123,7 +124,7 @@ public class CurationFurnitureServiceImpl implements CurationFurnitureService {
             return List.of();
         }
 
-        curationFurnitureRepository.deleteByFurnitureTagAndSource(furnitureTag, source);
+        curationFurnitureRepository.deleteByFurnitureTagIdAndSource(furnitureTag.id(), source);
         curationFurnitureRepository.saveAll(curations);
 
         return getCurationProducts(furnitureTag, source);
@@ -134,10 +135,10 @@ public class CurationFurnitureServiceImpl implements CurationFurnitureService {
     public FurnitureProductsInfoResponseV2 buildProductsInfoResponse(
             Long userId,
             String userName,
-            FurnitureTag furnitureTag,
+            FurnitureTagView furnitureTag,
             List<FurnitureProductsInfoResponse.FurnitureProductInfo> rawInfos
     ) {
-        String categoryName = furnitureTag.getFurniture() != null ? furnitureTag.getFurniture().getFurnitureNameKr() : null;
+        String categoryName = furnitureTag.furnitureNameKr();
         Map<Long, CurationRawProduct> rawProductByProductId = findLatestRawProductByProductId(furnitureTag, rawInfos);
         Map<Long, List<ProductColorResponse>> colorsByRawProductId = findColorMapByRawProductId(rawProductByProductId);
         Set<Long> likedRecommendIds = findLikedRecommendIds(userId, rawInfos);
@@ -195,7 +196,7 @@ public class CurationFurnitureServiceImpl implements CurationFurnitureService {
     }
 
     private Map<Long, CurationRawProduct> findLatestRawProductByProductId(
-            FurnitureTag furnitureTag,
+            FurnitureTagView furnitureTag,
             List<FurnitureProductsInfoResponse.FurnitureProductInfo> rawInfos
     ) {
         List<Long> productIds = rawInfos.stream()
@@ -207,7 +208,7 @@ public class CurationFurnitureServiceImpl implements CurationFurnitureService {
             return Map.of();
         }
 
-        return curationRawProductRepository.findAllByFurnitureTagAndProductIdIn(furnitureTag, productIds).stream()
+        return curationRawProductRepository.findAllByFurnitureTagIdAndProductIdIn(furnitureTag.id(), productIds).stream()
                 .collect(Collectors.toMap(
                         CurationRawProduct::getProductId,
                         rawProduct -> rawProduct,
@@ -288,7 +289,7 @@ public class CurationFurnitureServiceImpl implements CurationFurnitureService {
     }
 
     private Map<Long, RawProductMeta> buildRawMetaByProductId(
-            FurnitureTag furnitureTag,
+            FurnitureTagView furnitureTag,
             List<CurationFurniture> curations,
             CurationSource source
     ) {
@@ -306,7 +307,7 @@ public class CurationFurnitureServiceImpl implements CurationFurnitureService {
         }
 
         List<CurationRawProduct> rawProducts =
-                curationRawProductRepository.findAllByFurnitureTagAndProductIdIn(furnitureTag, productIds);
+                curationRawProductRepository.findAllByFurnitureTagIdAndProductIdIn(furnitureTag.id(), productIds);
         if (rawProducts.isEmpty()) {
             return Map.of();
         }

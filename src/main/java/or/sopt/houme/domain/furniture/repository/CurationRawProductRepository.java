@@ -1,7 +1,6 @@
 package or.sopt.houme.domain.furniture.repository;
 
 import or.sopt.houme.domain.furniture.model.entity.CurationRawProduct;
-import or.sopt.houme.domain.furniture.model.entity.FurnitureTag;
 import or.sopt.houme.domain.furniture.model.entity.SoozipCategory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -67,21 +66,21 @@ public interface CurationRawProductRepository extends JpaRepository<CurationRawP
             select distinct rawProduct
             from CurationRawProduct rawProduct
             join rawProduct.furnitureTagMappings mapping
-            where mapping.furnitureTag = :furnitureTag
+            where mapping.furnitureTag.id = :furnitureTagId
               and (rawProduct.isExposed = true or rawProduct.isExposed is null)
             """)
-    List<CurationRawProduct> findAllByFurnitureTag(@Param("furnitureTag") FurnitureTag furnitureTag);
+    List<CurationRawProduct> findAllByFurnitureTagId(@Param("furnitureTagId") Long furnitureTagId);
 
     @Query("""
             select distinct rawProduct
             from CurationRawProduct rawProduct
             join rawProduct.furnitureTagMappings mapping
-            where mapping.furnitureTag = :furnitureTag
+            where mapping.furnitureTag.id = :furnitureTagId
               and rawProduct.productId in :productIds
               and (rawProduct.isExposed = true or rawProduct.isExposed is null)
             """)
-    List<CurationRawProduct> findAllByFurnitureTagAndProductIdIn(
-            @Param("furnitureTag") FurnitureTag furnitureTag,
+    List<CurationRawProduct> findAllByFurnitureTagIdAndProductIdIn(
+            @Param("furnitureTagId") Long furnitureTagId,
             @Param("productIds") List<Long> productIds
     );
 }

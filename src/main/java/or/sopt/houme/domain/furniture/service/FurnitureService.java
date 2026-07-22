@@ -4,7 +4,7 @@ import or.sopt.houme.domain.furniture.presentation.dto.response.FurnitureAndActi
 import or.sopt.houme.domain.furniture.presentation.dto.response.ActivityWithFurnitureResponse;
 import or.sopt.houme.domain.furniture.presentation.dto.response.FurnitureCategoryGroup;
 import or.sopt.houme.domain.furniture.presentation.dto.response.FurnitureCategoriesResponse;
-import or.sopt.houme.domain.furniture.model.entity.FurnitureTag;
+import or.sopt.houme.furniture.domain.FurnitureTagView;
 import or.sopt.houme.user.domain.User;
 
 import java.util.List;
@@ -27,7 +27,7 @@ public interface FurnitureService {
     // 가구 중 침대 ID 조회
     Optional<Long> findBedId(List<Long> furnitureIds);
 
-    FurnitureTag findFurnitureTag(User user, Long imageId, Long categoryId);
+    FurnitureTagView findFurnitureTag(User user, Long imageId, Long categoryId);
 
-    FurnitureTag findFurnitureTagForPlan(Long tagId, Long furnitureId);
+    FurnitureTagView findFurnitureTagForPlan(Long tagId, Long furnitureId);
 }

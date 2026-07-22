@@ -6,7 +6,7 @@ import or.sopt.houme.domain.furniture.infrastructure.dto.external.naverShop.Furn
 import or.sopt.houme.domain.furniture.infrastructure.dto.external.naverShop.forPlan.FurnitureProductsInfoResponseForPlan;
 import or.sopt.houme.domain.furniture.infrastructure.dto.external.naverShop.NaverFurnitureProductDto;
 import or.sopt.houme.domain.furniture.model.entity.CurationSource;
-import or.sopt.houme.domain.furniture.model.entity.FurnitureTag;
+import or.sopt.houme.furniture.domain.FurnitureTagView;
 import or.sopt.houme.domain.furniture.presentation.dto.response.FurnitureProductsInfoResponseV2;
 import or.sopt.houme.domain.furniture.service.CurationFurnitureService;
 import or.sopt.houme.domain.furniture.service.CurationRawProductFurnitureService;
@@ -50,15 +50,15 @@ public class FurnitureFacadeImpl implements FurnitureFacade {
         LocalDateTime now = LocalDateTime.now();
         String formatted = now.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
 
-        // 1. FurnitureTag 조회 (DB)
+        // 1. FurnitureTagView 조회 (DB)
         log.info("연관된 가구들을 조회합니다:{}",formatted);
-        // [pbem22, 2026-05-28, #541] FurnitureTag 없을 경우 CurationRawProductFurniture 경로로 폴백
-        FurnitureTag furnitureTag;
+        // [pbem22, 2026-05-28, #541] FurnitureTagView 없을 경우 CurationRawProductFurniture 경로로 폴백
+        FurnitureTagView furnitureTag;
         try {
             furnitureTag = furnitureService.findFurnitureTag(user, imageId, categoryId);
         } catch (GeneralException e) {
             if (ErrorCode.NOT_FOUND_FURNITURE_TAG.equals(e.getErrorCode())) {
-                log.info("FurnitureTag 없음, CurationRawProductFurniture 경로로 폴백: categoryId={}", categoryId);
+                log.info("FurnitureTagView 없음, CurationRawProductFurniture 경로로 폴백: categoryId={}", categoryId);
                 return curationRawProductFurnitureService.buildProductsResponseByFurnitureId(user, categoryId);
             }
             throw e;
@@ -70,14 +70,14 @@ public class FurnitureFacadeImpl implements FurnitureFacade {
 //                curationFurnitureService.getCurationProducts(furnitureTag, CurationSource.NAVER);
 //        if (naverInfos.isEmpty()) {
 //            log.info("네이버 API 호출을 시작합니다");
-//            String keyword = furnitureTag.getSearchKeyword();
+//            String keyword = furnitureTag.searchKeyword();
 //            List<NaverFurnitureProductDto> products = naverShopService.search(keyword, 50);
 //
 //            // 2. FastAPI 호출 → 유사도 기반 상위 상품 리스트만 반환
 //            // 12/05 FAST API 삭제
 //            log.info("유사도 기반 네이버 상품 조회를 시작합니다");
 //            List<FurnitureProductsInfoResponse.FurnitureProductInfo> rankedInfos =
-//                    imageHashService.rankByImageSimilarity(furnitureTag.getFurnitureUrl(), products, CURATION_LIMIT);
+//                    imageHashService.rankByImageSimilarity(furnitureTag.furnitureUrl(), products, CURATION_LIMIT);
 //
 //            // 2-1. 최종반환된 리스트를 기반으로 추천가구 엔티티 저장하고, 큐레이션 결과 저장
 //            log.info("네이버 큐레이션 결과 저장");
@@ -107,7 +107,7 @@ public class FurnitureFacadeImpl implements FurnitureFacade {
             // 2-2. 그 후에 동일한 hash 기반 이미지 유사도를 판별하여 반환합니다
             if (!rawCandidates.isEmpty()) {
                 List<FurnitureProductsInfoResponse.FurnitureProductInfo> rankedRawInfos =
-                        imageHashService.rankByImageSimilarity(furnitureTag.getFurnitureUrl(), rawCandidates, RAW_CURATION_LIMIT);
+                        imageHashService.rankByImageSimilarity(furnitureTag.furnitureUrl(), rawCandidates, RAW_CURATION_LIMIT);
                 rawInfos = curationFurnitureService.saveCurationResults(
                         furnitureTag,
                         rankedRawInfos,
@@ -132,8 +132,8 @@ public class FurnitureFacadeImpl implements FurnitureFacade {
     // 기획의사결정용
     @Override
     public FurnitureProductsInfoResponseForPlan getFurnitureProductInfoFromNaverApiForPlan(User user, Long tagId, Long furnitureId, String searchKeyword, int pHash) {
-        // 1. FurnitureTag 조회 (DB)
-        FurnitureTag furnitureTag = furnitureService.findFurnitureTagForPlan(tagId, furnitureId);
+        // 1. FurnitureTagView 조회 (DB)
+        FurnitureTagView furnitureTag = furnitureService.findFurnitureTagForPlan(tagId, furnitureId);
 
         // 2. 네이버 API 호출
         List<NaverFurnitureProductDto> products = naverShopService.search(searchKeyword, 50);
@@ -141,7 +141,7 @@ public class FurnitureFacadeImpl implements FurnitureFacade {
         // 3. FastAPI 호출 → 유사도 기반 상위 상품 리스트만 반환
         List<FurnitureProductsInfoResponseForPlan.FurnitureProductInfo> infos =
                 imageHashService.rankByImageSimilarityForPlan(
-                        furnitureTag.getFurnitureUrl(),
+                        furnitureTag.furnitureUrl(),
                         products,
                         pHash,
                         100-pHash,
@@ -162,8 +162,8 @@ public class FurnitureFacadeImpl implements FurnitureFacade {
             List<String> allowedMalls,
             Boolean applyNaverPay
     ){
-        // 1. FurnitureTag 조회 (DB)
-        FurnitureTag furnitureTag = furnitureService.findFurnitureTagForPlan(tagId, furnitureId);
+        // 1. FurnitureTagView 조회 (DB)
+        FurnitureTagView furnitureTag = furnitureService.findFurnitureTagForPlan(tagId, furnitureId);
 
         log.info("--------네이버 API 호출을 시작합니다--------");
         // 2. 네이버 API 호출 (V2)
@@ -183,7 +183,7 @@ public class FurnitureFacadeImpl implements FurnitureFacade {
         // 3. FastAPI 호출 → 유사도 기반 상위 상품 리스트만 반환
         List<FurnitureProductsInfoResponseForPlan.FurnitureProductInfo> infos =
                 imageHashService.rankByImageSimilarityForPlan(
-                        furnitureTag.getFurnitureUrl(),
+                        furnitureTag.furnitureUrl(),
                         products,
                         pHash,
                         100-pHash,

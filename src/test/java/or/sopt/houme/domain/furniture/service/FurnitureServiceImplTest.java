@@ -4,21 +4,19 @@ import or.sopt.houme.domain.furniture.presentation.dto.response.FurnitureAndActi
 import or.sopt.houme.domain.furniture.presentation.dto.response.ActivityWithFurnitureResponse;
 import or.sopt.houme.domain.furniture.presentation.dto.response.FurnitureCategoriesResponse;
 import or.sopt.houme.domain.furniture.presentation.dto.response.FurnitureCategoryGroup;
-import or.sopt.houme.domain.furniture.model.entity.ActivityFurniture;
-import or.sopt.houme.furniture.infra.persistence.FurnitureJpaEntity;
-import or.sopt.houme.domain.furniture.model.entity.FurnitureTag;
-import or.sopt.houme.domain.furniture.model.entity.FurnitureType;
-import or.sopt.houme.domain.furniture.model.entity.FurnitureTypes;
-import or.sopt.houme.domain.furniture.repository.ActivityFurnitureRepository;
-import or.sopt.houme.domain.furniture.repository.FurnitureRepository;
-import or.sopt.houme.domain.furniture.repository.FurnitureTagRepository;
-import or.sopt.houme.house.infra.persistence.HouseJpaEntity;
-import or.sopt.houme.domain.furniture.repository.FurnitureTypeRepository;
+import or.sopt.houme.furniture.domain.ActivityFurnitureView;
+import or.sopt.houme.furniture.domain.Furniture;
+import or.sopt.houme.furniture.domain.FurnitureTagView;
+import or.sopt.houme.furniture.domain.FurnitureTypeView;
+import or.sopt.houme.furniture.domain.FurnitureWithTypeView;
+import or.sopt.houme.furniture.domain.port.out.ActivityFurnitureQueryPort;
+import or.sopt.houme.furniture.domain.port.out.FurnitureRepositoryPort;
+import or.sopt.houme.furniture.domain.port.out.FurnitureTagQueryPort;
+import or.sopt.houme.furniture.domain.port.out.FurnitureTypeQueryPort;
+import or.sopt.houme.house.domain.port.out.HouseQueryPort;
 import or.sopt.houme.domain.house.model.entity.enums.Activity;
-import or.sopt.houme.domain.house.repository.HouseRepository;
 import or.sopt.houme.tag.domain.Tag;
 import or.sopt.houme.tag.domain.port.out.TagRepositoryPort;
-import or.sopt.houme.tag.infra.persistence.TagJpaEntity;
 import or.sopt.houme.user.domain.User;
 import or.sopt.houme.global.api.handler.HouseException;
 import or.sopt.houme.global.api.handler.TagException;
@@ -28,7 +26,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
@@ -39,18 +36,18 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-@DisplayName("[FurnitureJpaEntity Service] Test")
+@DisplayName("[Furniture Service] Test")
 class FurnitureServiceImplTest {
 
     @InjectMocks
     FurnitureServiceImpl furnitureService;
 
     @Mock
-    FurnitureRepository furnitureRepository;
+    FurnitureRepositoryPort furnitureRepositoryPort;
     @Mock
-    FurnitureTagRepository furnitureTagRepository;
+    FurnitureTagQueryPort furnitureTagQueryPort;
     @Mock
-    HouseRepository houseRepository;
+    HouseQueryPort houseQueryPort;
     @Mock
     TagRepositoryPort tagRepository;
 
@@ -66,84 +63,63 @@ class FurnitureServiceImplTest {
     }
 
     @Mock
-    FurnitureTypeRepository furnitureTypeRepository;
+    FurnitureTypeQueryPort furnitureTypeQueryPort;
     @Mock
-    ActivityFurnitureRepository activityFurnitureRepository;
+    ActivityFurnitureQueryPort activityFurnitureQueryPort;
     @Mock
     CurationRawProductFurnitureService curationRawProductFurnitureService;
+
+    private static FurnitureTypeView type(Long id, String kr, String eng, Boolean required, Integer priority) {
+        return new FurnitureTypeView(id, kr, eng, required, priority);
+    }
+
+    private static FurnitureWithTypeView furnitureView(Long id, String eng, String kr, FurnitureTypeView type) {
+        return new FurnitureWithTypeView(id, eng, kr, null, type.id(), type.nameKr(), type.nameEng());
+    }
+
+    private static Furniture furniture(Long id, String eng, String kr) {
+        return Furniture.reconstitute(id, eng, kr, null, null, null);
+    }
+
+    private static FurnitureTagView tagView(Long id, Long tagId, Furniture furniture, Integer priority) {
+        return new FurnitureTagView(id, null, furniture.getId(), furniture.getFurnitureNameKr(), tagId, null, null, priority);
+    }
 
     @Test
     @DisplayName("주요활동, 가구들에 대한 정보들을 받을 수 있다.")
     void getFurniture() {
-        // Given
-        // 1. FurnitureType 저장
-        // 침대
-        FurnitureType bedType = FurnitureType.builder()
-                .id(1L)
-                .nameKr("침대")
-                .nameEng("BED")
-                .isRequired(true)
-                .build();
+        FurnitureTypeView bedType = type(1L, "침대", "BED", true, null);
+        FurnitureTypeView sofaType = type(2L, "소파", "SOFA", null, null);
+        FurnitureTypeView storageType = type(3L, "수납", "STORAGE", null, null);
+        FurnitureTypeView tableType = type(4L, "테이블", "TABLE", null, null);
+        FurnitureTypeView selectiveType = type(5L, "그 외", "SELECTIVE", false, null);
 
-        // 소파
-        FurnitureType sofaType = FurnitureType.builder()
-                .id(2L)
-                .nameKr("소파")
-                .nameEng("SOFA")
-                .build();
+        List<FurnitureTypeView> categoryList = List.of(bedType, sofaType, storageType, tableType, selectiveType);
 
-        // 수납
-        FurnitureType storageType = FurnitureType.builder()
-                .id(3L)
-                .nameKr("수납")
-                .nameEng("STORAGE")
-                .build();
-
-        // 테이블
-        FurnitureType tableType = FurnitureType.builder()
-                .id(4L)
-                .nameKr("테이블")
-                .nameEng("TABLE")
-                .build();
-
-        // 그외
-        FurnitureType selectiveType = FurnitureType.builder()
-                .id(5L)
-                .nameKr("그 외")
-                .nameEng("SELECTIVE")
-                .isRequired(false)
-                .build();
-
-        List<FurnitureType> categoryList = List.of(bedType, sofaType, storageType, tableType, selectiveType);
-
-        // 가구 식별자
-        Long furnitureId = 1L;
-        // 2. 침대류
-        List<FurnitureJpaEntity> furnitureList = List.of(
-                createFurniture(furnitureId++, "SINGLE", "싱글", bedType),
-                createFurniture(furnitureId++, "SUPER_SINGLE", "슈퍼싱글", bedType),
-                createFurniture(furnitureId++, "DOUBLE", "더블", bedType),
-                createFurniture(furnitureId++, "QUEEN_OVER", "퀸 이상", bedType),
-                createFurniture(furnitureId++, "ONE_SEATER_SOFA", "1인용 소파", sofaType),
-                createFurniture(furnitureId++, "TWO_SEATER_SOFA", "2인용 소파", sofaType),
-                createFurniture(furnitureId++, "CLOSET", "옷장", storageType),
-                createFurniture(furnitureId++, "DRAWER", "서랍장", storageType),
-                createFurniture(furnitureId++, "DESK", "업무용 책상", tableType),
-                createFurniture(furnitureId++, "TABLE", "식탁", tableType),
-                createFurniture(furnitureId++, "LOW_TABLE", "좌식 테이블", tableType),
-                createFurniture(furnitureId++, "MOVABLE_TV", "이동식 TV", selectiveType),
-                createFurniture(furnitureId++, "FULL_LENGTH_MIRROR", "전신 거울", selectiveType),
-                createFurniture(furnitureId++, "BOOKSHELF", "책 선반", selectiveType),
-                createFurniture(furnitureId++, "DECORATIVE_CABINET", "장식장", selectiveType)
+        long id = 1L;
+        List<FurnitureWithTypeView> furnitureList = List.of(
+                furnitureView(id++, "SINGLE", "싱글", bedType),
+                furnitureView(id++, "SUPER_SINGLE", "슈퍼싱글", bedType),
+                furnitureView(id++, "DOUBLE", "더블", bedType),
+                furnitureView(id++, "QUEEN_OVER", "퀸 이상", bedType),
+                furnitureView(id++, "ONE_SEATER_SOFA", "1인용 소파", sofaType),
+                furnitureView(id++, "TWO_SEATER_SOFA", "2인용 소파", sofaType),
+                furnitureView(id++, "CLOSET", "옷장", storageType),
+                furnitureView(id++, "DRAWER", "서랍장", storageType),
+                furnitureView(id++, "DESK", "업무용 책상", tableType),
+                furnitureView(id++, "TABLE", "식탁", tableType),
+                furnitureView(id++, "LOW_TABLE", "좌식 테이블", tableType),
+                furnitureView(id++, "MOVABLE_TV", "이동식 TV", selectiveType),
+                furnitureView(id++, "FULL_LENGTH_MIRROR", "전신 거울", selectiveType),
+                furnitureView(id++, "BOOKSHELF", "책 선반", selectiveType),
+                furnitureView(id++, "DECORATIVE_CABINET", "장식장", selectiveType)
         );
 
-        when(furnitureTypeRepository.findAll()).thenReturn(categoryList);
-        when(furnitureRepository.findAllWithFurnitureType()).thenReturn(furnitureList);
+        when(furnitureTypeQueryPort.findAll()).thenReturn(categoryList);
+        when(furnitureRepositoryPort.findAllWithType()).thenReturn(furnitureList);
 
-        // When
         FurnitureAndActivityResponse furnitureAndActivity = furnitureService.getFurnitureAndActivity();
 
-        // Then
         assertThat(furnitureAndActivity).isNotNull();
         assertThat(furnitureAndActivity.activities().get(0).code()).isEqualTo(Activity.REMOTE_WORK.toString());
         assertThat(furnitureAndActivity.categories().get(0).nameKr()).isEqualTo("침대");
@@ -156,31 +132,17 @@ class FurnitureServiceImplTest {
     @Test
     @DisplayName("대시보드 카테고리만 별도로 조회할 수 있다.")
     void getDashboardCategories() {
-        // Given
-        FurnitureType bedType = FurnitureType.builder()
-                .id(1L)
-                .nameKr("침대")
-                .nameEng("BED")
-                .build();
-        FurnitureType sofaType = FurnitureType.builder()
-                .id(2L)
-                .nameKr("소파")
-                .nameEng("SOFA")
-                .build();
-        List<FurnitureType> categoryList = List.of(bedType, sofaType);
+        FurnitureTypeView bedType = type(1L, "침대", "BED", null, null);
+        FurnitureTypeView sofaType = type(2L, "소파", "SOFA", null, null);
 
-        List<FurnitureJpaEntity> furnitureList = List.of(
-                createFurniture(10L, "SINGLE", "싱글", bedType),
-                createFurniture(20L, "SINGLE_SOFA", "1인용 소파", sofaType)
-        );
+        when(furnitureTypeQueryPort.findAll()).thenReturn(List.of(bedType, sofaType));
+        when(furnitureRepositoryPort.findAllWithType()).thenReturn(List.of(
+                furnitureView(10L, "SINGLE", "싱글", bedType),
+                furnitureView(20L, "SINGLE_SOFA", "1인용 소파", sofaType)
+        ));
 
-        when(furnitureTypeRepository.findAll()).thenReturn(categoryList);
-        when(furnitureRepository.findAllWithFurnitureType()).thenReturn(furnitureList);
-
-        // When
         List<FurnitureCategoryGroup> categories = furnitureService.getDashboardCategories();
 
-        // Then
         assertThat(categories).hasSize(2);
         assertThat(categories.get(0).nameKr()).isEqualTo("침대");
         assertThat(categories.get(1).nameKr()).isEqualTo("소파");
@@ -189,30 +151,17 @@ class FurnitureServiceImplTest {
     @Test
     @DisplayName("대시보드 카테고리는 furnitureType priority 오름차순으로 정렬된다.")
     void getDashboardCategories_sortedByFurnitureTypePriority() {
-        // Given
-        FurnitureType sofaType = FurnitureType.builder()
-                .id(10L)
-                .nameKr("소파")
-                .nameEng("SOFA")
-                .priority(2)
-                .build();
-        FurnitureType bedType = FurnitureType.builder()
-                .id(20L)
-                .nameKr("침대/프레임")
-                .nameEng("BED")
-                .priority(1)
-                .build();
+        FurnitureTypeView sofaType = type(10L, "소파", "SOFA", null, 2);
+        FurnitureTypeView bedType = type(20L, "침대/프레임", "BED", null, 1);
 
-        when(furnitureTypeRepository.findAll()).thenReturn(List.of(sofaType, bedType));
-        when(furnitureRepository.findAllWithFurnitureType()).thenReturn(List.of(
-                createFurniture(1L, "SINGLE_SOFA", "1인용 소파", sofaType),
-                createFurniture(2L, "SINGLE", "싱글", bedType)
+        when(furnitureTypeQueryPort.findAll()).thenReturn(List.of(sofaType, bedType));
+        when(furnitureRepositoryPort.findAllWithType()).thenReturn(List.of(
+                furnitureView(1L, "SINGLE_SOFA", "1인용 소파", sofaType),
+                furnitureView(2L, "SINGLE", "싱글", bedType)
         ));
 
-        // When
         List<FurnitureCategoryGroup> categories = furnitureService.getDashboardCategories();
 
-        // Then
         assertThat(categories).extracting(FurnitureCategoryGroup::nameKr)
                 .containsExactly("침대/프레임", "소파");
     }
@@ -220,71 +169,34 @@ class FurnitureServiceImplTest {
     @Test
     @DisplayName("감지된 단어와 선택 가구의 교집합만 추려 priority 오름차순으로 정렬된다")
     void categories_intersection_sorted() {
-        // Given
         Long imageId = 10L;
         List<String> detectedObjects = List.of("SINGLE", "OFFICE_DESK", "Bed", "CLOSET", "DINING_TABLE", "BOX", "WHITE_BOOKSHELF");
 
-        Tag tag = Tag.builder()
-                .id(100L)
-                .build();
+        Tag tag = Tag.builder().id(100L).build();
 
-        HouseJpaEntity house = HouseJpaEntity.builder()
-                .id(200L)
-                .build();
+        Furniture bed = furniture(1L, "DOUBLE", "침대");
+        Furniture chair = furniture(2L, "OFFICE_DESK", "의자");
+        Furniture tv = furniture(3L, "Monitor/TV", "TV");
+        Furniture dining = furniture(4L, "DINING_TABLE", "식탁");
 
-        // 이미지 생성 과정에서 사용자가 선택한 가구
-        FurnitureJpaEntity bed = FurnitureJpaEntity.builder()
-                .id(1L)
-                .furnitureNameKr("침대")
-                .furnitureNameEng("DOUBLE")
-                .build();
-
-        FurnitureJpaEntity chair = FurnitureJpaEntity.builder()
-                .id(2L)
-                .furnitureNameKr("의자")
-                .furnitureNameEng("OFFICE_DESK")
-                .build();
-
-        FurnitureJpaEntity tv = FurnitureJpaEntity.builder()
-                .id(3L)
-                .furnitureNameKr("TV")
-                .furnitureNameEng("Monitor/TV")
-                .build();
-
-        FurnitureJpaEntity dining = FurnitureJpaEntity.builder()
-                .id(4L)
-                .furnitureNameKr("식탁")
-                .furnitureNameEng("DINING_TABLE")
-                .build();
-
-        // 레포지토리 Stubbing
         when(tagRepository.findTagByUserIdAndImageId(user.getId(), imageId))
                 .thenReturn(Optional.of(tag));
-        when(houseRepository.findHouseByUserIdAndImageId(user.getId(), imageId))
-                .thenReturn(Optional.of(house));
-        when(furnitureRepository.findAllByHouseId(house.getId()))
+        when(houseQueryPort.findHouseIdByUserIdAndImageId(user.getId(), imageId))
+                .thenReturn(Optional.of(200L));
+        when(furnitureRepositoryPort.findAllByHouseId(200L))
                 .thenReturn(List.of(bed, chair, tv, dining));
 
-        // furnitureTag 우선순위: Bed(4), Chair(3), TV(2), Dining Table(1)
-        // 교집합은 Bed/Chair/Dining Table 이므로 그 3개만 반환
-        FurnitureTag ftBed = FurnitureTag.builder()
-                .id(11L).tagId(100L).furniture(bed).priority(4).build();
-        FurnitureTag ftChair = FurnitureTag.builder()
-                .id(12L).tagId(100L).furniture(chair).priority(3).build();
-        FurnitureTag ftDining = FurnitureTag.builder()
-                .id(13L).tagId(100L).furniture(dining).priority(1).build();
+        FurnitureTagView ftBed = tagView(11L, 100L, bed, 4);
+        FurnitureTagView ftChair = tagView(12L, 100L, chair, 3);
+        FurnitureTagView ftDining = tagView(13L, 100L, dining, 1);
 
-        // 태그와 가구 리스트로 매핑 객체 조회
-        when(furnitureTagRepository.findAllByTagIdAndFurnitureIn(tag.getId(), List.of(bed, chair, dining)))
+        // 교집합(detectedObjects 확장 매칭): DOUBLE(single 확장), OFFICE_DESK, DINING_TABLE
+        when(furnitureTagQueryPort.findAllByTagIdAndFurnitureIdIn(tag.getId(), List.of(1L, 2L, 4L)))
                 .thenReturn(List.of(ftBed, ftChair, ftDining));
 
-        // When
         FurnitureCategoriesResponse response =
                 furnitureService.getFurnitureCategoriesByStyle(user, imageId, detectedObjects);
 
-        // Then
-        // 교집합: Bed, Chair, Dining Table 만 포함
-        // 정렬: priority 오름차순 → Dining Table(2) → Chair(4) → Bed(5)
         assertThat(response.categories()).hasSize(3);
         assertThat(response.categories())
                 .extracting(FurnitureCategoriesResponse.FurnitureCategoryResponse::categoryName)
@@ -294,43 +206,20 @@ class FurnitureServiceImplTest {
     @Test
     @DisplayName("주요활동별 매핑 가구를 조회할 수 있다.")
     void getActivityFurnitureMappings() {
-        // Given
-        FurnitureType tableType = FurnitureType.builder()
-                .id(4L)
-                .nameKr("테이블")
-                .nameEng("TABLE")
-                .build();
+        FurnitureTypeView tableType = type(4L, "테이블", "TABLE", null, null);
+        FurnitureTypeView selectiveType = type(5L, "그 외", "SELECTIVE", null, null);
 
-        FurnitureType selectiveType = FurnitureType.builder()
-                .id(5L)
-                .nameKr("그 외")
-                .nameEng("SELECTIVE")
-                .build();
+        FurnitureWithTypeView desk = furnitureView(10L, "DESK", "업무용 책상", tableType);
+        FurnitureWithTypeView bookshelf = furnitureView(11L, "BOOKSHELF", "책 선반", selectiveType);
 
-        FurnitureJpaEntity desk = createFurniture(10L, "DESK", "업무용 책상", tableType);
-        FurnitureJpaEntity bookshelf = createFurniture(11L, "BOOKSHELF", "책 선반", selectiveType);
+        when(activityFurnitureQueryPort.findAllOrderByPriorityAscIdAsc())
+                .thenReturn(List.of(
+                        new ActivityFurnitureView(Activity.REMOTE_WORK, 1, desk),
+                        new ActivityFurnitureView(Activity.READING, 1, bookshelf)
+                ));
 
-        ActivityFurniture remoteWork = ActivityFurniture.builder()
-                .id(1L)
-                .activity(Activity.REMOTE_WORK)
-                .furniture(desk)
-                .priority(1)
-                .build();
-
-        ActivityFurniture reading = ActivityFurniture.builder()
-                .id(2L)
-                .activity(Activity.READING)
-                .furniture(bookshelf)
-                .priority(1)
-                .build();
-
-        when(activityFurnitureRepository.findAllByOrderByPriorityAscIdAsc())
-                .thenReturn(List.of(remoteWork, reading));
-
-        // When
         List<ActivityWithFurnitureResponse> responses = furnitureService.getActivityFurnitureMappings();
 
-        // Then
         assertThat(responses).hasSize(2);
         assertThat(responses.get(0).code()).isEqualTo(Activity.REMOTE_WORK.name());
         assertThat(responses.get(0).furnitures())
@@ -345,32 +234,26 @@ class FurnitureServiceImplTest {
     @Test
     @DisplayName("Tag가 없을 경우 예외 발생")
     void getFurnitureCategoriesByStyle_tagNotFound() {
-        // Given
         Long imageId = 10L;
 
         when(tagRepository.findTagByUserIdAndImageId(user.getId(), imageId))
                 .thenReturn(Optional.empty());
 
-        // When & Then
         assertThrows(TagException.class,
                 () -> furnitureService.getFurnitureCategoriesByStyle(user, imageId, List.of("Bed")));
     }
 
     @Test
-    @DisplayName("HouseJpaEntity가 없을 경우 예외 발생")
+    @DisplayName("House가 없을 경우 예외 발생")
     void getFurnitureCategoriesByStyle_houseNotFound() {
-        // Given
         Long imageId = 10L;
-        Tag tag = Tag.builder()
-                .id(100L)
-                .build();
+        Tag tag = Tag.builder().id(100L).build();
 
         when(tagRepository.findTagByUserIdAndImageId(user.getId(), imageId))
                 .thenReturn(Optional.of(tag));
-        when(houseRepository.findHouseByUserIdAndImageId(user.getId(), imageId))
+        when(houseQueryPort.findHouseIdByUserIdAndImageId(user.getId(), imageId))
                 .thenReturn(Optional.empty());
 
-        // When & Then
         assertThrows(HouseException.class,
                 () -> furnitureService.getFurnitureCategoriesByStyle(user, imageId, List.of("Bed")));
     }
@@ -381,22 +264,21 @@ class FurnitureServiceImplTest {
         Long imageId = 10L;
 
         Tag tag = Tag.builder().id(100L).build();
-        HouseJpaEntity house = HouseJpaEntity.builder().id(200L).build();
 
-        FurnitureJpaEntity bed = FurnitureJpaEntity.builder().id(1L).furnitureNameKr("침대").build();
-        FurnitureJpaEntity chair = FurnitureJpaEntity.builder().id(2L).furnitureNameKr("의자").build();
-        FurnitureJpaEntity tv = FurnitureJpaEntity.builder().id(3L).furnitureNameKr("TV").build();
-        FurnitureJpaEntity dining = FurnitureJpaEntity.builder().id(4L).furnitureNameKr("식탁").build();
+        Furniture bed = furniture(1L, null, "침대");
+        Furniture chair = furniture(2L, null, "의자");
+        Furniture tv = furniture(3L, null, "TV");
+        Furniture dining = furniture(4L, null, "식탁");
 
-        FurnitureTag ftBed = FurnitureTag.builder().id(11L).tagId(100L).furniture(bed).priority(4).build();
-        FurnitureTag ftChair = FurnitureTag.builder().id(12L).tagId(100L).furniture(chair).priority(3).build();
-        FurnitureTag ftTv = FurnitureTag.builder().id(14L).tagId(100L).furniture(tv).priority(2).build();
-        FurnitureTag ftDining = FurnitureTag.builder().id(13L).tagId(100L).furniture(dining).priority(1).build();
+        FurnitureTagView ftBed = tagView(11L, 100L, bed, 4);
+        FurnitureTagView ftChair = tagView(12L, 100L, chair, 3);
+        FurnitureTagView ftTv = tagView(14L, 100L, tv, 2);
+        FurnitureTagView ftDining = tagView(13L, 100L, dining, 1);
 
         when(tagRepository.findTagByUserIdAndImageId(user.getId(), imageId)).thenReturn(Optional.of(tag));
-        when(houseRepository.findHouseByUserIdAndImageId(user.getId(), imageId)).thenReturn(Optional.of(house));
-        when(furnitureRepository.findAllByHouseId(house.getId())).thenReturn(List.of(bed, chair, tv, dining));
-        when(furnitureTagRepository.findAllByTagIdAndFurnitureIn(tag.getId(), List.of(bed, chair, tv, dining)))
+        when(houseQueryPort.findHouseIdByUserIdAndImageId(user.getId(), imageId)).thenReturn(Optional.of(200L));
+        when(furnitureRepositoryPort.findAllByHouseId(200L)).thenReturn(List.of(bed, chair, tv, dining));
+        when(furnitureTagQueryPort.findAllByTagIdAndFurnitureIdIn(tag.getId(), List.of(1L, 2L, 3L, 4L)))
                 .thenReturn(List.of(ftBed, ftChair, ftTv, ftDining));
         when(curationRawProductFurnitureService.getFurnitureIdsHavingProducts(List.of(1L, 2L, 3L, 4L)))
                 .thenReturn(List.of());
@@ -414,21 +296,20 @@ class FurnitureServiceImplTest {
         Long imageId = 10L;
 
         Tag tag = Tag.builder().id(100L).build();
-        HouseJpaEntity house = HouseJpaEntity.builder().id(200L).build();
 
-        FurnitureJpaEntity sofa = FurnitureJpaEntity.builder().id(1L).furnitureNameKr("소파").build();
-        FurnitureJpaEntity desk = FurnitureJpaEntity.builder().id(2L).furnitureNameKr("책상").build();
+        Furniture sofa = furniture(1L, null, "소파");
+        Furniture desk = furniture(2L, null, "책상");
 
-        FurnitureTag ftSofa = FurnitureTag.builder().id(11L).tagId(100L).furniture(sofa).priority(1).build();
+        FurnitureTagView ftSofa = tagView(11L, 100L, sofa, 1);
 
         when(tagRepository.findTagByUserIdAndImageId(user.getId(), imageId)).thenReturn(Optional.of(tag));
-        when(houseRepository.findHouseByUserIdAndImageId(user.getId(), imageId)).thenReturn(Optional.of(house));
-        when(furnitureRepository.findAllByHouseId(house.getId())).thenReturn(List.of(sofa, desk));
-        when(furnitureTagRepository.findAllByTagIdAndFurnitureIn(tag.getId(), List.of(sofa, desk)))
+        when(houseQueryPort.findHouseIdByUserIdAndImageId(user.getId(), imageId)).thenReturn(Optional.of(200L));
+        when(furnitureRepositoryPort.findAllByHouseId(200L)).thenReturn(List.of(sofa, desk));
+        when(furnitureTagQueryPort.findAllByTagIdAndFurnitureIdIn(tag.getId(), List.of(1L, 2L)))
                 .thenReturn(List.of(ftSofa));
         when(curationRawProductFurnitureService.getFurnitureIdsHavingProducts(List.of(1L, 2L)))
                 .thenReturn(List.of(2L));
-        when(furnitureRepository.findAllById(List.of(2L))).thenReturn(List.of(desk));
+        when(furnitureRepositoryPort.findAllById(List.of(2L))).thenReturn(List.of(desk));
 
         FurnitureCategoriesResponse response = furnitureService.getFurnitureCategoriesByStyleV2(user, imageId);
 
@@ -444,16 +325,15 @@ class FurnitureServiceImplTest {
         Long imageId = 10L;
 
         Tag tag = Tag.builder().id(100L).build();
-        HouseJpaEntity house = HouseJpaEntity.builder().id(200L).build();
 
-        FurnitureJpaEntity bed = FurnitureJpaEntity.builder().id(1L).furnitureNameKr("침대").build();
+        Furniture bed = furniture(1L, null, "침대");
 
-        FurnitureTag ftBed = FurnitureTag.builder().id(11L).tagId(100L).furniture(bed).priority(1).build();
+        FurnitureTagView ftBed = tagView(11L, 100L, bed, 1);
 
         when(tagRepository.findTagByUserIdAndImageId(user.getId(), imageId)).thenReturn(Optional.of(tag));
-        when(houseRepository.findHouseByUserIdAndImageId(user.getId(), imageId)).thenReturn(Optional.of(house));
-        when(furnitureRepository.findAllByHouseId(house.getId())).thenReturn(List.of(bed));
-        when(furnitureTagRepository.findAllByTagIdAndFurnitureIn(tag.getId(), List.of(bed)))
+        when(houseQueryPort.findHouseIdByUserIdAndImageId(user.getId(), imageId)).thenReturn(Optional.of(200L));
+        when(furnitureRepositoryPort.findAllByHouseId(200L)).thenReturn(List.of(bed));
+        when(furnitureTagQueryPort.findAllByTagIdAndFurnitureIdIn(tag.getId(), List.of(1L)))
                 .thenReturn(List.of(ftBed));
         when(curationRawProductFurnitureService.getFurnitureIdsHavingProducts(List.of(1L)))
                 .thenReturn(List.of(1L));
@@ -463,14 +343,4 @@ class FurnitureServiceImplTest {
         assertThat(response.categories()).hasSize(1);
         assertThat(response.categories().get(0).categoryName()).isEqualTo("침대");
     }
-
-    private FurnitureJpaEntity createFurniture(Long id, String eng, String kr, FurnitureType type) {
-        return FurnitureJpaEntity.builder()
-                .id(id)
-                .furnitureNameEng(eng)
-                .furnitureNameKr(kr)
-                .furnitureType(type)
-                .build();
-    }
-
 }

@@ -3,7 +3,7 @@ package or.sopt.houme.domain.furniture.service;
 import lombok.RequiredArgsConstructor;
 import or.sopt.houme.domain.furniture.infrastructure.dto.external.naverShop.NaverFurnitureProductDto;
 import or.sopt.houme.domain.furniture.model.entity.CurationRawProduct;
-import or.sopt.houme.domain.furniture.model.entity.FurnitureTag;
+import or.sopt.houme.furniture.domain.FurnitureTagView;
 import or.sopt.houme.domain.furniture.model.entity.SoozipCategory;
 import or.sopt.houme.domain.furniture.repository.CurationRawProductRepository;
 import or.sopt.houme.domain.furniture.service.dto.CurationRawProductSaveResult;
@@ -29,12 +29,12 @@ public class CurationRawProductService {
     private final ApplicationEventPublisher eventPublisher;
 
     @Transactional(readOnly = true)
-    public List<NaverFurnitureProductDto> getCandidatesByFurnitureTag(FurnitureTag furnitureTag) {
+    public List<NaverFurnitureProductDto> getCandidatesByFurnitureTag(FurnitureTagView furnitureTag) {
         if (furnitureTag == null) {
             return List.of();
         }
 
-        List<CurationRawProduct> rawProducts = curationRawProductRepository.findAllByFurnitureTag(furnitureTag);
+        List<CurationRawProduct> rawProducts = curationRawProductRepository.findAllByFurnitureTagId(furnitureTag.id());
         if (rawProducts.isEmpty()) {
             return List.of();
         }
