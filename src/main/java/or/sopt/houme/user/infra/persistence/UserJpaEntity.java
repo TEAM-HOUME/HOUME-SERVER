@@ -114,4 +114,14 @@ public class UserJpaEntity extends BaseEntity {
     public void updateHasGeneratedImage() {
         if (!this.hasGeneratedImage) this.hasGeneratedImage = true;
     }
+
+    /** 순수 도메인 모델의 변경 가능 필드를 반영한다 (어댑터 전용, JPA 더티 체킹으로 UPDATE). */
+    public void applyDomainState(or.sopt.houme.user.domain.User user) {
+        this.name = user.getName();
+        this.nickname = user.getNickname();
+        this.nicknameTag = user.getNicknameTag();
+        this.birthday = user.getBirthday();
+        this.gender = user.getGender();
+        this.hasGeneratedImage = user.getHasGeneratedImage();
+    }
 }
