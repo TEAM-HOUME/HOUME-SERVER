@@ -481,7 +481,7 @@ class UserServiceImplTest {
         Jjym jjym = Jjym.builder()
                 .id(1L)
                 .userId(user.getId())
-                .recommendFurniture(regularRecommendFurniture)
+                .recommendFurnitureId(regularRecommendFurniture.getId())
                 .build();
         given(jjymRepository.findAllByUserIdAndRecommendFurnitureIdIn(user.getId(), List.of(501L, 502L)))
                 .willReturn(List.of(jjym));

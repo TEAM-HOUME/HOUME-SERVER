@@ -26,7 +26,7 @@ public class HouseJpaEntity extends BaseEntity {
     @Column(name = "activity", nullable = true)
     private Activity activity;
 
-    // #582: User 연관 절단 —  대신 user_id(Long) 컬럼으로만 참조(도메인 경계 분리, FK 는 DB 가 계속 강제)
+    // #582: User 연관 절단 — @ManyToOne 대신 user_id(Long) 컬럼으로만 참조(도메인 경계 분리, FK 는 DB 가 계속 강제)
     @Column(name = "user_id")
     private Long userId;
 

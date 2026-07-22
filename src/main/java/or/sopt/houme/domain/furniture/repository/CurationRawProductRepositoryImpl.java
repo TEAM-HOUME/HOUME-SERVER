@@ -258,7 +258,7 @@ public class CurationRawProductRepositoryImpl implements CurationRawProductRepos
         BooleanExpression isNotLikedByUser = JPAExpressions
                 .selectOne()
                 .from(jjym)
-                .join(jjym.recommendFurniture, recommendFurniture)
+                .join(recommendFurniture).on(jjym.recommendFurnitureId.eq(recommendFurniture.id))
                 .where(
                         jjym.userId.eq(userId),
                         recommendFurniture.source.eq(CurationSource.RAW),
@@ -298,7 +298,7 @@ public class CurationRawProductRepositoryImpl implements CurationRawProductRepos
         BooleanExpression isNotLikedByUser = JPAExpressions
                 .selectOne()
                 .from(jjym)
-                .join(jjym.recommendFurniture, recommendFurniture)
+                .join(recommendFurniture).on(jjym.recommendFurnitureId.eq(recommendFurniture.id))
                 .where(
                         jjym.userId.eq(userId),
                         recommendFurniture.source.eq(CurationSource.RAW),
@@ -330,7 +330,7 @@ public class CurationRawProductRepositoryImpl implements CurationRawProductRepos
         BooleanExpression isNotLikedByUser = JPAExpressions
                 .selectOne()
                 .from(jjym)
-                .join(jjym.recommendFurniture, recommendFurniture)
+                .join(recommendFurniture).on(jjym.recommendFurnitureId.eq(recommendFurniture.id))
                 .where(
                         jjym.userId.eq(userId),
                         recommendFurniture.source.eq(CurationSource.RAW),
@@ -511,7 +511,7 @@ public class CurationRawProductRepositoryImpl implements CurationRawProductRepos
         return JPAExpressions
                 .selectOne()
                 .from(jjym)
-                .join(jjym.recommendFurniture, recommendFurniture)
+                .join(recommendFurniture).on(jjym.recommendFurnitureId.eq(recommendFurniture.id))
                 .where(
                         jjym.userId.eq(userId),
                         recommendFurniture.source.eq(CurationSource.RAW),

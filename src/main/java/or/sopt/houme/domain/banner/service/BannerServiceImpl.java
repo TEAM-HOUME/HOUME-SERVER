@@ -248,9 +248,8 @@ public class BannerServiceImpl implements BannerService {
         Set<Long> likedRecommendFurnitureIds = jjymRepository
                 .findAllByUserIdAndRecommendFurnitureIdIn(user.getId(), recommendFurnitureIds)
                 .stream()
-                .map(Jjym::getRecommendFurniture)
+                .map(Jjym::getRecommendFurnitureId)
                 .filter(java.util.Objects::nonNull)
-                .map(RecommendFurniture::getId)
                 .collect(Collectors.toSet());
 
         return recommendFurnitureIdByProductId.entrySet().stream()

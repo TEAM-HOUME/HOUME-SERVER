@@ -25,18 +25,18 @@ public class Jjym extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // #582: User 연관 절단 —  대신 user_id(Long) 컬럼으로만 참조(도메인 경계 분리, FK 는 DB 가 계속 강제)
+    // #582: User 연관 절단 — @ManyToOne 대신 user_id(Long) 컬럼으로만 참조(도메인 경계 분리, FK 는 DB 가 계속 강제)
     @Column(name = "user_id", nullable = false)
     private Long userId;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "recommend_furniture_id", nullable = false)
-    private RecommendFurniture recommendFurniture;
+    // #582: RecommendFurniture 연관 절단 — @ManyToOne 대신 recommend_furniture_id(Long) 컬럼으로만 참조(FK 는 DB 가 계속 강제)
+    @Column(name = "recommend_furniture_id", nullable = false)
+    private Long recommendFurnitureId;
 
-    public static Jjym of(Long userId, RecommendFurniture recommendFurniture) {
+    public static Jjym of(Long userId, Long recommendFurnitureId) {
         return Jjym.builder()
                 .userId(userId)
-                .recommendFurniture(recommendFurniture)
+                .recommendFurnitureId(recommendFurnitureId)
                 .build();
     }
 

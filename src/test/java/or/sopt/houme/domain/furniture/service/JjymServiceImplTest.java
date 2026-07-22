@@ -1,16 +1,14 @@
 package or.sopt.houme.domain.furniture.service;
 
-import or.sopt.houme.domain.furniture.model.entity.CurationRawProduct;
-import or.sopt.houme.domain.furniture.model.entity.CurationRawProductColor;
 import or.sopt.houme.domain.furniture.model.entity.CurationSource;
-import or.sopt.houme.domain.furniture.model.entity.Jjym;
-import or.sopt.houme.domain.furniture.model.entity.RecommendFurniture;
-import or.sopt.houme.domain.furniture.model.entity.SoozipCategory;
 import or.sopt.houme.domain.furniture.presentation.dto.response.JjymV2ListResponse;
-import or.sopt.houme.domain.furniture.repository.CurationRawProductColorRepository;
-import or.sopt.houme.domain.furniture.repository.CurationRawProductRepository;
-import or.sopt.houme.domain.furniture.repository.JjymRepository;
-import or.sopt.houme.domain.furniture.repository.RecommendFurnitureRepository;
+import or.sopt.houme.furniture.domain.CurationRawProductColorView;
+import or.sopt.houme.furniture.domain.CurationRawProductView;
+import or.sopt.houme.furniture.domain.Jjym;
+import or.sopt.houme.furniture.domain.RecommendFurniture;
+import or.sopt.houme.furniture.domain.port.out.CurationRawProductQueryPort;
+import or.sopt.houme.furniture.domain.port.out.JjymRepositoryPort;
+import or.sopt.houme.furniture.domain.port.out.RecommendFurniturePort;
 import or.sopt.houme.user.domain.User;
 import or.sopt.houme.user.domain.port.out.UserRepositoryPort;
 import org.junit.jupiter.api.DisplayName;
@@ -29,28 +27,24 @@ import static org.mockito.Mockito.mock;
 
 class JjymServiceImplTest {
 
-    private final JjymRepository jjymRepository = mock(JjymRepository.class);
+    private final JjymRepositoryPort jjymRepositoryPort = mock(JjymRepositoryPort.class);
     private final UserRepositoryPort userRepository = mock(UserRepositoryPort.class);
-    private final RecommendFurnitureRepository recommendFurnitureRepository = mock(RecommendFurnitureRepository.class);
-    private final CurationRawProductRepository curationRawProductRepository = mock(CurationRawProductRepository.class);
-    private final CurationRawProductColorRepository curationRawProductColorRepository = mock(CurationRawProductColorRepository.class);
+    private final RecommendFurniturePort recommendFurniturePort = mock(RecommendFurniturePort.class);
+    private final CurationRawProductQueryPort curationRawProductQueryPort = mock(CurationRawProductQueryPort.class);
 
     private final JjymServiceImpl jjymService = new JjymServiceImpl(
-            jjymRepository,
+            jjymRepositoryPort,
             userRepository,
-            recommendFurnitureRepository,
-            curationRawProductRepository,
-            curationRawProductColorRepository
+            recommendFurniturePort,
+            curationRawProductQueryPort
     );
 
     @Test
     @DisplayName("raw product 기준 찜 토글 시 recommend furniture가 없으면 생성 후 찜 저장한다")
     void rawProductJjymToggle_createsRecommendFurnitureWhenMissing() {
         User user = User.builder().id(1L).build();
-        CurationRawProduct rawProduct = CurationRawProduct.builder()
+        CurationRawProductView rawProduct = CurationRawProductView.builder()
                 .id(10L)
-                .source("soozip")
-                .category(SoozipCategory.FURNITURE)
                 .productId(1000L)
                 .productImageUrl("https://image")
                 .productSiteUrl("https://site")
@@ -65,23 +59,22 @@ class JjymServiceImplTest {
                 .build();
 
         given(userRepository.findById(1L)).willReturn(Optional.of(user));
-        given(curationRawProductRepository.findById(10L)).willReturn(Optional.of(rawProduct));
-        given(recommendFurnitureRepository.findBySourceAndFurnitureProductId(CurationSource.RAW, 1000L))
+        given(curationRawProductQueryPort.findById(10L)).willReturn(Optional.of(rawProduct));
+        given(recommendFurniturePort.findBySourceAndFurnitureProductId(CurationSource.RAW, 1000L))
                 .willReturn(Optional.empty());
-        given(recommendFurnitureRepository.save(any(RecommendFurniture.class))).willReturn(recommendFurniture);
-        given(jjymRepository.findByUserIdAndRecommendFurnitureId(1L, 20L)).willReturn(Optional.empty());
+        given(recommendFurniturePort.save(any(RecommendFurniture.class))).willReturn(recommendFurniture);
+        given(jjymRepositoryPort.findByUserIdAndRecommendFurnitureId(1L, 20L)).willReturn(Optional.empty());
 
         boolean result = jjymService.rawProductJjymToggle(1L, 10L);
 
         assertThat(result).isTrue();
-        then(recommendFurnitureRepository).should().save(any(RecommendFurniture.class));
-        then(jjymRepository).should().save(any(Jjym.class));
+        then(recommendFurniturePort).should().save(any(RecommendFurniture.class));
+        then(jjymRepositoryPort).should().save(any(Jjym.class));
     }
 
     @Test
     @DisplayName("raw product 기반 찜 목록 조회 시 색상, 가격, 찜 개수를 포함해 반환한다")
     void getMyRawProductJjyms_returnsRawProductMetadata() {
-        User user = User.builder().id(1L).build();
         RecommendFurniture recommendFurniture = RecommendFurniture.builder()
                 .id(20L)
                 .furnitureProductId(1000L)
@@ -90,15 +83,9 @@ class JjymServiceImplTest {
                 .furnitureProductSiteUrl("https://recommend-site")
                 .furnitureProductName("추천 소파")
                 .build();
-        Jjym jjym = Jjym.builder()
-                .id(30L)
-                .userId(user.getId())
-                .recommendFurniture(recommendFurniture)
-                .build();
-        CurationRawProduct rawProduct = CurationRawProduct.builder()
+        Jjym jjym = Jjym.reconstitute(30L, 1L, 20L);
+        CurationRawProductView rawProduct = CurationRawProductView.builder()
                 .id(40L)
-                .source("soozip")
-                .category(SoozipCategory.FURNITURE)
                 .productId(1000L)
                 .productImageUrl("https://raw-image")
                 .productSiteUrl("https://raw-site")
@@ -110,22 +97,15 @@ class JjymServiceImplTest {
                 .productMallName("수집몰")
                 .fetchedAt(LocalDateTime.now())
                 .build();
-        CurationRawProductColor firstColor = CurationRawProductColor.builder()
-                .curationRawProduct(rawProduct)
-                .rawColorName("오프화이트")
-                .clientColorName("화이트")
-                .build();
-        CurationRawProductColor secondColor = CurationRawProductColor.builder()
-                .curationRawProduct(rawProduct)
-                .rawColorName("우드")
-                .clientColorName(null)
-                .build();
+        CurationRawProductColorView firstColor = new CurationRawProductColorView(40L, "화이트", "오프화이트");
+        CurationRawProductColorView secondColor = new CurationRawProductColorView(40L, null, "우드");
 
-        given(jjymRepository.findAllByUserIdWithFurnitureOrderByCreatedAtDesc(1L)).willReturn(List.of(jjym));
-        given(curationRawProductRepository.findAllByProductIdIn(List.of(1000L))).willReturn(List.of(rawProduct));
-        given(curationRawProductColorRepository.findAllByCurationRawProductIdIn(List.of(40L)))
+        given(jjymRepositoryPort.findAllByUserIdOrderByCreatedAtDesc(1L)).willReturn(List.of(jjym));
+        given(recommendFurniturePort.findAllByIdIn(List.of(20L))).willReturn(List.of(recommendFurniture));
+        given(curationRawProductQueryPort.findAllByProductIdIn(List.of(1000L))).willReturn(List.of(rawProduct));
+        given(curationRawProductQueryPort.findColorsByRawProductIdIn(List.of(40L)))
                 .willReturn(List.of(firstColor, secondColor));
-        given(jjymRepository.countByRecommendFurnitureIds(List.of(20L))).willReturn(Map.of(20L, 5L));
+        given(jjymRepositoryPort.countByRecommendFurnitureIds(List.of(20L))).willReturn(Map.of(20L, 5L));
 
         JjymV2ListResponse response = jjymService.getMyRawProductJjyms(1L);
 

@@ -442,9 +442,8 @@ public class GenerateImageResultServiceImpl implements GenerateImageResultServic
         Set<Long> likedRecommendFurnitureIds = jjymRepository
                 .findAllByUserIdAndRecommendFurnitureIdIn(user.getId(), recommendFurnitureIds)
                 .stream()
-                .map(Jjym::getRecommendFurniture)
-                .filter(Objects::nonNull)
-                .map(RecommendFurniture::getId)
+                .map(Jjym::getRecommendFurnitureId)
+                .filter(java.util.Objects::nonNull)
                 .collect(Collectors.toSet());
 
         return recommendFurnitureIdByProductId.entrySet().stream()

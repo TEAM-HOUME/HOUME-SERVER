@@ -1,26 +1,23 @@
 package or.sopt.houme.domain.furniture.service;
 
 import lombok.RequiredArgsConstructor;
-import or.sopt.houme.domain.furniture.model.entity.CurationRawProduct;
-import or.sopt.houme.domain.furniture.model.entity.CurationRawProductColor;
 import or.sopt.houme.domain.furniture.model.entity.CurationSource;
-import or.sopt.houme.domain.furniture.model.entity.Jjym;
-import or.sopt.houme.domain.furniture.model.entity.RecommendFurniture;
 import or.sopt.houme.domain.furniture.presentation.dto.response.JjymItemResponse;
 import or.sopt.houme.domain.furniture.presentation.dto.response.JjymListResponse;
 import or.sopt.houme.domain.furniture.presentation.dto.response.JjymV2ItemResponse;
 import or.sopt.houme.domain.furniture.presentation.dto.response.JjymV2ListResponse;
-import or.sopt.houme.domain.furniture.repository.CurationRawProductColorRepository;
-import or.sopt.houme.domain.furniture.repository.CurationRawProductRepository;
-import or.sopt.houme.domain.furniture.repository.JjymRepository;
-import or.sopt.houme.domain.furniture.repository.RecommendFurnitureRepository;
+import or.sopt.houme.furniture.domain.CurationRawProductColorView;
+import or.sopt.houme.furniture.domain.CurationRawProductView;
+import or.sopt.houme.furniture.domain.Jjym;
+import or.sopt.houme.furniture.domain.RecommendFurniture;
+import or.sopt.houme.furniture.domain.port.out.CurationRawProductQueryPort;
+import or.sopt.houme.furniture.domain.port.out.JjymRepositoryPort;
+import or.sopt.houme.furniture.domain.port.out.RecommendFurniturePort;
 import or.sopt.houme.user.domain.User;
 import or.sopt.houme.user.domain.port.out.UserRepositoryPort;
 import or.sopt.houme.global.api.ErrorCode;
 import or.sopt.houme.global.api.GeneralException;
 import or.sopt.houme.global.api.handler.FurnitureException;
-import or.sopt.houme.global.api.handler.FurnitureException;
-import or.sopt.houme.global.api.handler.UserException;
 import or.sopt.houme.global.api.handler.UserException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -29,10 +26,11 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
-import java.util.Optional;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
@@ -40,28 +38,26 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class JjymServiceImpl implements JjymService {
 
-    private final JjymRepository jjymRepository;
+    private final JjymRepositoryPort jjymRepositoryPort;
     private final UserRepositoryPort userRepositoryPort;
-    private final RecommendFurnitureRepository recommendFurnitureRepository;
-    private final CurationRawProductRepository curationRawProductRepository;
-    private final CurationRawProductColorRepository curationRawProductColorRepository;
+    private final RecommendFurniturePort recommendFurniturePort;
+    private final CurationRawProductQueryPort curationRawProductQueryPort;
 
     @Override
     public boolean jjymToggle(Long userId, Long recommendFurnitureId) {
         User user = userRepositoryPort.findById(userId)
                 .orElseThrow(() -> new UserException(ErrorCode.USER_NOT_FOUND));
 
-        RecommendFurniture furniture = recommendFurnitureRepository.findById(recommendFurnitureId)
+        RecommendFurniture furniture = recommendFurniturePort.findById(recommendFurnitureId)
                 .orElseThrow(() -> new GeneralException(ErrorCode.NOT_FOUND_FURNITURE));
 
-        Optional<Jjym> existing = jjymRepository.findByUserIdAndRecommendFurnitureId(user.getId(), furniture.getId());
+        Optional<Jjym> existing = jjymRepositoryPort.findByUserIdAndRecommendFurnitureId(user.getId(), furniture.getId());
 
         if (existing.isPresent()) {
-            jjymRepository.delete(existing.get());
+            jjymRepositoryPort.deleteById(existing.get().getId());
             return false;
         } else {
-            Jjym jjym = Jjym.of(user.getId(), furniture);
-            jjymRepository.save(jjym);
+            jjymRepositoryPort.save(Jjym.of(user.getId(), furniture.getId()));
             return true;
         }
     }
@@ -73,13 +69,13 @@ public class JjymServiceImpl implements JjymService {
 
         RecommendFurniture recommendFurniture = resolveRawProductRecommendFurniture(rawProductId);
 
-        Optional<Jjym> existing = jjymRepository.findByUserIdAndRecommendFurnitureId(user.getId(), recommendFurniture.getId());
+        Optional<Jjym> existing = jjymRepositoryPort.findByUserIdAndRecommendFurnitureId(user.getId(), recommendFurniture.getId());
         if (existing.isPresent()) {
-            jjymRepository.delete(existing.get());
+            jjymRepositoryPort.deleteById(existing.get().getId());
             return false;
         }
 
-        jjymRepository.save(Jjym.of(user.getId(), recommendFurniture));
+        jjymRepositoryPort.save(Jjym.of(user.getId(), recommendFurniture.getId()));
         return true;
     }
 
@@ -89,22 +85,25 @@ public class JjymServiceImpl implements JjymService {
                 .orElseThrow(() -> new UserException(ErrorCode.USER_NOT_FOUND));
         RecommendFurniture recommendFurniture = resolveRawProductRecommendFurniture(rawProductId);
 
-        Optional<Jjym> existing = jjymRepository.findByUserIdAndRecommendFurnitureId(user.getId(), recommendFurniture.getId());
+        Optional<Jjym> existing = jjymRepositoryPort.findByUserIdAndRecommendFurnitureId(user.getId(), recommendFurniture.getId());
         if (existing.isPresent()) {
             return;
         }
 
-        jjymRepository.save(Jjym.of(user.getId(), recommendFurniture));
+        jjymRepositoryPort.save(Jjym.of(user.getId(), recommendFurniture.getId()));
     }
 
     @Transactional(readOnly = true)
     @Override
     public JjymListResponse getMyJjyms(Long userId) {
 
-        List<Jjym> jjyms = jjymRepository.findAllByUserIdWithFurnitureOrderByCreatedAtDesc(userId);
+        List<Jjym> jjyms = jjymRepositoryPort.findAllByUserIdOrderByCreatedAtDesc(userId);
+        Map<Long, RecommendFurniture> furnitureById = loadRecommendFurnitureById(jjyms);
 
         List<JjymItemResponse> items = jjyms.stream()
-                .map(j -> JjymItemResponse.from(j.getRecommendFurniture()))
+                .map(j -> furnitureById.get(j.getRecommendFurnitureId()))
+                .filter(java.util.Objects::nonNull)
+                .map(JjymItemResponse::from)
                 .collect(Collectors.toList());
 
         return JjymListResponse.of(items);
@@ -114,33 +113,58 @@ public class JjymServiceImpl implements JjymService {
     @Transactional(readOnly = true)
     @Override
     public JjymV2ListResponse getMyRawProductJjyms(Long userId) {
-        List<Jjym> rawProductJjyms = jjymRepository.findAllByUserIdWithFurnitureOrderByCreatedAtDesc(userId).stream()
-                .filter(jjym -> jjym.getRecommendFurniture().getSource() == CurationSource.RAW)
+        List<Jjym> jjyms = jjymRepositoryPort.findAllByUserIdOrderByCreatedAtDesc(userId);
+        Map<Long, RecommendFurniture> furnitureById = loadRecommendFurnitureById(jjyms);
+
+        List<Jjym> rawProductJjyms = jjyms.stream()
+                .filter(jjym -> {
+                    RecommendFurniture rf = furnitureById.get(jjym.getRecommendFurnitureId());
+                    return rf != null && rf.getSource() == CurationSource.RAW;
+                })
                 .toList();
 
         if (rawProductJjyms.isEmpty()) {
             return JjymV2ListResponse.of(List.of());
         }
 
-        Map<Long, CurationRawProduct> rawProductByProductId = buildRawProductByProductId(rawProductJjyms);
+        Map<Long, CurationRawProductView> rawProductByProductId = buildRawProductByProductId(rawProductJjyms, furnitureById);
         Map<Long, List<String>> colorsByRawProductId = buildColorNamesByRawProductId(rawProductByProductId);
-        Map<Long, Long> jjymCountByRecommendFurnitureId = jjymRepository.countByRecommendFurnitureIds(
+        Map<Long, Long> jjymCountByRecommendFurnitureId = jjymRepositoryPort.countByRecommendFurnitureIds(
                 rawProductJjyms.stream()
-                        .map(jjym -> jjym.getRecommendFurniture().getId())
+                        .map(Jjym::getRecommendFurnitureId)
                         .distinct()
                         .toList()
         );
 
         List<JjymV2ItemResponse> items = rawProductJjyms.stream()
-                .map(jjym -> toV2ItemResponse(jjym, rawProductByProductId, colorsByRawProductId, jjymCountByRecommendFurnitureId))
+                .map(jjym -> toV2ItemResponse(
+                        furnitureById.get(jjym.getRecommendFurnitureId()),
+                        rawProductByProductId, colorsByRawProductId, jjymCountByRecommendFurnitureId))
                 .toList();
 
         return JjymV2ListResponse.of(items);
     }
 
-    private Map<Long, CurationRawProduct> buildRawProductByProductId(List<Jjym> rawProductJjyms) {
+    /** 찜 목록의 추천가구를 일괄 조회해 id 로 매핑한다 (#582: Jjym→RecommendFurniture 연관 절단 대응). */
+    private Map<Long, RecommendFurniture> loadRecommendFurnitureById(List<Jjym> jjyms) {
+        List<Long> ids = jjyms.stream()
+                .map(Jjym::getRecommendFurnitureId)
+                .filter(java.util.Objects::nonNull)
+                .distinct()
+                .toList();
+        if (ids.isEmpty()) {
+            return Map.of();
+        }
+        return recommendFurniturePort.findAllByIdIn(ids).stream()
+                .collect(Collectors.toMap(RecommendFurniture::getId, Function.identity(), (left, right) -> left));
+    }
+
+    private Map<Long, CurationRawProductView> buildRawProductByProductId(
+            List<Jjym> rawProductJjyms, Map<Long, RecommendFurniture> furnitureById) {
         List<Long> productIds = rawProductJjyms.stream()
-                .map(jjym -> jjym.getRecommendFurniture().getFurnitureProductId())
+                .map(jjym -> furnitureById.get(jjym.getRecommendFurnitureId()))
+                .filter(java.util.Objects::nonNull)
+                .map(RecommendFurniture::getFurnitureProductId)
                 .filter(productId -> productId != null)
                 .distinct()
                 .toList();
@@ -149,8 +173,8 @@ public class JjymServiceImpl implements JjymService {
             return Map.of();
         }
 
-        Map<Long, CurationRawProduct> rawProductByProductId = new HashMap<>();
-        for (CurationRawProduct rawProduct : curationRawProductRepository.findAllByProductIdIn(productIds)) {
+        Map<Long, CurationRawProductView> rawProductByProductId = new HashMap<>();
+        for (CurationRawProductView rawProduct : curationRawProductQueryPort.findAllByProductIdIn(productIds)) {
             rawProductByProductId.merge(
                     rawProduct.getProductId(),
                     rawProduct,
@@ -160,23 +184,23 @@ public class JjymServiceImpl implements JjymService {
         return rawProductByProductId;
     }
 
-    private Map<Long, List<String>> buildColorNamesByRawProductId(Map<Long, CurationRawProduct> rawProductByProductId) {
+    private Map<Long, List<String>> buildColorNamesByRawProductId(Map<Long, CurationRawProductView> rawProductByProductId) {
         if (rawProductByProductId.isEmpty()) {
             return Map.of();
         }
 
         List<Long> rawProductIds = rawProductByProductId.values().stream()
-                .map(CurationRawProduct::getId)
+                .map(CurationRawProductView::getId)
                 .toList();
 
         Map<Long, Set<String>> colorSetByRawProductId = new HashMap<>();
-        for (CurationRawProductColor color : curationRawProductColorRepository.findAllByCurationRawProductIdIn(rawProductIds)) {
-            Long rawProductId = color.getCurationRawProduct().getId();
+        for (CurationRawProductColorView color : curationRawProductQueryPort.findColorsByRawProductIdIn(rawProductIds)) {
+            Long rawProductId = color.rawProductId();
             if (rawProductId == null) {
                 continue;
             }
 
-            String colorName = resolveColorName(color);
+            String colorName = color.resolveColorName();
             if (colorName == null) {
                 continue;
             }
@@ -192,13 +216,12 @@ public class JjymServiceImpl implements JjymService {
     }
 
     private JjymV2ItemResponse toV2ItemResponse(
-            Jjym jjym,
-            Map<Long, CurationRawProduct> rawProductByProductId,
+            RecommendFurniture recommendFurniture,
+            Map<Long, CurationRawProductView> rawProductByProductId,
             Map<Long, List<String>> colorsByRawProductId,
             Map<Long, Long> jjymCountByRecommendFurnitureId
     ) {
-        RecommendFurniture recommendFurniture = jjym.getRecommendFurniture();
-        CurationRawProduct rawProduct = rawProductByProductId.get(recommendFurniture.getFurnitureProductId());
+        CurationRawProductView rawProduct = rawProductByProductId.get(recommendFurniture.getFurnitureProductId());
 
         if (rawProduct == null) {
             return JjymV2ItemResponse.of(
@@ -231,7 +254,7 @@ public class JjymServiceImpl implements JjymService {
         );
     }
 
-    private CurationRawProduct selectLatestRawProduct(CurationRawProduct current, CurationRawProduct candidate) {
+    private CurationRawProductView selectLatestRawProduct(CurationRawProductView current, CurationRawProductView candidate) {
         LocalDateTime currentFetchedAt = current.getFetchedAt();
         LocalDateTime candidateFetchedAt = candidate.getFetchedAt();
 
@@ -258,23 +281,13 @@ public class JjymServiceImpl implements JjymService {
         return current;
     }
 
-    private String resolveColorName(CurationRawProductColor color) {
-        if (color.getClientColorName() != null && !color.getClientColorName().isBlank()) {
-            return color.getClientColorName();
-        }
-        if (color.getRawColorName() != null && !color.getRawColorName().isBlank()) {
-            return color.getRawColorName();
-        }
-        return null;
-    }
-
     private RecommendFurniture resolveRawProductRecommendFurniture(Long rawProductId) {
-        CurationRawProduct rawProduct = curationRawProductRepository.findById(rawProductId)
+        CurationRawProductView rawProduct = curationRawProductQueryPort.findById(rawProductId)
                 .orElseThrow(() -> new FurnitureException(ErrorCode.NOT_FOUND_CURATION_RAW_PRODUCT));
 
-        return recommendFurnitureRepository
+        return recommendFurniturePort
                 .findBySourceAndFurnitureProductId(CurationSource.RAW, rawProduct.getProductId())
-                .orElseGet(() -> recommendFurnitureRepository.save(RecommendFurniture.from(
+                .orElseGet(() -> recommendFurniturePort.save(RecommendFurniture.from(
                         rawProduct.getProductImageUrl(),
                         rawProduct.getProductSiteUrl(),
                         rawProduct.getProductName(),

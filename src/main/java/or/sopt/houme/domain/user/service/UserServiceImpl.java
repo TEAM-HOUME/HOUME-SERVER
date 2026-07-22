@@ -634,9 +634,8 @@ public class UserServiceImpl implements UserService {
 
         Set<Long> jjymRecommendFurnitureIds = jjymRepository.findAllByUserIdAndRecommendFurnitureIdIn(userId, recommendFurnitureIds)
                 .stream()
-                .map(Jjym::getRecommendFurniture)
-                .filter(Objects::nonNull)
-                .map(RecommendFurniture::getId)
+                .map(Jjym::getRecommendFurnitureId)
+                .filter(java.util.Objects::nonNull)
                 .collect(Collectors.toSet());
 
         Map<Long, Boolean> result = new LinkedHashMap<>();

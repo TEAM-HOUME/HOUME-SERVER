@@ -189,9 +189,7 @@ public class CurationFurnitureServiceImpl implements CurationFurnitureService {
         }
 
         return jjymRepository.findAllByUserIdAndRecommendFurnitureIdIn(userId, recommendFurnitureIds).stream()
-                .map(Jjym::getRecommendFurniture)
-                .filter(Objects::nonNull)
-                .map(RecommendFurniture::getId)
+                .map(Jjym::getRecommendFurnitureId)
                 .filter(Objects::nonNull)
                 .collect(Collectors.toSet());
     }

@@ -152,10 +152,14 @@ public class CurationRawProductFurnitureServiceImpl implements CurationRawProduc
                 .map(RecommendFurniture::getId)
                 .toList();
 
-        return jjymRepository.findAllByUserIdAndRecommendFurnitureIdIn(user.getId(), recommendIds).stream()
-                .map(Jjym::getRecommendFurniture)
-                .filter(Objects::nonNull)
-                .map(RecommendFurniture::getFurnitureProductId)
+        java.util.Map<Long, Long> productIdByRecommendId = recommendFurnitures.stream()
+                .collect(Collectors.toMap(RecommendFurniture::getId, RecommendFurniture::getFurnitureProductId, (left, right) -> left));
+
+                // #582: Jjym→RecommendFurniture 연관 절단 — recommendFurnitureId 로 역매핑
+                return jjymRepository.findAllByUserIdAndRecommendFurnitureIdIn(user.getId(), recommendIds).stream()
+                        .map(Jjym::getRecommendFurnitureId)
+                        .map(productIdByRecommendId::get)
+                        .filter(Objects::nonNull)
                 .collect(Collectors.toSet());
     }
 
