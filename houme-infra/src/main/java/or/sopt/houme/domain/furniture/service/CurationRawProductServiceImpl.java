@@ -23,7 +23,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-public class CurationRawProductService {
+public class CurationRawProductServiceImpl implements CurationRawProductService {
 
     private final CurationRawProductRepository curationRawProductRepository;
     private final ApplicationEventPublisher eventPublisher;

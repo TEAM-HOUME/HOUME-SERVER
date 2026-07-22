@@ -24,7 +24,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 @Service
-public class SoozipCrawlingService {
+public class SoozipCrawlingServiceImpl implements SoozipCrawlingService {
 
     private static final int DEFAULT_CATE_NO = 75;
     private static final long PAGE_DELAY_MILLIS = 250L;

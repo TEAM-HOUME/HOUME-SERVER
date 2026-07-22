@@ -1,0 +1,15 @@
+// houme-external: Feign/Gemini/Discord 외부 클라이언트 + 외부 DTO
+dependencies {
+    implementation project(':houme-common')
+    implementation project(':houme-domain')
+    api 'org.springframework.cloud:spring-cloud-starter-openfeign'
+    implementation 'io.github.openfeign:feign-jackson:13.6'
+    implementation 'org.springframework:spring-web'
+    implementation 'jakarta.servlet:jakarta.servlet-api:6.0.0'
+    implementation 'com.fasterxml.jackson.core:jackson-databind'
+    implementation 'io.github.resilience4j:resilience4j-feign'
+    implementation 'io.github.resilience4j:resilience4j-spring-boot3'
+    implementation 'org.springframework.boot:spring-boot-starter-aop'
+    implementation 'io.github.resilience4j:resilience4j-circuitbreaker'
+    implementation 'io.github.resilience4j:resilience4j-core'
+}

@@ -1,0 +1,11 @@
+// houme-common: 공용 응답/에러/유틸/공유 DTO. 경량 spring-web(HttpStatus/ResponseEntity/Multipart)·slf4j 까지 허용.
+dependencies {
+    api 'org.springframework:spring-web'
+    api 'org.springframework:spring-context'
+    api 'org.springframework.boot:spring-boot'
+    api 'org.slf4j:slf4j-api'
+    api 'io.swagger.core.v3:swagger-annotations-jakarta:2.2.20'
+    api 'jakarta.validation:jakarta.validation-api:3.0.2'
+    api 'com.fasterxml.jackson.core:jackson-annotations'
+    api 'com.fasterxml.jackson.core:jackson-databind'
+}

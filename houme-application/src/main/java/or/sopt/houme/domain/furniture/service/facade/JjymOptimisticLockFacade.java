@@ -2,7 +2,7 @@ package or.sopt.houme.domain.furniture.service.facade;
 
 import jakarta.persistence.OptimisticLockException;
 import lombok.RequiredArgsConstructor;
-import or.sopt.houme.domain.furniture.service.JjymServiceImpl;
+import or.sopt.houme.domain.furniture.service.JjymService;
 import or.sopt.houme.user.domain.User;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Component;
@@ -14,7 +14,7 @@ import static or.sopt.houme.global.util.constant.OptimisticLockConstant.RETRY_DE
 @RequiredArgsConstructor
 public class JjymOptimisticLockFacade {
 
-    private final JjymServiceImpl jjymService;
+    private final JjymService jjymService;
 
     public boolean toggle(User user, Long recommendFurnitureId) {
         int retryCount = 0;
