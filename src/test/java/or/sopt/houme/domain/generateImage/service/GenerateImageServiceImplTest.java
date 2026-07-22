@@ -3,6 +3,7 @@ package or.sopt.houme.domain.generateImage.service;
 import or.sopt.houme.domain.generateImage.model.entity.GenerateImage;
 import or.sopt.houme.domain.generateImage.repository.GenerateImageRepository;
 import or.sopt.houme.house.infra.persistence.HouseJpaEntity;
+import or.sopt.houme.house.domain.House;
 import or.sopt.houme.domain.house.repository.HouseRepository;
 import or.sopt.houme.domain.user.model.entity.*;
 import or.sopt.houme.user.infra.persistence.UserJpaEntity;
@@ -78,7 +79,7 @@ class GenerateImageServiceImplTest {
         ImageUploadResponseDTO from = ImageUploadResponseDTO.from(fileName, originalFilename, imageLink, contentType);
 
         // When
-        GenerateImage generateImage = generateImageService.createGenerateImage(from, savedHouse);
+        GenerateImage generateImage = generateImageService.createGenerateImage(from, House.reconstitute(savedHouse.getId(), null, savedHouse.getUserId(), null, true, null));
 
         // Then
         assertThat(generateImage).isNotNull();

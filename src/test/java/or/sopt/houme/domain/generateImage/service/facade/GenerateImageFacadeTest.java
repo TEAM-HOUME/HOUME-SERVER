@@ -33,6 +33,7 @@ import or.sopt.houme.domain.generateImage.service.GenerateImageTransactionServic
 import or.sopt.houme.domain.generateImage.service.imageGenerationLog.ImageGenerationLogService;
 import or.sopt.houme.domain.generateImage.service.imageGenerationLog.ImageGenerationTransactionService;
 import or.sopt.houme.house.infra.persistence.HouseJpaEntity;
+import or.sopt.houme.house.domain.House;
 import or.sopt.houme.domain.house.model.entity.enums.Activity;
 import or.sopt.houme.domain.house.model.entity.enums.Equilibrium;
 import or.sopt.houme.domain.house.model.entity.enums.Form;
@@ -188,6 +189,7 @@ class GenerateImageFacadeTest {
                 .userId(user.getId())
                 .isValid(true)
                 .build();
+        House houseDomain = House.reconstitute(house.getId(), house.getActivity(), house.getUserId(), null, house.isValid(), house.getHousePrompt());
 
         GenerateImageRequest generateImageRequest = new GenerateImageRequest(
                 1L, "UNDER_5", new GenerateImageRequest.FloorPlanInfo(1L, false),
@@ -202,7 +204,7 @@ class GenerateImageFacadeTest {
                 .tagPrompt("취향 프롬프트")
                 .build();
 
-        when(houseService.updateHouseActivity(generateImageRequest.houseId(), Activity.valueOf(generateImageRequest.activity()))).thenReturn(house);
+        when(houseService.updateHouseActivity(generateImageRequest.houseId(), Activity.valueOf(generateImageRequest.activity()))).thenReturn(houseDomain);
         when(houseFloorPlanRepository.findHouseFloorPlanByHouseId(house.getId()))
                 .thenReturn(Optional.of(HouseFloorPlan.builder().house(house).floorPlan(floorPlan).isReverse(false).build()));
 
@@ -239,7 +241,7 @@ class GenerateImageFacadeTest {
 
         when(generateImageService.createGenerateImage(
                 imageUploadResponseDTO,
-                house,
+                houseDomain,
                 GenerateImageType.FULL_FUNNEL
         )).thenReturn(generateImage);
 
@@ -281,6 +283,7 @@ class GenerateImageFacadeTest {
                 .userId(user.getId())
                 .isValid(true)
                 .build();
+        House houseDomain = House.reconstitute(house.getId(), house.getActivity(), house.getUserId(), null, house.isValid(), house.getHousePrompt());
 
         Taste taste1 = Taste.builder()
                 .id(1L)
@@ -396,6 +399,7 @@ class GenerateImageFacadeTest {
                 .bannerRawProducts(List.of())
                 .build();
         HouseJpaEntity house = HouseJpaEntity.builder().id(900L).build();
+        House houseDomain = House.reconstitute(900L, null, null, null, true, null);
 
         FloorPlan floorPlan = FloorPlan.builder()
                 .id(11L)
@@ -435,13 +439,13 @@ class GenerateImageFacadeTest {
                 eq(null),
                 eq(List.of()),
                 eq(null)
-        )).thenReturn(house);
+        )).thenReturn(houseDomain);
         when(geminiImageService.createImageWithReferences(any(), any()))
                 .thenReturn(imageUploadResponseDTO);
         when(generateImageTransactionService.saveBannerImageAndConfirmCredit(
                 eq(user),
                 eq(lockedCredit),
-                eq(house),
+                eq(houseDomain),
                 eq(banner),
                 eq(imageUploadResponseDTO),
                 eq(false)
@@ -455,7 +459,7 @@ class GenerateImageFacadeTest {
         verify(generateImageTransactionService).saveBannerImageAndConfirmCredit(
                 eq(user),
                 eq(lockedCredit),
-                eq(house),
+                eq(houseDomain),
                 eq(banner),
                 eq(imageUploadResponseDTO),
                 eq(false)
@@ -503,6 +507,7 @@ class GenerateImageFacadeTest {
                 ))
                 .build();
         HouseJpaEntity house = HouseJpaEntity.builder().id(901L).build();
+        House houseDomain = House.reconstitute(901L, null, null, null, true, null);
 
         FloorPlan floorPlan = FloorPlan.builder()
                 .id(11L)
@@ -545,7 +550,7 @@ class GenerateImageFacadeTest {
                 eq(null),
                 eq(List.of()),
                 eq(null)
-        )).thenReturn(house);
+        )).thenReturn(houseDomain);
         when(geminiImageService.createImageWithReferences(any(), argThat(referenceImageUrls ->
                 referenceImageUrls.equals(List.of(
                         "https://floorplan-default",
@@ -557,7 +562,7 @@ class GenerateImageFacadeTest {
         when(generateImageTransactionService.saveBannerImageAndConfirmCredit(
                 eq(user),
                 eq(lockedCredit),
-                eq(house),
+                eq(houseDomain),
                 eq(banner),
                 eq(imageUploadResponseDTO),
                 eq(false)
@@ -637,6 +642,7 @@ class GenerateImageFacadeTest {
                 .searchKeyword("k2")
                 .build();
         HouseJpaEntity house = HouseJpaEntity.builder().id(902L).build();
+        House houseDomain = House.reconstitute(902L, null, null, null, true, null);
 
         ImageUploadResponseDTO imageUploadResponseDTO = ImageUploadResponseDTO.from(
                 "generated.webp",
@@ -664,13 +670,13 @@ class GenerateImageFacadeTest {
                 eq(Activity.REMOTE_WORK),
                 eq(List.of(7L, 8L)),
                 eq(List.of(1L, 2L))
-        )).thenReturn(house);
+        )).thenReturn(houseDomain);
         when(geminiImageService.createImageWithReferences(any(), any()))
                 .thenReturn(imageUploadResponseDTO);
         when(generateImageTransactionService.saveV4ImageAndConfirmCredit(
                 eq(user),
                 eq(lockedCredit),
-                eq(house),
+                eq(houseDomain),
                 eq(imageUploadResponseDTO),
                 eq(true)
         )).thenReturn(GenerateImageV4Response.of(999L, "https://generated-image", true));
@@ -690,7 +696,7 @@ class GenerateImageFacadeTest {
         verify(generateImageTransactionService).saveV4ImageAndConfirmCredit(
                 eq(user),
                 eq(lockedCredit),
-                eq(house),
+                eq(houseDomain),
                 eq(imageUploadResponseDTO),
                 eq(true)
         );
@@ -792,6 +798,7 @@ class GenerateImageFacadeTest {
                 .imagesJson("[]")
                 .build();
         HouseJpaEntity house = HouseJpaEntity.builder().id(903L).build();
+        House houseDomain = House.reconstitute(903L, null, null, null, true, null);
 
         CurationRawProduct p1 = CurationRawProduct.builder().id(1L).productName("소파").productImageUrl("https://p1").build();
         CurationRawProduct p2 = CurationRawProduct.builder().id(2L).productName("책상").productImageUrl("https://p2").build();
@@ -822,10 +829,10 @@ class GenerateImageFacadeTest {
                 eq(null),
                 eq(List.of()),
                 eq(null)
-        )).thenReturn(house);
+        )).thenReturn(houseDomain);
         when(geminiImageService.createImageWithReferences(any(), any())).thenReturn(imageUploadResponseDTO);
         when(generateImageTransactionService.saveProductImageAndConfirmCredit(
-                eq(user), eq(lockedCredit), eq(house), eq(imageUploadResponseDTO), eq(List.of(p1, p2, p3)), eq(true)
+                eq(user), eq(lockedCredit), eq(houseDomain), eq(imageUploadResponseDTO), eq(List.of(p1, p2, p3)), eq(true)
         )).thenReturn(GenerateImageV4Response.of(999L, "https://generated-image", true));
 
         GenerateImageV4Response response = generateImageFacade.generateImageByProducts(user, request);
@@ -842,7 +849,7 @@ class GenerateImageFacadeTest {
                         && urls.contains("https://p3"))
         );
         verify(generateImageTransactionService).saveProductImageAndConfirmCredit(
-                eq(user), eq(lockedCredit), eq(house), eq(imageUploadResponseDTO), eq(List.of(p1, p2, p3)), eq(true)
+                eq(user), eq(lockedCredit), eq(houseDomain), eq(imageUploadResponseDTO), eq(List.of(p1, p2, p3)), eq(true)
         );
     }
 }

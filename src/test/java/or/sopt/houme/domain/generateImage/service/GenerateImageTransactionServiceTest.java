@@ -10,6 +10,7 @@ import or.sopt.houme.domain.generateImage.repository.GenerateImageRawProductRepo
 import or.sopt.houme.domain.generateImage.presentation.dto.response.BannerGenerateImageResponse;
 import or.sopt.houme.domain.generateImage.presentation.dto.response.GenerateImageV4Response;
 import or.sopt.houme.domain.house.model.entity.enums.Activity;
+import or.sopt.houme.house.domain.House;
 import or.sopt.houme.house.infra.persistence.HouseJpaEntity;
 import or.sopt.houme.domain.house.service.HouseService;
 import or.sopt.houme.domain.house.repository.HouseFloorPlanRepository;
@@ -60,7 +61,8 @@ class GenerateImageTransactionServiceTest {
         User user = mock(User.class);
         CreditReservation lockedCredit = new CreditReservation(1L, 1L);
         Banner banner = mock(Banner.class);
-        HouseJpaEntity house = mock(HouseJpaEntity.class);
+        House house = mock(House.class);
+        HouseJpaEntity houseEntity = mock(HouseJpaEntity.class);
 
         Long floorPlanId = 3L;
         boolean isMirror = true;
@@ -78,12 +80,12 @@ class GenerateImageTransactionServiceTest {
                 .filename("file.jpg")
                 .originalFilename("origin.jpg")
                 .fileExtension("image/jpeg")
-                .house(house)
+                .house(houseEntity)
                 .generationType(GenerateImageType.LIST)
                 .build();
 
         when(banner.getBannerType()).thenReturn(BannerType.BANNER);
-        when(houseService.createTemplateHouse(user, banner, finalPrompt, floorPlanId, isMirror, null))
+        when(houseService.createTemplateHouse(user, banner.getId(), finalPrompt, floorPlanId, isMirror, null))
                 .thenReturn(house);
         when(generateImageService.createGenerateImage(imageResponse, house, GenerateImageType.BANNER))
                 .thenReturn(generateImage);
@@ -101,7 +103,7 @@ class GenerateImageTransactionServiceTest {
         assertThat(response.imageId()).isEqualTo(101L);
         assertThat(response.imageUrl()).isEqualTo("https://cdn.example.com/file.jpg");
         assertThat(response.isMirror()).isTrue();
-        verify(houseService).createTemplateHouse(user, banner, finalPrompt, floorPlanId, isMirror, null);
+        verify(houseService).createTemplateHouse(user, banner.getId(), finalPrompt, floorPlanId, isMirror, null);
         verify(generateImageService).createGenerateImage(imageResponse, house, GenerateImageType.BANNER);
         verify(creditUseCase).commit(lockedCredit);
         verify(userService).updateHasGeneratedImage(user);
@@ -113,7 +115,8 @@ class GenerateImageTransactionServiceTest {
         User user = mock(User.class);
         CreditReservation lockedCredit = new CreditReservation(1L, 1L);
         Banner banner = mock(Banner.class);
-        HouseJpaEntity house = mock(HouseJpaEntity.class);
+        House house = mock(House.class);
+        HouseJpaEntity houseEntity = mock(HouseJpaEntity.class);
         ImageUploadResponseDTO imageResponse = ImageUploadResponseDTO.from(
                 "file.jpg",
                 "origin.jpg",
@@ -122,7 +125,7 @@ class GenerateImageTransactionServiceTest {
         );
 
         when(banner.getBannerType()).thenReturn(BannerType.BANNER);
-        when(houseService.createTemplateHouse(user, banner, "prompt", 1L, false, null)).thenReturn(house);
+        when(houseService.createTemplateHouse(user, banner.getId(), "prompt", 1L, false, null)).thenReturn(house);
         when(generateImageService.createGenerateImage(imageResponse, house, GenerateImageType.BANNER))
                 .thenThrow(new RuntimeException("image save failed"));
 
@@ -141,7 +144,8 @@ class GenerateImageTransactionServiceTest {
         User user = mock(User.class);
         CreditReservation lockedCredit = new CreditReservation(1L, 1L);
         Banner banner = mock(Banner.class);
-        HouseJpaEntity house = mock(HouseJpaEntity.class);
+        House house = mock(House.class);
+        HouseJpaEntity houseEntity = mock(HouseJpaEntity.class);
         ImageUploadResponseDTO imageResponse = ImageUploadResponseDTO.from(
                 "file.jpg",
                 "origin.jpg",
@@ -156,11 +160,11 @@ class GenerateImageTransactionServiceTest {
                 .filename("file.jpg")
                 .originalFilename("origin.jpg")
                 .fileExtension("image/jpeg")
-                .house(house)
+                .house(houseEntity)
                 .generationType(GenerateImageType.LIST)
                 .build();
 
-        when(houseService.createTemplateHouse(user, banner, "prompt", 2L, true, null)).thenReturn(house);
+        when(houseService.createTemplateHouse(user, banner.getId(), "prompt", 2L, true, null)).thenReturn(house);
         when(generateImageService.createGenerateImage(imageResponse, house, GenerateImageType.BANNER))
                 .thenReturn(generateImage);
         doThrow(new RuntimeException("credit commit failed"))
@@ -180,7 +184,8 @@ class GenerateImageTransactionServiceTest {
     void saveV4ImageAndConfirmCredit_savesFullFunnelType() {
         User user = mock(User.class);
         CreditReservation lockedCredit = new CreditReservation(1L, 1L);
-        HouseJpaEntity house = mock(HouseJpaEntity.class);
+        House house = mock(House.class);
+        HouseJpaEntity houseEntity = mock(HouseJpaEntity.class);
         ImageUploadResponseDTO imageResponse = ImageUploadResponseDTO.from(
                 "file.jpg",
                 "origin.jpg",
@@ -191,7 +196,7 @@ class GenerateImageTransactionServiceTest {
         GenerateImage generateImage = GenerateImage.builder()
                 .id(501L)
                 .url("https://cdn.example.com/file.jpg")
-                .house(house)
+                .house(houseEntity)
                 .generationType(GenerateImageType.FULL_FUNNEL)
                 .build();
 
@@ -223,7 +228,8 @@ class GenerateImageTransactionServiceTest {
     void saveProductImageAndConfirmCredit_throwsWhenSelectedProductsMissing() {
         User user = mock(User.class);
         CreditReservation lockedCredit = new CreditReservation(1L, 1L);
-        HouseJpaEntity house = mock(HouseJpaEntity.class);
+        House house = mock(House.class);
+        HouseJpaEntity houseEntity = mock(HouseJpaEntity.class);
         ImageUploadResponseDTO imageResponse = ImageUploadResponseDTO.from(
                 "file.jpg",
                 "origin.jpg",
@@ -234,7 +240,7 @@ class GenerateImageTransactionServiceTest {
         GenerateImage generateImage = GenerateImage.builder()
                 .id(777L)
                 .url("https://cdn.example.com/file.jpg")
-                .house(house)
+                .house(houseEntity)
                 .generationType(GenerateImageType.PRODUCT)
                 .build();
 

@@ -14,7 +14,7 @@ import or.sopt.houme.domain.generateImage.model.entity.GenerateImage;
 import or.sopt.houme.domain.generateImage.model.entity.GenerateImageRawProduct;
 import or.sopt.houme.domain.generateImage.model.entity.GenerateImageType;
 import or.sopt.houme.domain.generateImage.repository.GenerateImageRawProductRepository;
-import or.sopt.houme.house.infra.persistence.HouseJpaEntity;
+import or.sopt.houme.house.domain.House;
 import or.sopt.houme.domain.house.model.entity.enums.Activity;
 import or.sopt.houme.domain.house.model.entity.mapping.HouseFloorPlan;
 import or.sopt.houme.domain.house.model.floorPlan.entity.FloorPlan;
@@ -49,7 +49,7 @@ public class GenerateImageTransactionService {
     // DB 관련 로직을 위한 별도의 @Transactional 메서드 생성
     @Transactional
     public List<ImageInfoResponse> saveResultsAndCreateResponse(
-            User user, HouseJpaEntity house, List<ImageUploadResponseDTO> results,
+            User user, House house, List<ImageUploadResponseDTO> results,
             GenerateImageRequest generateImageRequest, List<TagDTO> priorityIdList, CreditReservation credit,
             GenerateImageType generationType) {
 
@@ -58,7 +58,7 @@ public class GenerateImageTransactionService {
 
         // house에 프롬프트 저장
         for (ImageUploadResponseDTO result : results) {
-            houseService.saveHousePrompt(house, result.getPullPrompt());
+            houseService.saveHousePrompt(house.getId(), result.getPullPrompt());
         }
 
         // 도면 이미지 생성 및 저장
@@ -97,14 +97,14 @@ public class GenerateImageTransactionService {
             Activity activity,
             GenerateImageType generationType
     ) {
-        // 1. HouseJpaEntity 정보 업데이트
-        HouseJpaEntity house = houseService.updateHouseActivity(request.houseId(), activity);
+        // 1. House 정보 업데이트
+        House house = houseService.updateHouseActivity(request.houseId(), activity);
 
         // 2. 가구 및 무드보드, 프롬프트 저장
-        houseService.saveHouseFloorPlan(house, request.floorPlan().floorPlanId(),request.floorPlan().isMirror());
-        houseService.saveHouseFurniture(house, request.selectiveIds());
-        houseService.saveHouseTaste(house, request.moodBoardIds());
-        houseService.saveHousePrompt(house, imageResponse.getPullPrompt());
+        houseService.saveHouseFloorPlan(house.getId(), request.floorPlan().floorPlanId(),request.floorPlan().isMirror());
+        houseService.saveHouseFurniture(house.getId(), request.selectiveIds());
+        houseService.saveHouseTaste(house.getId(), request.moodBoardIds());
+        houseService.saveHousePrompt(house.getId(), imageResponse.getPullPrompt());
 
         // 3. 이미지 엔티티 생성 및 저장
         GenerateImage generateImage = generateImageService.createGenerateImage(
@@ -165,7 +165,7 @@ public class GenerateImageTransactionService {
             String finalPrompt,
             ImageUploadResponseDTO imageResponse
     ) {
-        HouseJpaEntity house = createTemplateHouseBeforeImageGeneration(
+        House house = createTemplateHouseBeforeImageGeneration(
                 user,
                 banner,
                 floorPlanId,
@@ -188,7 +188,7 @@ public class GenerateImageTransactionService {
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public HouseJpaEntity createTemplateHouseBeforeImageGeneration(
+    public House createTemplateHouseBeforeImageGeneration(
             User user,
             Banner banner,
             Long floorPlanId,
@@ -199,13 +199,13 @@ public class GenerateImageTransactionService {
             List<Long> furnitureIds,
             List<Long> moodBoardIds
     ) {
-        HouseJpaEntity house = houseService.createTemplateHouse(user, banner, finalPrompt, floorPlanId, isMirror, floorPlanView);
+        House house = houseService.createTemplateHouse(user, banner != null ? banner.getId() : null, finalPrompt, floorPlanId, isMirror, floorPlanView);
         if (activity != null) {
             houseService.updateHouseActivity(house.getId(), activity);
         }
-        houseService.saveHouseFurniture(house, furnitureIds);
+        houseService.saveHouseFurniture(house.getId(), furnitureIds);
         if (moodBoardIds != null && !moodBoardIds.isEmpty()) {
-            houseService.saveHouseTaste(house, moodBoardIds);
+            houseService.saveHouseTaste(house.getId(), moodBoardIds);
         }
         return house;
     }
@@ -214,7 +214,7 @@ public class GenerateImageTransactionService {
     public BannerGenerateImageResponse saveBannerImageAndConfirmCredit(
             User user,
             CreditReservation lockedCredit,
-            HouseJpaEntity house,
+            House house,
             Banner banner,
             ImageUploadResponseDTO imageResponse,
             boolean isMirror
@@ -269,7 +269,7 @@ public class GenerateImageTransactionService {
             java.util.List<Long> furnitureIds,
             java.util.List<Long> moodBoardIds
     ) {
-        HouseJpaEntity house = createTemplateHouseBeforeImageGeneration(
+        House house = createTemplateHouseBeforeImageGeneration(
                 user,
                 null,
                 floorPlanId,
@@ -288,7 +288,7 @@ public class GenerateImageTransactionService {
     public GenerateImageV4Response saveV4ImageAndConfirmCredit(
             User user,
             CreditReservation lockedCredit,
-            HouseJpaEntity house,
+            House house,
             ImageUploadResponseDTO imageResponse,
             boolean isMirror
     ) {
@@ -336,7 +336,7 @@ public class GenerateImageTransactionService {
             ImageUploadResponseDTO imageResponse,
             List<CurationRawProduct> selectedProducts
     ) {
-        HouseJpaEntity house = createTemplateHouseBeforeImageGeneration(
+        House house = createTemplateHouseBeforeImageGeneration(
                 user,
                 null,
                 floorPlanId,
@@ -355,7 +355,7 @@ public class GenerateImageTransactionService {
     public GenerateImageV4Response saveProductImageAndConfirmCredit(
             User user,
             CreditReservation lockedCredit,
-            HouseJpaEntity house,
+            House house,
             ImageUploadResponseDTO imageResponse,
             List<CurationRawProduct> selectedProducts,
             boolean isMirror
@@ -411,7 +411,7 @@ public class GenerateImageTransactionService {
         }
     }
 
-    private FloorPlan getFloorPlanOrThrow(HouseJpaEntity house) {
+    private FloorPlan getFloorPlanOrThrow(House house) {
         return houseFloorPlanRepository.findHouseFloorPlanByHouseId(house.getId())
                 .map(HouseFloorPlan::getFloorPlan)
                 .orElseThrow(() -> new HouseException(ErrorCode.NOT_FOUND_FLOOR_PLAN));

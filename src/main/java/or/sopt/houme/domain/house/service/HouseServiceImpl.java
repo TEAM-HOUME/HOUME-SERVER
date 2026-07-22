@@ -2,28 +2,22 @@ package or.sopt.houme.domain.house.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import or.sopt.houme.domain.banner.model.entity.Banner;
-import or.sopt.houme.domain.house.model.floorPlan.entity.FloorPlan;
-import or.sopt.houme.domain.house.repository.floorPlan.FloorPlanRepository;
-import or.sopt.houme.furniture.domain.Furniture;
-import or.sopt.houme.furniture.domain.port.out.FurnitureRepositoryPort;
 import or.sopt.houme.domain.house.presentation.dto.HouseOptionDTO;
 import or.sopt.houme.domain.house.presentation.dto.LatestHouseConditionDTO;
 import or.sopt.houme.domain.house.presentation.dto.request.HouseSelectRequest;
 import or.sopt.houme.domain.house.presentation.dto.response.HouseIdResponse;
 import or.sopt.houme.domain.house.presentation.dto.response.HouseOptionsResponse;
-import or.sopt.houme.house.infra.persistence.HouseJpaEntity;
-import or.sopt.houme.domain.house.model.entity.InvalidHouseRequest;
 import or.sopt.houme.domain.house.model.entity.enums.Activity;
 import or.sopt.houme.domain.house.model.entity.enums.Equilibrium;
 import or.sopt.houme.domain.house.model.entity.enums.Form;
 import or.sopt.houme.domain.house.model.entity.enums.Structure;
-import or.sopt.houme.domain.house.model.entity.mapping.HouseFloorPlan;
-import or.sopt.houme.domain.house.model.entity.mapping.HouseFurniture;
-import or.sopt.houme.domain.house.model.entity.mapping.HouseTaste;
-import or.sopt.houme.domain.house.repository.*;
-import or.sopt.houme.taste.infra.persistence.TasteJpaEntity;
-import or.sopt.houme.taste.infra.persistence.TasteJpaRepository;
+import or.sopt.houme.house.domain.FloorPlanCondition;
+import or.sopt.houme.house.domain.House;
+import or.sopt.houme.house.domain.port.out.FloorPlanQueryPort;
+import or.sopt.houme.house.domain.port.out.HouseFloorPlanPort;
+import or.sopt.houme.house.domain.port.out.HouseMappingCommandPort;
+import or.sopt.houme.house.domain.port.out.HouseRepositoryPort;
+import or.sopt.houme.house.domain.port.out.InvalidHouseRequestPort;
 import or.sopt.houme.user.domain.User;
 import or.sopt.houme.global.api.ErrorCode;
 import or.sopt.houme.global.api.GeneralException;
@@ -35,20 +29,20 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ * #582 12b-2: 순수 House 도메인 + 포트만 소비하는 애플리케이션 서비스 (JPA 참조 0).
+ */
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 @Slf4j
 public class HouseServiceImpl implements HouseService {
 
-    private final HouseRepository houseRepository;
-    private final InvalidHouseRequestRepository invalidHouseRequestRepository;
-    private final HouseFloorPlanRepository houseFloorPlanRepository;
-    private final FloorPlanRepository floorPlanRepository;
-    private final HouseFurnitureRepository houseFurnitureRepository;
-    private final FurnitureRepositoryPort furnitureRepositoryPort;
-    private final TasteJpaRepository tasteRepository;
-    private final HouseTasteRepository houseTasteRepository;
+    private final HouseRepositoryPort houseRepositoryPort;
+    private final HouseFloorPlanPort houseFloorPlanPort;
+    private final HouseMappingCommandPort houseMappingCommandPort;
+    private final FloorPlanQueryPort floorPlanQueryPort;
+    private final InvalidHouseRequestPort invalidHouseRequestPort;
 
     // 집구조 리스트 반환 서비스
     @Cacheable(value = "houseOptionsCache")
@@ -85,7 +79,7 @@ public class HouseServiceImpl implements HouseService {
             if (houseSelectRequest.isValid()){
                  return HouseIdResponse.of(saveValidHouse(user, form, structure, equilibrium));
             } else {    // 유효하지 않은 요청일 시에 로그 남기기
-                logInvalidHouseRequest(user, form, structure, equilibrium);
+                invalidHouseRequestPort.log(user.getId(), form, structure, equilibrium);
                 return null;
             }
         } catch (IllegalArgumentException e) {
@@ -94,171 +88,105 @@ public class HouseServiceImpl implements HouseService {
         }
     }
 
-    // 가장 최근 등록한 HouseJpaEntity 찾기
+    // 가장 최근 등록한 House 찾기
     @Override
     public LatestHouseConditionDTO findLatestHouse(User user) {
-        HouseJpaEntity latestHouse = houseRepository.findLatestHouse(user.getId());
+        House latestHouse = houseRepositoryPort.findLatestByUserId(user.getId())
+                .orElseThrow(() -> new GeneralException(ErrorCode.NOT_FOUND_HOUSE));
 
-        if (latestHouse == null) {
-            throw new GeneralException(ErrorCode.NOT_FOUND_HOUSE);
-        }
-        FloorPlan floorPlan = getFloorPlanOrThrow(latestHouse);
-        return new LatestHouseConditionDTO(floorPlan.getForm(), floorPlan.getStructure(), floorPlan.getEquilibrium());
+        FloorPlanCondition condition = houseFloorPlanPort.findConditionByHouseId(latestHouse.getId())
+                .orElseThrow(() -> new HouseException(ErrorCode.NOT_FOUND_FLOOR_PLAN));
+        return new LatestHouseConditionDTO(condition.form(), condition.structure(), condition.equilibrium());
     }
 
     // house prompt 저장
     @Transactional
     @Override
-    public void saveHousePrompt(HouseJpaEntity house, String prompt) {
+    public void saveHousePrompt(Long houseId, String prompt) {
+        House house = houseRepositoryPort.findById(houseId)
+                .orElseThrow(() -> new HouseException(ErrorCode.NOT_FOUND_HOUSE));
         house.updatePrompt(prompt);
 
-        houseRepository.save(house);
+        houseRepositoryPort.save(house);
     }
 
     @Transactional
     @Override
-    public HouseJpaEntity createTemplateHouse(User user, Banner banner, String prompt, Long floorPlanId, boolean isMirror) {
-        return createTemplateHouse(user, banner, prompt, floorPlanId, isMirror, null);
+    public House createTemplateHouse(User user, Long bannerId, String prompt, Long floorPlanId, boolean isMirror) {
+        return createTemplateHouse(user, bannerId, prompt, floorPlanId, isMirror, null);
     }
 
     @Transactional
     @Override
-    public HouseJpaEntity createTemplateHouse(User user, Banner banner, String prompt, Long floorPlanId, boolean isMirror, String selectedView) {
-        FloorPlan floorPlan = floorPlanRepository.findById(floorPlanId)
-                .orElseThrow(() -> new HouseException(ErrorCode.NOT_FOUND_FLOOR_PLAN));
+    public House createTemplateHouse(User user, Long bannerId, String prompt, Long floorPlanId, boolean isMirror, String selectedView) {
+        if (!floorPlanQueryPort.existsById(floorPlanId)) {
+            throw new HouseException(ErrorCode.NOT_FOUND_FLOOR_PLAN);
+        }
 
-        HouseJpaEntity house = HouseJpaEntity.builder()
-                .activity(null)
-                .userId(user.getId())
-                .banner(banner)
-                .isValid(true)
-                .housePrompt(prompt)
-                .build();
-
-        HouseJpaEntity savedHouse = houseRepository.save(house);
-        saveHouseFloorPlan(savedHouse, floorPlanId, isMirror, selectedView);
+        House savedHouse = houseRepositoryPort.save(House.create(null, user.getId(), bannerId, true, prompt));
+        saveHouseFloorPlan(savedHouse.getId(), floorPlanId, isMirror, selectedView);
         return savedHouse;
     }
 
     // house activity 업데이트
     @Transactional
     @Override
-    public HouseJpaEntity updateHouseActivity(Long houseId, Activity activity) {
+    public House updateHouseActivity(Long houseId, Activity activity) {
 
-        HouseJpaEntity house = houseRepository.findById(houseId)
+        House house = houseRepositoryPort.findById(houseId)
                 .orElseThrow(() -> new HouseException(ErrorCode.NOT_FOUND_HOUSE));
 
         house.updateActivity(activity);
-        return houseRepository.save(house);
+        return houseRepositoryPort.save(house);
     }
 
     // 집 도면 매핑 테이블 저장
     @Transactional
     @Override
-    public void saveHouseFloorPlan(HouseJpaEntity house, Long floorPlanId, boolean isMirror) {
-        saveHouseFloorPlan(house, floorPlanId, isMirror, null);
+    public void saveHouseFloorPlan(Long houseId, Long floorPlanId, boolean isMirror) {
+        saveHouseFloorPlan(houseId, floorPlanId, isMirror, null);
     }
 
     @Transactional
     @Override
-    public void saveHouseFloorPlan(HouseJpaEntity house, Long floorPlanId, boolean isMirror, String selectedView) {
-        FloorPlan floorPlan = floorPlanRepository.findById(floorPlanId)
-                .orElseThrow(() -> new HouseException(ErrorCode.NOT_FOUND_FLOOR_PLAN));
-
-        HouseFloorPlan houseFloorPlan = HouseFloorPlan.builder()
-                .house(house)
-                .floorPlan(floorPlan)
-                .isReverse(isMirror)
-                .selectedView(selectedView)
-                .build();
-
-        houseFloorPlanRepository.save(houseFloorPlan);
+    public void saveHouseFloorPlan(Long houseId, Long floorPlanId, boolean isMirror, String selectedView) {
+        houseFloorPlanPort.save(houseId, floorPlanId, isMirror, selectedView);
     }
 
     @Override
-    public HouseJpaEntity findHouseById(long houseId) {
-        return houseRepository.findById(houseId)
+    public House findHouseById(long houseId) {
+        return houseRepositoryPort.findById(houseId)
                 .orElseThrow(() -> new HouseException(ErrorCode.NOT_FOUND_HOUSE));
     }
 
     // house와 furniture 저장
     @Transactional
     @Override
-    public void saveHouseFurniture(HouseJpaEntity house, List<Long> furnitureIds) {
-        if (furnitureIds == null || furnitureIds.isEmpty()) {
-            return;
-        }
-
-        // #582: HouseFurniture→FurnitureJpaEntity 연관 절단 — furnitureId(Long) 로 저장.
-        // 존재하지 않는 id 를 조용히 건너뛰던 기존 동작을 보존하기 위해 findAllById 로 실존 id 만 추린다.
-        List<Furniture> furnitures = furnitureRepositoryPort.findAllById(furnitureIds);
-
-        List<HouseFurniture> list = furnitures.stream()
-                .map(furniture -> HouseFurniture.builder()
-                        .houseId(house.getId())
-                        .furnitureId(furniture.getId())
-                        .build())
-                .toList();
-
-        houseFurnitureRepository.saveAll(list);
+    public void saveHouseFurniture(Long houseId, List<Long> furnitureIds) {
+        houseMappingCommandPort.saveHouseFurnitures(houseId, furnitureIds);
     }
 
     // house와 무드보드(taste) 저장
     @Transactional
     @Override
-    public void saveHouseTaste(HouseJpaEntity house, List<Long> tasteIds) {
-
-        // #582: HouseTaste→Taste 연관 절단 — tasteId(Long) 로 저장.
-        // 존재하지 않는 id 를 조용히 건너뛰던 기존 동작을 보존하기 위해 findAllById 로 실존 id 만 추린다.
-        List<TasteJpaEntity> tastes = tasteRepository.findAllById(tasteIds);
-
-        List<HouseTaste> list = tastes.stream()
-                .map(taste -> HouseTaste.builder()
-                        .houseId(house.getId())
-                        .tasteId(taste.getId())
-                        .build())
-                .toList();
-
-        houseTasteRepository.saveAll(list);
+    public void saveHouseTaste(Long houseId, List<Long> tasteIds) {
+        houseMappingCommandPort.saveHouseTastes(houseId, tasteIds);
     }
 
     @Override
     public boolean getIsMirrorByHouseId(Long houseId) {
-        HouseFloorPlan houseFloorPlan = houseFloorPlanRepository.findHouseFloorPlanByHouseId(houseId)
+        return houseFloorPlanPort.findIsMirrorByHouseId(houseId)
                 .orElseThrow(() -> new HouseException(ErrorCode.NOT_FOUND_FLOOR_PLAN));
-
-        return houseFloorPlan.isReverse();
-    }
-
-    // 유효하지 않은 요청일 때 log 저장
-    private void logInvalidHouseRequest(User user, Form form, Structure structure, Equilibrium equilibrium) {
-        InvalidHouseRequest invalidRequest = InvalidHouseRequest.builder()
-                .form(form)
-                .structure(structure)
-                .equilibrium(equilibrium)
-                .userId(user.getId())
-                .build();
-        invalidHouseRequestRepository.save(invalidRequest);
     }
 
     // 유효한 요청일 때 house 저장
     private Long saveValidHouse(User user, Form form, Structure structure, Equilibrium equilibrium) {
-        FloorPlan matchedFloorPlan = floorPlanRepository.findFirstByFormAndStructureAndEquilibrium(form, structure, equilibrium)
+        Long matchedFloorPlanId = floorPlanQueryPort.findFirstIdByCondition(form, structure, equilibrium)
                 .orElseThrow(() -> new HouseException(ErrorCode.NOT_FOUND_FLOOR_PLAN));
 
-        HouseJpaEntity house = HouseJpaEntity.builder()
-                .userId(user.getId())
-                .isValid(true)
-                .build();
-        HouseJpaEntity save = houseRepository.save(house);
-        saveHouseFloorPlan(save, matchedFloorPlan.getId(), false);
+        House save = houseRepositoryPort.save(House.create(null, user.getId(), null, true, null));
+        saveHouseFloorPlan(save.getId(), matchedFloorPlanId, false);
 
         return save.getId();
-    }
-
-    private FloorPlan getFloorPlanOrThrow(HouseJpaEntity house) {
-        return houseFloorPlanRepository.findHouseFloorPlanByHouseId(house.getId())
-                .map(HouseFloorPlan::getFloorPlan)
-                .orElseThrow(() -> new HouseException(ErrorCode.NOT_FOUND_FLOOR_PLAN));
     }
 }
