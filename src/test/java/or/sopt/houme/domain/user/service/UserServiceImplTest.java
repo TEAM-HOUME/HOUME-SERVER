@@ -91,25 +91,31 @@ class UserServiceImplTest {
     private final NicknameService nicknameService = mock(NicknameService.class);
     private final UserNicknameTagTransactionService userNicknameTagTransactionService = mock(UserNicknameTagTransactionService.class);
 
+    // #582: 히스토리 조립이 infra 어댑터로 이관됨 — 동일 목으로 어댑터를 실구성해 서비스에 포트로 주입(테스트 본문 불변)
+    private final or.sopt.houme.user.infra.persistence.UserImageHistoryQueryAdapter userImageHistoryQueryAdapter =
+            new or.sopt.houme.user.infra.persistence.UserImageHistoryQueryAdapter(
+                    houseRepository,
+                    houseFloorPlanRepository,
+                    houseFurnitureRepository,
+                    tagRepository,
+                    generateImageRepository,
+                    generateImagePreferenceRepository,
+                    factorRepository,
+                    preferenceRepository,
+                    preferenceFactorRepository,
+                    bannerRepository,
+                    generateImageRawProductRepository,
+                    generateImageUsedProductRepository,
+                    recommendFurniturePort,
+                    furnitureRepository,
+                    jjymRepositoryPort,
+                    curationRawProductColorRepository
+            );
+
     private final UserServiceImpl userService = new UserServiceImpl(
             userRepository,
-            houseRepository,
-            houseFloorPlanRepository,
-            houseFurnitureRepository,
-            tagRepository,
-            generateImageRepository,
+            userImageHistoryQueryAdapter,
             creditUseCase,
-            generateImagePreferenceRepository,
-            factorRepository,
-            preferenceRepository,
-            preferenceFactorRepository,
-            bannerRepository,
-            generateImageRawProductRepository,
-            generateImageUsedProductRepository,
-            recommendFurniturePort,
-            furnitureRepository,
-            jjymRepositoryPort,
-            curationRawProductColorRepository,
             nicknameService,
             userNicknameTagTransactionService
             );
