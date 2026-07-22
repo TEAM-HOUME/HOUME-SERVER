@@ -60,7 +60,9 @@ public class BannerServiceImpl implements BannerService {
     public LandingListResponse getLandings() {
         return LandingListResponse.of(
                 bannerRepository.findAllLandingsWithLinkedBanner().stream()
-                        .map(LandingResponse::from)
+                        .map(b -> new LandingResponse(b.getId(),
+                                b.getLinkedBanner() != null ? b.getLinkedBanner().getId() : null,
+                                b.getBannerTitle(), b.getBannerImageUrl()))
                         .toList()
         );
     }
@@ -75,7 +77,7 @@ public class BannerServiceImpl implements BannerService {
         List<BannerExploreResponse> orderedBanners = new ArrayList<>(banners.size());
         for (int index = 0; index < banners.size(); index++) {
             Banner banner = banners.get((startIndex + index) % banners.size());
-            orderedBanners.add(BannerExploreResponse.from(banner));
+            orderedBanners.add(new BannerExploreResponse(banner.getId(), banner.getBannerTitle(), banner.getBannerImageUrl()));
         }
         return BannerExploreListResponse.of(orderedBanners);
     }
@@ -108,7 +110,7 @@ public class BannerServiceImpl implements BannerService {
 
         List<OtherStyleResponse> styles = bannerRepository.findAllWithRawProducts(BannerType.STYLE, false).stream()
                 .sorted((left, right) -> Long.compare(left.getId(), right.getId()))
-                .map(OtherStyleResponse::from)
+                .map(b -> new OtherStyleResponse(b.getId(), b.getBannerTitle(), b.getBannerImageUrl()))
                 .toList();
 
         if (size == null) {
@@ -132,7 +134,7 @@ public class BannerServiceImpl implements BannerService {
 
         List<OtherStyleDetailProductResponse> products = rawProducts.stream()
                 .map(rawProduct -> OtherStyleDetailProductResponse.from(
-                        rawProduct,
+                        toRawProductView(rawProduct),
                         colorsByRawProductId.getOrDefault(rawProduct.getId(), List.of()),
                         likedRawProductIds.contains(rawProduct.getId())
                 ))
@@ -269,5 +271,22 @@ public class BannerServiceImpl implements BannerService {
             return color.getRawColorName();
         }
         return null;
+    }
+
+    /** #582: DTO 가 엔티티-프리(View 기반)로 바뀌어 infra측 서비스에서 엔티티→View 변환 후 전달한다. */
+    private or.sopt.houme.furniture.domain.CurationRawProductView toRawProductView(CurationRawProduct p) {
+        return or.sopt.houme.furniture.domain.CurationRawProductView.builder()
+                .id(p.getId())
+                .productId(p.getProductId())
+                .productName(p.getProductName())
+                .productImageUrl(p.getProductImageUrl())
+                .productSiteUrl(p.getProductSiteUrl())
+                .productMallName(p.getProductMallName())
+                .brand(p.getBrand())
+                .listPrice(p.getListPrice())
+                .discountRate(p.getDiscountRate())
+                .discountPrice(p.getDiscountPrice())
+                .fetchedAt(p.getFetchedAt())
+                .build();
     }
 }

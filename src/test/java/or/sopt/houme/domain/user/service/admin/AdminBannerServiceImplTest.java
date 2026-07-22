@@ -215,7 +215,7 @@ class AdminBannerServiceImplTest {
         when(adminBannerSupport.buildMappings(any(Banner.class), eq(List.of(3L)), any())).thenReturn(List.of());
         when(bannerRepository.saveAndFlush(any(Banner.class))).thenReturn(banner);
         when(adminBannerSupport.toMappedRawProductResponses(eq(banner), eq(Map.of(3L, rawProduct))))
-                .thenReturn(List.of(AdminBannerMappedRawProductResponse.of(rawProduct)));
+                .thenReturn(List.of(toMapped(rawProduct)));
 
         AdminBannerResponse response = adminBannerService.update(11L, request);
 
@@ -242,7 +242,7 @@ class AdminBannerServiceImplTest {
     @DisplayName("searchRawProducts()는 검색 결과를 반환한다")
     void searchRawProducts_success() {
         AdminBannerRawProductSearchResponse searchResponse = new AdminBannerRawProductSearchResponse(
-                List.of(AdminBannerMappedRawProductResponse.of(rawProduct(1L, 10L, "책상 A")))
+                List.of(toMapped(rawProduct(1L, 10L, "책상 A")))
         );
         when(adminBannerSupport.searchRawProducts("책상", 10)).thenReturn(searchResponse);
 
@@ -265,5 +265,10 @@ class AdminBannerServiceImplTest {
                 .brand("브랜드")
                 .fetchedAt(LocalDateTime.of(2026, 3, 13, 12, 0))
                 .build();
+    }
+
+    private static AdminBannerMappedRawProductResponse toMapped(or.sopt.houme.domain.furniture.model.entity.CurationRawProduct rp) {
+        return new AdminBannerMappedRawProductResponse(rp.getId(), rp.getSource(), rp.getCategory(),
+                rp.getProductId(), rp.getProductName(), rp.getProductImageUrl(), rp.getBrand());
     }
 }

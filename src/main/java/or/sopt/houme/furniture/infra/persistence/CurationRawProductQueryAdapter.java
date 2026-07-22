@@ -22,7 +22,7 @@ public class CurationRawProductQueryAdapter implements CurationRawProductQueryPo
     private final CurationRawProductRepository curationRawProductRepository;
     private final CurationRawProductColorRepository curationRawProductColorRepository;
 
-    static CurationRawProductView toView(CurationRawProduct entity) {
+    public static CurationRawProductView toView(CurationRawProduct entity) {
         return CurationRawProductView.builder()
                 .id(entity.getId())
                 .productId(entity.getProductId())

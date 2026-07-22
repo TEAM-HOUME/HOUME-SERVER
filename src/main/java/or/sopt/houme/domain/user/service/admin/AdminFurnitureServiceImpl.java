@@ -199,8 +199,16 @@ public class AdminFurnitureServiceImpl implements AdminFurnitureService {
                 .collect(Collectors.toMap(TagJpaEntity::getId, TagJpaEntity::getTagNameKr));
 
         List<AdminFurnitureTagOptionResponse> furnitureTags = furnitureTagEntities.stream()
-                .map(furnitureTag -> AdminFurnitureTagOptionResponse.of(
-                        furnitureTag, tagNameById.get(furnitureTag.getTagId())))
+                .map(furnitureTag -> new AdminFurnitureTagOptionResponse(
+                        furnitureTag.getId(),
+                        furnitureTag.getFurniture().getId(),
+                        furnitureTag.getFurniture().getFurnitureNameKr(),
+                        furnitureTag.getFurniture().getFurnitureType() != null ? furnitureTag.getFurniture().getFurnitureType().getId() : null,
+                        furnitureTag.getFurniture().getFurnitureType() != null ? furnitureTag.getFurniture().getFurnitureType().getNameKr() : null,
+                        furnitureTag.getTagId(),
+                        tagNameById.get(furnitureTag.getTagId()),
+                        furnitureTag.getSearchKeyword(),
+                        furnitureTag.getPriority()))
                 .toList();
 
         return new AdminFurnitureTagOptionListResponse(furnitureTags);
@@ -214,7 +222,7 @@ public class AdminFurnitureServiceImpl implements AdminFurnitureService {
 
         List<AdminFurnitureOptionResponse> furnitures = furnitureRepository
                 .findAllByFurnitureTypeIdOrderByPriorityAscIdAsc(furnitureType.getId()).stream()
-                .map(AdminFurnitureOptionResponse::of)
+                .map(f -> new AdminFurnitureOptionResponse(f.getId(), f.getFurnitureNameKr(), f.getFurnitureNameEng()))
                 .toList();
 
         return AdminFurnitureOptionListResponse.of(furnitures);
@@ -360,7 +368,7 @@ public class AdminFurnitureServiceImpl implements AdminFurnitureService {
     public AdminFurnitureTypeListResponse getFurnitureTypes() {
 
         List<AdminFurnitureTypeResponse> list = furnitureTypeRepository.findAll().stream()
-                .map(AdminFurnitureTypeResponse::of)
+                .map(t -> new AdminFurnitureTypeResponse(t.getId(), t.getNameKr(), t.getNameEng()))
                 .toList();
 
         return new AdminFurnitureTypeListResponse(list);

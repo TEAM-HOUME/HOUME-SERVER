@@ -234,7 +234,7 @@ public class AdminCurationRawProductServiceImpl implements AdminCurationRawProdu
 
         CurationRawProductFurnitureTag mapping = CurationRawProductFurnitureTag.of(rawProduct, furnitureTag);
         CurationRawProductFurnitureTag saved = curationRawProductFurnitureTagRepository.saveAndFlush(mapping);
-        return AdminCurationRawProductFurnitureTagResponse.of(saved, resolveTagName(saved.getFurnitureTag()));
+        return or.sopt.houme.furniture.infra.persistence.AdminCurationRawProductResponseMapper.toFurnitureTagResponse(saved, resolveTagName(saved.getFurnitureTag()));
     }
 
     @Override
@@ -255,7 +255,7 @@ public class AdminCurationRawProductServiceImpl implements AdminCurationRawProdu
 
         mapping.updateFurnitureTag(nextFurnitureTag);
         CurationRawProductFurnitureTag saved = curationRawProductFurnitureTagRepository.saveAndFlush(mapping);
-        return AdminCurationRawProductFurnitureTagResponse.of(saved, resolveTagName(saved.getFurnitureTag()));
+        return or.sopt.houme.furniture.infra.persistence.AdminCurationRawProductResponseMapper.toFurnitureTagResponse(saved, resolveTagName(saved.getFurnitureTag()));
     }
 
     /** #582: FurnitureTag→Tag 연관 절단으로 태그명을 tagId 로 별도 조회한다. */
@@ -305,7 +305,7 @@ public class AdminCurationRawProductServiceImpl implements AdminCurationRawProdu
         List<CurationRawProductColor> colors = curationRawProductColorRepository.findAllByCurationRawProductIdIn(rawProductIds);
         for (CurationRawProductColor color : colors) {
             colorsByRawProductId.computeIfAbsent(color.getCurationRawProduct().getId(), key -> new ArrayList<>())
-                    .add(AdminCurationRawProductColorResponse.of(color));
+                    .add(or.sopt.houme.furniture.infra.persistence.AdminCurationRawProductResponseMapper.toColorResponse(color));
         }
 
         Map<Long, List<AdminCurationRawProductFurnitureResponse>> furnituresByRawProductId = new LinkedHashMap<>();
@@ -313,7 +313,7 @@ public class AdminCurationRawProductServiceImpl implements AdminCurationRawProdu
                 curationRawProductFurnitureRepository.findAllByCurationRawProductIdInWithFurniture(rawProductIds);
         for (CurationRawProductFurniture mapping : furnitureMappings) {
             furnituresByRawProductId.computeIfAbsent(mapping.getCurationRawProduct().getId(), key -> new ArrayList<>())
-                    .add(AdminCurationRawProductFurnitureResponse.of(mapping));
+                    .add(or.sopt.houme.furniture.infra.persistence.AdminCurationRawProductResponseMapper.toFurnitureResponse(mapping));
         }
 
         Map<Long, List<AdminCurationRawProductFurnitureTagResponse>> furnitureTagsByRawProductId = new LinkedHashMap<>();
@@ -337,11 +337,11 @@ public class AdminCurationRawProductServiceImpl implements AdminCurationRawProdu
                     ? tagNameById.get(furnitureTag.getTagId())
                     : null;
             furnitureTagsByRawProductId.computeIfAbsent(mapping.getCurationRawProduct().getId(), key -> new ArrayList<>())
-                    .add(AdminCurationRawProductFurnitureTagResponse.of(mapping, tagNameKr));
+                    .add(or.sopt.houme.furniture.infra.persistence.AdminCurationRawProductResponseMapper.toFurnitureTagResponse(mapping, tagNameKr));
         }
 
         return rawProducts.stream()
-                .map(rawProduct -> AdminCurationRawProductResponse.of(
+                .map(rawProduct -> or.sopt.houme.furniture.infra.persistence.AdminCurationRawProductResponseMapper.toResponse(
                         rawProduct,
                         colorsByRawProductId.getOrDefault(rawProduct.getId(), List.of()),
                         furnituresByRawProductId.getOrDefault(rawProduct.getId(), List.of()),

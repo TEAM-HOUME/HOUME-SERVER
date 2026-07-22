@@ -1,6 +1,6 @@
 package or.sopt.houme.domain.generateImageResult.presentation.dto.response;
 
-import or.sopt.houme.domain.furniture.model.entity.CurationRawProduct;
+import or.sopt.houme.furniture.domain.CurationRawProductView;
 import or.sopt.houme.domain.furniture.presentation.dto.response.ProductColorResponse;
 
 import java.util.List;
@@ -20,7 +20,7 @@ public record SimilarItemResponse(
 ) {
 
     public static SimilarItemResponse from(
-            CurationRawProduct product,
+            CurationRawProductView product,
             List<ProductColorResponse> colors,
             boolean isLiked,
             Long jjymCount

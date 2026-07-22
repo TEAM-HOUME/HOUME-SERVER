@@ -53,7 +53,7 @@ class AdminCurationRawProductFurnitureTagResponseTest {
 
         // when
         AdminCurationRawProductFurnitureTagResponse response =
-                AdminCurationRawProductFurnitureTagResponse.of(mapping, tag.getTagNameKr());
+                or.sopt.houme.furniture.infra.persistence.AdminCurationRawProductResponseMapper.toFurnitureTagResponse(mapping, tag.getTagNameKr());
 
         // then
         assertThat(response.mappingId()).isEqualTo(99L);

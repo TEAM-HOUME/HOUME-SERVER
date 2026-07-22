@@ -79,7 +79,7 @@ public class GenerateImageResultServiceImpl implements GenerateImageResultServic
 
         List<GenerateImageResultProductResponse> products = selectedProducts.stream()
                 .map(rawProduct -> GenerateImageResultProductResponse.from(
-                        rawProduct,
+                        or.sopt.houme.furniture.infra.persistence.CurationRawProductQueryAdapter.toView(rawProduct),
                         colorsByRawProductId.getOrDefault(rawProduct.getId(), List.of()),
                         likedRawProductIds.contains(rawProduct.getId())
                 ))
@@ -170,7 +170,7 @@ public class GenerateImageResultServiceImpl implements GenerateImageResultServic
 
         return SimilarItemsResponse.of(recommendedProducts.stream()
                 .map(rawProduct -> SimilarItemResponse.from(
-                        rawProduct,
+                        or.sopt.houme.furniture.infra.persistence.CurationRawProductQueryAdapter.toView(rawProduct),
                         colorsByRawProductId.getOrDefault(rawProduct.getId(), List.of()),
                         likedRawProductIds.contains(rawProduct.getId()),
                         jjymCountByRawProductId.getOrDefault(rawProduct.getId(), 0L)

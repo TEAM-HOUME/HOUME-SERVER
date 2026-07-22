@@ -76,7 +76,7 @@ class AdminStyleServiceImplTest {
         when(adminBannerSupport.buildMappings(any(Banner.class), eq(List.of(1L)), any())).thenReturn(List.of());
         when(bannerRepository.saveAndFlush(any(Banner.class))).thenReturn(style);
         when(adminBannerSupport.toMappedRawProductResponses(eq(style), eq(Map.of(1L, rawProduct))))
-                .thenReturn(List.of(AdminBannerMappedRawProductResponse.of(rawProduct)));
+                .thenReturn(List.of(toMapped(rawProduct)));
 
         AdminStyleResponse response = adminStyleService.create(request);
 
@@ -118,7 +118,7 @@ class AdminStyleServiceImplTest {
         when(adminBannerSupport.buildMappings(any(Banner.class), eq(List.of(2L)), any())).thenReturn(List.of());
         when(bannerRepository.saveAndFlush(any(Banner.class))).thenReturn(style);
         when(adminBannerSupport.toMappedRawProductResponses(eq(style), eq(Map.of(2L, rawProduct))))
-                .thenReturn(List.of(AdminBannerMappedRawProductResponse.of(rawProduct)));
+                .thenReturn(List.of(toMapped(rawProduct)));
 
         AdminStyleResponse response = adminStyleService.update(21L, request);
 
@@ -145,7 +145,7 @@ class AdminStyleServiceImplTest {
     @DisplayName("searchRawProducts()는 검색 결과를 반환한다")
     void searchRawProducts_success() {
         AdminBannerRawProductSearchResponse searchResponse = new AdminBannerRawProductSearchResponse(
-                List.of(AdminBannerMappedRawProductResponse.of(rawProduct(1L, 10L, "책상 A")))
+                List.of(toMapped(rawProduct(1L, 10L, "책상 A")))
         );
         when(adminBannerSupport.searchRawProducts("책상", 10)).thenReturn(searchResponse);
 
@@ -245,5 +245,10 @@ class AdminStyleServiceImplTest {
                 .brand("브랜드")
                 .fetchedAt(LocalDateTime.of(2026, 3, 13, 12, 0))
                 .build();
+    }
+
+    private static AdminBannerMappedRawProductResponse toMapped(or.sopt.houme.domain.furniture.model.entity.CurationRawProduct rp) {
+        return new AdminBannerMappedRawProductResponse(rp.getId(), rp.getSource(), rp.getCategory(),
+                rp.getProductId(), rp.getProductName(), rp.getProductImageUrl(), rp.getBrand());
     }
 }

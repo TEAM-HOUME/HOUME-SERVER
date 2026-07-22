@@ -62,7 +62,7 @@ public class FloorPlanServiceImpl implements FloorPlanService {
                 .toList();
 
         List<FloorPlanResponse> list = allByStructureAndType.stream()
-                .map(FloorPlanResponse::of)
+                .map(fp -> new FloorPlanResponse(fp.getId(), fp.getForm(), fp.getStructure(), fp.getUrl()))
                 .toList();
 
         return new FloorPlanListResponse(list);
@@ -135,8 +135,9 @@ public class FloorPlanServiceImpl implements FloorPlanService {
         List<ExploreHouseTemplateItemResponse> responses = limitedFloorPlans.stream()
                 .map(floorPlan -> {
                     FloorPlanImageItem representative = resolveFloorPlanImages(floorPlan).getFirst();
-                    return ExploreHouseTemplateItemResponse.of(
-                            floorPlan,
+                    return new ExploreHouseTemplateItemResponse(
+                            floorPlan.getId(),
+                            floorPlan.getFloorPlanName(),
                             representative.url(),
                             latestFloorPlanId != null && latestFloorPlanId.equals(floorPlan.getId())
                     );

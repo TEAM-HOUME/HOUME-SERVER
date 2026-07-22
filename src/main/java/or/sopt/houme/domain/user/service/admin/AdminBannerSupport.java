@@ -67,7 +67,8 @@ public class AdminBannerSupport {
                         normalizedKeyword,
                         PageRequest.of(0, normalizedSize)
                 ).getContent().stream()
-                .map(AdminBannerMappedRawProductResponse::of)
+                .map(rp -> new AdminBannerMappedRawProductResponse(rp.getId(), rp.getSource(), rp.getCategory(),
+                        rp.getProductId(), rp.getProductName(), rp.getProductImageUrl(), rp.getBrand()))
                 .toList();
         return new AdminBannerRawProductSearchResponse(rawProducts);
     }
@@ -254,7 +255,8 @@ public class AdminBannerSupport {
                 .map(BannerCurationRawProduct::getCurationRawProduct)
                 .filter(Objects::nonNull)
                 .map(rawProduct -> rawProductMap.getOrDefault(rawProduct.getId(), rawProduct))
-                .map(AdminBannerMappedRawProductResponse::of)
+                .map(rp -> new AdminBannerMappedRawProductResponse(rp.getId(), rp.getSource(), rp.getCategory(),
+                        rp.getProductId(), rp.getProductName(), rp.getProductImageUrl(), rp.getBrand()))
                 .toList();
     }
 

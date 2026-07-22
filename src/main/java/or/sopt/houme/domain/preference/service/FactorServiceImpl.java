@@ -31,7 +31,9 @@ public class FactorServiceImpl implements FactorService {
         // 선호 여부에 따른 요인 리스트 조회
         List<Factor> factors = factorRepository.findFactorsByIsLike(isLike);
 
-        return FactorsResponse.from(factors);
+        return new FactorsResponse(factors.stream()
+                .map(f -> new FactorsResponse.FactorItem(f.getId(), f.getFactorText()))
+                .toList());
     }
 
     @Override
