@@ -91,7 +91,7 @@ import static org.mockito.Mockito.times;
 class GenerateImageFacadeTest {
 
     @InjectMocks
-    GenerateImageFacade generateImageFacade;
+    GenerateImageFacadeImpl generateImageFacade;
 
     @Mock
     OpenAiFacade openAiFacade;

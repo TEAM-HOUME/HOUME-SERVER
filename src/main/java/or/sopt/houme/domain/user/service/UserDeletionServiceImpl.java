@@ -31,7 +31,7 @@ import or.sopt.houme.global.jwt.JWTUtil;
 @Service
 @RequiredArgsConstructor
 @Transactional
-public class UserDeletionService {
+public class UserDeletionServiceImpl implements UserDeletionService {
 
     private final UserRepositoryPort userRepositoryPort;
     private final HouseRepository houseRepository;

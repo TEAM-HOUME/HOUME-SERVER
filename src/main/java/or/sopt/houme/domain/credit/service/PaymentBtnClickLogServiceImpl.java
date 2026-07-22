@@ -10,7 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @RequiredArgsConstructor
 @Transactional
-public class PaymentBtnClickLogService {
+public class PaymentBtnClickLogServiceImpl implements PaymentBtnClickLogService {
     private final PaymentBtnClickLogRepository paymentBtnClickLogRepository;
 
     public void createPaymentBtnClickLog(User user) {

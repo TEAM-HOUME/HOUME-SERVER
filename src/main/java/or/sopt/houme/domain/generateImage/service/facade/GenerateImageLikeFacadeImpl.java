@@ -25,7 +25,7 @@ import static or.sopt.houme.global.util.constant.OptimisticLockConstant.RETRY_DE
 
 @Component
 @RequiredArgsConstructor
-public class GenerateImageLikeFacade {
+public class GenerateImageLikeFacadeImpl implements GenerateImageLikeFacade {
 
     private final GenerateImageService generateImageService;
     private final GenerateImagePreferenceService generateImagePreferenceService;

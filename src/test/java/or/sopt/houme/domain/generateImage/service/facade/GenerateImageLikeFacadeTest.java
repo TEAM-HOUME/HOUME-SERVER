@@ -30,7 +30,7 @@ import static org.mockito.Mockito.*;
 class GenerateImageLikeFacadeTest {
 
     @InjectMocks
-    private GenerateImageLikeFacade generateImageLikeFacade;
+    private GenerateImageLikeFacadeImpl generateImageLikeFacade;
 
     @Mock
     private GenerateImageService generateImageService;

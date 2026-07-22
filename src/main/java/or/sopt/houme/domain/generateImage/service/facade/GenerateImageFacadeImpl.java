@@ -79,7 +79,7 @@ import java.util.stream.Collectors;
 @Component
 @RequiredArgsConstructor
 @Slf4j
-public class GenerateImageFacade {
+public class GenerateImageFacadeImpl implements GenerateImageFacade {
     private static final TypeReference<List<BannerStyleAnswerChip>> STYLE_ANSWER_CHIP_TYPE = new TypeReference<>() {};
 
     private final GenerateImageService generateImageService;

@@ -1,9 +1,8 @@
 package or.sopt.houme.domain.user.service;
 
 import lombok.RequiredArgsConstructor;
-import or.sopt.houme.domain.user.model.entity.NicknameWord;
 import or.sopt.houme.domain.user.model.entity.NicknameWordType;
-import or.sopt.houme.domain.user.repository.NicknameWordRepository;
+import or.sopt.houme.user.domain.port.out.NicknameWordPort;
 import or.sopt.houme.user.domain.port.out.UserRepositoryPort;
 import or.sopt.houme.global.api.ErrorCode;
 import or.sopt.houme.global.api.handler.UserException;
@@ -19,13 +18,13 @@ import java.util.concurrent.ThreadLocalRandom;
 public class NicknameService {
     static final int NICKNAME_TAG_RETRY_COUNT = 20;
 
-    private final NicknameWordRepository nicknameWordRepository;
+    private final NicknameWordPort nicknameWordPort;
     private final UserRepositoryPort userRepositoryPort;
 
     @Transactional(readOnly = true)
     public String rotateNickname() {
-        List<NicknameWord> adjectives = nicknameWordRepository.findAllByTypeAndIsActiveTrue(NicknameWordType.ADJECTIVE);
-        List<NicknameWord> nouns = nicknameWordRepository.findAllByTypeAndIsActiveTrue(NicknameWordType.NOUN);
+        List<String> adjectives = nicknameWordPort.findActiveWordsByType(NicknameWordType.ADJECTIVE);
+        List<String> nouns = nicknameWordPort.findActiveWordsByType(NicknameWordType.NOUN);
 
         return randomWord(adjectives) + randomWord(nouns);
     }
@@ -46,13 +45,13 @@ public class NicknameService {
         throw new UserException(ErrorCode.NICKNAME_TAG_GENERATION_FAILED);
     }
 
-    private String randomWord(List<NicknameWord> words) {
+    private String randomWord(List<String> words) {
         if (words.isEmpty()) {
             throw new UserException(ErrorCode.NICKNAME_RESOURCE_EMPTY);
         }
 
         int index = ThreadLocalRandom.current().nextInt(words.size());
-        return words.get(index).getWord();
+        return words.get(index);
     }
 
     private String randomNumberTag() {

@@ -8,7 +8,7 @@ import java.time.Duration;
 
 @Component
 @RequiredArgsConstructor
-public class BlacklistTokenRepository {
+public class RedisBlacklistTokenRepository implements BlacklistTokenRepository {
 
     private final RedisTemplate<String, String> redisTemplate;
 

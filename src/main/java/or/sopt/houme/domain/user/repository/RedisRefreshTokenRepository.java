@@ -8,7 +8,7 @@ import java.time.Duration;
 
 @Component
 @RequiredArgsConstructor
-public class RefreshTokenRepository {
+public class RedisRefreshTokenRepository implements RefreshTokenRepository {
 
     private final RedisTemplate<String, String> redisTemplate;
 

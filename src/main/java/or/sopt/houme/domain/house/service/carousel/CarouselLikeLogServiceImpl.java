@@ -15,7 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @RequiredArgsConstructor
 @Transactional
-public class CarouselLikeLogService {
+public class CarouselLikeLogServiceImpl implements CarouselLikeLogService {
 
     private final CarouselLikeLogRepository carouselLikeLogRepository;
     private final CurationRawProductRepository curationRawProductRepository;

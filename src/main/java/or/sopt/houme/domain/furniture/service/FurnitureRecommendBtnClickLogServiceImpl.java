@@ -10,7 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @RequiredArgsConstructor
 @Transactional
-public class FurnitureRecommendBtnClickLogService {
+public class FurnitureRecommendBtnClickLogServiceImpl implements FurnitureRecommendBtnClickLogService {
     private final FurnitureRecommendBtnClickLogRepository furnitureRecommendBtnClickLogRepository;
 
     public void createFurnitureRecommendBtnClickLog(User user) {

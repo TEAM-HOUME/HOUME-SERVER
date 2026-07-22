@@ -1,8 +1,7 @@
 package or.sopt.houme.domain.user.service;
 
-import or.sopt.houme.domain.user.model.entity.NicknameWord;
 import or.sopt.houme.domain.user.model.entity.NicknameWordType;
-import or.sopt.houme.domain.user.repository.NicknameWordRepository;
+import or.sopt.houme.user.domain.port.out.NicknameWordPort;
 import or.sopt.houme.user.domain.port.out.UserRepositoryPort;
 import or.sopt.houme.global.api.ErrorCode;
 import or.sopt.houme.global.api.handler.UserException;
@@ -28,7 +27,7 @@ class NicknameServiceTest {
     private NicknameService nicknameService;
 
     @Mock
-    private NicknameWordRepository nicknameWordRepository;
+    private NicknameWordPort nicknameWordPort;
 
     @Mock
     private UserRepositoryPort userRepository;
@@ -36,18 +35,18 @@ class NicknameServiceTest {
     @Test
     @DisplayName("닉네임 rotate 결과는 등록된 단어 조합 형식을 유지한다")
     void rotateNickname_format() {
-        List<NicknameWord> adjectives = List.of(
-                NicknameWord.of(NicknameWordType.ADJECTIVE, "느긋한"),
-                NicknameWord.of(NicknameWordType.ADJECTIVE, "반짝이는")
+        List<String> adjectives = List.of(
+                "느긋한",
+                "반짝이는"
         );
-        List<NicknameWord> nouns = List.of(
-                NicknameWord.of(NicknameWordType.NOUN, "펭귄"),
-                NicknameWord.of(NicknameWordType.NOUN, "고양이")
+        List<String> nouns = List.of(
+                "펭귄",
+                "고양이"
         );
 
-        given(nicknameWordRepository.findAllByTypeAndIsActiveTrue(NicknameWordType.ADJECTIVE))
+        given(nicknameWordPort.findActiveWordsByType(NicknameWordType.ADJECTIVE))
                 .willReturn(adjectives);
-        given(nicknameWordRepository.findAllByTypeAndIsActiveTrue(NicknameWordType.NOUN))
+        given(nicknameWordPort.findActiveWordsByType(NicknameWordType.NOUN))
                 .willReturn(nouns);
 
         Set<String> allowedWords = Set.of(
@@ -99,10 +98,10 @@ class NicknameServiceTest {
     @Test
     @DisplayName("활성화된 닉네임 리소스가 없으면 정해진 예외가 발생한다")
     void rotateNickname_whenWordsMissing_throwException() {
-        given(nicknameWordRepository.findAllByTypeAndIsActiveTrue(NicknameWordType.ADJECTIVE))
+        given(nicknameWordPort.findActiveWordsByType(NicknameWordType.ADJECTIVE))
                 .willReturn(List.of());
-        given(nicknameWordRepository.findAllByTypeAndIsActiveTrue(NicknameWordType.NOUN))
-                .willReturn(List.of(NicknameWord.of(NicknameWordType.NOUN, "펭귄")));
+        given(nicknameWordPort.findActiveWordsByType(NicknameWordType.NOUN))
+                .willReturn(List.of("펭귄"));
 
         UserException exception = assertThrows(UserException.class, () -> nicknameService.rotateNickname());
 
@@ -112,9 +111,9 @@ class NicknameServiceTest {
     @Test
     @DisplayName("활성화된 명사 리소스가 없으면 정해진 예외가 발생한다")
     void rotateNickname_whenNounsMissing_throwException() {
-        given(nicknameWordRepository.findAllByTypeAndIsActiveTrue(NicknameWordType.ADJECTIVE))
-                .willReturn(List.of(NicknameWord.of(NicknameWordType.ADJECTIVE, "느긋한")));
-        given(nicknameWordRepository.findAllByTypeAndIsActiveTrue(NicknameWordType.NOUN))
+        given(nicknameWordPort.findActiveWordsByType(NicknameWordType.ADJECTIVE))
+                .willReturn(List.of("느긋한"));
+        given(nicknameWordPort.findActiveWordsByType(NicknameWordType.NOUN))
                 .willReturn(List.of());
 
         UserException exception = assertThrows(UserException.class, () -> nicknameService.rotateNickname());
