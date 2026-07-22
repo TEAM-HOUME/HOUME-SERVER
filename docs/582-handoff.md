@@ -97,3 +97,11 @@
 - View 네이밍: `XxxView`(flat record/불변). DTO 팩토리(presentation)는 View/순수 모델만 받는다.
 - 서비스별 전환 레시피: ①사용 리포 메서드 목록화 ②포트에 미러 메서드(View 반환) ③어댑터 위임+매핑 ④서비스 타입/임포트 스왑 ⑤DTO 팩토리 View 화 ⑥목 테스트 플립.
 - P2 모듈 배정(패키지 이동 아님, source-set 배정): 엔티티/리포/어댑터/QueryDSL/크롤러·외부클라이언트 오케스트레이션=infra, 서비스·파사드·response DTO=application, 컨트롤러=api, JWT/Security=auth, 순수 도메인+포트=domain.
+
+## 2026-07-22 진행 로그 (스테이지3, run-to-completion)
+- **user 완료**: U-2(순수 User+포트 `497e4f5`) U-2b(7엔티티 user_id 절단 `01d23ca`) U-3(principal·전서비스 순수 User 플립 `109a7b6`) + **히스토리 조립 UserImageHistoryQueryPort/Adapter 이관 `6761a25`**(UserServiceImpl 완전 엔티티-프리, updateUser v1 저장누락 버그 수정 포함).
+- **furniture/curation**: FC-1(Jjym·RF 순수+포트, Jjym→RF 절단 `c54d67d`) FC-2/2b(RF·Jjym 소비처 전부 포트 `f71f349`,`d682c89`) FC-3(FurnitureService 완전 포트/View, CurationFurniture 계열 공개계약 View·리포 id-기반 `cd0ef2c`). **infra 내부 연관(FurnitureTag→Furniture, CurationRawProduct↔매핑, ActivityFurniture→Furniture 등)은 유지가 설계 결정**(레이어 분리에 불필요).
+- **api 레이어 격리 완료 `7189412`**: presentation DTO 18파일 엔티티-프리(팩토리 제거/인라인/View화/infra 매퍼 이관). presentation 에서 @Entity 직접참조 0. 컨트롤러 엔티티 import 는 순수 enum 뿐(P2 때 domain 모듈 배정).
+- **분류 원칙(P2 파일→모듈 배정)**: 서비스가 엔티티/리포 import 하면 infra(컨트롤러가 부르면 인터페이스 파일은 domain 배정), 엔티티-프리면 application. 공유 response 레코드는 common. houme-application 은 `api project(':houme-domain')` 로 domain 재노출.
+- **남은 필수 전환**: ①HouseServiceImpl(쓰기 오케스트레이션: 순수 House 12b-2+HouseFloorPlan/InvalidHouseRequest/FloorPlan/Taste 포트) ②GenerateImage 핵심(Facade/TransactionService/ServiceImpl/LikeFacade — GenerateImagePort 커맨드·조회, house 연관은 infra 유지, createGenerateImage(houseId) 커맨드화) ③잔여 서비스는 infra 분류로 충분(Banner/Carousel/Address/Preference/GIR/Admin — 인터페이스 존재 확인만).
+- 게이트 정책: 중간커밋=컴파일+타깃테스트, 전체 스위트=도메인 완료·푸시 전(-x jacocoTestReport 로컬 생략). 병렬화는 팀이 롤백한 결정이라 안 건드림.
