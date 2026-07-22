@@ -7,7 +7,7 @@ import or.sopt.houme.domain.furniture.model.entity.CurationSource;
 import or.sopt.houme.furniture.infra.persistence.FurnitureJpaEntity;
 import or.sopt.houme.domain.furniture.model.entity.FurnitureTag;
 import or.sopt.houme.domain.furniture.model.entity.FurnitureType;
-import or.sopt.houme.domain.furniture.model.entity.RecommendFurniture;
+import or.sopt.houme.furniture.domain.RecommendFurniture;
 import or.sopt.houme.domain.furniture.presentation.dto.response.CurationProductDetailResponse;
 import or.sopt.houme.domain.furniture.presentation.dto.response.CurationProductFilterResponse;
 import or.sopt.houme.domain.furniture.presentation.dto.response.CurationProductListResponse;
@@ -17,7 +17,7 @@ import or.sopt.houme.domain.furniture.repository.CurationRawProductRepositoryCus
 import or.sopt.houme.domain.furniture.repository.FurnitureRepository;
 import or.sopt.houme.domain.furniture.repository.FurnitureTypeRepository;
 import or.sopt.houme.domain.furniture.repository.JjymRepository;
-import or.sopt.houme.domain.furniture.repository.RecommendFurnitureRepository;
+import or.sopt.houme.furniture.domain.port.out.RecommendFurniturePort;
 import or.sopt.houme.user.domain.User;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -59,7 +59,7 @@ class CurationProductServiceImplTest {
     private CurationRawProductColorRepository curationRawProductColorRepository;
 
     @Mock
-    private RecommendFurnitureRepository recommendFurnitureRepository;
+    private RecommendFurniturePort recommendFurniturePort;
 
     @Mock
     private JjymRepository jjymRepository;
@@ -312,7 +312,7 @@ class CurationProductServiceImplTest {
 
         given(curationRawProductRepository.findByIdAndIsExposedTrueOrNull(id)).willReturn(Optional.of(product));
         given(curationRawProductColorRepository.findAllByCurationRawProductId(id)).willReturn(List.of());
-        given(recommendFurnitureRepository.findBySourceAndFurnitureProductId(any(), any())).willReturn(Optional.empty());
+        given(recommendFurniturePort.findBySourceAndFurnitureProductId(any(), any())).willReturn(Optional.empty());
 
         // when
         CurationProductDetailResponse response = curationProductService.getProductDetail(id, user);
@@ -339,7 +339,7 @@ class CurationProductServiceImplTest {
 
         given(curationRawProductRepository.findByIdAndIsExposedTrueOrNull(id)).willReturn(Optional.of(product));
         given(curationRawProductColorRepository.findAllByCurationRawProductId(id)).willReturn(List.of());
-        given(recommendFurnitureRepository.findBySourceAndFurnitureProductId(eq(CurationSource.RAW), eq(3003L)))
+        given(recommendFurniturePort.findBySourceAndFurnitureProductId(eq(CurationSource.RAW), eq(3003L)))
                 .willReturn(Optional.of(recommendFurniture));
         given(jjymRepository.existsByUserIdAndRecommendFurnitureId(1L, 10L)).willReturn(true);
         given(jjymRepository.countByRecommendFurnitureId(10L)).willReturn(5L);
@@ -367,7 +367,7 @@ class CurationProductServiceImplTest {
 
         given(curationRawProductRepository.findByIdAndIsExposedTrueOrNull(id)).willReturn(Optional.of(product));
         given(curationRawProductColorRepository.findAllByCurationRawProductId(id)).willReturn(List.of());
-        given(recommendFurnitureRepository.findBySourceAndFurnitureProductId(any(), any())).willReturn(Optional.empty());
+        given(recommendFurniturePort.findBySourceAndFurnitureProductId(any(), any())).willReturn(Optional.empty());
 
         // when
         CurationProductDetailResponse response = curationProductService.getProductDetail(id, null);

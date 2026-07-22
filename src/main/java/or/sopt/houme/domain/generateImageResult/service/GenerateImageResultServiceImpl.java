@@ -9,13 +9,13 @@ import or.sopt.houme.domain.furniture.model.entity.CurationRawProductColor;
 import or.sopt.houme.domain.furniture.model.entity.CurationRawProductFurnitureTag;
 import or.sopt.houme.domain.furniture.model.entity.CurationSource;
 import or.sopt.houme.domain.furniture.model.entity.Jjym;
-import or.sopt.houme.domain.furniture.model.entity.RecommendFurniture;
+import or.sopt.houme.furniture.domain.RecommendFurniture;
 import or.sopt.houme.domain.furniture.presentation.dto.response.ProductColorResponse;
 import or.sopt.houme.domain.furniture.repository.CurationRawProductColorRepository;
 import or.sopt.houme.domain.furniture.repository.CurationRawProductFurnitureTagRepository;
 import or.sopt.houme.domain.furniture.repository.CurationRawProductRepository;
 import or.sopt.houme.domain.furniture.repository.JjymRepository;
-import or.sopt.houme.domain.furniture.repository.RecommendFurnitureRepository;
+import or.sopt.houme.furniture.domain.port.out.RecommendFurniturePort;
 import or.sopt.houme.domain.generateImage.model.entity.GenerateImage;
 import or.sopt.houme.domain.generateImage.model.entity.GenerateImageType;
 import or.sopt.houme.domain.generateImage.model.entity.GenerateImageRawProduct;
@@ -58,7 +58,7 @@ public class GenerateImageResultServiceImpl implements GenerateImageResultServic
     private final CurationRawProductColorRepository curationRawProductColorRepository;
     private final CurationRawProductRepository curationRawProductRepository;
     private final CurationRawProductFurnitureTagRepository curationRawProductFurnitureTagRepository;
-    private final RecommendFurnitureRepository recommendFurnitureRepository;
+    private final RecommendFurniturePort recommendFurniturePort;
     private final JjymRepository jjymRepository;
     private final HouseService houseService;
 
@@ -500,7 +500,7 @@ public class GenerateImageResultServiceImpl implements GenerateImageResultServic
             return Map.of();
         }
 
-        return recommendFurnitureRepository
+        return recommendFurniturePort
                 .findAllBySourceAndFurnitureProductIdIn(CurationSource.RAW, productIds)
                 .stream()
                 .collect(Collectors.toMap(

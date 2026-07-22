@@ -7,14 +7,14 @@ import or.sopt.houme.domain.furniture.model.entity.CurationRawProductFurniture;
 import or.sopt.houme.domain.furniture.model.entity.CurationSource;
 import or.sopt.houme.furniture.infra.persistence.FurnitureJpaEntity;
 import or.sopt.houme.domain.furniture.model.entity.Jjym;
-import or.sopt.houme.domain.furniture.model.entity.RecommendFurniture;
+import or.sopt.houme.furniture.domain.RecommendFurniture;
 import or.sopt.houme.domain.furniture.presentation.dto.response.FurnitureProductsInfoResponseV2;
 import or.sopt.houme.domain.furniture.presentation.dto.response.ProductColorResponse;
 import or.sopt.houme.domain.furniture.repository.CurationRawProductColorRepository;
 import or.sopt.houme.domain.furniture.repository.CurationRawProductFurnitureRepository;
 import or.sopt.houme.domain.furniture.repository.FurnitureRepository;
 import or.sopt.houme.domain.furniture.repository.JjymRepository;
-import or.sopt.houme.domain.furniture.repository.RecommendFurnitureRepository;
+import or.sopt.houme.furniture.domain.port.out.RecommendFurniturePort;
 import or.sopt.houme.user.domain.User;
 import or.sopt.houme.global.api.ErrorCode;
 import or.sopt.houme.global.api.GeneralException;
@@ -39,7 +39,7 @@ public class CurationRawProductFurnitureServiceImpl implements CurationRawProduc
 
     private final CurationRawProductFurnitureRepository curationRawProductFurnitureRepository;
     private final CurationRawProductColorRepository curationRawProductColorRepository;
-    private final RecommendFurnitureRepository recommendFurnitureRepository;
+    private final RecommendFurniturePort recommendFurniturePort;
     private final JjymRepository jjymRepository;
     private final FurnitureRepository furnitureRepository;
 
@@ -142,7 +142,7 @@ public class CurationRawProductFurnitureServiceImpl implements CurationRawProduc
         }
 
         List<RecommendFurniture> recommendFurnitures =
-                recommendFurnitureRepository.findAllBySourceAndFurnitureProductIdIn(CurationSource.RAW, productIds);
+                recommendFurniturePort.findAllBySourceAndFurnitureProductIdIn(CurationSource.RAW, productIds);
 
         if (recommendFurnitures.isEmpty()) {
             return Set.of();

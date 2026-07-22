@@ -44,6 +44,11 @@ public class RecommendFurniturePersistenceAdapter implements RecommendFurnitureP
     }
 
     @Override
+    public boolean existsBySourceAndFurnitureProductId(CurationSource source, Long furnitureProductId) {
+        return recommendFurnitureRepository.existsBySourceAndFurnitureProductId(source, furnitureProductId);
+    }
+
+    @Override
     public Optional<RecommendFurniture> findBySourceAndFurnitureProductId(CurationSource source, Long furnitureProductId) {
         return recommendFurnitureRepository.findBySourceAndFurnitureProductId(source, furnitureProductId)
                 .map(RecommendFurniturePersistenceAdapter::toDomain);

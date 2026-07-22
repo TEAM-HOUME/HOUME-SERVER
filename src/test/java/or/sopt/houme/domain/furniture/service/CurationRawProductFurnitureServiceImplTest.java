@@ -8,7 +8,7 @@ import or.sopt.houme.domain.furniture.repository.CurationRawProductColorReposito
 import or.sopt.houme.domain.furniture.repository.CurationRawProductFurnitureRepository;
 import or.sopt.houme.domain.furniture.repository.FurnitureRepository;
 import or.sopt.houme.domain.furniture.repository.JjymRepository;
-import or.sopt.houme.domain.furniture.repository.RecommendFurnitureRepository;
+import or.sopt.houme.furniture.domain.port.out.RecommendFurniturePort;
 import or.sopt.houme.user.domain.User;
 import or.sopt.houme.global.api.GeneralException;
 import org.junit.jupiter.api.DisplayName;
@@ -40,7 +40,7 @@ class CurationRawProductFurnitureServiceImplTest {
     private CurationRawProductColorRepository curationRawProductColorRepository;
 
     @Mock
-    private RecommendFurnitureRepository recommendFurnitureRepository;
+    private RecommendFurniturePort recommendFurniturePort;
 
     @Mock
     private JjymRepository jjymRepository;
@@ -104,7 +104,7 @@ class CurationRawProductFurnitureServiceImplTest {
                 .willReturn(List.of(mapping));
         given(curationRawProductColorRepository.findAllByCurationRawProductIdIn(List.of(100L)))
                 .willReturn(List.of());
-        given(recommendFurnitureRepository.findAllBySourceAndFurnitureProductIdIn(any(), any()))
+        given(recommendFurniturePort.findAllBySourceAndFurnitureProductIdIn(any(), any()))
                 .willReturn(List.of());
 
         FurnitureProductsInfoResponseV2 response = service.buildProductsResponseByFurnitureId(user, furnitureId);

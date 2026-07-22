@@ -15,6 +15,8 @@ public interface RecommendFurniturePort {
 
     List<RecommendFurniture> findAllByIdIn(List<Long> ids);
 
+    boolean existsBySourceAndFurnitureProductId(CurationSource source, Long furnitureProductId);
+
     Optional<RecommendFurniture> findBySourceAndFurnitureProductId(CurationSource source, Long furnitureProductId);
 
     List<RecommendFurniture> findAllBySourceAndFurnitureProductIdIn(CurationSource source, List<Long> furnitureProductIds);

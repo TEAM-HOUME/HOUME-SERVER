@@ -16,12 +16,12 @@ import or.sopt.houme.domain.furniture.model.entity.CurationSource;
 import or.sopt.houme.furniture.infra.persistence.FurnitureJpaEntity;
 import or.sopt.houme.domain.furniture.model.entity.FurnitureTag;
 import or.sopt.houme.domain.furniture.model.entity.FurnitureType;
-import or.sopt.houme.domain.furniture.model.entity.RecommendFurniture;
+import or.sopt.houme.furniture.domain.RecommendFurniture;
 import or.sopt.houme.domain.furniture.repository.CurationRawProductColorRepository;
 import or.sopt.houme.domain.furniture.repository.CurationRawProductFurnitureTagRepository;
 import or.sopt.houme.domain.furniture.repository.CurationRawProductRepository;
 import or.sopt.houme.domain.furniture.repository.JjymRepository;
-import or.sopt.houme.domain.furniture.repository.RecommendFurnitureRepository;
+import or.sopt.houme.furniture.domain.port.out.RecommendFurniturePort;
 import or.sopt.houme.domain.generateImage.model.entity.GenerateImage;
 import or.sopt.houme.domain.generateImage.model.entity.GenerateImageRawProduct;
 import or.sopt.houme.domain.generateImage.model.entity.GenerateImageType;
@@ -80,7 +80,7 @@ class GenerateImageResultServiceImplTest {
     private CurationRawProductFurnitureTagRepository curationRawProductFurnitureTagRepository;
 
     @Mock
-    private RecommendFurnitureRepository recommendFurnitureRepository;
+    private RecommendFurniturePort recommendFurniturePort;
 
     @Mock
     private JjymRepository jjymRepository;
@@ -183,7 +183,7 @@ class GenerateImageResultServiceImplTest {
                                 .rawColorName("아이보리")
                                 .build()
                 ));
-        when(recommendFurnitureRepository.findAllBySourceAndFurnitureProductIdIn(CurationSource.RAW, List.of(1001L)))
+        when(recommendFurniturePort.findAllBySourceAndFurnitureProductIdIn(CurationSource.RAW, List.of(1001L)))
                 .thenReturn(List.of(RecommendFurniture.builder()
                         .id(501L)
                         .source(CurationSource.RAW)
@@ -254,7 +254,7 @@ class GenerateImageResultServiceImplTest {
                                 .rawColorName("블랙")
                                 .build()
                 ));
-        when(recommendFurnitureRepository.findAllBySourceAndFurnitureProductIdIn(CurationSource.RAW, List.of(2001L, 2002L, 2003L, 2004L)))
+        when(recommendFurniturePort.findAllBySourceAndFurnitureProductIdIn(CurationSource.RAW, List.of(2001L, 2002L, 2003L, 2004L)))
                 .thenReturn(List.of(
                         RecommendFurniture.builder().id(701L).source(CurationSource.RAW).furnitureProductId(2001L).build(),
                         RecommendFurniture.builder().id(702L).source(CurationSource.RAW).furnitureProductId(2002L).build(),

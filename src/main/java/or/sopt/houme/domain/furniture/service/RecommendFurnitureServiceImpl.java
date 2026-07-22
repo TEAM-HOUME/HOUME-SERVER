@@ -3,8 +3,8 @@ package or.sopt.houme.domain.furniture.service;
 import lombok.RequiredArgsConstructor;
 import or.sopt.houme.domain.furniture.infrastructure.dto.external.naverShop.FurnitureProductsInfoResponse;
 import or.sopt.houme.domain.furniture.model.entity.CurationSource;
-import or.sopt.houme.domain.furniture.model.entity.RecommendFurniture;
-import or.sopt.houme.domain.furniture.repository.RecommendFurnitureRepository;
+import or.sopt.houme.furniture.domain.RecommendFurniture;
+import or.sopt.houme.furniture.domain.port.out.RecommendFurniturePort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,7 +17,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class RecommendFurnitureServiceImpl implements RecommendFurnitureService {
 
-    private final RecommendFurnitureRepository recommendFurnitureRepository;
+    private final RecommendFurniturePort recommendFurniturePort;
 
 
     @Override
@@ -45,9 +45,9 @@ public class RecommendFurnitureServiceImpl implements RecommendFurnitureService 
 
             RecommendFurniture entity;
 
-            boolean exists = recommendFurnitureRepository.existsBySourceAndFurnitureProductId(source, productId);
+            boolean exists = recommendFurniturePort.existsBySourceAndFurnitureProductId(source, productId);
             if (exists) {
-                entity = recommendFurnitureRepository.findBySourceAndFurnitureProductId(source, productId)
+                entity = recommendFurniturePort.findBySourceAndFurnitureProductId(source, productId)
                         .orElseThrow();
             } else {
                 entity = RecommendFurniture.from(
@@ -58,7 +58,7 @@ public class RecommendFurnitureServiceImpl implements RecommendFurnitureService 
                         productId,
                         source
                 );
-                entity = recommendFurnitureRepository.save(entity);
+                entity = recommendFurniturePort.save(entity);
             }
 
             idMapByProductId.put(productId, entity.getId());

@@ -9,11 +9,11 @@ import or.sopt.houme.domain.furniture.model.entity.CurationRawProductColor;
 import or.sopt.houme.domain.furniture.model.entity.CurationSource;
 import or.sopt.houme.furniture.domain.Furniture;
 import or.sopt.houme.domain.furniture.model.entity.Jjym;
-import or.sopt.houme.domain.furniture.model.entity.RecommendFurniture;
+import or.sopt.houme.furniture.domain.RecommendFurniture;
 import or.sopt.houme.domain.furniture.repository.CurationRawProductColorRepository;
 import or.sopt.houme.furniture.domain.port.out.FurnitureRepositoryPort;
 import or.sopt.houme.domain.furniture.repository.JjymRepository;
-import or.sopt.houme.domain.furniture.repository.RecommendFurnitureRepository;
+import or.sopt.houme.furniture.domain.port.out.RecommendFurniturePort;
 import or.sopt.houme.domain.generateImage.model.entity.GenerateImage;
 import or.sopt.houme.domain.generateImage.model.entity.GenerateImageRawProduct;
 import or.sopt.houme.domain.generateImage.model.entity.GenerateImageType;
@@ -94,7 +94,7 @@ public class UserServiceImpl implements UserService {
     private final BannerRepository bannerRepository;
     private final GenerateImageRawProductRepository generateImageRawProductRepository;
     private final GenerateImageUsedProductRepository generateImageUsedProductRepository;
-    private final RecommendFurnitureRepository recommendFurnitureRepository;
+    private final RecommendFurniturePort recommendFurniturePort;
     private final FurnitureRepositoryPort furnitureRepositoryPort;
     private final JjymRepository jjymRepository;
     private final CurationRawProductColorRepository curationRawProductColorRepository;
@@ -618,7 +618,7 @@ public class UserServiceImpl implements UserService {
             return Map.of();
         }
 
-        Map<Long, Long> recommendFurnitureIdByProductId = recommendFurnitureRepository
+        Map<Long, Long> recommendFurnitureIdByProductId = recommendFurniturePort
                 .findAllBySourceAndFurnitureProductIdIn(CurationSource.RAW, productIds)
                 .stream()
                 .collect(Collectors.toMap(

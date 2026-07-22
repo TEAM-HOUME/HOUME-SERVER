@@ -23,11 +23,11 @@ import or.sopt.houme.domain.banner.repository.BannerRepository;
 import or.sopt.houme.domain.furniture.model.entity.CurationRawProduct;
 import or.sopt.houme.domain.furniture.model.entity.CurationRawProductColor;
 import or.sopt.houme.domain.furniture.model.entity.Jjym;
-import or.sopt.houme.domain.furniture.model.entity.RecommendFurniture;
+import or.sopt.houme.furniture.domain.RecommendFurniture;
 import or.sopt.houme.domain.furniture.presentation.dto.response.ProductColorResponse;
 import or.sopt.houme.domain.furniture.repository.CurationRawProductColorRepository;
 import or.sopt.houme.domain.furniture.repository.JjymRepository;
-import or.sopt.houme.domain.furniture.repository.RecommendFurnitureRepository;
+import or.sopt.houme.furniture.domain.port.out.RecommendFurniturePort;
 import or.sopt.houme.user.domain.User;
 import or.sopt.houme.global.api.ErrorCode;
 import or.sopt.houme.global.api.GeneralException;
@@ -52,7 +52,7 @@ public class BannerServiceImpl implements BannerService {
 
     private final BannerRepository bannerRepository;
     private final CurationRawProductColorRepository curationRawProductColorRepository;
-    private final RecommendFurnitureRepository recommendFurnitureRepository;
+    private final RecommendFurniturePort recommendFurniturePort;
     private final JjymRepository jjymRepository;
     private final ObjectMapper objectMapper;
 
@@ -231,7 +231,7 @@ public class BannerServiceImpl implements BannerService {
                         (left, right) -> left
                 ));
 
-        Map<Long, Long> recommendFurnitureIdByProductId = recommendFurnitureRepository
+        Map<Long, Long> recommendFurnitureIdByProductId = recommendFurniturePort
                 .findAllBySourceAndFurnitureProductIdIn(CurationSource.RAW, productIds)
                 .stream()
                 .collect(Collectors.toMap(

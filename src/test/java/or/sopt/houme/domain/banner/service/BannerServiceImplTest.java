@@ -16,10 +16,10 @@ import or.sopt.houme.domain.furniture.model.entity.CurationSource;
 import or.sopt.houme.domain.banner.repository.BannerRepository;
 import or.sopt.houme.domain.furniture.model.entity.CurationRawProduct;
 import or.sopt.houme.domain.furniture.model.entity.CurationRawProductColor;
-import or.sopt.houme.domain.furniture.model.entity.RecommendFurniture;
+import or.sopt.houme.furniture.domain.RecommendFurniture;
 import or.sopt.houme.domain.furniture.repository.CurationRawProductColorRepository;
 import or.sopt.houme.domain.furniture.repository.JjymRepository;
-import or.sopt.houme.domain.furniture.repository.RecommendFurnitureRepository;
+import or.sopt.houme.furniture.domain.port.out.RecommendFurniturePort;
 
 import java.util.List;
 import java.util.Optional;
@@ -40,7 +40,7 @@ class BannerServiceImplTest {
     private CurationRawProductColorRepository curationRawProductColorRepository;
 
     @Mock
-    private RecommendFurnitureRepository recommendFurnitureRepository;
+    private RecommendFurniturePort recommendFurniturePort;
 
     @Mock
     private JjymRepository jjymRepository;
@@ -110,7 +110,7 @@ class BannerServiceImplTest {
                                 .rawColorName("우드")
                                 .build()
                 ));
-        when(recommendFurnitureRepository.findAllBySourceAndFurnitureProductIdIn(CurationSource.RAW, List.of(1000L)))
+        when(recommendFurniturePort.findAllBySourceAndFurnitureProductIdIn(CurationSource.RAW, List.of(1000L)))
                 .thenReturn(List.of(RecommendFurniture.builder()
                         .id(1L)
                         .source(CurationSource.RAW)

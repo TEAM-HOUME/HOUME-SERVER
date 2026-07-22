@@ -10,12 +10,12 @@ import or.sopt.houme.domain.furniture.model.entity.CurationRawProductColor;
 import or.sopt.houme.domain.furniture.model.entity.CurationSource;
 import or.sopt.houme.furniture.domain.Furniture;
 import or.sopt.houme.domain.furniture.model.entity.Jjym;
-import or.sopt.houme.domain.furniture.model.entity.RecommendFurniture;
+import or.sopt.houme.furniture.domain.RecommendFurniture;
 import or.sopt.houme.domain.furniture.model.entity.SoozipCategory;
 import or.sopt.houme.domain.furniture.repository.CurationRawProductColorRepository;
 import or.sopt.houme.furniture.domain.port.out.FurnitureRepositoryPort;
 import or.sopt.houme.domain.furniture.repository.JjymRepository;
-import or.sopt.houme.domain.furniture.repository.RecommendFurnitureRepository;
+import or.sopt.houme.furniture.domain.port.out.RecommendFurniturePort;
 import or.sopt.houme.domain.generateImage.model.entity.GenerateImage;
 import or.sopt.houme.domain.generateImage.model.entity.GenerateImageRawProduct;
 import or.sopt.houme.domain.generateImage.model.entity.GenerateImageType;
@@ -84,7 +84,7 @@ class UserServiceImplTest {
     private final BannerRepository bannerRepository = mock(BannerRepository.class);
     private final GenerateImageRawProductRepository generateImageRawProductRepository = mock(GenerateImageRawProductRepository.class);
     private final GenerateImageUsedProductRepository generateImageUsedProductRepository = mock(GenerateImageUsedProductRepository.class);
-    private final RecommendFurnitureRepository recommendFurnitureRepository = mock(RecommendFurnitureRepository.class);
+    private final RecommendFurniturePort recommendFurniturePort = mock(RecommendFurniturePort.class);
     private final FurnitureRepositoryPort furnitureRepository = mock(FurnitureRepositoryPort.class);
     private final JjymRepository jjymRepository = mock(JjymRepository.class);
     private final CurationRawProductColorRepository curationRawProductColorRepository = mock(CurationRawProductColorRepository.class);
@@ -106,7 +106,7 @@ class UserServiceImplTest {
             bannerRepository,
             generateImageRawProductRepository,
             generateImageUsedProductRepository,
-            recommendFurnitureRepository,
+            recommendFurniturePort,
             furnitureRepository,
             jjymRepository,
             curationRawProductColorRepository,
@@ -475,7 +475,7 @@ class UserServiceImplTest {
                 .furnitureProductId(1002L)
                 .source(CurationSource.RAW)
                 .build();
-        given(recommendFurnitureRepository.findAllBySourceAndFurnitureProductIdIn(CurationSource.RAW, List.of(1001L, 1002L)))
+        given(recommendFurniturePort.findAllBySourceAndFurnitureProductIdIn(CurationSource.RAW, List.of(1001L, 1002L)))
                 .willReturn(List.of(bannerRecommendFurniture, regularRecommendFurniture));
 
         Jjym jjym = Jjym.builder()
@@ -601,7 +601,7 @@ class UserServiceImplTest {
                 .willReturn(List.of(GenerateImageRawProduct.of(fullFunnelImage, rawProduct, 1)));
         given(curationRawProductColorRepository.findAllByCurationRawProductIdIn(List.of(501L)))
                 .willReturn(List.of());
-        given(recommendFurnitureRepository.findAllBySourceAndFurnitureProductIdIn(CurationSource.RAW, List.of(2001L)))
+        given(recommendFurniturePort.findAllBySourceAndFurnitureProductIdIn(CurationSource.RAW, List.of(2001L)))
                 .willReturn(List.of());
         given(houseFurnitureRepository.findAllByHouseIdInWithFurniture(anyList()))
                 .willReturn(List.of(HouseFurniture.builder().id(1L).houseId(fullFunnelHouse.getId()).furnitureId(desk.getId()).build()));
