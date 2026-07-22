@@ -66,7 +66,7 @@ class TagRepositoryImplTest {
         // 🏠 집 생성
         mockHouse = HouseJpaEntity.builder()
                 .activity(Activity.READING)
-                .user(mockUser)
+                .userId(mockUser.getId())
                 .isValid(true)
                 .build();
         em.persist(mockHouse);

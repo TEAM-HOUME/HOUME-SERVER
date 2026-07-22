@@ -42,7 +42,7 @@ public class GenerateImageLikeFacade {
         HouseJpaEntity house = generateImage.getHouse();
 
         // 본인이 생성한 이미지가 아니라면 에러 처리
-        if (!house.getUser().getId().equals(user.getId())) {
+        if (!house.getUserId().equals(user.getId())) {
             throw new UserException(ErrorCode.USER_ROLE_EXCEPTION);
         }
 
@@ -69,7 +69,7 @@ public class GenerateImageLikeFacade {
     public void deletePreference(UserJpaEntity user, Long generatedImageId){
         // 생성된 이미지 조회
         GenerateImage generateImage = generateImageService.findGenerateImage(generatedImageId);
-        if (!Objects.equals(generateImage.getHouse().getUser().getId(), user.getId())) {
+        if (!Objects.equals(generateImage.getHouse().getUserId(), user.getId())) {
             throw new UserException(ErrorCode.USER_ROLE_EXCEPTION);
         }
 

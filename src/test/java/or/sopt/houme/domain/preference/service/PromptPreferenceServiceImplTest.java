@@ -68,7 +68,7 @@ class PromptPreferenceServiceImplTest {
 
         HouseJpaEntity house = HouseJpaEntity.builder()
                 .isValid(true)
-                .user(save)
+                .userId(save.getId())
                 .build();
         HouseJpaEntity saveHouse = houseRepository.save(house);
 

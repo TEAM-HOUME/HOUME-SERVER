@@ -14,7 +14,7 @@ public class PaymentBtnClickLogService {
     private final PaymentBtnClickLogRepository paymentBtnClickLogRepository;
 
     public void createPaymentBtnClickLog(UserJpaEntity user) {
-        PaymentBtnClickLog paymentBtnClickLog = PaymentBtnClickLog.of(user);
+        PaymentBtnClickLog paymentBtnClickLog = PaymentBtnClickLog.of(user.getId());
         paymentBtnClickLogRepository.save(paymentBtnClickLog);
     }
 }

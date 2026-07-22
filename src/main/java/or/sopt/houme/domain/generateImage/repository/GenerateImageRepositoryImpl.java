@@ -35,7 +35,6 @@ public class GenerateImageRepositoryImpl implements GenerateImageRepositoryCusto
         return Optional.ofNullable(queryFactory
                 .selectFrom(generateImage)
                 .join(generateImage.house, house).fetchJoin()
-                .join(house.user, user).fetchJoin()
                 .where(generateImage.id.eq(imageId))
                 .fetchOne());
     }
@@ -74,7 +73,7 @@ public class GenerateImageRepositoryImpl implements GenerateImageRepositoryCusto
         return Optional.ofNullable(queryFactory
                 .selectFrom(generateImage)
                 .join(generateImage.house, house).fetchJoin()
-                .where(house.user.id.eq(userId))
+                .where(house.userId.eq(userId))
                 .orderBy(
                         generateImage.createdAt.desc(),
                         generateImage.id.desc())
@@ -106,7 +105,7 @@ public class GenerateImageRepositoryImpl implements GenerateImageRepositoryCusto
                 .join(generateImage.house, house).fetchJoin()
                 .leftJoin(house.banner, banner).fetchJoin()
                 .where(
-                        house.user.id.eq(userId),
+                        house.userId.eq(userId),
                         house.isValid.isTrue()
                 )
                 .orderBy(generateImage.createdAt.desc(), generateImage.id.desc())

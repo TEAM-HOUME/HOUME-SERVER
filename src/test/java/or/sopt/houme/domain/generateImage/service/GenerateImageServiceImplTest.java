@@ -61,7 +61,7 @@ class GenerateImageServiceImplTest {
         savedHouse = houseRepository.save(
                 HouseJpaEntity.builder()
                         .isValid(true)
-                        .user(savedUser)
+                        .userId(savedUser.getId())
                         .build()
         );
     }

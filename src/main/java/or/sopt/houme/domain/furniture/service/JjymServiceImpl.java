@@ -60,7 +60,7 @@ public class JjymServiceImpl implements JjymService {
             jjymRepository.delete(existing.get());
             return false;
         } else {
-            Jjym jjym = Jjym.of(user, furniture);
+            Jjym jjym = Jjym.of(user.getId(), furniture);
             jjymRepository.save(jjym);
             return true;
         }
@@ -79,7 +79,7 @@ public class JjymServiceImpl implements JjymService {
             return false;
         }
 
-        jjymRepository.save(Jjym.of(user, recommendFurniture));
+        jjymRepository.save(Jjym.of(user.getId(), recommendFurniture));
         return true;
     }
 
@@ -94,7 +94,7 @@ public class JjymServiceImpl implements JjymService {
             return;
         }
 
-        jjymRepository.save(Jjym.of(user, recommendFurniture));
+        jjymRepository.save(Jjym.of(user.getId(), recommendFurniture));
     }
 
     @Transactional(readOnly = true)

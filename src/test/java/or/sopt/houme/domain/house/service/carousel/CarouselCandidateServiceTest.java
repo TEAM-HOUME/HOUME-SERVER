@@ -103,7 +103,7 @@ class CarouselCandidateServiceTest {
     @DisplayName("후보군 조회 시 최신 house에 저장된 가구 ID를 기준으로 선택 가구 후보를 조회한다")
     void collectCandidates_usesLatestHouseFurnitureIds() {
         UserJpaEntity user = UserJpaEntity.builder().id(1L).build();
-        HouseJpaEntity house = HouseJpaEntity.builder().id(10L).user(user).build();
+        HouseJpaEntity house = HouseJpaEntity.builder().id(10L).userId(user.getId()).build();
         HouseFurniture sofa = HouseFurniture.builder()
                 .furnitureId(10L)
                 .build();
@@ -111,7 +111,7 @@ class CarouselCandidateServiceTest {
                 .furnitureId(20L)
                 .build();
 
-        when(houseRepository.findLatestHouse(user)).thenReturn(house);
+        when(houseRepository.findLatestHouse(user.getId())).thenReturn(house);
         when(houseFurnitureRepository.findAllByHouseIdWithFurniture(10L)).thenReturn(List.of(sofa, desk));
         when(curationRawProductRepository.findExposedRawProductsExcludingLikedByUserByFurnitureIds(
                 1L,

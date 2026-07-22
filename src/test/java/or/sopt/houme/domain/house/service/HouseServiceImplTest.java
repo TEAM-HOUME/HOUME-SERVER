@@ -70,7 +70,7 @@ class HouseServiceImplTest {
         savedHouse = HouseJpaEntity.builder()
                 .id(1L)
                         .isValid(true)
-                        .user(savedUser)
+                        .userId(savedUser.getId())
                         .build();
     }
 
@@ -116,7 +116,7 @@ class HouseServiceImplTest {
                 .structure(Structure.OPEN_ONE_ROOM)
                 .equilibrium(Equilibrium.UNDER_5)
                 .build();
-        when(houseRepository.findLatestHouse(savedUser)).thenReturn(savedHouse);
+        when(houseRepository.findLatestHouse(savedUser.getId())).thenReturn(savedHouse);
         when(houseFloorPlanRepository.findHouseFloorPlanByHouseId(savedHouse.getId()))
                 .thenReturn(Optional.of(HouseFloorPlan.builder().house(savedHouse).floorPlan(floorPlan).isReverse(false).build()));
 

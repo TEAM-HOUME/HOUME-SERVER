@@ -20,7 +20,7 @@ public class AddressServiceImpl implements AddressService {
     @Override
     public void createAddress(UserJpaEntity user, AddressRequest addressRequest) {
 
-        Address address = Address.create(user, addressRequest);
+        Address address = Address.create(user.getId(), addressRequest);
 
         addressRepository.save(address);
     }

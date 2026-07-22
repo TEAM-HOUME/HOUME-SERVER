@@ -185,7 +185,7 @@ class GenerateImageFacadeTest {
         HouseJpaEntity house = HouseJpaEntity.builder()
                 .id(1L)
                 .activity(Activity.READING)
-                .user(user)
+                .userId(user.getId())
                 .isValid(true)
                 .build();
 
@@ -278,7 +278,7 @@ class GenerateImageFacadeTest {
         HouseJpaEntity house = HouseJpaEntity.builder()
                 .id(1L)
                 .activity(Activity.REMOTE_WORK)
-                .user(user)
+                .userId(user.getId())
                 .isValid(true)
                 .build();
 

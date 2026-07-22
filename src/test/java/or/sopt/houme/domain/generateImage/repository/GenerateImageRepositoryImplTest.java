@@ -57,7 +57,7 @@ class GenerateImageRepositoryImplTest {
         em.persist(user);
 
         house = HouseJpaEntity.builder()
-                .user(user)
+                .userId(user.getId())
                 .activity(Activity.REMOTE_WORK)
                 .isValid(true)
                 .build();
@@ -155,7 +155,7 @@ class GenerateImageRepositoryImplTest {
         em.persist(related2);
 
         HouseJpaEntity nonMatchedHouse = HouseJpaEntity.builder()
-                .user(user)
+                .userId(user.getId())
                 .activity(Activity.REMOTE_WORK)
                 .isValid(true)
                 .build();

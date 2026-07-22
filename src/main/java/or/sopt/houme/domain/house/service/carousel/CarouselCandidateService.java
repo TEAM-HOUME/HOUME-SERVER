@@ -29,7 +29,7 @@ public class CarouselCandidateService {
     private final HouseFurnitureRepository houseFurnitureRepository;
 
     public CarouselCandidateBundle collectCandidates(UserJpaEntity user) {
-        HouseJpaEntity latestHouse = houseRepository.findLatestHouse(user);
+        HouseJpaEntity latestHouse = houseRepository.findLatestHouse(user.getId());
         List<Long> furnitureIds = latestHouse == null
                 ? List.of()
                 : houseFurnitureRepository.findAllByHouseIdWithFurniture(latestHouse.getId()).stream()

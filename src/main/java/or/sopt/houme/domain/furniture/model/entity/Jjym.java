@@ -2,7 +2,6 @@ package or.sopt.houme.domain.furniture.model.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-import or.sopt.houme.user.infra.persistence.UserJpaEntity;
 import or.sopt.houme.global.entity.BaseEntity;
 
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -26,17 +25,17 @@ public class Jjym extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "user_id", nullable = false)
-    private UserJpaEntity user;
+    // #582: User 연관 절단 —  대신 user_id(Long) 컬럼으로만 참조(도메인 경계 분리, FK 는 DB 가 계속 강제)
+    @Column(name = "user_id", nullable = false)
+    private Long userId;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "recommend_furniture_id", nullable = false)
     private RecommendFurniture recommendFurniture;
 
-    public static Jjym of(UserJpaEntity user, RecommendFurniture recommendFurniture) {
+    public static Jjym of(Long userId, RecommendFurniture recommendFurniture) {
         return Jjym.builder()
-                .user(user)
+                .userId(userId)
                 .recommendFurniture(recommendFurniture)
                 .build();
     }

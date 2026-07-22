@@ -97,7 +97,7 @@ public class HouseServiceImpl implements HouseService {
     // 가장 최근 등록한 HouseJpaEntity 찾기
     @Override
     public LatestHouseConditionDTO findLatestHouse(UserJpaEntity user) {
-        HouseJpaEntity latestHouse = houseRepository.findLatestHouse(user);
+        HouseJpaEntity latestHouse = houseRepository.findLatestHouse(user.getId());
 
         if (latestHouse == null) {
             throw new GeneralException(ErrorCode.NOT_FOUND_HOUSE);
@@ -129,7 +129,7 @@ public class HouseServiceImpl implements HouseService {
 
         HouseJpaEntity house = HouseJpaEntity.builder()
                 .activity(null)
-                .user(user)
+                .userId(user.getId())
                 .banner(banner)
                 .isValid(true)
                 .housePrompt(prompt)
@@ -236,7 +236,7 @@ public class HouseServiceImpl implements HouseService {
                 .form(form)
                 .structure(structure)
                 .equilibrium(equilibrium)
-                .user(user)
+                .userId(user.getId())
                 .build();
         invalidHouseRequestRepository.save(invalidRequest);
     }
@@ -247,7 +247,7 @@ public class HouseServiceImpl implements HouseService {
                 .orElseThrow(() -> new HouseException(ErrorCode.NOT_FOUND_FLOOR_PLAN));
 
         HouseJpaEntity house = HouseJpaEntity.builder()
-                .user(user)
+                .userId(user.getId())
                 .isValid(true)
                 .build();
         HouseJpaEntity save = houseRepository.save(house);

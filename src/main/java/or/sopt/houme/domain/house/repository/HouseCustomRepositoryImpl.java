@@ -5,7 +5,6 @@ import lombok.RequiredArgsConstructor;
 import or.sopt.houme.domain.generateImage.model.entity.QGenerateImage;
 import or.sopt.houme.house.infra.persistence.HouseJpaEntity;
 import or.sopt.houme.house.infra.persistence.QHouseJpaEntity;
-import or.sopt.houme.user.infra.persistence.UserJpaEntity;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -18,12 +17,12 @@ public class HouseCustomRepositoryImpl implements HouseCustomRepository {
     private final JPAQueryFactory queryFactory;
 
     @Override
-    public HouseJpaEntity findLatestHouse(UserJpaEntity user) {
+    public HouseJpaEntity findLatestHouse(Long userId) {
         QHouseJpaEntity qHouse = QHouseJpaEntity.houseJpaEntity;
 
         return queryFactory
                 .selectFrom(qHouse)
-                .where(qHouse.user.eq(user))
+                .where(qHouse.userId.eq(userId))
                 .orderBy(qHouse.id.desc())
                 .limit(1)
                 .fetchOne();
@@ -40,7 +39,7 @@ public class HouseCustomRepositoryImpl implements HouseCustomRepository {
                         .join(generateImage)
                         .on(generateImage.house.eq(house))
                         .where(
-                                house.user.id.eq(userId),
+                                house.userId.eq(userId),
                                 generateImage.id.eq(imageId)
                         )
                         .fetchOne()
@@ -54,7 +53,7 @@ public class HouseCustomRepositoryImpl implements HouseCustomRepository {
         return queryFactory
                 .selectFrom(house)
                 .where(
-                        house.user.id.eq(userId)
+                        house.userId.eq(userId)
                 )
                 .orderBy(house.id.desc())
                 .fetch();

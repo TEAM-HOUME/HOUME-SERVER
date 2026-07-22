@@ -260,7 +260,7 @@ public class CurationRawProductRepositoryImpl implements CurationRawProductRepos
                 .from(jjym)
                 .join(jjym.recommendFurniture, recommendFurniture)
                 .where(
-                        jjym.user.id.eq(userId),
+                        jjym.userId.eq(userId),
                         recommendFurniture.source.eq(CurationSource.RAW),
                         recommendFurniture.furnitureProductId.eq(rawProduct.productId)
                 )
@@ -300,7 +300,7 @@ public class CurationRawProductRepositoryImpl implements CurationRawProductRepos
                 .from(jjym)
                 .join(jjym.recommendFurniture, recommendFurniture)
                 .where(
-                        jjym.user.id.eq(userId),
+                        jjym.userId.eq(userId),
                         recommendFurniture.source.eq(CurationSource.RAW),
                         recommendFurniture.furnitureProductId.eq(rawProduct.productId)
                 )
@@ -332,7 +332,7 @@ public class CurationRawProductRepositoryImpl implements CurationRawProductRepos
                 .from(jjym)
                 .join(jjym.recommendFurniture, recommendFurniture)
                 .where(
-                        jjym.user.id.eq(userId),
+                        jjym.userId.eq(userId),
                         recommendFurniture.source.eq(CurationSource.RAW),
                         recommendFurniture.furnitureProductId.eq(rawProduct.productId)
                 )
@@ -513,7 +513,7 @@ public class CurationRawProductRepositoryImpl implements CurationRawProductRepos
                 .from(jjym)
                 .join(jjym.recommendFurniture, recommendFurniture)
                 .where(
-                        jjym.user.id.eq(userId),
+                        jjym.userId.eq(userId),
                         recommendFurniture.source.eq(CurationSource.RAW),
                         recommendFurniture.furnitureProductId.eq(rawProduct.productId)
                 )

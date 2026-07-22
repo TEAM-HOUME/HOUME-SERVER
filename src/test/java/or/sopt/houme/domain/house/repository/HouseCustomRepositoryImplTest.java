@@ -53,7 +53,7 @@ class HouseCustomRepositoryImplTest {
         // 🏠 HouseJpaEntity 생성 및 저장
         mockHouse = HouseJpaEntity.builder()
                 .activity(Activity.READING)
-                .user(mockUser)
+                .userId(mockUser.getId())
                 .isValid(true)
                 .build();
         em.persist(mockHouse);
@@ -81,7 +81,7 @@ class HouseCustomRepositoryImplTest {
         // then
         assertThat(result).isPresent();
         assertThat(result.get().getId()).isEqualTo(mockHouse.getId());
-        assertThat(result.get().getUser().getId()).isEqualTo(mockUser.getId());
+        assertThat(result.get().getUserId()).isEqualTo(mockUser.getId());
     }
 
     @Test

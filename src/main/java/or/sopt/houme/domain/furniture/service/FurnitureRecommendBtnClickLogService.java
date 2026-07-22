@@ -14,7 +14,7 @@ public class FurnitureRecommendBtnClickLogService {
     private final FurnitureRecommendBtnClickLogRepository furnitureRecommendBtnClickLogRepository;
 
     public void createFurnitureRecommendBtnClickLog(UserJpaEntity user) {
-        FurnitureRecommendBtnClickLog furnitureRecommendBtnClickLog = FurnitureRecommendBtnClickLog.of(user);
+        FurnitureRecommendBtnClickLog furnitureRecommendBtnClickLog = FurnitureRecommendBtnClickLog.of(user.getId());
         furnitureRecommendBtnClickLogRepository.save(furnitureRecommendBtnClickLog);
     }
 }

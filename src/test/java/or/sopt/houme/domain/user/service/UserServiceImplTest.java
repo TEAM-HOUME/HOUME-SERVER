@@ -129,7 +129,7 @@ class UserServiceImplTest {
 
         house = HouseJpaEntity.builder()
                 .id(20L)
-                .user(user)
+                .userId(user.getId())
                 .build();
 
         tag = Tag.builder()
@@ -403,7 +403,7 @@ class UserServiceImplTest {
         HouseJpaEntity houseWithBanner = HouseJpaEntity.builder()
                 .id(21L)
                 .activity(house.getActivity())
-                .user(user)
+                .userId(user.getId())
                 .banner(banner)
                 .isValid(true)
                 .build();
@@ -480,7 +480,7 @@ class UserServiceImplTest {
 
         Jjym jjym = Jjym.builder()
                 .id(1L)
-                .user(user)
+                .userId(user.getId())
                 .recommendFurniture(regularRecommendFurniture)
                 .build();
         given(jjymRepository.findAllByUserIdAndRecommendFurnitureIdIn(user.getId(), List.of(501L, 502L)))
@@ -520,7 +520,7 @@ class UserServiceImplTest {
 
         HouseJpaEntity fullFunnelHouse = HouseJpaEntity.builder()
                 .id(31L)
-                .user(user)
+                .userId(user.getId())
                 .isValid(true)
                 .build();
 
@@ -568,7 +568,7 @@ class UserServiceImplTest {
 
         HouseJpaEntity fullFunnelHouse = HouseJpaEntity.builder()
                 .id(32L)
-                .user(user)
+                .userId(user.getId())
                 .isValid(true)
                 .build();
 
@@ -621,7 +621,7 @@ class UserServiceImplTest {
 
         HouseJpaEntity fullFunnelHouse = HouseJpaEntity.builder()
                 .id(33L)
-                .user(user)
+                .userId(user.getId())
                 .isValid(true)
                 .build();
 
@@ -657,7 +657,7 @@ class UserServiceImplTest {
 
         HouseJpaEntity fullFunnelHouse = HouseJpaEntity.builder()
                 .id(34L)
-                .user(user)
+                .userId(user.getId())
                 .isValid(true)
                 .build();
 

@@ -39,7 +39,7 @@ public class TagQueryRepository {
                         .join(house).on(houseTaste.houseId.eq(house.id))
                         .join(generateImage).on(generateImage.house.eq(house))
                         .where(
-                                house.user.id.eq(userId),
+                                house.userId.eq(userId),
                                 generateImage.id.eq(imageId)
                         )
                         .groupBy(tag.id, tag.priority)

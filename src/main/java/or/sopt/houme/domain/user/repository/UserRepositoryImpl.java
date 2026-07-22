@@ -19,7 +19,6 @@ public class UserRepositoryImpl implements UserRepositoryCustom {
 
     @Override
     public Optional<GenerateImage> findImageHistoryById(Long userId) {
-        QUserJpaEntity user = QUserJpaEntity.userJpaEntity;
         QHouseJpaEntity house = QHouseJpaEntity.houseJpaEntity;
         QGenerateImage generateImage = QGenerateImage.generateImage;
 
@@ -27,8 +26,7 @@ public class UserRepositoryImpl implements UserRepositoryCustom {
                 .select(generateImage)
                 .from(house)
                 .join(house.generateImages, generateImage)
-                .join(house.user, user)
-                .where(user.id.eq(userId))
+                .where(house.userId.eq(userId))
                 .limit(1)
                 .fetchOne());
     }

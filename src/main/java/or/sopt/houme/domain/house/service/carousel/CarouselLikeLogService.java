@@ -21,11 +21,11 @@ public class CarouselLikeLogService {
     private final CurationRawProductRepository curationRawProductRepository;
 
     public void createLikeLog(UserJpaEntity user, Long rawProductId) {
-        carouselLikeLogRepository.save(CarouselLikeLog.of(user, findRawProduct(rawProductId), CarouselLikeLogAction.LIKE));
+        carouselLikeLogRepository.save(CarouselLikeLog.of(user.getId(), findRawProduct(rawProductId), CarouselLikeLogAction.LIKE));
     }
 
     public void createHateLog(UserJpaEntity user, Long rawProductId) {
-        carouselLikeLogRepository.save(CarouselLikeLog.of(user, findRawProduct(rawProductId), CarouselLikeLogAction.HATE));
+        carouselLikeLogRepository.save(CarouselLikeLog.of(user.getId(), findRawProduct(rawProductId), CarouselLikeLogAction.HATE));
     }
 
     private CurationRawProduct findRawProduct(Long rawProductId) {

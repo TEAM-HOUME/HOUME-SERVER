@@ -25,7 +25,7 @@ public class JjymRepositoryImpl implements JjymRepositoryCustom {
         return queryFactory
                 .selectFrom(jjym)
                 .join(jjym.recommendFurniture, rf).fetchJoin()
-                .where(jjym.user.id.eq(userId))
+                .where(jjym.userId.eq(userId))
                 .orderBy(jjym.createdAt.desc())
                 .fetch();
     }
@@ -39,7 +39,7 @@ public class JjymRepositoryImpl implements JjymRepositoryCustom {
                 .selectFrom(jjym)
                 .join(jjym.recommendFurniture, rf).fetchJoin()
                 .where(
-                        jjym.user.id.eq(userId),
+                        jjym.userId.eq(userId),
                         jjym.recommendFurniture.id.eq(recommendFurnitureId)
                 )
                 .fetchOne();

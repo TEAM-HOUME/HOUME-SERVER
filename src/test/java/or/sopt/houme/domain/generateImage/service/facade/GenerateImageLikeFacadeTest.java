@@ -56,7 +56,7 @@ class GenerateImageLikeFacadeTest {
         testUser = UserJpaEntity.builder().id(1L).build();
         otherUser = UserJpaEntity.builder().id(2L).build();
 
-        testHouse = HouseJpaEntity.builder().id(10L).user(testUser).build();
+        testHouse = HouseJpaEntity.builder().id(10L).userId(testUser.getId()).build();
         testGenerateImage = GenerateImage.builder().id(100L).house(testHouse).build();
         likeRequest = new IsLikeRequest(true);
         unlikeRequest = new IsLikeRequest(false);

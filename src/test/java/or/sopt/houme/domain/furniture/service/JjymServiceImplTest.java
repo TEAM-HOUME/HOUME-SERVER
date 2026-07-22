@@ -92,7 +92,7 @@ class JjymServiceImplTest {
                 .build();
         Jjym jjym = Jjym.builder()
                 .id(30L)
-                .user(user)
+                .userId(user.getId())
                 .recommendFurniture(recommendFurniture)
                 .build();
         CurationRawProduct rawProduct = CurationRawProduct.builder()
