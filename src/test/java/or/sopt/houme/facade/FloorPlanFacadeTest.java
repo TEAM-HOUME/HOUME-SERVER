@@ -10,7 +10,7 @@ import or.sopt.houme.domain.house.model.entity.enums.Form;
 import or.sopt.houme.domain.house.model.entity.enums.Structure;
 import or.sopt.houme.domain.house.service.HouseService;
 import or.sopt.houme.domain.user.model.entity.*;
-import or.sopt.houme.user.infra.persistence.UserJpaEntity;
+import or.sopt.houme.user.domain.User;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,7 +46,7 @@ class FloorPlanFacadeTest {
         Structure openOneRoom = Structure.OPEN_ONE_ROOM;
         String floorPlanImage = "imageUrl";
 
-        UserJpaEntity user = UserJpaEntity.builder()
+        User user = User.builder()
                 .name("test_user")
                 .birthday(LocalDate.of(2001, 1, 10))
                 .gender(Gender.MALE)

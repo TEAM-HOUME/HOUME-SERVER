@@ -3,7 +3,7 @@ package or.sopt.houme.domain.user.service;
 import or.sopt.houme.domain.user.model.entity.NicknameWord;
 import or.sopt.houme.domain.user.model.entity.NicknameWordType;
 import or.sopt.houme.domain.user.repository.NicknameWordRepository;
-import or.sopt.houme.domain.user.repository.UserRepository;
+import or.sopt.houme.user.domain.port.out.UserRepositoryPort;
 import or.sopt.houme.global.api.ErrorCode;
 import or.sopt.houme.global.api.handler.UserException;
 import org.junit.jupiter.api.DisplayName;
@@ -31,7 +31,7 @@ class NicknameServiceTest {
     private NicknameWordRepository nicknameWordRepository;
 
     @Mock
-    private UserRepository userRepository;
+    private UserRepositoryPort userRepository;
 
     @Test
     @DisplayName("닉네임 rotate 결과는 등록된 단어 조합 형식을 유지한다")

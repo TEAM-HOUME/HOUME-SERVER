@@ -26,7 +26,7 @@ import or.sopt.houme.domain.furniture.repository.FurnitureRepository;
 import or.sopt.houme.domain.furniture.repository.FurnitureTypeRepository;
 import or.sopt.houme.domain.furniture.repository.JjymRepository;
 import or.sopt.houme.domain.furniture.repository.RecommendFurnitureRepository;
-import or.sopt.houme.user.infra.persistence.UserJpaEntity;
+import or.sopt.houme.user.domain.User;
 import or.sopt.houme.global.api.ErrorCode;
 import or.sopt.houme.global.api.handler.FurnitureException;
 import org.springframework.data.domain.PageRequest;
@@ -321,7 +321,7 @@ public class CurationProductServiceImpl implements CurationProductService {
     }
 
     @Override
-    public CurationProductDetailResponse getProductDetail(Long id, UserJpaEntity user) {
+    public CurationProductDetailResponse getProductDetail(Long id, User user) {
         CurationRawProduct product = curationRawProductRepository.findByIdAndIsExposedTrueOrNull(id)
                 .orElseThrow(() -> new FurnitureException(ErrorCode.NOT_FOUND_CURATION_RAW_PRODUCT));
 

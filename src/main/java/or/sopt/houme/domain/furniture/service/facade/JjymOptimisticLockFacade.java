@@ -3,7 +3,7 @@ package or.sopt.houme.domain.furniture.service.facade;
 import jakarta.persistence.OptimisticLockException;
 import lombok.RequiredArgsConstructor;
 import or.sopt.houme.domain.furniture.service.JjymServiceImpl;
-import or.sopt.houme.user.infra.persistence.UserJpaEntity;
+import or.sopt.houme.user.domain.User;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Component;
 
@@ -16,7 +16,7 @@ public class JjymOptimisticLockFacade {
 
     private final JjymServiceImpl jjymService;
 
-    public boolean toggle(UserJpaEntity user, Long recommendFurnitureId) {
+    public boolean toggle(User user, Long recommendFurnitureId) {
         int retryCount = 0;
         while (retryCount < MAX_RETRIES) {
             try {
@@ -37,7 +37,7 @@ public class JjymOptimisticLockFacade {
         throw new DataIntegrityViolationException("찜 시도가 정해진 횟수를 초과하였습니다");
     }
 
-    public boolean toggleRawProduct(UserJpaEntity user, Long rawProductId) {
+    public boolean toggleRawProduct(User user, Long rawProductId) {
         int retryCount = 0;
         while (retryCount < MAX_RETRIES) {
             try {

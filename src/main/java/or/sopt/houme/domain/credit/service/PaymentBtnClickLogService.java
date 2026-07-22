@@ -3,7 +3,7 @@ package or.sopt.houme.domain.credit.service;
 import lombok.RequiredArgsConstructor;
 import or.sopt.houme.domain.credit.model.entity.PaymentBtnClickLog;
 import or.sopt.houme.domain.credit.repository.PaymentBtnClickLogRepository;
-import or.sopt.houme.user.infra.persistence.UserJpaEntity;
+import or.sopt.houme.user.domain.User;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -13,7 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class PaymentBtnClickLogService {
     private final PaymentBtnClickLogRepository paymentBtnClickLogRepository;
 
-    public void createPaymentBtnClickLog(UserJpaEntity user) {
+    public void createPaymentBtnClickLog(User user) {
         PaymentBtnClickLog paymentBtnClickLog = PaymentBtnClickLog.of(user.getId());
         paymentBtnClickLogRepository.save(paymentBtnClickLog);
     }

@@ -52,6 +52,23 @@ public class UserPersistenceAdapter implements UserRepositoryPort {
     }
 
     @Override
+    public User saveAndFlush(User user) {
+        // 유니크 제약 위반을 호출 지점에서 즉시 감지해야 하는 흐름(닉네임태그 재시도) 전용 — 기존 saveAndFlush 타이밍 보존
+        if (user.getId() == null) {
+            return UserMapper.toDomain(userRepository.saveAndFlush(UserMapper.toNewEntity(user)));
+        }
+        UserJpaEntity entity = userRepository.findById(user.getId())
+                .orElseThrow(() -> new IllegalStateException("상태를 갱신할 유저를 찾을 수 없습니다. id=" + user.getId()));
+        entity.applyDomainState(user);
+        return UserMapper.toDomain(userRepository.saveAndFlush(entity));
+    }
+
+    @Override
+    public void deleteById(Long id) {
+        userRepository.deleteById(id);
+    }
+
+    @Override
     public List<User> searchMembers(String keyword, int limit) {
         return userRepository.searchMembers(keyword, limit).stream()
                 .map(UserMapper::toDomain)

@@ -15,7 +15,7 @@ import or.sopt.houme.domain.furniture.repository.CurationRawProductFurnitureRepo
 import or.sopt.houme.domain.furniture.repository.FurnitureRepository;
 import or.sopt.houme.domain.furniture.repository.JjymRepository;
 import or.sopt.houme.domain.furniture.repository.RecommendFurnitureRepository;
-import or.sopt.houme.user.infra.persistence.UserJpaEntity;
+import or.sopt.houme.user.domain.User;
 import or.sopt.houme.global.api.ErrorCode;
 import or.sopt.houme.global.api.GeneralException;
 import org.springframework.stereotype.Service;
@@ -49,7 +49,7 @@ public class CurationRawProductFurnitureServiceImpl implements CurationRawProduc
     }
 
     @Override
-    public FurnitureProductsInfoResponseV2 buildProductsResponseByFurnitureId(UserJpaEntity user, Long furnitureId) {
+    public FurnitureProductsInfoResponseV2 buildProductsResponseByFurnitureId(User user, Long furnitureId) {
         FurnitureJpaEntity furniture = furnitureRepository.findById(furnitureId)
                 .orElseThrow(() -> new GeneralException(ErrorCode.NOT_FOUND_FURNITURE));
 
@@ -126,7 +126,7 @@ public class CurationRawProductFurnitureServiceImpl implements CurationRawProduc
                 ));
     }
 
-    private Set<Long> findLikedRawProductIds(UserJpaEntity user, List<CurationRawProduct> rawProducts) {
+    private Set<Long> findLikedRawProductIds(User user, List<CurationRawProduct> rawProducts) {
         if (user == null) {
             return Set.of();
         }

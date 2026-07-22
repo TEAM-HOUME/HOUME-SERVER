@@ -12,12 +12,12 @@ import or.sopt.houme.domain.user.presentation.controller.dto.KakaoLoginResponse;
 import or.sopt.houme.domain.user.presentation.controller.dto.KaKaoOAuthTokenDTO;
 import or.sopt.houme.domain.user.presentation.controller.dto.KaKaoUserInfoResponse;
 import or.sopt.houme.domain.user.model.entity.*;
-import or.sopt.houme.user.infra.persistence.UserJpaEntity;
+import or.sopt.houme.user.domain.User;
 import or.sopt.houme.domain.user.model.entity.record.SignupSession;
 import or.sopt.houme.domain.user.repository.BlacklistTokenRepository;
 import or.sopt.houme.domain.user.repository.RefreshTokenRepository;
 import or.sopt.houme.domain.user.repository.SignupSessionRepository;
-import or.sopt.houme.domain.user.repository.UserRepository;
+import or.sopt.houme.user.domain.port.out.UserRepositoryPort;
 import or.sopt.houme.global.api.ErrorCode;
 import or.sopt.houme.global.api.handler.CreditException;
 import or.sopt.houme.global.api.handler.UserException;
@@ -53,7 +53,7 @@ public class OAuthService {
 
     private final KaKaoOAuthClient kaKaoOAuthClient;
     private final KaKaoUserInfoClient kaKaoUserInfoClient;
-    private final UserRepository userRepository;
+    private final UserRepositoryPort userRepositoryPort;
     private final CreditUseCase creditUseCase;
     private final JWTUtil jwtUtil;
     private final JWTConfig jwtConfig;
@@ -142,7 +142,7 @@ public class OAuthService {
                 .map(KaKaoUserInfoResponse.KakaoAccount.Profile::getNickname)
                 .orElse(null);
 
-        Boolean userExist = userRepository.existsByEmail(email);
+        Boolean userExist = userRepositoryPort.existsByEmail(email);
 
         // 회원 정보가 없는 경우 (이메일이 존재하지 않음) -> 임시토큰을 발급하여 반환합니다
         if (userExist == Boolean.FALSE) {
@@ -159,7 +159,7 @@ public class OAuthService {
         }
 
         // 회원정보가 존재하는 경우 -> 회원 정보를 기반으로 액세스토큰을 발급하여 헤더에 넣습니다
-        UserJpaEntity byEmail = userRepository.findByEmail(email)
+        User byEmail = userRepositoryPort.findByEmail(email)
                 .orElseThrow(()-> new UserException(ErrorCode.USER_NOT_FOUND));
 
         issueTokens(byEmail, response, LoginType.LOGIN);
@@ -189,11 +189,11 @@ public class OAuthService {
         if (!StringUtils.hasText(signupSession.email())) {
             throw new UserException(ErrorCode.NOT_VALID_EXCEPTION);
         }
-        if (userRepository.existsByEmail(signupSession.email())) {
+        if (userRepositoryPort.existsByEmail(signupSession.email())) {
             throw new UserException(ErrorCode.EMAIL_ALREADY_EXISTS);
         }
 
-        UserJpaEntity savedUser = createUserWithNicknameTagRetry(signupSession, nickname, gender, birthday);
+        User savedUser = createUserWithNicknameTagRetry(signupSession, nickname, gender, birthday);
         issueTokens(savedUser, response, LoginType.SIGN_UP);
         return savedUser.getDisplayName();
     }
@@ -213,12 +213,12 @@ public class OAuthService {
         if (!StringUtils.hasText(signupSession.email())) {
             throw new UserException(ErrorCode.NOT_VALID_EXCEPTION);
         }
-        if (userRepository.existsByEmail(signupSession.email())) {
+        if (userRepositoryPort.existsByEmail(signupSession.email())) {
             throw new UserException(ErrorCode.EMAIL_ALREADY_EXISTS);
         }
 
-        UserJpaEntity savedUser = userRepository.save(
-                UserJpaEntity.builder()
+        User savedUser = userRepositoryPort.save(
+                User.builder()
                         .password(null)
                         .email(signupSession.email())
                         .name(name)
@@ -243,7 +243,7 @@ public class OAuthService {
         return savedUser.getName();
     }
 
-    private UserJpaEntity createUserWithNicknameTagRetry(
+    private User createUserWithNicknameTagRetry(
             SignupSession signupSession,
             String nickname,
             Gender gender,
@@ -269,7 +269,7 @@ public class OAuthService {
         throw new UserException(ErrorCode.NICKNAME_TAG_GENERATION_FAILED);
     }
 
-    private void issueTokens(UserJpaEntity savedUser, HttpServletResponse response, LoginType loginType) {
+    private void issueTokens(User savedUser, HttpServletResponse response, LoginType loginType) {
         String access = jwtUtil.createJwt("access", savedUser.getId(), savedUser.getRole().toString(), jwtConfig.getAccessTokenValidityInSeconds());
         String refresh = jwtUtil.createJwt("refresh", savedUser.getId(), savedUser.getRole().toString(), jwtConfig.getRefreshTokenValidityInSeconds());
 

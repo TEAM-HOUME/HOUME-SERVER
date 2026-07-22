@@ -3,7 +3,7 @@ package or.sopt.houme.domain.house.service.carousel.facade;
 import jakarta.persistence.OptimisticLockException;
 import lombok.RequiredArgsConstructor;
 import or.sopt.houme.domain.house.service.carousel.CarouselServiceImpl;
-import or.sopt.houme.user.infra.persistence.UserJpaEntity;
+import or.sopt.houme.user.domain.User;
 import or.sopt.houme.global.api.ErrorCode;
 import or.sopt.houme.global.api.handler.CarouselException;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -28,7 +28,7 @@ public class CarouselOptimisticLockFacade {
      *
      * 이는 hateCarousel() 도 동일합니다
      * */
-    public void likeCarousel(UserJpaEntity user, Long carouselId) throws InterruptedException {
+    public void likeCarousel(User user, Long carouselId) throws InterruptedException {
         int retryCount = 0;
 
         while (retryCount < MAX_RETRIES) {
@@ -46,7 +46,7 @@ public class CarouselOptimisticLockFacade {
     }
 
 
-    public void hateCarousel(UserJpaEntity user, Long carouselId) throws InterruptedException {
+    public void hateCarousel(User user, Long carouselId) throws InterruptedException {
         int retryCount = 0;
 
         while (retryCount < MAX_RETRIES) {
@@ -63,7 +63,7 @@ public class CarouselOptimisticLockFacade {
         throw new CarouselException(ErrorCode.CAROUSEL_RETRY_EXCEPTION);
     }
 
-    public void likeCarouselV2(UserJpaEntity user, Long rawProductId) {
+    public void likeCarouselV2(User user, Long rawProductId) {
         int retryCount = 0;
 
         while (retryCount < MAX_RETRIES) {

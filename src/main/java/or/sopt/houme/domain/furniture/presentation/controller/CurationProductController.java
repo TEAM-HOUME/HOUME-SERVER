@@ -9,7 +9,7 @@ import or.sopt.houme.domain.furniture.presentation.dto.response.CurationProductD
 import or.sopt.houme.domain.furniture.presentation.dto.response.CurationProductFilterResponse;
 import or.sopt.houme.domain.furniture.presentation.dto.response.CurationProductListResponse;
 import or.sopt.houme.domain.furniture.service.CurationProductService;
-import or.sopt.houme.user.infra.persistence.UserJpaEntity;
+import or.sopt.houme.user.domain.User;
 import or.sopt.houme.domain.user.presentation.controller.dto.CustomUserDetails;
 import or.sopt.houme.global.api.ApiResponse;
 import org.springframework.http.ResponseEntity;
@@ -58,7 +58,7 @@ public class CurationProductController {
             @PathVariable Long id,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        UserJpaEntity user = userDetails != null ? userDetails.getUser() : null;
+        User user = userDetails != null ? userDetails.getUser() : null;
         return ResponseEntity.ok(ApiResponse.ok(curationProductService.getProductDetail(id, user)));
     }
 }

@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import or.sopt.houme.domain.user.model.entity.NicknameWord;
 import or.sopt.houme.domain.user.model.entity.NicknameWordType;
 import or.sopt.houme.domain.user.repository.NicknameWordRepository;
-import or.sopt.houme.domain.user.repository.UserRepository;
+import or.sopt.houme.user.domain.port.out.UserRepositoryPort;
 import or.sopt.houme.global.api.ErrorCode;
 import or.sopt.houme.global.api.handler.UserException;
 import org.springframework.stereotype.Service;
@@ -20,7 +20,7 @@ public class NicknameService {
     static final int NICKNAME_TAG_RETRY_COUNT = 20;
 
     private final NicknameWordRepository nicknameWordRepository;
-    private final UserRepository userRepository;
+    private final UserRepositoryPort userRepositoryPort;
 
     @Transactional(readOnly = true)
     public String rotateNickname() {
@@ -38,7 +38,7 @@ public class NicknameService {
 
         for (int attempt = 0; attempt < NICKNAME_TAG_RETRY_COUNT; attempt++) {
             String nicknameTag = randomNumberTag();
-            if (!Boolean.TRUE.equals(userRepository.existsByNicknameAndNicknameTag(nickname, nicknameTag))) {
+            if (!Boolean.TRUE.equals(userRepositoryPort.existsByNicknameAndNicknameTag(nickname, nicknameTag))) {
                 return nicknameTag;
             }
         }

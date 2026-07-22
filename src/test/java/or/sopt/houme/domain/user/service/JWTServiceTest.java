@@ -4,9 +4,9 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import or.sopt.houme.domain.user.model.entity.Role;
-import or.sopt.houme.user.infra.persistence.UserJpaEntity;
+import or.sopt.houme.user.domain.User;
 import or.sopt.houme.domain.user.repository.RefreshTokenRepository;
-import or.sopt.houme.domain.user.repository.UserRepository;
+import or.sopt.houme.user.domain.port.out.UserRepositoryPort;
 import or.sopt.houme.domain.user.presentation.valid.RefreshTokenValidator;
 import or.sopt.houme.global.config.CookieConfig;
 import or.sopt.houme.global.config.JWTConfig;
@@ -34,7 +34,7 @@ class JWTServiceTest {
     @Mock
     private JWTConfig jwtConfig;
     @Mock
-    private UserRepository userRepository;
+    private UserRepositoryPort userRepository;
     @Mock
     private RefreshTokenRepository refreshTokenRepository;
     @Mock
@@ -55,7 +55,7 @@ class JWTServiceTest {
     @DisplayName("createToken()은 access-token을 응답 헤더에 설정한다")
     void createToken_setsAccessTokenInHeader() {
         // given
-        UserJpaEntity user = UserJpaEntity.builder().id(1L).role(Role.ROLE_USER).build();
+        User user = User.builder().id(1L).role(Role.ROLE_USER).build();
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
         when(jwtConfig.getAccessTokenValidityInSeconds()).thenReturn(3600L);
         when(jwtUtil.createJwt(eq("access"), anyLong(), anyString(), anyLong()))
@@ -74,7 +74,7 @@ class JWTServiceTest {
     void refreshRotate_success() {
         // given
         Long userId = 1L;
-        UserJpaEntity user = UserJpaEntity.builder().id(userId).role(Role.ROLE_USER).build();
+        User user = User.builder().id(userId).role(Role.ROLE_USER).build();
 
 
         when(jwtConfig.getAccessTokenValidityInSeconds()).thenReturn(3600L);

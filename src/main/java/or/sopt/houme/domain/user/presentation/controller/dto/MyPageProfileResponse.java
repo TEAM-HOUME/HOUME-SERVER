@@ -1,7 +1,7 @@
 package or.sopt.houme.domain.user.presentation.controller.dto;
 
 import or.sopt.houme.domain.user.model.entity.Gender;
-import or.sopt.houme.user.infra.persistence.UserJpaEntity;
+import or.sopt.houme.user.domain.User;
 
 import java.time.LocalDate;
 
@@ -11,7 +11,7 @@ public record MyPageProfileResponse(
         LocalDate birthday,
         Gender gender
 ) {
-    public static MyPageProfileResponse from(UserJpaEntity user) {
+    public static MyPageProfileResponse from(User user) {
         return new MyPageProfileResponse(
                 user.getId(),
                 user.getNickname(),

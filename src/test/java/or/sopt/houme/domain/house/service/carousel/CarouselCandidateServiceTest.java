@@ -8,7 +8,7 @@ import or.sopt.houme.domain.house.model.entity.mapping.HouseFurniture;
 import or.sopt.houme.domain.house.repository.HouseFurnitureRepository;
 import or.sopt.houme.domain.house.repository.HouseRepository;
 import or.sopt.houme.domain.house.service.carousel.dto.CarouselCandidateBundle;
-import or.sopt.houme.user.infra.persistence.UserJpaEntity;
+import or.sopt.houme.user.domain.User;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -102,7 +102,7 @@ class CarouselCandidateServiceTest {
     @Test
     @DisplayName("후보군 조회 시 최신 house에 저장된 가구 ID를 기준으로 선택 가구 후보를 조회한다")
     void collectCandidates_usesLatestHouseFurnitureIds() {
-        UserJpaEntity user = UserJpaEntity.builder().id(1L).build();
+        User user = User.builder().id(1L).build();
         HouseJpaEntity house = HouseJpaEntity.builder().id(10L).userId(user.getId()).build();
         HouseFurniture sofa = HouseFurniture.builder()
                 .furnitureId(10L)

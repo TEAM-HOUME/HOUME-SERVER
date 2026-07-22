@@ -14,7 +14,7 @@ import or.sopt.houme.domain.preference.model.entity.CarouselPreference;
 import or.sopt.houme.domain.preference.model.entity.Preference;
 import or.sopt.houme.domain.preference.repository.CarouselPreferenceRepository;
 import or.sopt.houme.domain.preference.repository.PreferenceRepository;
-import or.sopt.houme.user.infra.persistence.UserJpaEntity;
+import or.sopt.houme.user.domain.User;
 import or.sopt.houme.global.api.ErrorCode;
 import or.sopt.houme.global.api.handler.CarouselException;
 import org.junit.jupiter.api.BeforeEach;
@@ -63,12 +63,12 @@ class CarouselServiceImplTest {
     @Mock
     private CarouselShuffleService carouselShuffleService;
 
-    private UserJpaEntity user;
+    private User user;
     private CarouselJpaEntity carousel;
 
     @BeforeEach
     void setUp() {
-        user = UserJpaEntity.builder()
+        user = User.builder()
                 .id(1L)
                 .build();
 

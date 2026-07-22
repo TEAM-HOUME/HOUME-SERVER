@@ -5,7 +5,7 @@ import or.sopt.houme.domain.furniture.presentation.dto.response.ActivityWithFurn
 import or.sopt.houme.domain.furniture.presentation.dto.response.FurnitureCategoryGroup;
 import or.sopt.houme.domain.furniture.presentation.dto.response.FurnitureCategoriesResponse;
 import or.sopt.houme.domain.furniture.model.entity.FurnitureTag;
-import or.sopt.houme.user.infra.persistence.UserJpaEntity;
+import or.sopt.houme.user.domain.User;
 
 import java.util.List;
 import java.util.Optional;
@@ -21,13 +21,13 @@ public interface FurnitureService {
     // 대시보드 카테고리 제공
     List<FurnitureCategoryGroup> getDashboardCategories();
 
-    FurnitureCategoriesResponse getFurnitureCategoriesByStyle(UserJpaEntity user, Long imageId, List<String> detectedObjects);
-    FurnitureCategoriesResponse getFurnitureCategoriesByStyleV2(UserJpaEntity user, Long imageId);
+    FurnitureCategoriesResponse getFurnitureCategoriesByStyle(User user, Long imageId, List<String> detectedObjects);
+    FurnitureCategoriesResponse getFurnitureCategoriesByStyleV2(User user, Long imageId);
 
     // 가구 중 침대 ID 조회
     Optional<Long> findBedId(List<Long> furnitureIds);
 
-    FurnitureTag findFurnitureTag(UserJpaEntity user, Long imageId, Long categoryId);
+    FurnitureTag findFurnitureTag(User user, Long imageId, Long categoryId);
 
     FurnitureTag findFurnitureTagForPlan(Long tagId, Long furnitureId);
 }

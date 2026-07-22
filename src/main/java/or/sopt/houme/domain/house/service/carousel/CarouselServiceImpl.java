@@ -13,7 +13,7 @@ import or.sopt.houme.domain.preference.model.entity.CarouselPreference;
 import or.sopt.houme.domain.preference.model.entity.Preference;
 import or.sopt.houme.domain.preference.repository.CarouselPreferenceRepository;
 import or.sopt.houme.domain.preference.repository.PreferenceRepository;
-import or.sopt.houme.user.infra.persistence.UserJpaEntity;
+import or.sopt.houme.user.domain.User;
 import or.sopt.houme.global.api.ErrorCode;
 import or.sopt.houme.global.api.handler.CarouselException;
 import org.springframework.stereotype.Service;
@@ -57,7 +57,7 @@ public class CarouselServiceImpl implements CarouselService {
     }
 
     @Override
-    public GetCarouselV2ListResponseDTO getCarouselV2(UserJpaEntity user) {
+    public GetCarouselV2ListResponseDTO getCarouselV2(User user) {
         var candidateBundle = carouselCandidateService.collectCandidates(user);
         List<Long> displayIds = carouselShuffleService.selectDisplayIds(candidateBundle, user.getId());
         if (displayIds.isEmpty()) {
@@ -78,18 +78,18 @@ public class CarouselServiceImpl implements CarouselService {
 
     @Override
     @Transactional
-    public void likeCarousel(UserJpaEntity user, Long carouselId) {
+    public void likeCarousel(User user, Long carouselId) {
         updateLike(user.getId(), carouselId, true);
     }
 
     @Override
     @Transactional
-    public void hateCarousel(UserJpaEntity user, Long carouselId) {
+    public void hateCarousel(User user, Long carouselId) {
         updateLike(user.getId(), carouselId, false);
     }
 
     @Transactional
-    public void likeCarouselV2WithLog(UserJpaEntity user, Long rawProductId) {
+    public void likeCarouselV2WithLog(User user, Long rawProductId) {
         jjymService.likeRawProduct(user.getId(), rawProductId);
         carouselLikeLogService.createLikeLog(user, rawProductId);
     }

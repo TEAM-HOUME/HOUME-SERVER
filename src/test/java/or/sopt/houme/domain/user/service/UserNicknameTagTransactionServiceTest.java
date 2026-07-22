@@ -2,9 +2,9 @@ package or.sopt.houme.domain.user.service;
 
 import or.sopt.houme.credit.application.CreditUseCase;
 import or.sopt.houme.domain.user.model.entity.Gender;
-import or.sopt.houme.user.infra.persistence.UserJpaEntity;
+import or.sopt.houme.user.domain.User;
 import or.sopt.houme.domain.user.model.entity.record.SignupSession;
-import or.sopt.houme.domain.user.repository.UserRepository;
+import or.sopt.houme.user.domain.port.out.UserRepositoryPort;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -20,7 +20,7 @@ import static org.mockito.Mockito.verify;
 
 class UserNicknameTagTransactionServiceTest {
 
-    private final UserRepository userRepository = mock(UserRepository.class);
+    private final UserRepositoryPort userRepository = mock(UserRepositoryPort.class);
     private final CreditUseCase creditUseCase = mock(CreditUseCase.class);
     private final UserNicknameTagTransactionService service = new UserNicknameTagTransactionService(
             userRepository,
@@ -31,9 +31,9 @@ class UserNicknameTagTransactionServiceTest {
     @DisplayName("소셜 회원가입 v2는 가입 크레딧 5개를 생성한다")
     void createSocialUserWithNicknameTag_createsFiveCredits() {
         SignupSession signupSession = SignupSession.of(1L, "test@houme.kr", "카카오닉네임");
-        UserJpaEntity savedUser = UserJpaEntity.builder().id(1L).email("test@houme.kr").build();
+        User savedUser = User.builder().id(1L).email("test@houme.kr").build();
 
-        given(userRepository.saveAndFlush(org.mockito.ArgumentMatchers.any(UserJpaEntity.class))).willReturn(savedUser);
+        given(userRepository.saveAndFlush(org.mockito.ArgumentMatchers.any(User.class))).willReturn(savedUser);
 
         service.createSocialUserWithNicknameTag(
                 signupSession,
@@ -50,7 +50,7 @@ class UserNicknameTagTransactionServiceTest {
     @Test
     @DisplayName("자체 회원가입 v2 완료는 가입 크레딧 5개를 생성한다")
     void completeUserSignUpV2_createsFiveCredits() {
-        UserJpaEntity user = UserJpaEntity.builder().id(1L).email("test@houme.kr").build();
+        User user = User.builder().id(1L).email("test@houme.kr").build();
         given(userRepository.findById(1L)).willReturn(Optional.of(user));
         given(userRepository.saveAndFlush(user)).willReturn(user);
 

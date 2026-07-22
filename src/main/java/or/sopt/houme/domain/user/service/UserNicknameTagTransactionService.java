@@ -5,10 +5,10 @@ import or.sopt.houme.credit.application.CreditUseCase;
 import or.sopt.houme.domain.user.model.entity.Gender;
 import or.sopt.houme.domain.user.model.entity.Role;
 import or.sopt.houme.domain.user.model.entity.SocialType;
-import or.sopt.houme.user.infra.persistence.UserJpaEntity;
+import or.sopt.houme.user.domain.User;
 import or.sopt.houme.domain.user.model.entity.UserStatus;
 import or.sopt.houme.domain.user.model.entity.record.SignupSession;
-import or.sopt.houme.domain.user.repository.UserRepository;
+import or.sopt.houme.user.domain.port.out.UserRepositoryPort;
 import or.sopt.houme.global.api.ErrorCode;
 import or.sopt.houme.global.api.handler.CreditException;
 import or.sopt.houme.global.api.handler.UserException;
@@ -26,11 +26,11 @@ public class UserNicknameTagTransactionService {
 
     private static final int SIGN_UP_CREDIT_COUNT = 5;
 
-    private final UserRepository userRepository;
+    private final UserRepositoryPort userRepositoryPort;
     private final CreditUseCase creditUseCase;
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public UserJpaEntity createSocialUserWithNicknameTag(
+    public User createSocialUserWithNicknameTag(
             SignupSession signupSession,
             String name,
             String nickname,
@@ -38,8 +38,8 @@ public class UserNicknameTagTransactionService {
             Gender gender,
             LocalDate birthday
     ) {
-        UserJpaEntity savedUser = userRepository.saveAndFlush(
-                UserJpaEntity.builder()
+        User savedUser = userRepositoryPort.saveAndFlush(
+                User.builder()
                         .password(null)
                         .email(signupSession.email())
                         .name(name)
@@ -65,31 +65,31 @@ public class UserNicknameTagTransactionService {
             Gender gender,
             LocalDate birthday
     ) {
-        UserJpaEntity user = userRepository.findById(userId)
+        User user = userRepositoryPort.findById(userId)
                 .orElseThrow(() -> new UserException(ErrorCode.USER_NOT_FOUND));
 
         user.updateUserFromSignUpV2(nickname, nicknameTag, birthday, gender);
-        userRepository.saveAndFlush(user);
+        userRepositoryPort.saveAndFlush(user);
         createSignUpCredits(user);
         return user.getDisplayName();
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public UserJpaEntity updateMyPageProfile(
+    public User updateMyPageProfile(
             Long userId,
             String nickname,
             String nicknameTag,
             Gender gender,
             LocalDate birthday
     ) {
-        UserJpaEntity user = userRepository.findById(userId)
+        User user = userRepositoryPort.findById(userId)
                 .orElseThrow(() -> new UserException(ErrorCode.USER_NOT_FOUND));
 
         user.updateMyPageProfile(nickname, nicknameTag, birthday, gender);
-        return userRepository.saveAndFlush(user);
+        return userRepositoryPort.saveAndFlush(user);
     }
 
-    private void createSignUpCredits(UserJpaEntity user) {
+    private void createSignUpCredits(User user) {
         creditUseCase.grant(user.getId(), SIGN_UP_CREDIT_COUNT);
     }
 }

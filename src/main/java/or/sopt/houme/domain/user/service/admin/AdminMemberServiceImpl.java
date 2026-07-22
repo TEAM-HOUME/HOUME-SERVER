@@ -2,11 +2,11 @@ package or.sopt.houme.domain.user.service.admin;
 
 import lombok.RequiredArgsConstructor;
 import or.sopt.houme.credit.application.CreditUseCase;
-import or.sopt.houme.user.infra.persistence.UserJpaEntity;
+import or.sopt.houme.user.domain.User;
 import or.sopt.houme.domain.user.presentation.admin.controller.dto.member.response.AdminCreditGrantResponse;
 import or.sopt.houme.domain.user.presentation.admin.controller.dto.member.response.AdminMemberResponse;
 import or.sopt.houme.domain.user.presentation.admin.controller.dto.member.response.AdminMemberSearchResponse;
-import or.sopt.houme.domain.user.repository.UserRepository;
+import or.sopt.houme.user.domain.port.out.UserRepositoryPort;
 import or.sopt.houme.global.api.ErrorCode;
 import or.sopt.houme.global.api.GeneralException;
 import org.springframework.stereotype.Service;
@@ -21,7 +21,7 @@ public class AdminMemberServiceImpl implements AdminMemberService {
 
     private static final int MEMBER_SEARCH_LIMIT = 20;
 
-    private final UserRepository userRepository;
+    private final UserRepositoryPort userRepositoryPort;
     private final CreditUseCase creditUseCase;
 
     @Override
@@ -30,7 +30,7 @@ public class AdminMemberServiceImpl implements AdminMemberService {
             return new AdminMemberSearchResponse(List.of());
         }
 
-        List<AdminMemberResponse> members = userRepository.searchMembers(keyword.trim(), MEMBER_SEARCH_LIMIT)
+        List<AdminMemberResponse> members = userRepositoryPort.searchMembers(keyword.trim(), MEMBER_SEARCH_LIMIT)
                 .stream()
                 .map(user -> new AdminMemberResponse(
                         user.getId(),
@@ -47,7 +47,7 @@ public class AdminMemberServiceImpl implements AdminMemberService {
     @Override
     @Transactional
     public AdminCreditGrantResponse grantCredits(Long memberId, int amount) {
-        UserJpaEntity member = userRepository.findById(memberId)
+        User member = userRepositoryPort.findById(memberId)
                 .orElseThrow(() -> new GeneralException(ErrorCode.USER_NOT_FOUND));
 
         long balance = creditUseCase.grant(member.getId(), amount);

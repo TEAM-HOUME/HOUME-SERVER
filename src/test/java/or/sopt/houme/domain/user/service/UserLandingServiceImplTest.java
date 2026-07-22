@@ -2,9 +2,9 @@ package or.sopt.houme.domain.user.service;
 
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
-import or.sopt.houme.user.infra.persistence.UserJpaEntity;
+import or.sopt.houme.user.domain.User;
 import or.sopt.houme.domain.user.repository.RefreshTokenRepository;
-import or.sopt.houme.domain.user.repository.UserRepository;
+import or.sopt.houme.user.domain.port.out.UserRepositoryPort;
 import or.sopt.houme.global.api.ErrorCode;
 import or.sopt.houme.global.api.handler.TokenException;
 import or.sopt.houme.global.api.handler.UserException;
@@ -25,7 +25,7 @@ import static org.mockito.Mockito.*;
 class UserLandingServiceImplTest {
 
     @Mock
-    private UserRepository userRepository;
+    private UserRepositoryPort userRepository;
 
     @Mock
     private JWTUtil jwtUtil;
@@ -99,7 +99,7 @@ class UserLandingServiceImplTest {
         Cookie[] cookies = {new Cookie("refresh-token", "token")};
         when(request.getCookies()).thenReturn(cookies);
 
-        UserJpaEntity mockUser = UserJpaEntity.builder()
+        User mockUser = User.builder()
                 .id(1L)
                 .hasGeneratedImage(true)
                 .build();
@@ -120,7 +120,7 @@ class UserLandingServiceImplTest {
         Cookie[] cookies = {new Cookie("refresh-token", "token")};
         when(request.getCookies()).thenReturn(cookies);
 
-        UserJpaEntity mockUser = UserJpaEntity.builder()
+        User mockUser = User.builder()
                 .id(1L)
                 .hasGeneratedImage(false)
                 .build();

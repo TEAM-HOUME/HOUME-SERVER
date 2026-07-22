@@ -30,7 +30,7 @@ import or.sopt.houme.domain.generateImageResult.presentation.dto.response.Relate
 import or.sopt.houme.domain.generateImageResult.presentation.dto.response.SimilarItemResponse;
 import or.sopt.houme.domain.generateImageResult.presentation.dto.response.SimilarItemsResponse;
 import or.sopt.houme.domain.house.service.HouseService;
-import or.sopt.houme.user.infra.persistence.UserJpaEntity;
+import or.sopt.houme.user.domain.User;
 import or.sopt.houme.global.api.ErrorCode;
 import or.sopt.houme.global.api.handler.GenerateImageException;
 import org.springframework.data.domain.PageRequest;
@@ -65,7 +65,7 @@ public class GenerateImageResultServiceImpl implements GenerateImageResultServic
     private static final int RELATED_IMAGE_LIMIT = 10;
 
     @Override
-    public GenerateImageResultResponse getListResultItems(UserJpaEntity user, Long imageId) {
+    public GenerateImageResultResponse getListResultItems(User user, Long imageId) {
         if (user == null) {
             throw new GenerateImageException(ErrorCode.INVALID_GENERATE_IMAGE_RESULT_REQUEST);
         }
@@ -92,7 +92,7 @@ public class GenerateImageResultServiceImpl implements GenerateImageResultServic
     }
 
     @Override
-    public GeneratedImageMetaResponse getGeneratedImageMeta(UserJpaEntity user, Long imageId) {
+    public GeneratedImageMetaResponse getGeneratedImageMeta(User user, Long imageId) {
         if (user == null) {
             throw new GenerateImageException(ErrorCode.INVALID_GENERATE_IMAGE_RESULT_REQUEST);
         }
@@ -109,7 +109,7 @@ public class GenerateImageResultServiceImpl implements GenerateImageResultServic
     }
 
     @Override
-    public SimilarItemsResponse getSimilarItems(UserJpaEntity user, Long imageId) {
+    public SimilarItemsResponse getSimilarItems(User user, Long imageId) {
         if (user == null) {
             throw new GenerateImageException(ErrorCode.INVALID_GENERATE_IMAGE_RESULT_REQUEST);
         }
@@ -179,7 +179,7 @@ public class GenerateImageResultServiceImpl implements GenerateImageResultServic
     }
 
     @Override
-    public RelatedImagesResponse getRelatedImages(UserJpaEntity user, Long imageId) {
+    public RelatedImagesResponse getRelatedImages(User user, Long imageId) {
         if (user == null) {
             throw new GenerateImageException(ErrorCode.INVALID_GENERATE_IMAGE_RESULT_REQUEST);
         }
@@ -409,7 +409,7 @@ public class GenerateImageResultServiceImpl implements GenerateImageResultServic
         return null;
     }
 
-    private Set<Long> resolveLikedRawProductIds(UserJpaEntity user, List<CurationRawProduct> rawProducts) {
+    private Set<Long> resolveLikedRawProductIds(User user, List<CurationRawProduct> rawProducts) {
         if (user == null || rawProducts.isEmpty()) {
             return Set.of();
         }
@@ -419,7 +419,7 @@ public class GenerateImageResultServiceImpl implements GenerateImageResultServic
     }
 
     private Set<Long> resolveLikedRawProductIds(
-            UserJpaEntity user,
+            User user,
             List<CurationRawProduct> rawProducts,
             Map<Long, Long> recommendFurnitureIdByProductId
     ) {

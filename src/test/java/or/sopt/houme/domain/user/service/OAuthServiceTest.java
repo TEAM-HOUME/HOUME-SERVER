@@ -15,11 +15,11 @@ import or.sopt.houme.domain.user.model.entity.Gender;
 import or.sopt.houme.domain.user.model.entity.LoginType;
 import or.sopt.houme.domain.user.model.entity.Role;
 import or.sopt.houme.domain.user.model.entity.SocialType;
-import or.sopt.houme.user.infra.persistence.UserJpaEntity;
+import or.sopt.houme.user.domain.User;
 import or.sopt.houme.domain.user.repository.BlacklistTokenRepository;
 import or.sopt.houme.domain.user.repository.RefreshTokenRepository;
 import or.sopt.houme.domain.user.repository.SignupSessionRepository;
-import or.sopt.houme.domain.user.repository.UserRepository;
+import or.sopt.houme.user.domain.port.out.UserRepositoryPort;
 import or.sopt.houme.domain.user.model.entity.record.SignupSession;
 import or.sopt.houme.global.api.handler.UserException;
 import or.sopt.houme.global.config.CookieConfig;
@@ -52,7 +52,7 @@ class OAuthServiceTest {
     @Mock
     private KaKaoUserInfoClient kaKaoUserInfoClient;
     @Mock
-    private UserRepository userRepository;
+    private UserRepositoryPort userRepository;
     @Mock
     private CreditUseCase creditUseCase;
     @Mock
@@ -83,7 +83,7 @@ class OAuthServiceTest {
     @DisplayName("signUpWithTokenV2는 닉네임 태그를 분리 저장하고 닉네임만 반환한다")
     void signUpWithTokenV2_success() {
         SignupSession signupSession = SignupSession.of(1L, "test@houme.kr", "카카오닉네임");
-        UserJpaEntity savedUser = UserJpaEntity.builder()
+        User savedUser = User.builder()
                 .id(1L)
                 .name("느긋한펭귄")
                 .nickname("느긋한펭귄")
@@ -147,7 +147,7 @@ class OAuthServiceTest {
         when(kaKaoUserInfoClient.getUserInfo("Bearer kakaoAccessToken")).thenReturn(userInfo);
         when(userRepository.existsByEmail("test@houme.kr")).thenReturn(true);
         when(userRepository.findByEmail("test@houme.kr")).thenReturn(Optional.of(
-                UserJpaEntity.builder().id(1L).email("test@houme.kr").role(Role.ROLE_USER).socialType(SocialType.KAKAO).build()
+                User.builder().id(1L).email("test@houme.kr").role(Role.ROLE_USER).socialType(SocialType.KAKAO).build()
         ));
         when(jwtUtil.createJwt(eq("access"), eq(1L), eq("ROLE_USER"), anyLong())).thenReturn("accessToken");
         when(jwtUtil.createJwt(eq("refresh"), eq(1L), eq("ROLE_USER"), anyLong())).thenReturn("refreshToken");
@@ -172,7 +172,7 @@ class OAuthServiceTest {
     @DisplayName("signUpWithTokenV2는 닉네임 태그 유니크 충돌이 나면 재시도한다")
     void signUpWithTokenV2_retryOnNicknameTagConstraintViolation() {
         SignupSession signupSession = SignupSession.of(1L, "test@houme.kr", "카카오닉네임");
-        UserJpaEntity savedUser = UserJpaEntity.builder()
+        User savedUser = User.builder()
                 .id(1L)
                 .name("느긋한펭귄")
                 .nickname("느긋한펭귄")
@@ -277,7 +277,7 @@ class OAuthServiceTest {
         assertEquals("테스트닉네임", result.prefill().nickname());
 
         verify(signupSessionRepository).save(anyString(), any(or.sopt.houme.domain.user.model.entity.record.SignupSession.class), eq(600L));
-        verify(userRepository, never()).save(any(UserJpaEntity.class));
+        verify(userRepository, never()).save(any(User.class));
         verify(refreshTokenRepository, never()).saveRefreshToken(anyLong(), anyString(), anyLong());
         verify(response, never()).setHeader(eq("access-token"), anyString());
         // 아직 회원 생성 전(임시토큰만 발급)이므로 로그인 이력을 남기지 않는다
@@ -303,7 +303,7 @@ class OAuthServiceTest {
         when(kaKaoUserInfoClient.getUserInfo("Bearer kakaoAccessToken")).thenReturn(userInfo);
         when(userRepository.existsByEmail("test@houme.kr")).thenReturn(true);
         when(userRepository.findByEmail("test@houme.kr")).thenReturn(Optional.of(
-                UserJpaEntity.builder().id(1L).email("test@houme.kr").role(Role.ROLE_USER).socialType(SocialType.KAKAO).build()
+                User.builder().id(1L).email("test@houme.kr").role(Role.ROLE_USER).socialType(SocialType.KAKAO).build()
         ));
 
         when(jwtUtil.createJwt(eq("access"), eq(1L), eq("ROLE_USER"), anyLong())).thenReturn("accessToken");
@@ -375,7 +375,7 @@ class OAuthServiceTest {
     @DisplayName("logout()은 RefreshToken을 삭제하고, AccessToken을 블랙리스트에 저장해야 한다")
     void logout_success() {
         // given
-        UserJpaEntity mockUser = UserJpaEntity.builder().id(1L).role(Role.ROLE_USER).build();
+        User mockUser = User.builder().id(1L).role(Role.ROLE_USER).build();
         CustomUserDetails userDetails = new CustomUserDetails(mockUser);
 
         HttpServletRequest request = mock(HttpServletRequest.class);
@@ -399,7 +399,7 @@ class OAuthServiceTest {
     @DisplayName("logout()은 Authorization 헤더가 비정상일 경우 아무 작업도 하지 않는다")
     void logout_invalidHeader() {
         // given
-        UserJpaEntity mockUser = UserJpaEntity.builder().id(1L).build();
+        User mockUser = User.builder().id(1L).build();
         CustomUserDetails userDetails = new CustomUserDetails(mockUser);
 
         HttpServletRequest request = mock(HttpServletRequest.class);

@@ -13,7 +13,7 @@ import or.sopt.houme.domain.house.model.entity.enums.Activity;
 import or.sopt.houme.house.infra.persistence.HouseJpaEntity;
 import or.sopt.houme.domain.house.service.HouseService;
 import or.sopt.houme.domain.house.repository.HouseFloorPlanRepository;
-import or.sopt.houme.user.infra.persistence.UserJpaEntity;
+import or.sopt.houme.user.domain.User;
 import or.sopt.houme.domain.user.service.UserService;
 import or.sopt.houme.global.api.ErrorCode;
 import or.sopt.houme.global.api.handler.GenerateImageException;
@@ -57,7 +57,7 @@ class GenerateImageTransactionServiceTest {
     @Test
     @DisplayName("배너 이미지 저장 성공 시 HouseJpaEntity 생성, 이미지 저장, 크레딧 확정, 사용자 상태 업데이트를 수행한다")
     void saveBannerImageAndConfirmCredit_success() {
-        UserJpaEntity user = mock(UserJpaEntity.class);
+        User user = mock(User.class);
         CreditReservation lockedCredit = new CreditReservation(1L, 1L);
         Banner banner = mock(Banner.class);
         HouseJpaEntity house = mock(HouseJpaEntity.class);
@@ -110,7 +110,7 @@ class GenerateImageTransactionServiceTest {
     @Test
     @DisplayName("이미지 저장 단계에서 예외가 발생하면 크레딧 확정과 사용자 상태 업데이트를 수행하지 않는다")
     void saveBannerImageAndConfirmCredit_failBeforeCreditCommit() {
-        UserJpaEntity user = mock(UserJpaEntity.class);
+        User user = mock(User.class);
         CreditReservation lockedCredit = new CreditReservation(1L, 1L);
         Banner banner = mock(Banner.class);
         HouseJpaEntity house = mock(HouseJpaEntity.class);
@@ -138,7 +138,7 @@ class GenerateImageTransactionServiceTest {
     @Test
     @DisplayName("크레딧 확정 단계에서 예외가 발생하면 사용자 상태 업데이트를 수행하지 않는다")
     void saveBannerImageAndConfirmCredit_failOnCreditCommit() {
-        UserJpaEntity user = mock(UserJpaEntity.class);
+        User user = mock(User.class);
         CreditReservation lockedCredit = new CreditReservation(1L, 1L);
         Banner banner = mock(Banner.class);
         HouseJpaEntity house = mock(HouseJpaEntity.class);
@@ -178,7 +178,7 @@ class GenerateImageTransactionServiceTest {
     @Test
     @DisplayName("v4 이미지 저장 성공 시 FULL_FUNNEL 타입으로 저장한다")
     void saveV4ImageAndConfirmCredit_savesFullFunnelType() {
-        UserJpaEntity user = mock(UserJpaEntity.class);
+        User user = mock(User.class);
         CreditReservation lockedCredit = new CreditReservation(1L, 1L);
         HouseJpaEntity house = mock(HouseJpaEntity.class);
         ImageUploadResponseDTO imageResponse = ImageUploadResponseDTO.from(
@@ -221,7 +221,7 @@ class GenerateImageTransactionServiceTest {
     @Test
     @DisplayName("PRODUCT 이미지 저장 시 선택 상품이 비어있으면 예외를 던진다")
     void saveProductImageAndConfirmCredit_throwsWhenSelectedProductsMissing() {
-        UserJpaEntity user = mock(UserJpaEntity.class);
+        User user = mock(User.class);
         CreditReservation lockedCredit = new CreditReservation(1L, 1L);
         HouseJpaEntity house = mock(HouseJpaEntity.class);
         ImageUploadResponseDTO imageResponse = ImageUploadResponseDTO.from(

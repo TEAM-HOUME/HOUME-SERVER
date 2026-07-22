@@ -24,7 +24,7 @@ import or.sopt.houme.domain.house.repository.address.AddressRepository;
 import or.sopt.houme.domain.house.repository.carousel.CarouselLikeLogRepository;
 import or.sopt.houme.domain.user.repository.BlacklistTokenRepository;
 import or.sopt.houme.domain.user.repository.RefreshTokenRepository;
-import or.sopt.houme.domain.user.repository.UserRepository;
+import or.sopt.houme.user.domain.port.out.UserRepositoryPort;
 import or.sopt.houme.global.config.JWTConfig;
 import or.sopt.houme.global.jwt.JWTUtil;
 
@@ -33,7 +33,7 @@ import or.sopt.houme.global.jwt.JWTUtil;
 @Transactional
 public class UserDeletionService {
 
-    private final UserRepository userRepository;
+    private final UserRepositoryPort userRepositoryPort;
     private final HouseRepository houseRepository;
     private final HouseFloorPlanRepository houseFloorPlanRepository;
     private final HouseFurnitureRepository houseFurnitureRepository;
@@ -162,6 +162,6 @@ public class UserDeletionService {
         creditUseCase.deleteAll(userId);
 
         // 4. 마지막으로 유저 삭제
-        userRepository.deleteById(userId);
+        userRepositoryPort.deleteById(userId);
     }
 }

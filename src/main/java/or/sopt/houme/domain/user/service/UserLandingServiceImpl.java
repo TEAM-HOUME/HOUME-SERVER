@@ -3,9 +3,9 @@ package or.sopt.houme.domain.user.service;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
-import or.sopt.houme.user.infra.persistence.UserJpaEntity;
+import or.sopt.houme.user.domain.User;
 import or.sopt.houme.domain.user.repository.RefreshTokenRepository;
-import or.sopt.houme.domain.user.repository.UserRepository;
+import or.sopt.houme.user.domain.port.out.UserRepositoryPort;
 import or.sopt.houme.global.api.ErrorCode;
 import or.sopt.houme.global.api.handler.TokenException;
 import or.sopt.houme.global.api.handler.UserException;
@@ -18,7 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional(readOnly = true)
 public class UserLandingServiceImpl implements UserLandingService {
 
-    private final UserRepository userRepository;
+    private final UserRepositoryPort userRepositoryPort;
     private final JWTUtil jwtUtil;
     private final RefreshTokenRepository refreshTokenRepository;
 
@@ -56,7 +56,7 @@ public class UserLandingServiceImpl implements UserLandingService {
             throw new TokenException(ErrorCode.REFRESH_TOKEN_NULL);
         }
 
-        UserJpaEntity findUser = userRepository.findById(userId)
+        User findUser = userRepositoryPort.findById(userId)
                 .orElseThrow(()-> new UserException(ErrorCode.USER_NOT_FOUND));
 
         if (!findUser.getHasGeneratedImage()){

@@ -54,7 +54,7 @@ import or.sopt.houme.domain.house.service.taste.TagService;
 import or.sopt.houme.domain.house.service.taste.TasteService;
 import or.sopt.houme.domain.house.service.taste.TasteTagService;
 import or.sopt.houme.domain.user.model.entity.*;
-import or.sopt.houme.user.infra.persistence.UserJpaEntity;
+import or.sopt.houme.user.domain.User;
 import or.sopt.houme.domain.user.service.UserService;
 import or.sopt.houme.domain.user.util.floorplan.FloorPlanImageJsonCodec;
 import or.sopt.houme.global.api.ErrorCode;
@@ -165,7 +165,7 @@ class GenerateImageFacadeTest {
     @DisplayName("받은 데이터들을 토대로 JAVA로 OpenAI를 사용해 이미지를 받을 수 있다.")
     void generateImage() {
         // Given
-        UserJpaEntity user = UserJpaEntity.builder()
+        User user = User.builder()
                 .name("test_user")
                 .birthday(LocalDate.of(2001, 1, 10))
                 .gender(Gender.MALE)
@@ -258,7 +258,7 @@ class GenerateImageFacadeTest {
     @DisplayName("받은 데이터들을 토대로 FastAPI로 OpenAI를 사용해 이미지를 받을 수 있다.")
     void generateImageV2() {
         // Given
-        UserJpaEntity user = UserJpaEntity.builder()
+        User user = User.builder()
                 .name("test_user")
                 .birthday(LocalDate.of(2001, 1, 10))
                 .gender(Gender.MALE)
@@ -380,7 +380,7 @@ class GenerateImageFacadeTest {
     @Test
     @DisplayName("배너 템플릿 이미지 생성은 saveBannerImageAndConfirmCredit 경로를 호출해 LIST 이미지 저장 플로우를 실행한다")
     void generateBannerImageByGemini_callsSaveBannerImageAndConfirmCredit() throws Exception {
-        UserJpaEntity user = UserJpaEntity.builder()
+        User user = User.builder()
                 .id(1L)
                 .name("test_user")
                 .build();
@@ -465,7 +465,7 @@ class GenerateImageFacadeTest {
     @Test
     @DisplayName("배너 템플릿 이미지 생성 시 선택 칩 상품 이미지를 배너 기본 상품보다 먼저 reference에 넣는다")
     void generateBannerImageByGemini_placesSelectedChipProductBeforeBannerProducts() throws Exception {
-        UserJpaEntity user = UserJpaEntity.builder()
+        User user = User.builder()
                 .id(1L)
                 .name("test_user")
                 .build();
@@ -580,7 +580,7 @@ class GenerateImageFacadeTest {
     @Test
     @DisplayName("V4 이미지 생성은 활동 연계 가구를 포함한 reference 이미지로 호출 후 저장한다")
     void generateImageV4ByGemini_callsSaveV4ImageAndConfirmCredit() {
-        UserJpaEntity user = UserJpaEntity.builder()
+        User user = User.builder()
                 .id(1L)
                 .name("test_user")
                 .build();
@@ -699,7 +699,7 @@ class GenerateImageFacadeTest {
     @Test
     @DisplayName("V4 이미지 생성은 존재하지 않는 floorPlanView 입력 시 예외를 던진다")
     void generateImageV4ByGemini_throwsWhenFloorPlanViewNotFound() {
-        UserJpaEntity user = UserJpaEntity.builder()
+        User user = User.builder()
                 .id(1L)
                 .name("test_user")
                 .build();
@@ -777,7 +777,7 @@ class GenerateImageFacadeTest {
     @Test
     @DisplayName("선택 상품 기반 이미지 생성은 도면+상품 이미지로 생성 후 저장한다")
     void generateImageByProducts_callsGeminiAndSaves() {
-        UserJpaEntity user = UserJpaEntity.builder().id(1L).name("test_user").build();
+        User user = User.builder().id(1L).name("test_user").build();
         CreditReservation lockedCredit = new CreditReservation(10L, user.getId());
         ProductGenerateImageRequest request = new ProductGenerateImageRequest(
                 11L,

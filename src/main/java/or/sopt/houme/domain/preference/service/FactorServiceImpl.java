@@ -8,7 +8,7 @@ import or.sopt.houme.domain.preference.model.entity.PreferenceFactor;
 import or.sopt.houme.domain.preference.repository.FactorRepository;
 import or.sopt.houme.domain.preference.repository.PreferenceFactorRepository;
 import or.sopt.houme.domain.preference.repository.PreferenceRepository;
-import or.sopt.houme.user.infra.persistence.UserJpaEntity;
+import or.sopt.houme.user.domain.User;
 import or.sopt.houme.global.api.ErrorCode;
 import or.sopt.houme.global.api.handler.PreferenceException;
 import org.springframework.stereotype.Service;
@@ -36,7 +36,7 @@ public class FactorServiceImpl implements FactorService {
 
     @Override
     @Transactional
-    public void toggleFactorLog(UserJpaEntity user, Long imageId, Long factorId) {
+    public void toggleFactorLog(User user, Long imageId, Long factorId) {
         // user + imageId로 preference 조회
         // 유저와 이미지간 존재하는 preference 객체는 유일합니다.
         Preference preference = preferenceRepository.findPreferenceByUserIdAndImageId(user.getId(), imageId)

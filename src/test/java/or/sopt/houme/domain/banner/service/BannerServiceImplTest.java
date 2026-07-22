@@ -118,7 +118,7 @@ class BannerServiceImplTest {
                         .build()));
         when(jjymRepository.findAllByUserIdAndRecommendFurnitureIdIn(1L, List.of(1L))).thenReturn(List.of());
 
-        or.sopt.houme.user.infra.persistence.UserJpaEntity user = or.sopt.houme.user.infra.persistence.UserJpaEntity.builder().id(1L).build();
+        or.sopt.houme.user.domain.User user = or.sopt.houme.user.domain.User.builder().id(1L).build();
         OtherStyleDetailResponse response = bannerService.getOtherStyleDetail(user, 1L);
 
         assertThat(response.products()).hasSize(1);

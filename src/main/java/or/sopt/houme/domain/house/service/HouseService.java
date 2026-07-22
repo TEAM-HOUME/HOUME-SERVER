@@ -7,7 +7,7 @@ import or.sopt.houme.domain.house.presentation.dto.response.HouseIdResponse;
 import or.sopt.houme.domain.house.presentation.dto.response.HouseOptionsResponse;
 import or.sopt.houme.house.infra.persistence.HouseJpaEntity;
 import or.sopt.houme.domain.house.model.entity.enums.Activity;
-import or.sopt.houme.user.infra.persistence.UserJpaEntity;
+import or.sopt.houme.user.domain.User;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
@@ -18,10 +18,10 @@ public interface HouseService {
     HouseOptionsResponse getHouseOptionsResponse();
 
     // 집 구조 선택 서비스
-    HouseIdResponse selectHouseOptions(UserJpaEntity user, HouseSelectRequest houseSelectRequest);
+    HouseIdResponse selectHouseOptions(User user, HouseSelectRequest houseSelectRequest);
 
     // 가장 최근에 등록한 house 찾기
-    LatestHouseConditionDTO findLatestHouse(UserJpaEntity user);
+    LatestHouseConditionDTO findLatestHouse(User user);
 
     // house에 주요활동 저장하기
     @Transactional
@@ -34,9 +34,9 @@ public interface HouseService {
     void saveHousePrompt(HouseJpaEntity house, String prompt);
 
     // 템플릿 기반 이미지 생성을 위한 house 저장
-    HouseJpaEntity createTemplateHouse(UserJpaEntity user, Banner banner, String prompt, Long floorPlanId, boolean isMirror);
+    HouseJpaEntity createTemplateHouse(User user, Banner banner, String prompt, Long floorPlanId, boolean isMirror);
 
-    HouseJpaEntity createTemplateHouse(UserJpaEntity user, Banner banner, String prompt, Long floorPlanId, boolean isMirror, String selectedView);
+    HouseJpaEntity createTemplateHouse(User user, Banner banner, String prompt, Long floorPlanId, boolean isMirror, String selectedView);
 
     // houseId와 floorPlan 저장
     void saveHouseFloorPlan(HouseJpaEntity house, Long floorPlanId, boolean isMirror);
