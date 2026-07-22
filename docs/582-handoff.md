@@ -105,3 +105,19 @@
 - **분류 원칙(P2 파일→모듈 배정)**: 서비스가 엔티티/리포 import 하면 infra(컨트롤러가 부르면 인터페이스 파일은 domain 배정), 엔티티-프리면 application. 공유 response 레코드는 common. houme-application 은 `api project(':houme-domain')` 로 domain 재노출.
 - **남은 필수 전환**: ①HouseServiceImpl(쓰기 오케스트레이션: 순수 House 12b-2+HouseFloorPlan/InvalidHouseRequest/FloorPlan/Taste 포트) ②GenerateImage 핵심(Facade/TransactionService/ServiceImpl/LikeFacade — GenerateImagePort 커맨드·조회, house 연관은 infra 유지, createGenerateImage(houseId) 커맨드화) ③잔여 서비스는 infra 분류로 충분(Banner/Carousel/Address/Preference/GIR/Admin — 인터페이스 존재 확인만).
 - 게이트 정책: 중간커밋=컴파일+타깃테스트, 전체 스위트=도메인 완료·푸시 전(-x jacocoTestReport 로컬 생략). 병렬화는 팀이 롤백한 결정이라 안 건드림.
+
+## P2 물리 7모듈 분리 — 실행 설계 (확정)
+**모듈 의존 (doc §4 에서 1개 수정: infra→application 허용 — 어댑터가 application 인터페이스/DTO 구현·반환하는 고전 헥사고날 방향. 근거: infra-분류 서비스(Banner/Curation/Admin/GIR 등)가 컨트롤러-공유 인터페이스와 response DTO 를 갖기 때문. application→infra 는 여전히 금지라 비순환.)**
+```
+houme-api ───────▶ application, auth, domain, common (runtimeOnly: infra, external)  [bootJar, main, 컨트롤러, advice, web/swagger config]
+houme-application ▶ domain, common  [엔티티-프리 서비스·파사드·인터페이스·presentation DTO, spring core/tx/cache/security-core/dao]
+houme-auth ──────▶ domain, common  [SecurityConfig, JWT util/filter, CustomUserDetails(+Service)]
+houme-infra ─────▶ application, domain, external, common  [@Entity·리포·어댑터·QueryDSL·스케줄러·크롤러·엔티티-사용 서비스, JPA/Redis/Redisson/S3/H2/PG config]
+houme-external ──▶ common  [Feign 클라이언트(KaKao/Naver/FastApi)·Gemini·Discord + 외부 DTO]
+houme-domain ────▶ common  [or.sopt.houme.*.domain.**, 순수 enum(Gender/Role/Activity/Form/... model.entity 에서 파일단위 분리), View/포트]
+houme-common ────▶ (없음)  [ApiResponse/ErrorCode/예외타입/공용 유틸 중 무프레임워크]
+```
+**파일 분류 규칙(스크립트)**: ①`or/sopt/houme/*/domain/**`→domain ②`*/infra/**`→infra ③`*Controller.java`+`HoumeApplication`+advice/web·swagger config→api ④`@Entity|Repository|QueryDSL|Scheduler|crawler` 포함→infra ⑤jwt/security/CustomUserDetails*→auth ⑥`infrastructure/client|dto/external`→external ⑦presentation dto·엔티티-프리 서비스/파사드/인터페이스→application ⑧global: api(ApiResponse 등)→common, config 는 성격별(JPA/Redis/S3→infra, Security→auth, Web/Swagger→api) ⑨순수 enum 파일→domain. 스플릿 패키지 허용(JPMS 아님).
+**테스트**: 전부 houme-api/src/test 로 이동(통합·@DataJpaTest 가 전체 클래스패스 필요; api 는 testImplementation 으로 infra/external 접근). Testcontainers/Jacoco/jib 설정도 api 로.
+**QueryDSL**: annotationProcessor 는 infra 모듈에만; generated dir 도 infra.
+**순서**: settings.gradle→모듈 build.gradle 뼈대→분류 스크립트로 git mv→모듈별 컴파일 에러 순회 수정→bootJar→전체 테스트→커밋·푸시.
