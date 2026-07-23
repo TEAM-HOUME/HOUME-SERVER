@@ -19,6 +19,8 @@ import or.sopt.houme.global.api.GeneralException;
 import or.sopt.houme.global.api.handler.AdminException;
 import or.sopt.houme.global.dto.S3PresignedUrlResponseDTO;
 import or.sopt.houme.global.util.S3PresignedUtil;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -48,6 +50,7 @@ public class AdminFurnitureServiceImpl implements AdminFurnitureService {
      * @throws DataIntegrityViolationException flush 시점에 데이터가 중복되면 예외 발생
      * */
     @Override
+    @CacheEvict(value = "allFurnituresCache", allEntries = true)
     public void registerFurniture(AdminFurnitureRequestDTO dto) {
 
         FurnitureType furnitureType;
@@ -318,6 +321,7 @@ public class AdminFurnitureServiceImpl implements AdminFurnitureService {
      * @throws GeneralException DB 단에서 가구의 매핑 데이터로 인해서 데이터를 삭제 할 수 없는 경우 예외 발생
      * */
     @Override
+    @CacheEvict(value = "allFurnituresCache", allEntries = true)
     public void deleteFurniture(AdminFurnitureDeleteDTO dto){
 
         FurnitureJpaEntity byFurnitureNameKr = furnitureRepository.findByFurnitureNameKr(dto.furnitureNameKr())
@@ -378,6 +382,10 @@ public class AdminFurnitureServiceImpl implements AdminFurnitureService {
      * FurnitureType 등록 메서드
      */
     @Override
+    @Caching(evict = {
+            @CacheEvict(value = "curationFilterMetadataCache", allEntries = true),
+            @CacheEvict(value = "allFurnitureTypesCache", allEntries = true)
+    })
     public void registerFurnitureType(AdminFurnitureTypeRequest request) {
 
         // 한글명이 이미 있는지 확인
@@ -403,6 +411,10 @@ public class AdminFurnitureServiceImpl implements AdminFurnitureService {
      * FurnitureType 삭제 메서드
      */
     @Override
+    @Caching(evict = {
+            @CacheEvict(value = "curationFilterMetadataCache", allEntries = true),
+            @CacheEvict(value = "allFurnitureTypesCache", allEntries = true)
+    })
     public void deleteFurnitureType(long furnitureTypeId) {
 
         FurnitureType type = furnitureTypeRepository.findById(furnitureTypeId)
@@ -420,6 +432,10 @@ public class AdminFurnitureServiceImpl implements AdminFurnitureService {
      * FurnitureType 수정 메서드
      */
     @Override
+    @Caching(evict = {
+            @CacheEvict(value = "curationFilterMetadataCache", allEntries = true),
+            @CacheEvict(value = "allFurnitureTypesCache", allEntries = true)
+    })
     public void updateFurnitureType(AdminUpdateFurnitureTypeRequest request) {
 
         FurnitureType furnitureType = furnitureTypeRepository.findById(request.id())

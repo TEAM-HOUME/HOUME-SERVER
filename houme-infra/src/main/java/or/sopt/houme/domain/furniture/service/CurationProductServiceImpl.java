@@ -32,6 +32,7 @@ import or.sopt.houme.global.api.handler.FurnitureException;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -58,8 +59,10 @@ public class CurationProductServiceImpl implements CurationProductService {
     private final CurationRawProductColorRepository curationRawProductColorRepository;
     private final RecommendFurniturePort recommendFurniturePort;
     private final JjymRepositoryPort jjymRepositoryPort;
+    private final FurnitureMasterCacheService furnitureMasterCacheService;
 
     @Override
+    @Cacheable(value = "curationFilterMetadataCache")
     public CurationProductFilterResponse getFilterMetadata() {
         return new CurationProductFilterResponse(
                 getFurnitureTypeFilters(),
@@ -429,8 +432,8 @@ public class CurationProductServiceImpl implements CurationProductService {
     }
 
     private List<FurnitureTypeFilterResponse> getFurnitureTypeFilters() {
-        List<FurnitureType> types = furnitureTypeRepository.findAll();
-        List<FurnitureJpaEntity> furnitures = furnitureRepository.findAll();
+        List<FurnitureType> types = furnitureMasterCacheService.getAllFurnitureTypes();
+        List<FurnitureJpaEntity> furnitures = furnitureMasterCacheService.getAllFurnitures();
 
         // [pbem22, 2026-05-28, #548] DB 실제 등록값 기준으로 고정 음수 ID → findFurniture() 전환
         return List.of(
@@ -454,7 +457,7 @@ public class CurationProductServiceImpl implements CurationProductService {
     private EtcResolution resolveEtc(List<Long> rawTypeIds) {
         if (rawTypeIds == null || rawTypeIds.contains(0L)) return new EtcResolution(null, null);
 
-        List<FurnitureType> allTypes = furnitureTypeRepository.findAll();
+        List<FurnitureType> allTypes = furnitureMasterCacheService.getAllFurnitureTypes();
         Long etcTypeId = allTypes.stream()
                 .filter(t -> ETC_TYPE_NAMEENG.equalsIgnoreCase(t.getNameEng()))
                 .map(FurnitureType::getId)
@@ -466,7 +469,7 @@ public class CurationProductServiceImpl implements CurationProductService {
                 .map(FurnitureType::getId)
                 .findFirst().orElse(null);
 
-        List<FurnitureJpaEntity> allFurnitures = furnitureRepository.findAll();
+        List<FurnitureJpaEntity> allFurnitures = furnitureMasterCacheService.getAllFurnitures();
         List<Long> excludedFurnitureIds = allFurnitures.stream()
                 .filter(f -> f.getFurnitureNameEng() != null &&
                         INDIVIDUAL_FILTER_FURNITURE_NAMEENGS.contains(f.getFurnitureNameEng().toUpperCase()))
