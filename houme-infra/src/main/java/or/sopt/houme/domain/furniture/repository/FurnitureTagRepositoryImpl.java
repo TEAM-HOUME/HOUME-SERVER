@@ -1,0 +1,54 @@
+package or.sopt.houme.domain.furniture.repository;
+
+import com.querydsl.jpa.impl.JPAQueryFactory;
+import lombok.RequiredArgsConstructor;
+import or.sopt.houme.furniture.infra.persistence.FurnitureJpaEntity;
+import or.sopt.houme.domain.furniture.model.entity.FurnitureTag;
+import or.sopt.houme.furniture.infra.persistence.QFurnitureJpaEntity;
+import or.sopt.houme.domain.furniture.model.entity.QFurnitureTag;
+import or.sopt.houme.domain.furniture.model.entity.QFurnitureType;
+import org.springframework.stereotype.Repository;
+
+import java.util.List;
+
+@Repository
+@RequiredArgsConstructor
+public class FurnitureTagRepositoryImpl implements FurnitureTagRepositoryCustom {
+
+    private final JPAQueryFactory queryFactory;
+
+    @Override
+    public List<FurnitureTag> findAllByTagIdAndFurnitureIn(Long tagId, List<FurnitureJpaEntity> furnitures) {
+        QFurnitureTag furnitureTag = QFurnitureTag.furnitureTag;
+
+        return queryFactory
+                .selectFrom(furnitureTag)
+                .join(furnitureTag.furniture).fetchJoin()
+                .where(
+                        furnitureTag.tagId.eq(tagId),
+                        furnitureTag.furniture.in(furnitures)
+                )
+                .fetch();
+    }
+
+    @Override
+    public List<FurnitureTag> findAllByFurnitureTypeIdWithFurnitureAndTag(Long furnitureTypeId) {
+        QFurnitureTag furnitureTag = QFurnitureTag.furnitureTag;
+        QFurnitureJpaEntity furniture = QFurnitureJpaEntity.furnitureJpaEntity;
+        QFurnitureType furnitureType = QFurnitureType.furnitureType;
+
+        // #582: Tag 연관 절단 — tag 는 tagId(Long) 로만 참조하므로 fetchJoin 대상에서 제거.
+        //       태그 이름 등은 호출 측에서 tagId 로 별도 조회한다.
+        return queryFactory
+                .selectFrom(furnitureTag)
+                .join(furnitureTag.furniture, furniture).fetchJoin()
+                .join(furniture.furnitureType, furnitureType).fetchJoin()
+                .where(furnitureType.id.eq(furnitureTypeId))
+                .orderBy(
+                        furniture.furnitureNameKr.asc(),
+                        furnitureTag.priority.asc(),
+                        furnitureTag.id.asc()
+                )
+                .fetch();
+    }
+}
