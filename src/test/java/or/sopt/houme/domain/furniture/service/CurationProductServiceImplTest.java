@@ -17,6 +17,7 @@ import or.sopt.houme.domain.furniture.repository.CurationRawProductRepositoryCus
 import or.sopt.houme.domain.furniture.repository.FurnitureRepository;
 import or.sopt.houme.domain.furniture.repository.FurnitureTypeRepository;
 import or.sopt.houme.domain.furniture.repository.JjymRepository;
+import or.sopt.houme.domain.furniture.service.FurnitureMasterCacheService;
 import or.sopt.houme.domain.furniture.repository.RecommendFurnitureRepository;
 import or.sopt.houme.domain.user.model.entity.User;
 import org.junit.jupiter.api.DisplayName;
@@ -64,13 +65,16 @@ class CurationProductServiceImplTest {
     @Mock
     private JjymRepository jjymRepository;
 
+    @Mock
+    private FurnitureMasterCacheService furnitureMasterCacheService;
+
     @Test
     @DisplayName("getFilterMetadata()는 DB 데이터와 정적 필터를 조합하여 반환한다")
     void getFilterMetadata() {
         // given
         FurnitureType bedType = FurnitureType.builder().id(1L).nameKr("침대").nameEng("BED").build();
-        given(furnitureTypeRepository.findAll()).willReturn(List.of(bedType));
-        given(furnitureRepository.findAll()).willReturn(List.of());
+        given(furnitureMasterCacheService.getAllFurnitureTypes()).willReturn(List.of(bedType));
+        given(furnitureMasterCacheService.getAllFurnitures()).willReturn(List.of());
 
         // when
         CurationProductFilterResponse response = curationProductService.getFilterMetadata();
@@ -93,8 +97,8 @@ class CurationProductServiceImplTest {
         Integer size = 20;
 
         FurnitureType bedType = FurnitureType.builder().id(1L).nameKr("침대").nameEng("BED").build();
-        given(furnitureTypeRepository.findAll()).willReturn(List.of(bedType));
-        given(furnitureRepository.findAll()).willReturn(List.of());
+        given(furnitureMasterCacheService.getAllFurnitureTypes()).willReturn(List.of(bedType));
+        given(furnitureMasterCacheService.getAllFurnitures()).willReturn(List.of());
 
         CurationRawProduct product = CurationRawProduct.builder()
                 .id(99L)
@@ -173,8 +177,8 @@ class CurationProductServiceImplTest {
         Integer size = 20;
 
         FurnitureType bedType = FurnitureType.builder().id(1L).nameKr("침대").nameEng("BED").build();
-        given(furnitureTypeRepository.findAll()).willReturn(List.of(bedType));
-        given(furnitureRepository.findAll()).willReturn(List.of());
+        given(furnitureMasterCacheService.getAllFurnitureTypes()).willReturn(List.of(bedType));
+        given(furnitureMasterCacheService.getAllFurnitures()).willReturn(List.of());
 
         Slice<CurationRawProduct> emptySlice = new SliceImpl<>(List.of(), PageRequest.of(0, size), false);
         CurationRawProduct recommended = CurationRawProduct.builder()
@@ -233,8 +237,8 @@ class CurationProductServiceImplTest {
         Integer size = 20;
 
         FurnitureType bedType = FurnitureType.builder().id(1L).nameKr("침대").nameEng("BED").build();
-        given(furnitureTypeRepository.findAll()).willReturn(List.of(bedType));
-        given(furnitureRepository.findAll()).willReturn(List.of());
+        given(furnitureMasterCacheService.getAllFurnitureTypes()).willReturn(List.of(bedType));
+        given(furnitureMasterCacheService.getAllFurnitures()).willReturn(List.of());
 
         Slice<CurationRawProduct> emptySlice = new SliceImpl<>(List.of(), PageRequest.of(0, size), false);
         CurationRawProduct recommended = CurationRawProduct.builder()
