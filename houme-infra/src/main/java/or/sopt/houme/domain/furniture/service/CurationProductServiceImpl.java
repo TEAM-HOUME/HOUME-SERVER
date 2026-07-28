@@ -432,8 +432,8 @@ public class CurationProductServiceImpl implements CurationProductService {
     }
 
     private List<FurnitureTypeFilterResponse> getFurnitureTypeFilters() {
-        List<FurnitureType> types = furnitureMasterCacheService.getAllFurnitureTypes();
-        List<FurnitureJpaEntity> furnitures = furnitureMasterCacheService.getAllFurnitures();
+        List<FurnitureTypeCacheView> types = furnitureMasterCacheService.getAllFurnitureTypes();
+        List<FurnitureCacheView> furnitures = furnitureMasterCacheService.getAllFurnitures();
 
         // [pbem22, 2026-05-28, #548] DB 실제 등록값 기준으로 고정 음수 ID → findFurniture() 전환
         return List.of(
@@ -457,27 +457,27 @@ public class CurationProductServiceImpl implements CurationProductService {
     private EtcResolution resolveEtc(List<Long> rawTypeIds) {
         if (rawTypeIds == null || rawTypeIds.contains(0L)) return new EtcResolution(null, null);
 
-        List<FurnitureType> allTypes = furnitureMasterCacheService.getAllFurnitureTypes();
+        List<FurnitureTypeCacheView> allTypes = furnitureMasterCacheService.getAllFurnitureTypes();
         Long etcTypeId = allTypes.stream()
-                .filter(t -> ETC_TYPE_NAMEENG.equalsIgnoreCase(t.getNameEng()))
-                .map(FurnitureType::getId)
+                .filter(t -> ETC_TYPE_NAMEENG.equalsIgnoreCase(t.nameEng()))
+                .map(FurnitureTypeCacheView::id)
                 .findFirst().orElse(null);
         if (etcTypeId == null || !rawTypeIds.contains(etcTypeId)) return new EtcResolution(etcTypeId, null);
 
         Long selectiveTypeId = allTypes.stream()
-                .filter(t -> SELECTIVE_TYPE_NAMEENG.equalsIgnoreCase(t.getNameEng()))
-                .map(FurnitureType::getId)
+                .filter(t -> SELECTIVE_TYPE_NAMEENG.equalsIgnoreCase(t.nameEng()))
+                .map(FurnitureTypeCacheView::id)
                 .findFirst().orElse(null);
 
-        List<FurnitureJpaEntity> allFurnitures = furnitureMasterCacheService.getAllFurnitures();
+        List<FurnitureCacheView> allFurnitures = furnitureMasterCacheService.getAllFurnitures();
         List<Long> excludedFurnitureIds = allFurnitures.stream()
-                .filter(f -> f.getFurnitureNameEng() != null &&
-                        INDIVIDUAL_FILTER_FURNITURE_NAMEENGS.contains(f.getFurnitureNameEng().toUpperCase()))
-                .map(FurnitureJpaEntity::getId)
+                .filter(f -> f.furnitureNameEng() != null &&
+                        INDIVIDUAL_FILTER_FURNITURE_NAMEENGS.contains(f.furnitureNameEng().toUpperCase()))
+                .map(FurnitureCacheView::id)
                 .toList();
         Long etcDirectFurnitureId = allFurnitures.stream()
-                .filter(f -> ETC_TYPE_NAMEENG.equalsIgnoreCase(f.getFurnitureNameEng()))
-                .map(FurnitureJpaEntity::getId)
+                .filter(f -> ETC_TYPE_NAMEENG.equalsIgnoreCase(f.furnitureNameEng()))
+                .map(FurnitureCacheView::id)
                 .findFirst().orElse(null);
 
         List<Long> productIds = curationRawProductRepository.findEtcProductIds(
@@ -485,19 +485,19 @@ public class CurationProductServiceImpl implements CurationProductService {
         return new EtcResolution(etcTypeId, productIds);
     }
 
-    private FurnitureTypeFilterResponse findType(List<FurnitureType> types, String nameEng, String labelKr, Long fallbackId) {
+    private FurnitureTypeFilterResponse findType(List<FurnitureTypeCacheView> types, String nameEng, String labelKr, Long fallbackId) {
         return types.stream()
-                .filter(t -> t.getNameEng() != null && t.getNameEng().trim().equalsIgnoreCase(nameEng))
+                .filter(t -> t.nameEng() != null && t.nameEng().trim().equalsIgnoreCase(nameEng))
                 .findFirst()
-                .map(t -> new FurnitureTypeFilterResponse(t.getId(), labelKr, t.getNameEng().trim()))
+                .map(t -> new FurnitureTypeFilterResponse(t.id(), labelKr, t.nameEng().trim()))
                 .orElse(new FurnitureTypeFilterResponse(fallbackId, labelKr, nameEng));
     }
 
-    private FurnitureTypeFilterResponse findFurniture(List<FurnitureJpaEntity> furnitures, String nameEng, String labelKr, Long fallbackId) {
+    private FurnitureTypeFilterResponse findFurniture(List<FurnitureCacheView> furnitures, String nameEng, String labelKr, Long fallbackId) {
         return furnitures.stream()
-                .filter(f -> f.getFurnitureNameEng() != null && f.getFurnitureNameEng().trim().equalsIgnoreCase(nameEng))
+                .filter(f -> f.furnitureNameEng() != null && f.furnitureNameEng().trim().equalsIgnoreCase(nameEng))
                 .findFirst()
-                .map(f -> new FurnitureTypeFilterResponse(f.getId() + FURNITURE_ID_OFFSET, labelKr, f.getFurnitureNameEng().trim()))
+                .map(f -> new FurnitureTypeFilterResponse(f.id() + FURNITURE_ID_OFFSET, labelKr, f.furnitureNameEng().trim()))
                 .orElse(new FurnitureTypeFilterResponse(fallbackId, labelKr, nameEng));
     }
 
