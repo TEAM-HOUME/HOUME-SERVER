@@ -18,7 +18,7 @@ public class PaymentBtnClickLogController {
     private final PaymentBtnClickLogService paymentBtnClickLogService;
 
     @PostMapping(value = "/credits/logs")
-    @Operation(summary = "충전하기 모달창에서 버튼 클릭시 로그 저장 api")
+    @Operation(summary = "[DEPRECATED_CANDIDATE] 충전하기 모달창에서 버튼 클릭시 로그 저장 api")
     public ResponseEntity<ApiResponse<Void>> createPaymentBtnClickLog(@AuthenticationPrincipal CustomUserDetails userDetails) {
         paymentBtnClickLogService.createPaymentBtnClickLog(userDetails.getUser());
         return ResponseEntity.ok(ApiResponse.ok(null));

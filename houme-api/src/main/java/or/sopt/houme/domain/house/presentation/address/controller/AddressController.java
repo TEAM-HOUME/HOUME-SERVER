@@ -24,7 +24,7 @@ public class AddressController {
 
     private final AddressService addressService;
 
-    @Operation(summary = "사용자 주소 입력받기 API",
+    @Operation(summary = "[DEPRECATED_CANDIDATE] 사용자 주소 입력받기 API",
             description = "사용자가 유사한 도면 템플릿이 없는 경우, 주소를 등록 할 수 있습니다.")
     @PostMapping("/addresses")
     public ResponseEntity<ApiResponse<Void>> createAddress(@AuthenticationPrincipal CustomUserDetails userDetails,

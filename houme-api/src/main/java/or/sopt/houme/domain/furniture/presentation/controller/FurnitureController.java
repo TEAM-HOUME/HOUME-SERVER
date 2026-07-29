@@ -28,7 +28,7 @@ public class FurnitureController {
     private final FurnitureFacade furnitureFacade;
 
     // 주요활동, 가구들 제공 API
-    @Operation(summary = "주요 활동, 가구 리스트 제공 API",
+    @Operation(summary = "[DEPRECATED_CANDIDATE] 주요 활동, 가구 리스트 제공 API",
             description = "- 주요 활동 (휴식형, 재택근무형, 영화 감상형, 홈카페형)\n" +
                     "- 가구\n" +
                     "    - 침대 (싱글, 슈퍼싱글, 더블, 퀸 이상)\n" +
@@ -68,7 +68,7 @@ public class FurnitureController {
         ));
     }
 
-    @Operation(summary = "생성된 이미지에서 가구 카테고리 조회 API",
+    @Operation(summary = "[DEPRECATED_CANDIDATE] 생성된 이미지에서 가구 카테고리 조회 API",
             description = "생성된 이미지에서 소파, 침대, 스탠드, 러그와 같은 카테고리를 제공합니다.\n" +
                     "각 가구 카테고리의 순서는 스타일에 따라 다릅니다.\n" +
                     "- 가구 영단어\n" +
@@ -112,7 +112,7 @@ public class FurnitureController {
         return ResponseEntity.ok(ApiResponse.ok(response));
     }
 
-    @Operation(summary = "[기획 의사결정용 API] 가구 카테고리를 클릭하여 가구 제품 조회 API",
+    @Operation(summary = "[DEPRECATED_CANDIDATE] [기획 의사결정용 API] 가구 카테고리를 클릭하여 가구 제품 조회 API",
             description = "- tagId와 furnitureId로 baseImage가 선택됩니다.\n" +
                     "  - 각 id에 대한 값은 노션으로 전달하겠습니다.\n" +
                     "- searchKeyword로 검색어를 커스텀할 수 있습니다.\n" +
@@ -137,7 +137,7 @@ public class FurnitureController {
         return ResponseEntity.ok(ApiResponse.ok(response));
     }
 
-    @Operation(summary = "[기획 의사결정용 API V2] 가구 카테고리를 클릭하여 가구 제품 조회 API",
+    @Operation(summary = "[DEPRECATED_CANDIDATE] [기획 의사결정용 API V2] 가구 카테고리를 클릭하여 가구 제품 조회 API",
             description = "- tagId와 furnitureId로 baseImage가 선택됩니다.\n" +
                     "- searchKeyword로 검색어를 커스텀할 수 있습니다.\n" +
                     "- pHash(0~100)사이값을 입력하여, pHash와 colorHash의 비율을 커스텀할 수 있습니다.\n" +
