@@ -3,6 +3,7 @@ package or.sopt.houme.domain.furniture.presentation.controller;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import or.sopt.houme.global.legacy.LegacyApi;
 import or.sopt.houme.domain.furniture.presentation.dto.response.JjymListResponse;
 import or.sopt.houme.domain.furniture.presentation.dto.response.JjymToggleResponse;
 import or.sopt.houme.domain.furniture.presentation.dto.response.JjymV2ListResponse;
@@ -25,6 +26,7 @@ public class JjymController {
 
 
     @Operation(summary = "[DEPRECATED_CANDIDATE] 추천 가구 찜 토글 API", description = "이미 찜이면 해제, 아니면 찜으로 저장합니다")
+    @LegacyApi(documentedPath = "/api/v1/recommend-furnitures/{recommendFurnitureId}/jjym", reason = "v2 원천 상품 찜 API로 대체된 v1 API")
     @PostMapping("/api/v1/recommend-furnitures/{recommendFurnitureId}/jjym")
     public ResponseEntity<ApiResponse<JjymToggleResponse>> toggleJjym(
             @AuthenticationPrincipal CustomUserDetails userDetails,
@@ -37,6 +39,7 @@ public class JjymController {
 
     @Operation(summary = "[DEPRECATED_CANDIDATE] 내가 찜한 가구 목록 조회 API",
             description = "찜한 가구의 이미지, 이름, 가구 식별자를 반환합니다.")
+    @LegacyApi(documentedPath = "/api/v1/jjyms", reason = "v2 찜 목록 API로 대체된 v1 API")
     @GetMapping("/api/v1/jjyms")
     public ResponseEntity<ApiResponse<JjymListResponse>> getMyJjyms(
             @AuthenticationPrincipal CustomUserDetails userDetails

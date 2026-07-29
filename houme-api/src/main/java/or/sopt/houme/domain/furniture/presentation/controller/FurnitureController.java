@@ -2,6 +2,7 @@ package or.sopt.houme.domain.furniture.presentation.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
+import or.sopt.houme.global.legacy.LegacyApi;
 import or.sopt.houme.domain.furniture.presentation.dto.response.ActivityFurnitureMappingsResponse;
 import or.sopt.houme.domain.furniture.presentation.dto.response.ActivityWithFurnitureResponse;
 import or.sopt.houme.domain.furniture.presentation.dto.response.DashboardCategoriesResponse;
@@ -39,6 +40,7 @@ public class FurnitureController {
                     "    - 식탁, 의자\n" +
                     "    - 옷장\n" +
                     "    - 소파")
+    @LegacyApi(documentedPath = "/api/v1/dashboard-info", reason = "v2 dashboard activities/categories API로 대체된 v1 API")
     @GetMapping("/v1/dashboard-info")
     public ResponseEntity<ApiResponse<FurnitureAndActivityResponse>> getFurnitureAndActivity() {
 
@@ -84,6 +86,7 @@ public class FurnitureController {
                     "- 책 선반 : WHITE_BOOKSHELF\n" +
                     "- 장식장 : DISPLAY_CABINET\n" +
                     "- 2인용 소파 : TWO_SEATER_SOFA")
+    @LegacyApi(documentedPath = "/api/v1/generated-images/{imageId}/curations/categories", reason = "v2 생성 이미지 카테고리 API로 대체된 v1 API")
     @GetMapping("/v1/generated-images/{imageId}/curations/categories")
     public ResponseEntity<ApiResponse<FurnitureCategoriesResponse>> getFurnitureCategories(@AuthenticationPrincipal CustomUserDetails userDetails, @PathVariable Long imageId, @RequestParam List<String> detectedObjects) {
         FurnitureCategoriesResponse response = furnitureService.getFurnitureCategoriesByStyle(userDetails.getUser(), imageId, detectedObjects);
@@ -118,6 +121,7 @@ public class FurnitureController {
                     "- searchKeyword로 검색어를 커스텀할 수 있습니다.\n" +
                     "- pHash(0~100)사이값을 입력하여, pHash와 colorHash의 비율을 커스텀할 수 있습니다.\n" +
                     "  - colorHash는 100-pHash로 산정됩니다.")
+    @LegacyApi(documentedPath = "/api/v1/generated-images/{tagId}/curations/products/{furnitureId}/for-plan", reason = "기획/수동 호출도 종료된 의사결정용 API")
     @GetMapping("/v1/generated-images/{tagId}/curations/products/{furnitureId}/for-plan")
     public ResponseEntity<ApiResponse<FurnitureProductsInfoResponseForPlan>> getFurnitureProductInfoFromNaverApiForPlan(
             @AuthenticationPrincipal CustomUserDetails userDetails,
@@ -142,6 +146,7 @@ public class FurnitureController {
                     "- searchKeyword로 검색어를 커스텀할 수 있습니다.\n" +
                     "- pHash(0~100)사이값을 입력하여, pHash와 colorHash의 비율을 커스텀할 수 있습니다.\n" +
                     "- V2: mallName/네이버페이 필터 파라미터 적용 (allowedMalls는 서버 프로퍼티 사용, payFilter는 빈 값)" )
+    @LegacyApi(documentedPath = "/api/v1/generated-images/{tagId}/curations/products/{furnitureId}/for-plan/detail", reason = "기획/수동 호출도 종료된 의사결정용 API")
     @GetMapping("/v1/generated-images/{tagId}/curations/products/{furnitureId}/for-plan/detail")
     public ResponseEntity<ApiResponse<FurnitureProductsInfoResponseForPlan>> getFurnitureProductInfoFromNaverApiForPlanV2(
             @AuthenticationPrincipal CustomUserDetails userDetails,

@@ -3,6 +3,7 @@ package or.sopt.houme.domain.house.presentation.floorPlan.controller;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import or.sopt.houme.global.legacy.LegacyApi;
 import or.sopt.houme.domain.house.presentation.floorPlan.dto.response.FloorPlanListResponse;
 import or.sopt.houme.domain.house.presentation.floorPlan.dto.response.ExploreHouseTemplateDetailResponse;
 import or.sopt.houme.domain.house.presentation.floorPlan.dto.response.ExploreHouseTemplateListResponse;
@@ -33,6 +34,7 @@ public class FloorPlanController {
     // 구조에 따른 도면 템플릿 제공
     @Operation(summary = "[DEPRECATED_CANDIDATE] 도면 템플릿 제공 API",
             description = "사용자가 가장 최근에 입력한 집 구조에 따른 도면 템플릿을 제공합니다.")
+    @LegacyApi(documentedPath = "/api/v1/house-templates", reason = "v2 도면 템플릿 API로 대체된 v1 API")
     @GetMapping("/api/v1/house-templates")
     public ResponseEntity<ApiResponse<FloorPlanListResponse>> getHouseTemplates(@AuthenticationPrincipal CustomUserDetails userDetails) {
 

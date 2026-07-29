@@ -3,6 +3,7 @@ package or.sopt.houme.domain.furniture.presentation.controller;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import or.sopt.houme.global.legacy.LegacyApi;
 import or.sopt.houme.domain.furniture.service.FurnitureRecommendBtnClickLogService;
 import or.sopt.houme.domain.user.presentation.controller.dto.CustomUserDetails;
 import or.sopt.houme.global.api.ApiResponse;
@@ -21,6 +22,7 @@ public class FurnitureRecommendBtnClickLogController {
 
     @PostMapping(value = "/furnitures/logs")
     @Operation(summary = "[DEPRECATED_CANDIDATE] 가구 추천받기 버튼 클릭시 로그 저장 api")
+    @LegacyApi(documentedPath = "/api/v1/furnitures/logs", reason = "프론트 consumer 미확인 및 운영 로그 호출 근거 없음")
     public ResponseEntity<ApiResponse<Void>> createFurnitureRecommendBtnClickLog(@AuthenticationPrincipal CustomUserDetails userDetails) {
         furnitureRecommendBtnClickLogService.createFurnitureRecommendBtnClickLog(userDetails.getUser());
         return ResponseEntity.ok(ApiResponse.ok(null));
