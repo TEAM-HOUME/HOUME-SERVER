@@ -30,7 +30,11 @@ public class DiscordWebhookService {
             .build();
 
     public void sendMessage(String content) {
-        if (webhookUrl == null || webhookUrl.isBlank()) {
+        sendMessageTo(webhookUrl, content);
+    }
+
+    public void sendMessageTo(String targetWebhookUrl, String content) {
+        if (targetWebhookUrl == null || targetWebhookUrl.isBlank()) {
             log.debug("Discord webhook URL is not configured. Skip sending.");
             return;
         }
@@ -41,7 +45,7 @@ public class DiscordWebhookService {
         try {
             String payload = objectMapper.writeValueAsString(new DiscordWebhookPayload(content));
             HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create(webhookUrl))
+                    .uri(URI.create(targetWebhookUrl))
                     .timeout(REQUEST_TIMEOUT)
                     .header("Content-Type", "application/json")
                     .POST(HttpRequest.BodyPublishers.ofString(payload, StandardCharsets.UTF_8))

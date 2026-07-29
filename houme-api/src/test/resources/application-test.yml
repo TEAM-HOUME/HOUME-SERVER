@@ -79,6 +79,11 @@ soozip:
 
 discord:
   webhook-url: http://localhost:65535/webhook
+  legacy-api-webhook-url: http://localhost:65535/legacy-webhook
+
+legacy-api-alert:
+  enabled: false
+  cooldown-minutes: 5
 
 cloud:
   aws:
