@@ -30,6 +30,10 @@ dependencies {
     annotationProcessor "jakarta.persistence:jakarta.persistence-api"
 }
 
+tasks.named('test') {
+    useJUnitPlatform()
+}
+
 def querydslDir = 'src/main/generated'
 
 tasks.withType(JavaCompile) {
