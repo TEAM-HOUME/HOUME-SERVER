@@ -44,6 +44,7 @@ public class LegacyApiAlertNotifier {
 
         return """
                 ⚠️ **[%s] Legacy API Called**
+                > **notice**: 삭제 후보 API의 호출이 발생했습니다. 호출 주체 확인이 필요합니다.
                 > **method**: `%s`
                 > **documentedPath**: `%s`
                 > **requestUri**: `%s`
