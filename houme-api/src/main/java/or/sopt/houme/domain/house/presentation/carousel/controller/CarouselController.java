@@ -4,7 +4,6 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
-import or.sopt.houme.global.legacy.LegacyApi;
 import or.sopt.houme.domain.house.presentation.carousel.controller.dto.GetCarouselListResponseDTO;
 import or.sopt.houme.domain.house.service.carousel.CarouselLikeLogService;
 import or.sopt.houme.domain.house.service.carousel.facade.CarouselOptimisticLockFacade;
@@ -33,7 +32,6 @@ public class CarouselController {
     @Operation(summary = "[DEPRECATED_CANDIDATE] 캐러셀 조회 API",
     description = "한 번 조회 시, 다섯개의 캐러셀을 반환합니다. <br><br>" +
             "**page는 0부터** 넣어주세요 (null일시 0이 기본)")
-    @LegacyApi(documentedPath = "/api/v1/carousels", reason = "v2 캐러셀 조회 API로 대체된 v1 API")
     public ResponseEntity<ApiResponse<GetCarouselListResponseDTO>> getCarousels(
             @RequestParam(value = "page", required = false, defaultValue = "0")
             @Min(value = 0, message = "page는 0 이상이어야 합니다.")
@@ -57,7 +55,6 @@ public class CarouselController {
 
     @PostMapping("/api/v1/carousels/like")
     @Operation(summary = "[DEPRECATED_CANDIDATE] 캐러셀 좋아요 API")
-    @LegacyApi(documentedPath = "/api/v1/carousels/like", reason = "v2 캐러셀 좋아요 API로 대체된 v1 API")
     public ResponseEntity<ApiResponse<String>> likeCarousel(
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @RequestParam Long carouselId) {
@@ -74,7 +71,6 @@ public class CarouselController {
 
     @PostMapping("/api/v1/carousels/hate")
     @Operation(summary = "[DEPRECATED_CANDIDATE] 캐러셀 싫어요 API")
-    @LegacyApi(documentedPath = "/api/v1/carousels/hate", reason = "v2 캐러셀 싫어요 API로 대체된 v1 API")
     public ResponseEntity<ApiResponse<String>> hateCarousel(
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @RequestParam Long carouselId) {

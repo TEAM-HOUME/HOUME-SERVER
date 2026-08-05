@@ -4,7 +4,6 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import or.sopt.houme.global.legacy.LegacyApi;
 import or.sopt.houme.domain.house.presentation.address.dto.request.AddressRequest;
 import or.sopt.houme.domain.house.service.address.AddressService;
 import or.sopt.houme.domain.user.presentation.controller.dto.CustomUserDetails;
@@ -27,7 +26,6 @@ public class AddressController {
 
     @Operation(summary = "[DEPRECATED_CANDIDATE] 사용자 주소 입력받기 API",
             description = "사용자가 유사한 도면 템플릿이 없는 경우, 주소를 등록 할 수 있습니다.")
-    @LegacyApi(documentedPath = "/api/v1/addresses", reason = "이전 버전 주소 등록 기능으로 삭제 후보")
     @PostMapping("/addresses")
     public ResponseEntity<ApiResponse<Void>> createAddress(@AuthenticationPrincipal CustomUserDetails userDetails,
                                                            @RequestBody @Valid AddressRequest addressRequest) {

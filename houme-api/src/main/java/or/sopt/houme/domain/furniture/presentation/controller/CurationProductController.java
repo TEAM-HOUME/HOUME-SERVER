@@ -5,7 +5,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
-import or.sopt.houme.global.legacy.LegacyApi;
 import or.sopt.houme.domain.furniture.presentation.dto.response.CurationProductDetailResponse;
 import or.sopt.houme.domain.furniture.presentation.dto.response.CurationProductFilterResponse;
 import or.sopt.houme.domain.furniture.presentation.dto.response.CurationProductListResponse;
@@ -32,7 +31,6 @@ public class CurationProductController {
     @GetMapping
     @Operation(summary = "[DEPRECATED_CANDIDATE] 상품 리스트 조회 및 검색 API",
                description = "상품 탭 메인 API입니다. 필터링 조건들을 포함하며 무한 스크롤을 지원합니다.")
-    @LegacyApi(documentedPath = "/api/v1/curations/products", reason = "v2 큐레이션 상품 목록 API로 대체된 v1 API")
     public ResponseEntity<ApiResponse<CurationProductListResponse>> getProducts(
             @RequestParam(required = false) String keyword,
             @RequestParam(required = false) List<Long> types,

@@ -4,7 +4,6 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import or.sopt.houme.global.legacy.LegacyApi;
 import or.sopt.houme.domain.generateImage.presentation.dto.request.BannerGenerateImageRequest;
 import or.sopt.houme.domain.generateImage.presentation.dto.request.GenerateImageRequest;
 import or.sopt.houme.domain.generateImage.presentation.dto.request.GenerateImageV4Request;
@@ -37,7 +36,6 @@ public class GenerateImageController {
 
     @Operation(summary = "[DEPRECATED_CANDIDATE] 자바 스프링을 이용한 이미지 생성 API",
             description = "사용자가 요청한 내용을 기반으로 새로운 이미지를 생성합니다. 생성된 이미지는 저장되며, 별도의 조회 API를 통해 확인할 수 있습니다.")
-    @LegacyApi(documentedPath = "/api/v1/generated-images/generate", reason = "v4 및 특화 이미지 생성 API로 대체된 v1 API")
     @PostMapping("/v1/generated-images/generate")
     public ResponseEntity<ApiResponse<ImageInfoResponse>> generateImage(
             @AuthenticationPrincipal CustomUserDetails userDetails,
@@ -50,7 +48,6 @@ public class GenerateImageController {
 
     @Operation(summary = "[DEPRECATED_CANDIDATE] Gemini 이미지 생성 API",
             description = "사용자가 요청한 내용을 기반으로 새로운 이미지를 생성합니다. 생성된 이미지는 저장되며, 별도의 조회 API를 통해 확인할 수 있습니다.")
-    @LegacyApi(documentedPath = "/api/v1/generated-images/generate/gemini", reason = "v4 및 특화 이미지 생성 API로 대체된 v1 Gemini API")
     @PostMapping("/v1/generated-images/generate/gemini")
     public ResponseEntity<ApiResponse<ImageInfoResponse>> generateImageByGemini(
             @AuthenticationPrincipal CustomUserDetails userDetails,
@@ -64,7 +61,6 @@ public class GenerateImageController {
     @Operation(summary = "[DEPRECATED_CANDIDATE] LangChain를 이용한 이미지 생성 API",
             description = "사용자가 요청한 내용을 기반으로 새로운 이미지를 생성합니다. 생성된 이미지는 저장되며, 별도의 조회 API를 통해 확인할 수 있습니다. <br><br>" +
                     "FastAPI를 활용한 API 입니다")
-    @LegacyApi(documentedPath = "/api/v2/generated-images/generate", reason = "v4 및 특화 이미지 생성 API로 대체된 v2 API")
     @PostMapping("/v2/generated-images/generate")
     public ResponseEntity<ApiResponse<ImageInfoResponse>> generateImageByFastAPI(
             @AuthenticationPrincipal CustomUserDetails userDetails,
@@ -78,7 +74,6 @@ public class GenerateImageController {
     @Operation(summary = "[DEPRECATED_CANDIDATE] Gemini 이미지 생성 API (FastAPI 대체)",
             description = "사용자가 요청한 내용을 기반으로 새로운 이미지를 생성합니다. 생성된 이미지는 저장되며, 별도의 조회 API를 통해 확인할 수 있습니다. <br><br>" +
                     "Gemini 모델을 활용한 API 입니다")
-    @LegacyApi(documentedPath = "/api/v2/generated-images/generate/gemini", reason = "v4 및 특화 이미지 생성 API로 대체된 v2 Gemini API")
     @PostMapping("/v2/generated-images/generate/gemini")
     public ResponseEntity<ApiResponse<ImageInfoResponse>> generateImageByFastApiGemini(
             @AuthenticationPrincipal CustomUserDetails userDetails,
@@ -92,7 +87,6 @@ public class GenerateImageController {
     @Operation(summary = "[DEPRECATED_CANDIDATE] 비동기를 이용한 이미지 2장 생성 API",
             description = "사용자가 요청한 내용을 기반으로 높은 스타일 2개로 새로운 이미지 2장을 생성합니다. 생성된 이미지는 저장되며, 별도의 조회 API를 통해 확인할 수 있습니다. <br><br>" +
                     "FastAPI를 활용한 API 입니다")
-    @LegacyApi(documentedPath = "/api/v3/generated-images/generate", reason = "v4 및 특화 이미지 생성 API로 대체된 v3 API")
     @PostMapping("/v3/generated-images/generate")
     public ResponseEntity<ApiResponse<ImageInfoListResponse>> generate2ImageByFastAPI(
             @AuthenticationPrincipal CustomUserDetails userDetails,
@@ -106,7 +100,6 @@ public class GenerateImageController {
     @Operation(summary = "[DEPRECATED_CANDIDATE] Gemini 비동기 이미지 2장 생성 API",
             description = "사용자가 요청한 내용을 기반으로 높은 스타일 2개로 새로운 이미지 2장을 생성합니다. 생성된 이미지는 저장되며, 별도의 조회 API를 통해 확인할 수 있습니다. <br><br>" +
                     "Gemini 모델을 활용한 API 입니다")
-    @LegacyApi(documentedPath = "/api/v3/generated-images/generate/gemini", reason = "v4 및 특화 이미지 생성 API로 대체된 v3 Gemini API")
     @PostMapping("/v3/generated-images/generate/gemini")
     public ResponseEntity<ApiResponse<ImageInfoListResponse>> generate2ImageByFastApiGemini(
             @AuthenticationPrincipal CustomUserDetails userDetails,

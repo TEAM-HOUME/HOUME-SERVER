@@ -5,7 +5,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import or.sopt.houme.global.legacy.LegacyApi;
 import or.sopt.houme.domain.user.presentation.controller.dto.*;
 import or.sopt.houme.domain.user.model.entity.Gender;
 import or.sopt.houme.domain.user.service.UserDeletionService;
@@ -32,7 +31,6 @@ public class UserController {
 
     @GetMapping(value = "/mypage/user")  // 유저의 이름, 사용가능한 크레딧 개수 조회
     @Operation(summary = "[DEPRECATED_CANDIDATE] 마이페이지 기본 정보 제공 API")
-    @LegacyApi(documentedPath = "/api/v1/mypage/user", reason = "v2 마이페이지 사용자 정보 API로 대체된 v1 API")
     public ResponseEntity<ApiResponse<MyPageInfoResponse>> getMyPageInfo(@AuthenticationPrincipal CustomUserDetails userDetails) {
         MyPageInfoResponse myPageInfoResponse = userService.getMyPageInfo(userDetails.getUser());
 
@@ -41,7 +39,6 @@ public class UserController {
 
     @GetMapping(value = "/mypage/images")
     @Operation(summary = "[DEPRECATED_CANDIDATE] 마이페이지 이미지 생성 이력 제공 API")
-    @LegacyApi(documentedPath = "/api/v1/mypage/images", reason = "v2 마이페이지 이미지 목록 API로 대체된 v1 API")
     public ResponseEntity<ApiResponse<UserImageHistoryListResponse>> getUserImageHistoryList(@AuthenticationPrincipal CustomUserDetails userDetails) {
         UserImageHistoryListResponse userImageHistoryListResponse = userService.getUserImageHistoryList(userDetails.getUser());
 
@@ -50,7 +47,6 @@ public class UserController {
 
     @GetMapping(value = "/mypage/images/{houseId}")
     @Operation(summary = "[DEPRECATED_CANDIDATE] 마이페이지에서 이미지 생성 이력 클릭시 결과 페이지 제공 API")
-    @LegacyApi(documentedPath = "/api/v1/mypage/images/{houseId}", reason = "프론트 consumer 미확인 및 운영 로그 호출 근거 없음")
     public ResponseEntity<ApiResponse<ImageHistoriesResultPageResponse>> getImageHistoryResultPage(@AuthenticationPrincipal CustomUserDetails userDetails, @PathVariable Long houseId) {
         ImageHistoriesResultPageResponse imageHistoryResultPageResponse = userService.getImageHistoryResultPage(userDetails.getUser(), houseId);
 
@@ -59,7 +55,6 @@ public class UserController {
 
     @PatchMapping(value = "/sign-up")
     @Operation(summary = "[DEPRECATED_CANDIDATE] 자체 회원가입 API")
-    @LegacyApi(documentedPath = "/api/v1/sign-up", reason = "v2 회원가입 API로 대체된 v1 API")
     public ResponseEntity<ApiResponse<String>> updateUser(@AuthenticationPrincipal CustomUserDetails userDetails, @RequestBody @Valid CreateUserRequest createUserRequest) {
         Gender gender;
         LocalDate birthday;
@@ -84,7 +79,6 @@ public class UserController {
     @Operation(summary = "[DEPRECATED_CANDIDATE] 소셜 자체 회원가입 API",
             description = "카카오 소셜로그인 완료 후 발급된 signupToken(임시토큰)과 함께 호출하면 회원을 생성합니다. <br><br>" +
                     "성공 시 access-token 헤더와 refresh-token 쿠키를 함께 반환합니다.")
-    @LegacyApi(documentedPath = "/api/v1/sign-up", reason = "v2 회원가입 API로 대체된 v1 API")
     public ResponseEntity<ApiResponse<String>> signUp(@RequestBody @Valid SocialSignUpRequest signUpRequest,
                                                       HttpServletResponse response) {
         Gender gender;

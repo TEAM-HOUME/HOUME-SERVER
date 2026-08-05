@@ -3,7 +3,6 @@ package or.sopt.houme.domain.generateImage.presentation.openai.controller;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import or.sopt.houme.global.legacy.LegacyApi;
 import or.sopt.houme.domain.generateImage.infrastructure.openai.service.FastApiService;
 import or.sopt.houme.domain.generateImage.service.prompt.dto.PromptRequestDTO;
 import or.sopt.houme.global.api.ApiResponse;
@@ -23,7 +22,6 @@ public class FastApiController {
 
     @Operation(summary = "[DEPRECATED_CANDIDATE] LangChain 을 활용한 이미지 저장 API",
             description = "실제 성능 테스트를 위한 메서드입니다. **호출 시, 서버 전재연에게 반드시 문의해주세요**")
-    @LegacyApi(documentedPath = "/api/v2/image/generate", reason = "미사용 FastAPI 이미지 생성 테스트 API")
     @PostMapping("/generate")
     public ResponseEntity<ApiResponse<String>> generate(@RequestBody PromptRequestDTO promptRequestDTO) {
 
