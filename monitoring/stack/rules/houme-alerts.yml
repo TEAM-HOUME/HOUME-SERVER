@@ -1,0 +1,90 @@
+# HOUME 인프라 운영 알림 룰 — 발화 시 Alertmanager → Discord
+groups:
+  - name: houme-operational-alerts
+    rules:
+      # 앱 다운: job 의 모든 인스턴스가 수집 불가일 때만 (blue/green standby 오탐 방지)
+      - alert: HoumeAppDown
+        expr: sum by (job) (up{job=~"houme-(prod|dev)"}) < 1
+        for: 2m
+        labels:
+          severity: critical
+          service: houme-api
+        annotations:
+          summary: "HOUME {{ $labels.job }} 전체 다운"
+          description: "{{ $labels.job }}의 모든 인스턴스가 2분 이상 /actuator/prometheus 수집 불가 (서버 다운 의심)."
+          action: "서버·컨테이너 상태와 최근 배포를 확인하고, 필요 시 재기동하세요."
+
+      # JVM Old Gen 포화: GC 가 끝나도 내려가지 않는 메모리 기준 (#619)
+      # 이전 룰은 Eden 포함 순간값(used/max)이라 G1 의 정상 톱니파(Eden 을 다 채우고 한 번에
+      # 비우는 동작)를 장애로 오인해 48시간 플래핑했다. 누수·포화는 Old Gen 으로 판단한다.
+      - alert: HoumeHighJvmOldGen
+        expr: |
+          jvm_memory_used_bytes{job=~"houme-(prod|dev)", id="G1 Old Gen"}
+          /
+          jvm_memory_max_bytes{job=~"houme-(prod|dev)", id="G1 Old Gen"}
+          > 0.8
+        for: 5m
+        labels:
+          severity: warning
+          service: houme-api
+        annotations:
+          summary: "JVM Old Gen 사용률 높음 ({{ $labels.job }} {{ $labels.instance }})"
+          description: "GC 후에도 잔존하는 Old Gen 사용률이 5분 이상 80%를 초과했습니다 (누수 또는 힙 부족 의심)."
+          action: "Old Gen 추이가 우상향이면 누수(힙덤프 분석), 평평하게 높으면 힙 부족(캐시/트래픽 점검)입니다."
+
+      # GC 부하: 애플리케이션 스레드가 실제로 GC 에 뺏기는 시간 비율 (#619)
+      # Old Gen 이 낮아도 할당 폭주로 GC 가 과열될 수 있어 별도 감시
+      - alert: HoumeHighGcLoad
+        expr: |
+          sum by (job, instance) (rate(jvm_gc_pause_seconds_sum{job=~"houme-(prod|dev)"}[5m])) > 0.1
+        for: 5m
+        labels:
+          severity: warning
+          service: houme-api
+        annotations:
+          summary: "JVM GC 부하 높음 ({{ $labels.job }} {{ $labels.instance }})"
+          description: "GC pause 가 5분 이상 실행 시간의 10%를 초과했습니다 (할당 폭주 또는 힙 부족)."
+          action: "최근 배포·트래픽 변화를 확인하고, 할당이 많은 엔드포인트(대량 조회/직렬화)를 점검하세요."
+
+      # 호스트 CPU (node-exporter 필요). instance 별로 평가 — prod/dev 호스트가 섞이지 않도록
+      - alert: HighHostCpuUsage
+        expr: 1 - avg by (instance) (rate(node_cpu_seconds_total{mode="idle"}[5m])) > 0.8
+        for: 5m
+        labels:
+          severity: warning
+          service: host
+        annotations:
+          summary: "EC2 CPU 사용률 높음 ({{ $labels.instance }})"
+          description: "호스트({{ $labels.instance }}) CPU 사용률이 5분 이상 80%를 초과했습니다."
+          action: "top 으로 상위 프로세스를 확인하고 비정상 부하/트래픽 급증을 점검하세요."
+
+      # 호스트 메모리 (node-exporter 필요) (#619)
+      # prod EC2(2GB)에 앱+모니터링 스택이 함께 떠 있어 available 이 만성적으로 낮다(~10%).
+      # 10% 기준이면 상시 발화하므로, 실제 위험 구간(5% 미만)만 알린다. 근본 해법은 스택 분리.
+      - alert: HighHostMemoryUsage
+        expr: node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes < 0.05
+        for: 10m
+        labels:
+          severity: warning
+          service: host
+        annotations:
+          summary: "EC2 가용 메모리 부족 ({{ $labels.instance }})"
+          description: "호스트({{ $labels.instance }}) 가용 메모리가 10분 이상 5% 미만입니다 (OOM killer/스왑 스래싱 위험)."
+          action: "docker stats 로 컨테이너별 사용량을 확인하고, 불필요 컨테이너 정리 또는 스택 분리를 검토하세요."
+
+      # 호스트 루트 디스크 (node-exporter 필요). node_filesystem_* 는 instance 라벨을 포함 — 호스트별로 평가됨
+      - alert: HighHostDiskUsage
+        expr: |
+          1 - (
+            node_filesystem_avail_bytes{mountpoint="/",fstype!~"tmpfs|overlay"}
+            /
+            node_filesystem_size_bytes{mountpoint="/",fstype!~"tmpfs|overlay"}
+          ) > 0.85
+        for: 5m
+        labels:
+          severity: warning
+          service: host
+        annotations:
+          summary: "EC2 Disk 사용률 높음 ({{ $labels.instance }})"
+          description: "호스트({{ $labels.instance }}) 루트 디스크 사용률이 5분 이상 85%를 초과했습니다."
+          action: "Docker image/container log/volume 사용량과 애플리케이션 로그를 정리하세요."

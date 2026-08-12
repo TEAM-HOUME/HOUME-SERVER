@@ -62,3 +62,6 @@ CLAUDE.md
 
 ### 로컬 로그 파일 무시 ###
 /logs/
+
+# QueryDSL generated (multi-module)
+**/src/main/generated/

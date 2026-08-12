@@ -4,7 +4,7 @@ on:
     types: [synchronize, closed, opened]
     branches: [prod]
     paths:
-      - 'src/**'
+      - 'houme-*/**'
       - 'build.gradle'
 
 jobs:
@@ -32,27 +32,27 @@ jobs:
 
       - name: Remove application-local.yml
         run: |
-          rm -f src/main/resources/application-local.yml
+          rm -f houme-api/src/main/resources/application-local.yml
 
       - name: Add application-blue.yml
         run: |
-          mkdir -p ./src/main/resources
-          echo "${{ secrets.APPLICATION_BLUE }}" > ./src/main/resources/application-blue.yml
+          mkdir -p houme-api/src/main/resources
+          echo "${{ secrets.APPLICATION_BLUE }}" > houme-api/src/main/resources/application-blue.yml
 
       - name: Add application-green.yml
         run: |
-          mkdir -p ./src/main/resources
-          echo "${{ secrets.APPLICATION_GREEN }}" > ./src/main/resources/application-green.yml
+          mkdir -p houme-api/src/main/resources
+          echo "${{ secrets.APPLICATION_GREEN }}" > houme-api/src/main/resources/application-green.yml
 
       - name: Add application.yml
         run: |
-          mkdir -p ./src/main/resources
-          echo "${{ secrets.APPLICATION_DEFAULT }}" > ./src/main/resources/application.yml
+          mkdir -p houme-api/src/main/resources
+          echo "${{ secrets.APPLICATION_DEFAULT }}" > houme-api/src/main/resources/application.yml
 
       - name: Add application-prod.yml
         run: |
-          mkdir -p ./src/main/resources
-          echo "${{ secrets.APPLICATION_PROD }}" > ./src/main/resources/application-prod.yml
+          mkdir -p houme-api/src/main/resources
+          echo "${{ secrets.APPLICATION_PROD }}" > houme-api/src/main/resources/application-prod.yml
       - name: Jib로 이미지 빌드 및 ECR 업로드
         run: ./gradlew jib -PjibToImage=${{ secrets.ECR_REGISTRY }} -PjibTag=runid-${{ github.run_id }}
 

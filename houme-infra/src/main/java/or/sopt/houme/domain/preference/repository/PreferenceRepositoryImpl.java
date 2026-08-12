@@ -1,0 +1,37 @@
+package or.sopt.houme.domain.preference.repository;
+
+import com.querydsl.jpa.impl.JPAQueryFactory;
+import lombok.RequiredArgsConstructor;
+import or.sopt.houme.domain.generateImage.model.entity.QGenerateImage;
+import or.sopt.houme.house.infra.persistence.QHouseJpaEntity;
+import or.sopt.houme.domain.preference.model.entity.Preference;
+import or.sopt.houme.domain.preference.model.entity.QGenerateImagePreference;
+import or.sopt.houme.domain.preference.model.entity.QPreference;
+import org.springframework.stereotype.Repository;
+
+import java.util.Optional;
+
+@Repository
+@RequiredArgsConstructor
+public class PreferenceRepositoryImpl implements PreferenceRepositoryCustom {
+    private final JPAQueryFactory queryFactory;
+
+    @Override
+    public Optional<Preference> findPreferenceByUserIdAndImageId(Long userId, Long imageId) {
+        QPreference preference = QPreference.preference;
+        QGenerateImagePreference generateImagePreference = QGenerateImagePreference.generateImagePreference;
+        QGenerateImage generateImage = QGenerateImage.generateImage;
+        QHouseJpaEntity house = QHouseJpaEntity.houseJpaEntity;
+
+        return Optional.ofNullable(queryFactory
+                .selectFrom(preference) // Preference 엔티티 선택
+                .join(generateImagePreference).on(generateImagePreference.preference.eq(preference)).fetchJoin()
+                .join(generateImage).on(generateImagePreference.generateImage.eq(generateImage)).fetchJoin()
+                .join(house).on(generateImage.house.eq(house)).fetchJoin()
+                .where(
+                        house.userId.eq(userId),
+                        generateImage.id.eq(imageId)
+                )
+                .fetchOne());
+    }
+}

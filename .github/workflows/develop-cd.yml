@@ -31,12 +31,12 @@ jobs:
 
       - name: Remove application-local.yml
         run: |
-          rm -f src/main/resources/application-local.yml
+          rm -f houme-api/src/main/resources/application-local.yml
 
       - name: Add application-dev.yml
         run: |
-          mkdir -p ./src/main/resources
-          echo "${{ secrets.APPLICATION_DEV }}" > ./src/main/resources/application-dev.yml
+          mkdir -p houme-api/src/main/resources
+          echo "${{ secrets.APPLICATION_DEV }}" > houme-api/src/main/resources/application-dev.yml
 
       - name: Build with Gradle
         run: |
