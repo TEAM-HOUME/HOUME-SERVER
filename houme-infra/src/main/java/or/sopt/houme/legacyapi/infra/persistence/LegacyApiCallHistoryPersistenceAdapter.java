@@ -17,6 +17,7 @@ public class LegacyApiCallHistoryPersistenceAdapter implements LegacyApiCallHist
         legacyApiCallHistoryJpaRepository.save(LegacyApiCallHistoryJpaEntity.builder()
                 .method(legacyApiCall.method())
                 .requestUri(legacyApiCall.requestUri())
+                .apiPath(legacyApiCall.apiPath())
                 .userId(legacyApiCall.userId())
                 .traceId(legacyApiCall.traceId())
                 .build());

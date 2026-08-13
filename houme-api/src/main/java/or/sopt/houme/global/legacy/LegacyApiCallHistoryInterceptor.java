@@ -13,6 +13,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
+import org.springframework.web.servlet.HandlerMapping;
 import org.springframework.web.method.HandlerMethod;
 import org.slf4j.MDC;
 
@@ -46,7 +47,10 @@ public class LegacyApiCallHistoryInterceptor implements HandlerInterceptor {
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
         if (handler instanceof HandlerMethod handlerMethod && isDeprecatedCandidate(handlerMethod)) {
-            request.setAttribute(CANDIDATE_ATTRIBUTE, Boolean.TRUE);
+            Object apiPath = request.getAttribute(HandlerMapping.BEST_MATCHING_PATTERN_ATTRIBUTE);
+            if (apiPath != null) {
+                request.setAttribute(CANDIDATE_ATTRIBUTE, apiPath.toString());
+            }
         }
         return true;
     }
@@ -54,17 +58,18 @@ public class LegacyApiCallHistoryInterceptor implements HandlerInterceptor {
     @Override
     public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) {
         Object candidate = request.getAttribute(CANDIDATE_ATTRIBUTE);
-        if (candidate != Boolean.TRUE) {
+        if (!(candidate instanceof String apiPath)) {
             return;
         }
 
         LegacyApiCall legacyApiCall = new LegacyApiCall(
                 request.getMethod(),
                 request.getRequestURI(),
+                apiPath,
                 currentUserId(),
                 MDC.get(TraceIdFilter.TRACE_ID_MDC_KEY)
         );
-        String callKey = legacyApiCall.method() + " " + legacyApiCall.requestUri();
+        String callKey = legacyApiCall.method() + " " + legacyApiCall.apiPath();
         Instant attemptedAt = Instant.now();
         if (!reserveRecord(callKey, attemptedAt)) {
             return;
@@ -74,8 +79,8 @@ public class LegacyApiCallHistoryInterceptor implements HandlerInterceptor {
             legacyApiCallHistoryExecutor.execute(() -> recordSafely(callKey, attemptedAt, legacyApiCall));
         } catch (RejectedExecutionException e) {
             lastRecordAttemptAt.remove(callKey, attemptedAt);
-            log.warn("레거시 API 호출 이력 저장 작업이 포화로 드롭되었습니다. method={}, requestUri={}",
-                    legacyApiCall.method(), legacyApiCall.requestUri());
+            log.warn("레거시 API 호출 이력 저장 작업이 포화로 드롭되었습니다. method={}, apiPath={}",
+                    legacyApiCall.method(), legacyApiCall.apiPath());
         }
     }
 
@@ -100,8 +105,8 @@ public class LegacyApiCallHistoryInterceptor implements HandlerInterceptor {
             legacyApiCallHistoryService.record(legacyApiCall);
         } catch (RuntimeException e) {
             lastRecordAttemptAt.remove(callKey, attemptedAt);
-            log.error("레거시 API 호출 이력 저장에 실패했습니다. method={}, requestUri={}",
-                    legacyApiCall.method(), legacyApiCall.requestUri(), e);
+            log.error("레거시 API 호출 이력 저장에 실패했습니다. method={}, apiPath={}",
+                    legacyApiCall.method(), legacyApiCall.apiPath(), e);
         }
     }
 

@@ -15,6 +15,7 @@ import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.method.HandlerMethod;
+import org.springframework.web.servlet.HandlerMapping;
 
 import java.lang.reflect.Method;
 
@@ -38,9 +39,10 @@ class LegacyApiCallHistoryInterceptorTest {
     }
 
     @Test
-    @DisplayName("Swagger 삭제 후보 API만 method와 실제 요청 경로를 저장한다")
+    @DisplayName("레거시 API의 실제 URI와 경로 템플릿을 저장한다")
     void recordsDeprecatedCandidate() throws Exception {
         MockHttpServletRequest request = new MockHttpServletRequest("GET", "/api/v1/carousels/123");
+        request.setAttribute(HandlerMapping.BEST_MATCHING_PATTERN_ATTRIBUTE, "/api/v1/carousels/{carouselId}");
         MockHttpServletResponse response = new MockHttpServletResponse();
         response.setStatus(200);
         User user = User.builder().id(42L).build();
@@ -58,21 +60,25 @@ class LegacyApiCallHistoryInterceptorTest {
         LegacyApiCall saved = captor.getValue();
         assertThat(saved.method()).isEqualTo("GET");
         assertThat(saved.requestUri()).isEqualTo("/api/v1/carousels/123");
+        assertThat(saved.apiPath()).isEqualTo("/api/v1/carousels/{carouselId}");
         assertThat(saved.userId()).isEqualTo(42L);
         assertThat(saved.traceId()).isEqualTo("legacy-trace-42");
     }
 
     @Test
-    @DisplayName("동일한 레거시 API 호출은 한 시간 동안 한 번만 저장한다")
-    void coalescesSameLegacyApiCallsForOneHour() throws Exception {
-        MockHttpServletRequest request = new MockHttpServletRequest("GET", "/api/v1/carousels/123");
+    @DisplayName("path variable 값이 달라도 같은 레거시 API는 한 시간 동안 한 번만 저장한다")
+    void coalescesSameLegacyApiPathForOneHour() throws Exception {
+        MockHttpServletRequest firstRequest = new MockHttpServletRequest("GET", "/api/v1/mypage/images/1");
+        firstRequest.setAttribute(HandlerMapping.BEST_MATCHING_PATTERN_ATTRIBUTE, "/api/v1/mypage/images/{houseId}");
+        MockHttpServletRequest secondRequest = new MockHttpServletRequest("GET", "/api/v1/mypage/images/2");
+        secondRequest.setAttribute(HandlerMapping.BEST_MATCHING_PATTERN_ATTRIBUTE, "/api/v1/mypage/images/{houseId}");
         MockHttpServletResponse response = new MockHttpServletResponse();
         HandlerMethod handlerMethod = handlerMethod("deprecatedCandidate");
 
-        interceptor.preHandle(request, response, handlerMethod);
-        interceptor.afterCompletion(request, response, handlerMethod, null);
-        interceptor.preHandle(request, response, handlerMethod);
-        interceptor.afterCompletion(request, response, handlerMethod, null);
+        interceptor.preHandle(firstRequest, response, handlerMethod);
+        interceptor.afterCompletion(firstRequest, response, handlerMethod, null);
+        interceptor.preHandle(secondRequest, response, handlerMethod);
+        interceptor.afterCompletion(secondRequest, response, handlerMethod, null);
 
         verify(historyService, times(1)).record(org.mockito.ArgumentMatchers.any());
     }

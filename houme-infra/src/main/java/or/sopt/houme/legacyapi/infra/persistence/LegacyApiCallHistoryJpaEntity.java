@@ -20,7 +20,7 @@ import or.sopt.houme.global.entity.BaseEntity;
         name = "legacy_api_call_histories",
         indexes = {
                 @Index(name = "idx_legacy_api_call_history_created_at", columnList = "created_at"),
-                @Index(name = "idx_legacy_api_call_history_endpoint_created_at", columnList = "method, request_uri, created_at")
+                @Index(name = "idx_legacy_api_call_history_endpoint_created_at", columnList = "method, api_path, created_at")
         }
 )
 public class LegacyApiCallHistoryJpaEntity extends BaseEntity {
@@ -35,6 +35,9 @@ public class LegacyApiCallHistoryJpaEntity extends BaseEntity {
     @Column(name = "request_uri", nullable = false, length = 512)
     private String requestUri;
 
+    @Column(name = "api_path", nullable = false, length = 512)
+    private String apiPath;
+
     @Column(name = "user_id")
     private Long userId;
 
@@ -45,11 +48,13 @@ public class LegacyApiCallHistoryJpaEntity extends BaseEntity {
     private LegacyApiCallHistoryJpaEntity(
             String method,
             String requestUri,
+            String apiPath,
             Long userId,
             String traceId
     ) {
         this.method = method;
         this.requestUri = requestUri;
+        this.apiPath = apiPath;
         this.userId = userId;
         this.traceId = traceId;
     }
