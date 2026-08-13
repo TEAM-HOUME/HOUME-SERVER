@@ -14,6 +14,7 @@
 | `method` | HTTP method | 원문 보관 |
 | `request_uri` | 실제 요청 URI path | query string은 제외 |
 | `user_id` | 인증된 사용자 ID | 인증되지 않은 요청은 `NULL` |
+| `trace_id` | 요청 추적 식별자 | 오류 응답 및 `X-Trace-Id` 헤더와 연결 가능 |
 | `created_at` | 이력 생성 시각 | `BaseEntity` 감사 필드 사용 |
 
 query, 요청 본문, 헤더, IP 주소는 저장하지 않는다. API별 호출 여부와 기간 집계, 호출 사용자 확인을 위한 최소 이력이다.
