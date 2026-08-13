@@ -1,6 +1,5 @@
 package or.sopt.houme.global.legacy;
 
-import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import io.swagger.v3.oas.annotations.Operation;
 import or.sopt.houme.domain.user.presentation.controller.dto.CustomUserDetails;
 import or.sopt.houme.legacyapi.application.LegacyApiCallHistoryService;
@@ -22,6 +21,7 @@ import java.lang.reflect.Method;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 @DisplayName("레거시 API 호출 이력 인터셉터")
@@ -29,7 +29,7 @@ class LegacyApiCallHistoryInterceptorTest {
 
     private final LegacyApiCallHistoryService historyService = mock(LegacyApiCallHistoryService.class);
     private final LegacyApiCallHistoryInterceptor interceptor = new LegacyApiCallHistoryInterceptor(
-            historyService, Runnable::run, new SimpleMeterRegistry());
+            historyService, Runnable::run);
 
     @AfterEach
     void clearSecurityContext() {
@@ -60,6 +60,21 @@ class LegacyApiCallHistoryInterceptorTest {
         assertThat(saved.requestUri()).isEqualTo("/api/v1/carousels/123");
         assertThat(saved.userId()).isEqualTo(42L);
         assertThat(saved.traceId()).isEqualTo("legacy-trace-42");
+    }
+
+    @Test
+    @DisplayName("동일한 레거시 API 호출은 한 시간 동안 한 번만 저장한다")
+    void coalescesSameLegacyApiCallsForOneHour() throws Exception {
+        MockHttpServletRequest request = new MockHttpServletRequest("GET", "/api/v1/carousels/123");
+        MockHttpServletResponse response = new MockHttpServletResponse();
+        HandlerMethod handlerMethod = handlerMethod("deprecatedCandidate");
+
+        interceptor.preHandle(request, response, handlerMethod);
+        interceptor.afterCompletion(request, response, handlerMethod, null);
+        interceptor.preHandle(request, response, handlerMethod);
+        interceptor.afterCompletion(request, response, handlerMethod, null);
+
+        verify(historyService, times(1)).record(org.mockito.ArgumentMatchers.any());
     }
 
     @Test

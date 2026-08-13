@@ -16,7 +16,7 @@ public class LegacyApiCallHistoryAsyncConfig {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
         executor.setCorePoolSize(1);
         executor.setMaxPoolSize(1);
-        executor.setQueueCapacity(500);
+        executor.setQueueCapacity(10);
         executor.setThreadNamePrefix("LegacyApiCallHistory-");
         executor.setTaskDecorator(new MdcTaskDecorator());
         executor.setRejectedExecutionHandler(new ThreadPoolExecutor.AbortPolicy());

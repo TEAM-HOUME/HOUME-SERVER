@@ -1,7 +1,5 @@
 package or.sopt.houme.global.legacy;
 
-import io.micrometer.core.instrument.Counter;
-import io.micrometer.core.instrument.MeterRegistry;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
@@ -12,34 +10,37 @@ import or.sopt.houme.legacyapi.domain.LegacyApiCall;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.method.HandlerMethod;
 import org.slf4j.MDC;
 
+import java.time.Duration;
+import java.time.Instant;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
 import java.util.concurrent.RejectedExecutionException;
+import java.util.concurrent.atomic.AtomicBoolean;
 
-/** Swagger 삭제 후보 표기가 있는 API의 호출 이력만 비동기로 기록한다. */
+/** {@link LegacyApi}가 붙은 삭제 후보 API의 호출 이력만 비동기로 기록한다. */
 @Slf4j
 @Component
 public class LegacyApiCallHistoryInterceptor implements HandlerInterceptor {
 
     private static final String CANDIDATE_ATTRIBUTE = "houme.legacyApiCallHistory.candidate";
+    private static final Duration RECORD_INTERVAL = Duration.ofHours(1);
     private final LegacyApiCallHistoryService legacyApiCallHistoryService;
     private final Executor legacyApiCallHistoryExecutor;
-    private final Counter droppedCounter;
-    private final Counter failedCounter;
+    private final Map<String, Instant> lastRecordAttemptAt = new ConcurrentHashMap<>();
 
     public LegacyApiCallHistoryInterceptor(
             LegacyApiCallHistoryService legacyApiCallHistoryService,
-            @Qualifier("legacyApiCallHistoryExecutor") Executor legacyApiCallHistoryExecutor,
-            MeterRegistry meterRegistry
+            @Qualifier("legacyApiCallHistoryExecutor") Executor legacyApiCallHistoryExecutor
     ) {
         this.legacyApiCallHistoryService = legacyApiCallHistoryService;
         this.legacyApiCallHistoryExecutor = legacyApiCallHistoryExecutor;
-        this.droppedCounter = meterRegistry.counter("houme.legacy-api-call-history.dropped.total");
-        this.failedCounter = meterRegistry.counter("houme.legacy-api-call-history.write-failed.total");
     }
 
     @Override
@@ -63,11 +64,16 @@ public class LegacyApiCallHistoryInterceptor implements HandlerInterceptor {
                 currentUserId(),
                 MDC.get(TraceIdFilter.TRACE_ID_MDC_KEY)
         );
+        String callKey = legacyApiCall.method() + " " + legacyApiCall.requestUri();
+        Instant attemptedAt = Instant.now();
+        if (!reserveRecord(callKey, attemptedAt)) {
+            return;
+        }
 
         try {
-            legacyApiCallHistoryExecutor.execute(() -> recordSafely(legacyApiCall));
+            legacyApiCallHistoryExecutor.execute(() -> recordSafely(callKey, attemptedAt, legacyApiCall));
         } catch (RejectedExecutionException e) {
-            droppedCounter.increment();
+            lastRecordAttemptAt.remove(callKey, attemptedAt);
             log.warn("레거시 API 호출 이력 저장 작업이 포화로 드롭되었습니다. method={}, requestUri={}",
                     legacyApiCall.method(), legacyApiCall.requestUri());
         }
@@ -77,14 +83,32 @@ public class LegacyApiCallHistoryInterceptor implements HandlerInterceptor {
         return handlerMethod.hasMethodAnnotation(LegacyApi.class);
     }
 
-    private void recordSafely(LegacyApiCall legacyApiCall) {
+    private boolean reserveRecord(String callKey, Instant attemptedAt) {
+        AtomicBoolean reserved = new AtomicBoolean(false);
+        lastRecordAttemptAt.compute(callKey, (key, lastAttemptAt) -> {
+            if (lastAttemptAt == null || !lastAttemptAt.plus(RECORD_INTERVAL).isAfter(attemptedAt)) {
+                reserved.set(true);
+                return attemptedAt;
+            }
+            return lastAttemptAt;
+        });
+        return reserved.get();
+    }
+
+    private void recordSafely(String callKey, Instant attemptedAt, LegacyApiCall legacyApiCall) {
         try {
             legacyApiCallHistoryService.record(legacyApiCall);
         } catch (RuntimeException e) {
-            failedCounter.increment();
+            lastRecordAttemptAt.remove(callKey, attemptedAt);
             log.error("레거시 API 호출 이력 저장에 실패했습니다. method={}, requestUri={}",
                     legacyApiCall.method(), legacyApiCall.requestUri(), e);
         }
+    }
+
+    @Scheduled(fixedDelay = 60 * 60 * 1000)
+    void evictExpiredRecordReservations() {
+        Instant now = Instant.now();
+        lastRecordAttemptAt.entrySet().removeIf(entry -> entry.getValue().plus(RECORD_INTERVAL).isBefore(now));
     }
 
     private Long currentUserId() {
