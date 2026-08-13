@@ -11,6 +11,7 @@ import or.sopt.houme.domain.user.presentation.controller.dto.CustomUserDetailsSe
 import or.sopt.houme.domain.user.repository.BlacklistTokenRepository;
 import or.sopt.houme.global.config.JWTConfig;
 import or.sopt.houme.global.jwt.JWTUtil;
+import or.sopt.houme.legacyapi.application.LegacyApiCallHistoryService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,6 +25,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.http.ResponseEntity;
 
 import java.util.List;
+import java.util.concurrent.Executor;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -67,6 +69,12 @@ class JjymV2ControllerTest {
 
     @MockBean
     private CustomUserDetailsService customUserDetailsService;
+
+    @MockBean
+    private LegacyApiCallHistoryService legacyApiCallHistoryService;
+
+    @MockBean(name = "legacyApiCallHistoryExecutor")
+    private Executor legacyApiCallHistoryExecutor;
 
     @Test
     @DisplayName("POST /api/v2/curation-raw-products/{rawProductId}/jjym 요청 시 찜 토글 결과를 반환한다")

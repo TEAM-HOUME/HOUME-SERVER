@@ -1,10 +1,12 @@
 package or.sopt.houme.global.api;
 
 import or.sopt.houme.global.jwt.JWTFilter;
+import or.sopt.houme.legacyapi.application.LegacyApiCallHistoryService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.FilterType;
 import org.springframework.security.test.context.support.WithMockUser;
@@ -16,6 +18,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import java.util.concurrent.Executor;
+
 @ActiveProfiles("test")
 @DisplayName("테스트 환경 Health Check")
 @WebMvcTest(controllers = HealthCheckController.class, excludeFilters = {
@@ -24,6 +28,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
         })
 })
 class HealthCheckControllerTest {
+
+    @MockBean
+    private LegacyApiCallHistoryService legacyApiCallHistoryService;
+
+    @MockBean(name = "legacyApiCallHistoryExecutor")
+    private Executor legacyApiCallHistoryExecutor;
 
     @Autowired
     private MockMvc mockMvc;

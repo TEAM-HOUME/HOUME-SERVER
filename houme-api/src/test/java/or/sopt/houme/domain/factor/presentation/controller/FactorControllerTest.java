@@ -4,6 +4,7 @@ import or.sopt.houme.domain.preference.presentation.controller.FactorController;
 import or.sopt.houme.domain.preference.presentation.dto.response.FactorsResponse;
 import or.sopt.houme.domain.preference.service.FactorService;
 import or.sopt.houme.global.jwt.JWTFilter;
+import or.sopt.houme.legacyapi.application.LegacyApiCallHistoryService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -18,6 +19,7 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
+import java.util.concurrent.Executor;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -39,6 +41,12 @@ class FactorControllerTest {
 
     @MockBean
     private FactorService factorService;
+
+    @MockBean
+    private LegacyApiCallHistoryService legacyApiCallHistoryService;
+
+    @MockBean(name = "legacyApiCallHistoryExecutor")
+    private Executor legacyApiCallHistoryExecutor;
 
     @Test
     @WithMockUser   // 인증된 사용자로 요청

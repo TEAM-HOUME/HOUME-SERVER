@@ -4,6 +4,7 @@ import or.sopt.houme.domain.house.presentation.dto.HouseOptionDTO;
 import or.sopt.houme.domain.house.presentation.dto.response.HouseOptionsResponse;
 import or.sopt.houme.domain.house.service.HouseService;
 import or.sopt.houme.global.jwt.JWTFilter;
+import or.sopt.houme.legacyapi.application.LegacyApiCallHistoryService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +17,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
+import java.util.concurrent.Executor;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -37,6 +39,12 @@ class HouseControllerTest {
 
     @MockBean
     private HouseService houseService;
+
+    @MockBean
+    private LegacyApiCallHistoryService legacyApiCallHistoryService;
+
+    @MockBean(name = "legacyApiCallHistoryExecutor")
+    private Executor legacyApiCallHistoryExecutor;
 
     @Test
     @WithMockUser   // 인증된 사용자로 요청
