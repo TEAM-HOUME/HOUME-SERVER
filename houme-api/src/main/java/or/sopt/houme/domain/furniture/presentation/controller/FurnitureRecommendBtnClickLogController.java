@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import or.sopt.houme.domain.furniture.service.FurnitureRecommendBtnClickLogService;
 import or.sopt.houme.domain.user.presentation.controller.dto.CustomUserDetails;
 import or.sopt.houme.global.api.ApiResponse;
+import or.sopt.houme.global.legacy.LegacyApi;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -20,6 +21,7 @@ public class FurnitureRecommendBtnClickLogController {
     private final FurnitureRecommendBtnClickLogService furnitureRecommendBtnClickLogService;
 
     @PostMapping(value = "/furnitures/logs")
+    @LegacyApi
     @Operation(summary = "[DEPRECATED_CANDIDATE] 가구 추천받기 버튼 클릭시 로그 저장 api")
     public ResponseEntity<ApiResponse<Void>> createFurnitureRecommendBtnClickLog(@AuthenticationPrincipal CustomUserDetails userDetails) {
         furnitureRecommendBtnClickLogService.createFurnitureRecommendBtnClickLog(userDetails.getUser());

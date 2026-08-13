@@ -7,6 +7,7 @@ import or.sopt.houme.domain.generateImage.service.openai.facade.OpenAiFacade;
 import or.sopt.houme.domain.generateImage.service.prompt.dto.PromptRequestDTO;
 import or.sopt.houme.global.api.ApiResponse;
 import or.sopt.houme.global.dto.ImageUploadResponseDTO;
+import or.sopt.houme.global.legacy.LegacyApi;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -18,6 +19,7 @@ public class OpenAiController {
 
     private final OpenAiFacade openAiFacade;
 
+    @LegacyApi
     @Operation(summary = "[DEPRECATED_CANDIDATE] chatgpt-image-1 을 활용한 이미지 저장 API",
         description = "실제 성능 테스트를 위한 메서드입니다. **호출 시, 서버 전재연에게 반드시 문의해주세요**")
     @PostMapping(value = "/generate")
