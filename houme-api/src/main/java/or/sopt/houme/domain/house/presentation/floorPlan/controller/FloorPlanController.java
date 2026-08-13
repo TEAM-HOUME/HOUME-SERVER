@@ -31,7 +31,7 @@ public class FloorPlanController {
     private final FloorPlanService floorPlanService;
 
     // 구조에 따른 도면 템플릿 제공
-    @Operation(summary = "도면 템플릿 제공 API",
+    @Operation(summary = "[DEPRECATED_CANDIDATE] 도면 템플릿 제공 API",
             description = "사용자가 가장 최근에 입력한 집 구조에 따른 도면 템플릿을 제공합니다.")
     @GetMapping("/api/v1/house-templates")
     public ResponseEntity<ApiResponse<FloorPlanListResponse>> getHouseTemplates(@AuthenticationPrincipal CustomUserDetails userDetails) {

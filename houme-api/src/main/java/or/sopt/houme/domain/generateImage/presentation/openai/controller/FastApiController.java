@@ -20,7 +20,7 @@ public class FastApiController {
 
     private final FastApiService fastApiService;
 
-    @Operation(summary = "LangChain 을 활용한 이미지 저장 API",
+    @Operation(summary = "[DEPRECATED_CANDIDATE] LangChain 을 활용한 이미지 저장 API",
             description = "실제 성능 테스트를 위한 메서드입니다. **호출 시, 서버 전재연에게 반드시 문의해주세요**")
     @PostMapping("/generate")
     public ResponseEntity<ApiResponse<String>> generate(@RequestBody PromptRequestDTO promptRequestDTO) {

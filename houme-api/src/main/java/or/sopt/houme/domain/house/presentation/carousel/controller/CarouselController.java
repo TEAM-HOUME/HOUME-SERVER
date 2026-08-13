@@ -29,7 +29,7 @@ public class CarouselController {
     private final CarouselLikeLogService carouselLikeLogService;
 
     @GetMapping("/api/v1/carousels")
-    @Operation(summary = "캐러셀 조회 API",
+    @Operation(summary = "[DEPRECATED_CANDIDATE] 캐러셀 조회 API",
     description = "한 번 조회 시, 다섯개의 캐러셀을 반환합니다. <br><br>" +
             "**page는 0부터** 넣어주세요 (null일시 0이 기본)")
     public ResponseEntity<ApiResponse<GetCarouselListResponseDTO>> getCarousels(
@@ -54,7 +54,7 @@ public class CarouselController {
 
 
     @PostMapping("/api/v1/carousels/like")
-    @Operation(summary = "캐러셀 좋아요 API")
+    @Operation(summary = "[DEPRECATED_CANDIDATE] 캐러셀 좋아요 API")
     public ResponseEntity<ApiResponse<String>> likeCarousel(
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @RequestParam Long carouselId) {
@@ -70,7 +70,7 @@ public class CarouselController {
 
 
     @PostMapping("/api/v1/carousels/hate")
-    @Operation(summary = "캐러셀 싫어요 API")
+    @Operation(summary = "[DEPRECATED_CANDIDATE] 캐러셀 싫어요 API")
     public ResponseEntity<ApiResponse<String>> hateCarousel(
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @RequestParam Long carouselId) {

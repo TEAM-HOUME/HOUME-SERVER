@@ -20,7 +20,7 @@ public class FurnitureRecommendBtnClickLogController {
     private final FurnitureRecommendBtnClickLogService furnitureRecommendBtnClickLogService;
 
     @PostMapping(value = "/furnitures/logs")
-    @Operation(summary = "가구 추천받기 버튼 클릭시 로그 저장 api")
+    @Operation(summary = "[DEPRECATED_CANDIDATE] 가구 추천받기 버튼 클릭시 로그 저장 api")
     public ResponseEntity<ApiResponse<Void>> createFurnitureRecommendBtnClickLog(@AuthenticationPrincipal CustomUserDetails userDetails) {
         furnitureRecommendBtnClickLogService.createFurnitureRecommendBtnClickLog(userDetails.getUser());
         return ResponseEntity.ok(ApiResponse.ok(null));

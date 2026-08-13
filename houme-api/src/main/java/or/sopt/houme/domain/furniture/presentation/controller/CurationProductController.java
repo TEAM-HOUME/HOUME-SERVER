@@ -29,7 +29,7 @@ public class CurationProductController {
     private final CurationProductService curationProductService;
 
     @GetMapping
-    @Operation(summary = "상품 리스트 조회 및 검색 API", 
+    @Operation(summary = "[DEPRECATED_CANDIDATE] 상품 리스트 조회 및 검색 API",
                description = "상품 탭 메인 API입니다. 필터링 조건들을 포함하며 무한 스크롤을 지원합니다.")
     public ResponseEntity<ApiResponse<CurationProductListResponse>> getProducts(
             @RequestParam(required = false) String keyword,
@@ -45,14 +45,14 @@ public class CurationProductController {
     }
 
     @GetMapping("/filters")
-    @Operation(summary = "상품 검색 필터링 조건 조회 API", 
+    @Operation(summary = "상품 검색 필터링 조건 조회 API",
                description = "상품 탭에서 검색 시 사용되는 가구 유형, 가격대, 색상 필터 목록을 조회합니다.")
     public ResponseEntity<ApiResponse<CurationProductFilterResponse>> getFilters() {
         return ResponseEntity.ok(ApiResponse.ok(curationProductService.getFilterMetadata()));
     }
 
     @GetMapping("/{id}")
-    @Operation(summary = "상품 상세 조회 API", 
+    @Operation(summary = "상품 상세 조회 API",
                description = "상품의 상세 정보(이미지, 가격, 구매 링크 등)를 조회합니다.")
     public ResponseEntity<ApiResponse<CurationProductDetailResponse>> getProductDetail(
             @PathVariable Long id,
