@@ -38,14 +38,19 @@ public class LegacyApiCallHistoryJpaEntity extends BaseEntity {
     @Column(name = "user_id")
     private Long userId;
 
+    @Column(name = "trace_id", nullable = false, length = 36)
+    private String traceId;
+
     @Builder
     private LegacyApiCallHistoryJpaEntity(
             String method,
             String requestUri,
-            Long userId
+            Long userId,
+            String traceId
     ) {
         this.method = method;
         this.requestUri = requestUri;
         this.userId = userId;
+        this.traceId = traceId;
     }
 }

@@ -6,6 +6,7 @@ package or.sopt.houme.legacyapi.domain;
 public record LegacyApiCall(
         String method,
         String requestUri,
-        Long userId
+        Long userId,
+        String traceId
 ) {
 }

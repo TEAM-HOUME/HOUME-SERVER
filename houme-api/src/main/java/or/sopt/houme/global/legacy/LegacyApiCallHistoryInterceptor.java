@@ -6,6 +6,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import or.sopt.houme.domain.user.presentation.controller.dto.CustomUserDetails;
+import or.sopt.houme.global.logging.TraceIdFilter;
 import or.sopt.houme.legacyapi.application.LegacyApiCallHistoryService;
 import or.sopt.houme.legacyapi.domain.LegacyApiCall;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -14,6 +15,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.method.HandlerMethod;
+import org.slf4j.MDC;
 
 import java.util.concurrent.Executor;
 import java.util.concurrent.RejectedExecutionException;
@@ -58,7 +60,8 @@ public class LegacyApiCallHistoryInterceptor implements HandlerInterceptor {
         LegacyApiCall legacyApiCall = new LegacyApiCall(
                 request.getMethod(),
                 request.getRequestURI(),
-                currentUserId()
+                currentUserId(),
+                MDC.get(TraceIdFilter.TRACE_ID_MDC_KEY)
         );
 
         try {

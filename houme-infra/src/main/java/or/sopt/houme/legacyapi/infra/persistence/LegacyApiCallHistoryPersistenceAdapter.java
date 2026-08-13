@@ -18,6 +18,7 @@ public class LegacyApiCallHistoryPersistenceAdapter implements LegacyApiCallHist
                 .method(legacyApiCall.method())
                 .requestUri(legacyApiCall.requestUri())
                 .userId(legacyApiCall.userId())
+                .traceId(legacyApiCall.traceId())
                 .build());
     }
 }

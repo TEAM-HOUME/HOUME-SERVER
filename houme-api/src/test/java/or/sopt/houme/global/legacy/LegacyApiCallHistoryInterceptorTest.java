@@ -10,6 +10,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
+import org.slf4j.MDC;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -33,6 +34,7 @@ class LegacyApiCallHistoryInterceptorTest {
     @AfterEach
     void clearSecurityContext() {
         SecurityContextHolder.clearContext();
+        MDC.clear();
     }
 
     @Test
@@ -45,6 +47,7 @@ class LegacyApiCallHistoryInterceptorTest {
         SecurityContextHolder.getContext().setAuthentication(
                 new UsernamePasswordAuthenticationToken(new CustomUserDetails(user), null)
         );
+        MDC.put("traceId", "legacy-trace-42");
 
         HandlerMethod handlerMethod = handlerMethod("deprecatedCandidate");
         interceptor.preHandle(request, response, handlerMethod);
@@ -56,6 +59,7 @@ class LegacyApiCallHistoryInterceptorTest {
         assertThat(saved.method()).isEqualTo("GET");
         assertThat(saved.requestUri()).isEqualTo("/api/v1/carousels/123");
         assertThat(saved.userId()).isEqualTo(42L);
+        assertThat(saved.traceId()).isEqualTo("legacy-trace-42");
     }
 
     @Test
