@@ -13,6 +13,7 @@ import or.sopt.houme.domain.furniture.service.facade.FurnitureFacade;
 import or.sopt.houme.domain.furniture.service.FurnitureService;
 import or.sopt.houme.domain.user.presentation.controller.dto.CustomUserDetails;
 import or.sopt.houme.global.api.ApiResponse;
+import or.sopt.houme.global.legacy.LegacyApi;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -28,6 +29,7 @@ public class FurnitureController {
     private final FurnitureFacade furnitureFacade;
 
     // 주요활동, 가구들 제공 API
+    @LegacyApi
     @Operation(summary = "[DEPRECATED_CANDIDATE] 주요 활동, 가구 리스트 제공 API",
             description = "- 주요 활동 (휴식형, 재택근무형, 영화 감상형, 홈카페형)\n" +
                     "- 가구\n" +
@@ -68,6 +70,7 @@ public class FurnitureController {
         ));
     }
 
+    @LegacyApi
     @Operation(summary = "[DEPRECATED_CANDIDATE] 생성된 이미지에서 가구 카테고리 조회 API",
             description = "생성된 이미지에서 소파, 침대, 스탠드, 러그와 같은 카테고리를 제공합니다.\n" +
                     "각 가구 카테고리의 순서는 스타일에 따라 다릅니다.\n" +
@@ -112,6 +115,7 @@ public class FurnitureController {
         return ResponseEntity.ok(ApiResponse.ok(response));
     }
 
+    @LegacyApi
     @Operation(summary = "[DEPRECATED_CANDIDATE] [기획 의사결정용 API] 가구 카테고리를 클릭하여 가구 제품 조회 API",
             description = "- tagId와 furnitureId로 baseImage가 선택됩니다.\n" +
                     "  - 각 id에 대한 값은 노션으로 전달하겠습니다.\n" +
@@ -137,6 +141,7 @@ public class FurnitureController {
         return ResponseEntity.ok(ApiResponse.ok(response));
     }
 
+    @LegacyApi
     @Operation(summary = "[DEPRECATED_CANDIDATE] [기획 의사결정용 API V2] 가구 카테고리를 클릭하여 가구 제품 조회 API",
             description = "- tagId와 furnitureId로 baseImage가 선택됩니다.\n" +
                     "- searchKeyword로 검색어를 커스텀할 수 있습니다.\n" +

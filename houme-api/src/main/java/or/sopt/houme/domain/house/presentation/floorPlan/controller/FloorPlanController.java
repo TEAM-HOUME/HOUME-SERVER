@@ -14,6 +14,7 @@ import or.sopt.houme.domain.user.presentation.controller.dto.CustomUserDetails;
 import or.sopt.houme.domain.house.service.floorPlan.FloorPlanService;
 import or.sopt.houme.domain.house.service.floorPlan.facade.FloorPlanFacade;
 import or.sopt.houme.global.api.ApiResponse;
+import or.sopt.houme.global.legacy.LegacyApi;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -31,6 +32,7 @@ public class FloorPlanController {
     private final FloorPlanService floorPlanService;
 
     // 구조에 따른 도면 템플릿 제공
+    @LegacyApi
     @Operation(summary = "[DEPRECATED_CANDIDATE] 도면 템플릿 제공 API",
             description = "사용자가 가장 최근에 입력한 집 구조에 따른 도면 템플릿을 제공합니다.")
     @GetMapping("/api/v1/house-templates")

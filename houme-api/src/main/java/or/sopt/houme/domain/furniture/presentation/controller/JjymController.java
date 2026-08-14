@@ -10,6 +10,7 @@ import or.sopt.houme.domain.furniture.service.facade.JjymOptimisticLockFacade;
 import or.sopt.houme.domain.furniture.service.JjymService;
 import or.sopt.houme.domain.user.presentation.controller.dto.CustomUserDetails;
 import or.sopt.houme.global.api.ApiResponse;
+import or.sopt.houme.global.legacy.LegacyApi;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -24,6 +25,7 @@ public class JjymController {
     private final JjymOptimisticLockFacade jjymOptimisticLockFacade;
 
 
+    @LegacyApi
     @Operation(summary = "[DEPRECATED_CANDIDATE] 추천 가구 찜 토글 API", description = "이미 찜이면 해제, 아니면 찜으로 저장합니다")
     @PostMapping("/api/v1/recommend-furnitures/{recommendFurnitureId}/jjym")
     public ResponseEntity<ApiResponse<JjymToggleResponse>> toggleJjym(
@@ -35,6 +37,7 @@ public class JjymController {
     }
 
 
+    @LegacyApi
     @Operation(summary = "[DEPRECATED_CANDIDATE] 내가 찜한 가구 목록 조회 API",
             description = "찜한 가구의 이미지, 이름, 가구 식별자를 반환합니다.")
     @GetMapping("/api/v1/jjyms")
