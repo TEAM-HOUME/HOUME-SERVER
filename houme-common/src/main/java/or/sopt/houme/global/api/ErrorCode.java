@@ -71,6 +71,11 @@ public enum ErrorCode {
     INVALID_BANNER_SIZE(HttpStatus.BAD_REQUEST, 40026, "size는 1 이상의 값이어야 합니다."),
     INVALID_FLOOR_PLAN_SIZE(HttpStatus.BAD_REQUEST, 40027, "size는 1 이상의 값이어야 합니다."),
 
+    // 가격 비교 - 상품 URL 스크래핑 관련 예외
+    INVALID_PRODUCT_URL(HttpStatus.BAD_REQUEST, 40033, "유효하지 않은 상품 URL입니다."),
+    FORBIDDEN_PRODUCT_URL(HttpStatus.BAD_REQUEST, 40034, "접근이 허용되지 않은 주소입니다."),
+    PRODUCT_METADATA_PARSE_FAILED(HttpStatus.BAD_REQUEST, 40035, "상품 페이지에서 정보를 추출하지 못했습니다. 다른 URL로 시도해주세요."),
+
 
     /**
      * 401 UNAUTHORIZED
@@ -214,6 +219,9 @@ public enum ErrorCode {
     // FastAPI imageHash 관련
     IMAGE_HASH_SERVER_ERROR(HttpStatus.BAD_GATEWAY, 50202, "Fast API 서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요."),
     IMAGE_HASH_EMPTY_RESPONSE(HttpStatus.BAD_GATEWAY, 50203, "Fast API imageHash 응답이 비어 있습니다."),
+
+    // 가격 비교 - 상품 페이지 스크래핑 관련
+    PRODUCT_PAGE_FETCH_FAILED(HttpStatus.BAD_GATEWAY, 50204, "상품 페이지를 불러오지 못했습니다. 잠시 후 다시 시도해주세요."),
 
 
     /**

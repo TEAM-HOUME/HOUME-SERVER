@@ -7,6 +7,7 @@ dependencies {
     implementation 'org.springframework:spring-web'
     implementation 'jakarta.servlet:jakarta.servlet-api:6.0.0'
     implementation 'com.fasterxml.jackson.core:jackson-databind'
+    implementation 'org.jsoup:jsoup:1.17.2' // 상품 페이지 HTML 파싱
     implementation 'io.github.resilience4j:resilience4j-feign'
     implementation 'io.github.resilience4j:resilience4j-spring-boot3'
     implementation 'org.springframework.boot:spring-boot-starter-aop'
