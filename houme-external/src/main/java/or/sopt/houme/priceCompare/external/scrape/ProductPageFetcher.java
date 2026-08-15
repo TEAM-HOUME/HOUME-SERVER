@@ -17,7 +17,9 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Optional;
+import java.util.zip.GZIPInputStream;
 
 /**
  * 상품 페이지 HTML을 내려받아 jsoup {@link Document} 로 만들어준다.
@@ -36,10 +38,32 @@ public class ProductPageFetcher {
     private static final int MAX_REDIRECTS = 3;
     private static final int MAX_BODY_BYTES = 3 * 1024 * 1024;
 
-    // 봇 차단 우회 목적이 아니라, 기본 UA 로는 정상 HTML 대신 안내 페이지를 주는 몰이 있어 지정한다.
-    private static final String USER_AGENT =
-            "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 "
-                    + "(KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36";
+    /**
+     * 브라우저가 실제로 보내는 요청 헤더 일습.
+     *
+     * <p>대형 몰(오늘의집=Akamai 등)은 헤더가 하나라도 빠지면 403 을 준다.
+     * 실측 결과 UA 만으로는 403, 아래 조합을 모두 갖췄을 때만 200 이며,
+     * {@code sec-ch-ua}/{@code Sec-Fetch-*}/{@code Accept-Encoding} 중 하나만 빼도 다시 403 이 된다.
+     * 정상 브라우저와 같은 요청을 보낸다는 의미이지, 인증이나 접근 제어를 우회하는 것이 아니다.
+     */
+    private static final Map<String, String> BROWSER_HEADERS = Map.ofEntries(
+            Map.entry("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 "
+                    + "(KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36"),
+            Map.entry("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,"
+                    + "image/avif,image/webp,*/*;q=0.8"),
+            Map.entry("Accept-Language", "ko-KR,ko;q=0.9,en-US;q=0.8"),
+            // JDK HttpClient 는 자동 압축 해제를 하지 않으므로 gzip 만 요청하고 아래에서 직접 푼다.
+            Map.entry("Accept-Encoding", "gzip"),
+            Map.entry("sec-ch-ua", "\"Chromium\";v=\"126\", \"Not;A=Brand\";v=\"24\""),
+            Map.entry("sec-ch-ua-mobile", "?0"),
+            Map.entry("sec-ch-ua-platform", "\"macOS\""),
+            Map.entry("Sec-Fetch-Dest", "document"),
+            Map.entry("Sec-Fetch-Mode", "navigate"),
+            // 주소창에 직접 입력한 이동을 의미한다. cross-site 로 보내면 오히려 403 이 난다.
+            Map.entry("Sec-Fetch-Site", "none"),
+            Map.entry("Sec-Fetch-User", "?1"),
+            Map.entry("Upgrade-Insecure-Requests", "1")
+    );
 
     private final SourceUrlValidator sourceUrlValidator;
 
@@ -74,14 +98,12 @@ public class ProductPageFetcher {
     }
 
     private HttpResponse<InputStream> send(URI target) {
-        HttpRequest request = HttpRequest.newBuilder()
+        HttpRequest.Builder builder = HttpRequest.newBuilder()
                 .uri(target)
                 .timeout(REQUEST_TIMEOUT)
-                .header("User-Agent", USER_AGENT)
-                .header("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8")
-                .header("Accept-Language", "ko-KR,ko;q=0.9,en;q=0.8")
-                .GET()
-                .build();
+                .GET();
+        BROWSER_HEADERS.forEach(builder::header);
+        HttpRequest request = builder.build();
         try {
             return httpClient.send(request, HttpResponse.BodyHandlers.ofInputStream());
         } catch (IOException e) {
@@ -117,7 +139,7 @@ public class ProductPageFetcher {
      * charset 은 응답 헤더 → HTML 내 meta 태그 순으로 jsoup 이 판단하도록 넘긴다(구형 몰의 EUC-KR 대응).
      */
     private Document parse(HttpResponse<InputStream> response, URI target) {
-        try (InputStream body = response.body()) {
+        try (InputStream body = decode(response)) {
             byte[] bytes = body.readNBytes(MAX_BODY_BYTES);
             String charset = response.headers().firstValue("content-type")
                     .flatMap(this::extractCharset)
@@ -127,6 +149,14 @@ public class ProductPageFetcher {
             log.warn("상품 페이지 본문 읽기 실패: url={}, message={}", target, e.getMessage());
             throw new PriceCompareException(ErrorCode.PRODUCT_PAGE_FETCH_FAILED);
         }
+    }
+
+    /** gzip 을 요청했으므로 압축 응답이면 직접 푼다. JDK HttpClient 는 자동 해제를 하지 않는다. */
+    private InputStream decode(HttpResponse<InputStream> response) throws IOException {
+        boolean gzipped = response.headers().firstValue("content-encoding")
+                .map(encoding -> encoding.toLowerCase(Locale.ROOT).contains("gzip"))
+                .orElse(false);
+        return gzipped ? new GZIPInputStream(response.body()) : response.body();
     }
 
     private Optional<String> extractCharset(String contentType) {
