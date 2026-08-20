@@ -10,6 +10,7 @@ import or.sopt.houme.domain.generateImage.model.GeminiImageGenerationObservation
 import or.sopt.houme.domain.generateImage.model.ReferenceImageCompressionResult;
 import or.sopt.houme.domain.generateImage.port.out.GeminiImageGenerationObservationPort;
 import or.sopt.houme.domain.generateImage.port.out.ReferenceImageCompressionPort;
+import or.sopt.houme.domain.generateImage.port.out.ReferenceImageVariantPort;
 import or.sopt.houme.global.api.ErrorCode;
 import or.sopt.houme.global.api.handler.ChatGptException;
 import or.sopt.houme.global.api.handler.S3Exception;
@@ -48,6 +49,7 @@ public class GeminiImageServiceImpl implements GeminiImageService {
     private final S3Util s3Util;
     private final GeminiImageGenerationObservationPort observationPort;
     private final ReferenceImageCompressionPort referenceImageCompressionPort;
+    private final ReferenceImageVariantPort referenceImageVariantPort;
     private final HttpClient httpClient = HttpClient.newBuilder()
             .connectTimeout(Duration.ofSeconds(10))
             .build();
@@ -178,16 +180,17 @@ public class GeminiImageServiceImpl implements GeminiImageService {
                 continue;
             }
             try {
+                String variantUrl = referenceImageVariantPort.findVariantUrl(url).orElse(url);
+                boolean variantReused = !variantUrl.equals(url);
                 long downloadStartedAt = System.nanoTime();
-                DownloadedImageData imageData = downloadImage(url);
+                DownloadedImageData imageData = downloadImage(variantUrl);
                 long downloadMillis = elapsedMillis(downloadStartedAt);
                 try {
-                    ReferenceImageCompressionResult compressionResult = compressReferenceImage(
-                            imageData.sourcePath(),
-                            imageData.sourceBytes()
-                    );
+                    ReferenceImageCompressionResult compressionResult = variantReused
+                            ? readPreOptimizedReferenceImage(imageData.sourcePath())
+                            : compressReferenceImage(imageData.sourcePath(), imageData.sourceBytes());
                     String base64 = Base64.getEncoder().encodeToString(compressionResult.bytes());
-                    String mimeType = compressionResult.compressed() ? "image/webp" : imageData.mimeType();
+                    String mimeType = variantReused || compressionResult.compressed() ? "image/webp" : imageData.mimeType();
                     referenceParts.add(GeminiImageRequest.Part.inlineData(mimeType, base64));
                     totalSourceBytes += imageData.sourceBytes();
                     totalOptimizedBytes += compressionResult.bytes().length;
@@ -196,7 +199,7 @@ public class GeminiImageServiceImpl implements GeminiImageService {
                     totalOptimizationMillis += compressionResult.compressionMillis();
                     log.info(
                             "Gemini 참고 이미지 관측 sourceMimeType={}, requestMimeType={}, sourceBytes={}, optimizedBytes={}, "
-                                    + "base64Bytes={}, downloadMillis={}, optimizationMillis={}, compressed={}",
+                            + "base64Bytes={}, downloadMillis={}, optimizationMillis={}, compressed={}, variantReused={}",
                             imageData.mimeType(),
                             mimeType,
                             imageData.sourceBytes(),
@@ -204,7 +207,8 @@ public class GeminiImageServiceImpl implements GeminiImageService {
                             base64.length(),
                             downloadMillis,
                             compressionResult.compressionMillis(),
-                            compressionResult.compressed()
+                            compressionResult.compressed(),
+                            variantReused
                     );
                 } finally {
                     deleteQuietly(imageData.sourcePath());
@@ -321,6 +325,14 @@ public class GeminiImageServiceImpl implements GeminiImageService {
             } catch (IOException ioException) {
                 throw new ChatGptException(ErrorCode.CHAT_GPT_CALL_EXCEPTION);
             }
+        }
+    }
+
+    private ReferenceImageCompressionResult readPreOptimizedReferenceImage(Path sourcePath) {
+        try {
+            return ReferenceImageCompressionResult.original(Files.readAllBytes(sourcePath), 0);
+        } catch (IOException e) {
+            throw new ChatGptException(ErrorCode.CHAT_GPT_CALL_EXCEPTION);
         }
     }
 
