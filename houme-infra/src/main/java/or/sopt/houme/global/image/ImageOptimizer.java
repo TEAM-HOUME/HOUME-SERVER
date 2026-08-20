@@ -32,9 +32,9 @@ public class ImageOptimizer {
     private final long processTimeoutSeconds;
 
     public ImageOptimizer(
-            @Value("${image.cwebp.path:/app/bin/cwebp}") String cwebpPath,
+            @Value("${image.cwebp.path:}") String cwebpPath,
             @Value("${image.cwebp.timeout-seconds:30}") long processTimeoutSeconds) {
-        this.cwebpPath = cwebpPath;
+        this.cwebpPath = resolveCwebpPath(cwebpPath);
         this.processTimeoutSeconds = processTimeoutSeconds;
     }
 
@@ -48,21 +48,49 @@ public class ImageOptimizer {
      * @throws ImageOptimizationException 변환에 실패한 경우 (원본은 호출 측에서 보존)
      */
     public byte[] toResizedWebp(byte[] source, int width) {
+        return toResizedWebp(source, width, null);
+    }
+
+    /**
+     * 원본 이미지를 지정한 가로 너비와 품질로 WebP 변환한다.
+     * quality가 null이면 cwebp 기본 품질을 사용한다.
+     */
+    public byte[] toResizedWebp(byte[] source, int width, Integer quality) {
         Path input = null;
+        try {
+            input = Files.createTempFile("houme-img-src-", ".bin");
+            Files.write(input, source);
+            return toResizedWebp(input, width, quality);
+        } catch (IOException e) {
+            throw new ImageOptimizationException("이미지 변환 중 IO 오류가 발생했습니다. width=" + width, e);
+        } finally {
+            deleteQuietly(input);
+        }
+    }
+
+    /** 임시 파일의 원본을 WebP로 변환한다. 원본을 JVM heap에 올리지 않는다. */
+    public byte[] toResizedWebp(Path input, int width, Integer quality) {
         Path output = null;
         Path processLog = null;
         try {
-            input = Files.createTempFile("houme-img-src-", ".bin");
             output = Files.createTempFile("houme-img-out-", ".webp");
             processLog = Files.createTempFile("houme-img-log-", ".txt");
-            Files.write(input, source);
 
             // cwebp 진단 출력을 파이프 대신 임시 파일로 보냄
             // -> waitFor()를 먼저 해도 파이프 버퍼가 차서 자식 프로세스가 멈추는 deadlock이 없음
-            Process process = new ProcessBuilder(
+            java.util.List<String> command = new java.util.ArrayList<>(java.util.List.of(
                     cwebpPath, "-quiet",
-                    "-resize", String.valueOf(width), "0",
-                    input.toString(), "-o", output.toString())
+                    "-resize", String.valueOf(width), "0"
+            ));
+            if (quality != null) {
+                command.add("-q");
+                command.add(String.valueOf(quality));
+            }
+            command.add(input.toString());
+            command.add("-o");
+            command.add(output.toString());
+
+            Process process = new ProcessBuilder(command)
                     .redirectErrorStream(true)
                     .redirectOutput(processLog.toFile())
                     .start();
@@ -70,7 +98,6 @@ public class ImageOptimizer {
             boolean finished = process.waitFor(processTimeoutSeconds, TimeUnit.SECONDS);
             if (!finished) {
                 process.destroyForcibly();
-                // 강제 종료가 실제로 끝날 때까지 대기 (프로세스/FD 정리)
                 process.waitFor(5, TimeUnit.SECONDS);
                 throw new ImageOptimizationException(
                         "cwebp 변환이 " + processTimeoutSeconds + "초 내에 완료되지 않았습니다. width=" + width);
@@ -88,14 +115,12 @@ public class ImageOptimizer {
                 throw new ImageOptimizationException("cwebp 변환 결과가 비어 있습니다. width=" + width);
             }
             return result;
-
         } catch (IOException e) {
             throw new ImageOptimizationException("이미지 변환 중 IO 오류가 발생했습니다. width=" + width, e);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             throw new ImageOptimizationException("이미지 변환이 중단되었습니다. width=" + width, e);
         } finally {
-            deleteQuietly(input);
             deleteQuietly(output);
             deleteQuietly(processLog);
         }
@@ -107,6 +132,25 @@ public class ImageOptimizer {
      */
     public ImageSize readSize(byte[] source) {
         try (ImageInputStream iis = ImageIO.createImageInputStream(new ByteArrayInputStream(source))) {
+            Iterator<ImageReader> readers = ImageIO.getImageReaders(iis);
+            if (!readers.hasNext()) {
+                return null;
+            }
+            ImageReader reader = readers.next();
+            try {
+                reader.setInput(iis);
+                return new ImageSize(reader.getWidth(0), reader.getHeight(0));
+            } finally {
+                reader.dispose();
+            }
+        } catch (IOException e) {
+            return null;
+        }
+    }
+
+    /** 파일 헤더만 읽어 이미지 크기를 반환한다. */
+    public ImageSize readSize(Path source) {
+        try (ImageInputStream iis = ImageIO.createImageInputStream(source.toFile())) {
             Iterator<ImageReader> readers = ImageIO.getImageReaders(iis);
             if (!readers.hasNext()) {
                 return null;
@@ -136,5 +180,13 @@ public class ImageOptimizer {
         } catch (IOException e) {
             log.warn("임시 파일 삭제 실패: {}", path, e);
         }
+    }
+
+    private String resolveCwebpPath(String configuredPath) {
+        if (configuredPath != null && !configuredPath.isBlank()) {
+            return configuredPath;
+        }
+        Path containerBinary = Path.of("/app/bin/cwebp");
+        return Files.isExecutable(containerBinary) ? containerBinary.toString() : "cwebp";
     }
 }

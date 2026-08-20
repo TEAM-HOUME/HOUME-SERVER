@@ -1,0 +1,161 @@
+package or.sopt.houme.domain.generateImage.model.entity;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Index;
+import jakarta.persistence.Table;
+import lombok.AccessLevel;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import or.sopt.houme.global.entity.BaseEntity;
+
+@Entity
+@Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Table(
+        name = "gemini_image_generation_observations",
+        indexes = {
+                @Index(name = "idx_gemini_image_observation_created_at", columnList = "created_at"),
+                @Index(name = "idx_gemini_image_observation_api_type_created_at", columnList = "api_type, created_at")
+        }
+)
+public class GeminiImageGenerationObservationJpaEntity extends BaseEntity {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(name = "api_type", nullable = false, length = 30)
+    private String apiType;
+
+    @Column(name = "api_path", nullable = false, length = 255)
+    private String apiPath;
+
+    @Column(name = "user_id")
+    private Long userId;
+
+    @Column(name = "trace_id", length = 64)
+    private String traceId;
+
+    @Column(nullable = false, length = 100)
+    private String model;
+
+    @Column(name = "prompt_chars", nullable = false)
+    private int promptChars;
+
+    @Column(name = "reference_image_count", nullable = false)
+    private int referenceImageCount;
+
+    @Column(name = "reference_source_bytes", nullable = false)
+    private long referenceSourceBytes;
+
+    @Column(name = "reference_optimized_bytes", nullable = false)
+    private long referenceOptimizedBytes;
+
+    @Column(name = "reference_base64_bytes", nullable = false)
+    private long referenceBase64Bytes;
+
+    @Column(name = "reference_download_millis", nullable = false)
+    private long referenceDownloadMillis;
+
+    @Column(name = "reference_optimization_millis", nullable = false)
+    private long referenceOptimizationMillis;
+
+    @Column(name = "gemini_call_millis", nullable = false)
+    private long geminiCallMillis;
+
+    @Column(name = "result_bytes", nullable = false)
+    private long resultBytes;
+
+    @Column(name = "result_mime_type", length = 100)
+    private String resultMimeType;
+
+    @Column(name = "result_decode_millis", nullable = false)
+    private long resultDecodeMillis;
+
+    @Column(name = "s3_upload_millis", nullable = false)
+    private long s3UploadMillis;
+
+    @Column(name = "total_millis", nullable = false)
+    private long totalMillis;
+
+    @Column(name = "finish_reason", length = 100)
+    private String finishReason;
+
+    @Column(name = "prompt_tokens")
+    private Long promptTokens;
+
+    @Column(name = "candidate_tokens")
+    private Long candidateTokens;
+
+    @Column(name = "total_tokens")
+    private Long totalTokens;
+
+    @Column(name = "thoughts_tokens")
+    private Long thoughtsTokens;
+
+    @Column(name = "cached_content_tokens")
+    private Long cachedContentTokens;
+
+    @Column(name = "result_url", columnDefinition = "TEXT")
+    private String resultUrl;
+
+    @Builder
+    private GeminiImageGenerationObservationJpaEntity(
+            String apiType,
+            String apiPath,
+            Long userId,
+            String traceId,
+            String model,
+            int promptChars,
+            int referenceImageCount,
+            long referenceSourceBytes,
+            long referenceOptimizedBytes,
+            long referenceBase64Bytes,
+            long referenceDownloadMillis,
+            long referenceOptimizationMillis,
+            long geminiCallMillis,
+            long resultBytes,
+            String resultMimeType,
+            long resultDecodeMillis,
+            long s3UploadMillis,
+            long totalMillis,
+            String finishReason,
+            Long promptTokens,
+            Long candidateTokens,
+            Long totalTokens,
+            Long thoughtsTokens,
+            Long cachedContentTokens,
+            String resultUrl
+    ) {
+        this.apiType = apiType;
+        this.apiPath = apiPath;
+        this.userId = userId;
+        this.traceId = traceId;
+        this.model = model;
+        this.promptChars = promptChars;
+        this.referenceImageCount = referenceImageCount;
+        this.referenceSourceBytes = referenceSourceBytes;
+        this.referenceOptimizedBytes = referenceOptimizedBytes;
+        this.referenceBase64Bytes = referenceBase64Bytes;
+        this.referenceDownloadMillis = referenceDownloadMillis;
+        this.referenceOptimizationMillis = referenceOptimizationMillis;
+        this.geminiCallMillis = geminiCallMillis;
+        this.resultBytes = resultBytes;
+        this.resultMimeType = resultMimeType;
+        this.resultDecodeMillis = resultDecodeMillis;
+        this.s3UploadMillis = s3UploadMillis;
+        this.totalMillis = totalMillis;
+        this.finishReason = finishReason;
+        this.promptTokens = promptTokens;
+        this.candidateTokens = candidateTokens;
+        this.totalTokens = totalTokens;
+        this.thoughtsTokens = thoughtsTokens;
+        this.cachedContentTokens = cachedContentTokens;
+        this.resultUrl = resultUrl;
+    }
+}
