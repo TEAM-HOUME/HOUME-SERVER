@@ -151,6 +151,9 @@ public class ImageOptimizer {
     /** 파일 헤더만 읽어 이미지 크기를 반환한다. */
     public ImageSize readSize(Path source) {
         try (ImageInputStream iis = ImageIO.createImageInputStream(source.toFile())) {
+            if (iis == null) {
+                return null;
+            }
             Iterator<ImageReader> readers = ImageIO.getImageReaders(iis);
             if (!readers.hasNext()) {
                 return null;
