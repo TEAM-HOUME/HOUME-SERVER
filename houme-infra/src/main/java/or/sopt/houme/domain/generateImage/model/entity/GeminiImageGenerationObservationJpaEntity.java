@@ -5,7 +5,6 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.Index;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -16,13 +15,7 @@ import or.sopt.houme.global.entity.BaseEntity;
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@Table(
-        name = "gemini_image_generation_observations",
-        indexes = {
-                @Index(name = "idx_gemini_image_observation_created_at", columnList = "created_at"),
-                @Index(name = "idx_gemini_image_observation_api_type_created_at", columnList = "api_type, created_at")
-        }
-)
+@Table(name = "gemini_image_generation_observations")
 public class GeminiImageGenerationObservationJpaEntity extends BaseEntity {
 
     @Id
