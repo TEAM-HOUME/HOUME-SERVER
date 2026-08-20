@@ -26,6 +26,8 @@ public class GeminiImageGenerationObservationPersistenceAdapter implements Gemin
                 .model(observation.model())
                 .promptChars(observation.promptChars())
                 .referenceImageCount(observation.referenceImageCount())
+                .variantReusedCount(observation.variantReusedCount())
+                .runtimeCompressedCount(observation.runtimeCompressedCount())
                 .referenceSourceBytes(observation.referenceSourceBytes())
                 .referenceOptimizedBytes(observation.referenceOptimizedBytes())
                 .referenceBase64Bytes(observation.referenceBase64Bytes())

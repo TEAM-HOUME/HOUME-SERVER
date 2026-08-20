@@ -111,7 +111,8 @@ public class GeminiImageServiceImpl implements GeminiImageService {
             Long cachedContentTokens = usageValue(response, GeminiImageResponse.UsageMetadata::cachedContentTokenCount);
             long totalMillis = elapsedMillis(totalStartedAt);
             log.info(
-                    "Gemini 이미지 생성 관측 model={}, promptChars={}, referenceImageCount={}, referenceSourceBytes={}, "
+                    "Gemini 이미지 생성 관측 model={}, promptChars={}, referenceImageCount={}, variantReusedCount={}, "
+                            + "runtimeCompressedCount={}, referenceSourceBytes={}, "
                             + "referenceOptimizedBytes={}, referenceBase64Bytes={}, referenceDownloadMillis={}, "
                             + "referenceOptimizationMillis={}, geminiCallMillis={}, "
                             + "resultBytes={}, resultMimeType={}, resultDecodeMillis={}, s3UploadMillis={}, totalMillis={}, "
@@ -120,6 +121,8 @@ public class GeminiImageServiceImpl implements GeminiImageService {
                     model,
                     prompt.length(),
                     referenceObservation.parts().size(),
+                    referenceObservation.variantReusedCount(),
+                    referenceObservation.runtimeCompressedCount(),
                     referenceObservation.totalSourceBytes(),
                     referenceObservation.totalOptimizedBytes(),
                     referenceObservation.totalBase64Bytes(),
@@ -175,6 +178,8 @@ public class GeminiImageServiceImpl implements GeminiImageService {
         long totalBase64Bytes = 0;
         long totalDownloadMillis = 0;
         long totalOptimizationMillis = 0;
+        int variantReusedCount = 0;
+        int runtimeCompressedCount = 0;
         for (String url : referenceImageUrls) {
             if (url == null || url.isBlank()) {
                 continue;
@@ -192,6 +197,12 @@ public class GeminiImageServiceImpl implements GeminiImageService {
                     String base64 = Base64.getEncoder().encodeToString(compressionResult.bytes());
                     String mimeType = variantReused || compressionResult.compressed() ? "image/webp" : imageData.mimeType();
                     referenceParts.add(GeminiImageRequest.Part.inlineData(mimeType, base64));
+                    if (variantReused) {
+                        variantReusedCount++;
+                    }
+                    if (compressionResult.compressed()) {
+                        runtimeCompressedCount++;
+                    }
                     totalSourceBytes += imageData.sourceBytes();
                     totalOptimizedBytes += compressionResult.bytes().length;
                     totalBase64Bytes += base64.length();
@@ -219,6 +230,8 @@ public class GeminiImageServiceImpl implements GeminiImageService {
         }
         return new ReferenceImageObservation(
                 List.copyOf(referenceParts),
+                variantReusedCount,
+                runtimeCompressedCount,
                 totalSourceBytes,
                 totalOptimizedBytes,
                 totalBase64Bytes,
@@ -374,6 +387,8 @@ public class GeminiImageServiceImpl implements GeminiImageService {
                     model,
                     prompt.length(),
                     referenceObservation.parts().size(),
+                    referenceObservation.variantReusedCount(),
+                    referenceObservation.runtimeCompressedCount(),
                     referenceObservation.totalSourceBytes(),
                     referenceObservation.totalOptimizedBytes(),
                     referenceObservation.totalBase64Bytes(),
@@ -472,6 +487,8 @@ public class GeminiImageServiceImpl implements GeminiImageService {
 
     private record ReferenceImageObservation(
             List<GeminiImageRequest.Part> parts,
+            int variantReusedCount,
+            int runtimeCompressedCount,
             long totalSourceBytes,
             long totalOptimizedBytes,
             long totalBase64Bytes,
@@ -479,7 +496,7 @@ public class GeminiImageServiceImpl implements GeminiImageService {
             long totalOptimizationMillis
     ) {
         private static ReferenceImageObservation empty() {
-            return new ReferenceImageObservation(List.of(), 0, 0, 0, 0, 0);
+            return new ReferenceImageObservation(List.of(), 0, 0, 0, 0, 0, 0, 0);
         }
     }
 

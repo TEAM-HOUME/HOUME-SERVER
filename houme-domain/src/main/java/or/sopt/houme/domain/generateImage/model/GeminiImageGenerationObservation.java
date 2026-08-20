@@ -12,6 +12,8 @@ public record GeminiImageGenerationObservation(
         String model,
         int promptChars,
         int referenceImageCount,
+        Integer variantReusedCount,
+        Integer runtimeCompressedCount,
         long referenceSourceBytes,
         long referenceOptimizedBytes,
         long referenceBase64Bytes,

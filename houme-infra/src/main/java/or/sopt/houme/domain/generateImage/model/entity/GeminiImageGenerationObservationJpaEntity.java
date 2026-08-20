@@ -50,6 +50,13 @@ public class GeminiImageGenerationObservationJpaEntity extends BaseEntity {
     @Column(name = "reference_image_count", nullable = false)
     private int referenceImageCount;
 
+    // 기존 관측 행은 variant 재사용 여부를 알 수 없으므로 nullable로 유지한다.
+    @Column(name = "variant_reused_count")
+    private Integer variantReusedCount;
+
+    @Column(name = "runtime_compressed_count")
+    private Integer runtimeCompressedCount;
+
     @Column(name = "reference_source_bytes", nullable = false)
     private long referenceSourceBytes;
 
@@ -113,6 +120,8 @@ public class GeminiImageGenerationObservationJpaEntity extends BaseEntity {
             String model,
             int promptChars,
             int referenceImageCount,
+            Integer variantReusedCount,
+            Integer runtimeCompressedCount,
             long referenceSourceBytes,
             long referenceOptimizedBytes,
             long referenceBase64Bytes,
@@ -139,6 +148,8 @@ public class GeminiImageGenerationObservationJpaEntity extends BaseEntity {
         this.model = model;
         this.promptChars = promptChars;
         this.referenceImageCount = referenceImageCount;
+        this.variantReusedCount = variantReusedCount;
+        this.runtimeCompressedCount = runtimeCompressedCount;
         this.referenceSourceBytes = referenceSourceBytes;
         this.referenceOptimizedBytes = referenceOptimizedBytes;
         this.referenceBase64Bytes = referenceBase64Bytes;
