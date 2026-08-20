@@ -111,7 +111,8 @@ public class GeminiImageServiceImpl implements GeminiImageService {
             Long cachedContentTokens = usageValue(response, GeminiImageResponse.UsageMetadata::cachedContentTokenCount);
             long totalMillis = elapsedMillis(totalStartedAt);
             log.info(
-                    "Gemini 이미지 생성 관측 model={}, promptChars={}, referenceImageCount={}, variantReusedCount={}, "
+                    "Gemini 이미지 생성 관측 model={}, promptChars={}, referenceImageCount={}, "
+                            + "requestedReferenceImageCount={}, skippedReferenceImageCount={}, variantReusedCount={}, "
                             + "runtimeCompressedCount={}, referenceSourceBytes={}, "
                             + "referenceOptimizedBytes={}, referenceBase64Bytes={}, referenceDownloadMillis={}, "
                             + "referenceOptimizationMillis={}, geminiCallMillis={}, "
@@ -120,7 +121,9 @@ public class GeminiImageServiceImpl implements GeminiImageService {
                             + "cachedContentTokens={}, resultUrl={}",
                     model,
                     prompt.length(),
-                    referenceObservation.parts().size(),
+                    referenceObservation.successfulReferenceImageCount(),
+                    referenceObservation.requestedReferenceImageCount(),
+                    referenceObservation.skippedReferenceImageCount(),
                     referenceObservation.variantReusedCount(),
                     referenceObservation.runtimeCompressedCount(),
                     referenceObservation.totalSourceBytes(),
@@ -180,10 +183,13 @@ public class GeminiImageServiceImpl implements GeminiImageService {
         long totalOptimizationMillis = 0;
         int variantReusedCount = 0;
         int runtimeCompressedCount = 0;
+        int requestedReferenceImageCount = 0;
+        int skippedReferenceImageCount = 0;
         for (String url : referenceImageUrls) {
             if (url == null || url.isBlank()) {
                 continue;
             }
+            requestedReferenceImageCount++;
             try {
                 String variantUrl = referenceImageVariantPort.findVariantUrl(url).orElse(url);
                 boolean variantReused = !variantUrl.equals(url);
@@ -225,11 +231,15 @@ public class GeminiImageServiceImpl implements GeminiImageService {
                     deleteQuietly(imageData.sourcePath());
                 }
             } catch (ChatGptException e) {
+                skippedReferenceImageCount++;
                 log.warn("참조 이미지 다운로드 실패. 해당 URL은 건너뜁니다. url={}", url);
             }
         }
         return new ReferenceImageObservation(
                 List.copyOf(referenceParts),
+                requestedReferenceImageCount,
+                referenceParts.size(),
+                skippedReferenceImageCount,
                 variantReusedCount,
                 runtimeCompressedCount,
                 totalSourceBytes,
@@ -386,7 +396,9 @@ public class GeminiImageServiceImpl implements GeminiImageService {
                     requestContext.traceId(),
                     model,
                     prompt.length(),
-                    referenceObservation.parts().size(),
+                    referenceObservation.successfulReferenceImageCount(),
+                    referenceObservation.requestedReferenceImageCount(),
+                    referenceObservation.skippedReferenceImageCount(),
                     referenceObservation.variantReusedCount(),
                     referenceObservation.runtimeCompressedCount(),
                     referenceObservation.totalSourceBytes(),
@@ -487,6 +499,9 @@ public class GeminiImageServiceImpl implements GeminiImageService {
 
     private record ReferenceImageObservation(
             List<GeminiImageRequest.Part> parts,
+            int requestedReferenceImageCount,
+            int successfulReferenceImageCount,
+            int skippedReferenceImageCount,
             int variantReusedCount,
             int runtimeCompressedCount,
             long totalSourceBytes,
@@ -496,7 +511,7 @@ public class GeminiImageServiceImpl implements GeminiImageService {
             long totalOptimizationMillis
     ) {
         private static ReferenceImageObservation empty() {
-            return new ReferenceImageObservation(List.of(), 0, 0, 0, 0, 0, 0, 0);
+            return new ReferenceImageObservation(List.of(), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
         }
     }
 
