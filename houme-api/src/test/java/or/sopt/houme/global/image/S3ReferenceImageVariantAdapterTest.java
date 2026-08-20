@@ -46,4 +46,17 @@ class S3ReferenceImageVariantAdapterTest {
         assertThat(adapter.findVariantUrl("https://example.com/product.jpg")).isEmpty();
         verifyNoInteractions(amazonS3);
     }
+
+    @Test
+    @DisplayName("Amazon AWS 도메인 경계가 아닌 URL은 S3 variant를 조회하지 않는다")
+    void returnsEmptyForLookalikeAwsDomain() {
+        S3ReferenceImageVariantAdapter adapter = new S3ReferenceImageVariantAdapter(
+                amazonS3, variantKeyResolver, "houme-bucket", 1280
+        );
+
+        assertThat(adapter.findVariantUrl(
+                "https://houme-bucket.s3.ap-northeast-2.notamazonaws.com/floorplan/room.png"
+        )).isEmpty();
+        verifyNoInteractions(amazonS3);
+    }
 }

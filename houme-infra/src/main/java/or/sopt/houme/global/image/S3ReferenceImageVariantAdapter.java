@@ -19,6 +19,7 @@ import java.util.Set;
 public class S3ReferenceImageVariantAdapter implements ReferenceImageVariantPort {
 
     private static final Set<String> TARGET_EXTENSIONS = Set.of("jpg", "jpeg", "png");
+    private static final String AWS_DOMAIN_SUFFIX = ".amazonaws.com";
     private static final List<String> ADMIN_IMAGE_PREFIXES = List.of(
             "floorplan/", "furniture/", "moodboard/", "banner/", "style/", "landing/"
     );
@@ -84,10 +85,10 @@ public class S3ReferenceImageVariantAdapter implements ReferenceImageVariantPort
 
     private String extractKey(String host, String path) {
         String virtualHostedPrefix = bucket.toLowerCase(Locale.ROOT) + ".s3";
-        if (host.startsWith(virtualHostedPrefix) && host.endsWith("amazonaws.com")) {
+        if (host.startsWith(virtualHostedPrefix + ".") && host.endsWith(AWS_DOMAIN_SUFFIX)) {
             return path;
         }
-        if (host.startsWith("s3") && host.endsWith("amazonaws.com")) {
+        if (host.startsWith("s3.") && host.endsWith(AWS_DOMAIN_SUFFIX)) {
             int separator = path.indexOf('/');
             if (separator > 0 && bucket.equals(path.substring(0, separator))) {
                 return path.substring(separator + 1);
