@@ -64,38 +64,39 @@ public class GeminiImageGenerationObservationJpaEntity extends BaseEntity {
     @Column(name = "runtime_compressed_count")
     private Integer runtimeCompressedCount;
 
-    @Column(name = "reference_source_bytes", nullable = false)
-    private long referenceSourceBytes;
+    // 초기 관측 기능 도입 전 행에는 성능 측정값이 없을 수 있으므로 nullable로 유지한다.
+    @Column(name = "reference_source_bytes")
+    private Long referenceSourceBytes;
 
-    @Column(name = "reference_optimized_bytes", nullable = false)
-    private long referenceOptimizedBytes;
+    @Column(name = "reference_optimized_bytes")
+    private Long referenceOptimizedBytes;
 
-    @Column(name = "reference_base64_bytes", nullable = false)
-    private long referenceBase64Bytes;
+    @Column(name = "reference_base64_bytes")
+    private Long referenceBase64Bytes;
 
-    @Column(name = "reference_download_millis", nullable = false)
-    private long referenceDownloadMillis;
+    @Column(name = "reference_download_millis")
+    private Long referenceDownloadMillis;
 
-    @Column(name = "reference_optimization_millis", nullable = false)
-    private long referenceOptimizationMillis;
+    @Column(name = "reference_optimization_millis")
+    private Long referenceOptimizationMillis;
 
-    @Column(name = "gemini_call_millis", nullable = false)
-    private long geminiCallMillis;
+    @Column(name = "gemini_call_millis")
+    private Long geminiCallMillis;
 
-    @Column(name = "result_bytes", nullable = false)
-    private long resultBytes;
+    @Column(name = "result_bytes")
+    private Long resultBytes;
 
     @Column(name = "result_mime_type", length = 100)
     private String resultMimeType;
 
-    @Column(name = "result_decode_millis", nullable = false)
-    private long resultDecodeMillis;
+    @Column(name = "result_decode_millis")
+    private Long resultDecodeMillis;
 
-    @Column(name = "s3_upload_millis", nullable = false)
-    private long s3UploadMillis;
+    @Column(name = "s3_upload_millis")
+    private Long s3UploadMillis;
 
-    @Column(name = "total_millis", nullable = false)
-    private long totalMillis;
+    @Column(name = "total_millis")
+    private Long totalMillis;
 
     @Column(name = "finish_reason", length = 100)
     private String finishReason;
@@ -131,17 +132,17 @@ public class GeminiImageGenerationObservationJpaEntity extends BaseEntity {
             Integer skippedReferenceImageCount,
             Integer variantReusedCount,
             Integer runtimeCompressedCount,
-            long referenceSourceBytes,
-            long referenceOptimizedBytes,
-            long referenceBase64Bytes,
-            long referenceDownloadMillis,
-            long referenceOptimizationMillis,
-            long geminiCallMillis,
-            long resultBytes,
+            Long referenceSourceBytes,
+            Long referenceOptimizedBytes,
+            Long referenceBase64Bytes,
+            Long referenceDownloadMillis,
+            Long referenceOptimizationMillis,
+            Long geminiCallMillis,
+            Long resultBytes,
             String resultMimeType,
-            long resultDecodeMillis,
-            long s3UploadMillis,
-            long totalMillis,
+            Long resultDecodeMillis,
+            Long s3UploadMillis,
+            Long totalMillis,
             String finishReason,
             Long promptTokens,
             Long candidateTokens,
