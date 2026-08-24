@@ -10,8 +10,6 @@ public record CoupangProductSearchResult(
         String productName,
         BigDecimal productPrice,
         String productImage,
-        String productUrl,
-        boolean rocket,
-        boolean freeShipping
+        String productUrl
 ) {
 }

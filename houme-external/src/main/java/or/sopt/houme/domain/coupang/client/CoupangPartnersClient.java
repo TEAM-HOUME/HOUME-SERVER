@@ -91,9 +91,7 @@ public class CoupangPartnersClient {
                     product.path("productName").asText(),
                     product.hasNonNull("productPrice") ? product.path("productPrice").decimalValue() : BigDecimal.ZERO,
                     product.path("productImage").asText(),
-                    product.path("productUrl").asText(),
-                    product.path("isRocket").asBoolean(),
-                    product.path("isFreeShipping").asBoolean()
+                    product.path("productUrl").asText()
             ));
         }
         return products;

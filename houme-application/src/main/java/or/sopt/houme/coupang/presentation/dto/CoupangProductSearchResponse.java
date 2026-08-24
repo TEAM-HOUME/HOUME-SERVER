@@ -9,9 +9,7 @@ public record CoupangProductSearchResponse(
         String productName,
         BigDecimal price,
         String imageUrl,
-        String productUrl,
-        boolean rocket,
-        boolean freeShipping
+        String productUrl
 ) {
     public static CoupangProductSearchResponse from(CoupangProductSearchResult result) {
         return new CoupangProductSearchResponse(
@@ -19,9 +17,7 @@ public record CoupangProductSearchResponse(
                 result.productName(),
                 result.productPrice(),
                 result.productImage(),
-                result.productUrl(),
-                result.rocket(),
-                result.freeShipping()
+                result.productUrl()
         );
     }
 }

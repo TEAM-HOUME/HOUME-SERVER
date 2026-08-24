@@ -41,12 +41,6 @@ public class CoupangProductJpaEntity extends BaseEntity {
     @Column(nullable = false, precision = 15, scale = 2)
     private BigDecimal currentPrice;
 
-    @Column(nullable = false)
-    private boolean rocket;
-
-    @Column(nullable = false)
-    private boolean freeShipping;
-
     private CoupangProductJpaEntity(CoupangProductSearchResult result) {
         apply(result);
     }
@@ -61,7 +55,5 @@ public class CoupangProductJpaEntity extends BaseEntity {
         this.imageUrl = result.productImage();
         this.productUrl = result.productUrl();
         this.currentPrice = result.productPrice();
-        this.rocket = result.rocket();
-        this.freeShipping = result.freeShipping();
     }
 }

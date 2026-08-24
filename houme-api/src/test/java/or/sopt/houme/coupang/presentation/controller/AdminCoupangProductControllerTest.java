@@ -21,7 +21,7 @@ class AdminCoupangProductControllerTest {
         CoupangProductSearchService service = mock(CoupangProductSearchService.class);
         when(service.search(eq("3인용 소파"), eq(10))).thenReturn(List.of(
                 new CoupangProductSearchResult(
-                        "1", "테스트 소파", new BigDecimal("100000"), "https://image", "https://product", true, false
+                        "1", "테스트 소파", new BigDecimal("100000"), "https://image", "https://product"
                 )
         ));
         AdminCoupangProductController controller = new AdminCoupangProductController(service);
