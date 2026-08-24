@@ -76,6 +76,18 @@ naver:
   client-secret: ${NAVER_CLIENT_SECRET}
   allowed-malls: ${NAVER_ALLOWED_MALLS}  # 쉼표 구분 (예: 롯데ON,쿠팡,11번가)
 
+coupang:
+  partners:
+    access-key: ${COUPANG_ACCESS_KEY:}
+    secret-key: ${COUPANG_SECRET_KEY:}
+  batch:
+    enabled: ${COUPANG_BATCH_ENABLED:false}
+    poll-delay-ms: 60000
+    initial-delay-ms: 60000
+    minimum-call-interval-minutes: 7
+    search-limit: 10
+    max-retry-count: 1
+
 soozip:
   base-url: ${SOOZIP_BASE_URL}
 
