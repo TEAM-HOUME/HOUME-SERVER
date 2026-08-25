@@ -37,6 +37,10 @@ public class GeminiKeywordTranslator {
             GeminiTextGenerationRequest req = GeminiTextGenerationRequest.of(prompt);
             GeminiTextGenerationResponse resp = textGenerationClient.generateContent(TRANSLATION_MODEL, apiKey, req);
             String result = resp.extractText().trim();
+            if (result.isBlank()) {
+                log.error("키워드 번역 결과가 비어있음: product={}", koreanProductName);
+                throw new CompareException(ErrorCode.COMPARE_KEYWORD_TRANSLATION_FAILED);
+            }
             log.debug("키워드 번역: '{}' → '{}'", koreanProductName, result);
             return result;
         } catch (FeignException e) {
