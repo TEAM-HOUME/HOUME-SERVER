@@ -143,6 +143,14 @@ public enum ErrorCode {
     NOT_FOUND_BANNER(HttpStatus.NOT_FOUND, 40426, "배너 객체를 찾을 수 없습니다."),
     NOT_FOUND_STYLE(HttpStatus.NOT_FOUND, 40427, "스타일 객체를 찾을 수 없습니다."),
 
+    // 가격비교 관련
+    COMPARE_JOB_NOT_FOUND(HttpStatus.NOT_FOUND, 40428, "비교 Job을 찾을 수 없습니다."),
+    COMPARE_DUMMY_NOT_ALLOWED_IN_PROD(HttpStatus.FORBIDDEN, 40301, "더미 모드는 프로덕션 환경에서 사용할 수 없습니다."),
+    COMPARE_SCRAPING_NOT_IMPLEMENTED(HttpStatus.BAD_REQUEST, 40033, "URL 스크래핑은 아직 구현되지 않았습니다. dummyProduct를 사용하세요."),
+    COMPARE_EBAY_SEARCH_FAILED(HttpStatus.BAD_GATEWAY, 50204, "eBay 검색 중 오류가 발생했습니다."),
+    COMPARE_EMBEDDING_FAILED(HttpStatus.BAD_GATEWAY, 50205, "임베딩 생성 중 오류가 발생했습니다."),
+    COMPARE_KEYWORD_TRANSLATION_FAILED(HttpStatus.BAD_GATEWAY, 50206, "키워드 번역 중 오류가 발생했습니다."),
+
 
     /**
      * 405 METHOD_NOT_ALLOWED
