@@ -50,8 +50,8 @@ public class GeminiEmbeddingAdapter {
 
     public List<Double> embedImageUrl(String imageUrl) {
         try {
-            String base64 = downloadBase64(imageUrl);
-            GeminiEmbeddingRequest req = GeminiEmbeddingRequest.forImage("image/jpeg", base64);
+            DownloadResult download = downloadWithMimeType(imageUrl);
+            GeminiEmbeddingRequest req = GeminiEmbeddingRequest.forImage(download.mimeType(), download.base64());
             GeminiEmbeddingResponse resp = embeddingClient.embedContent(EMBEDDING_MODEL, apiKey, req);
             return resp.embedding().values();
         } catch (FeignException e) {
@@ -61,6 +61,10 @@ public class GeminiEmbeddingAdapter {
     }
 
     public String downloadBase64(String url) {
+        return downloadWithMimeType(url).base64();
+    }
+
+    private DownloadResult downloadWithMimeType(String url) {
         try {
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(URI.create(url))
@@ -73,10 +77,16 @@ public class GeminiEmbeddingAdapter {
                 log.error("이미지 다운로드 실패: url={}, status={}", url, response.statusCode());
                 throw new CompareException(ErrorCode.COMPARE_EMBEDDING_FAILED);
             }
-            return Base64.getEncoder().encodeToString(response.body());
+            String mimeType = response.headers().firstValue("Content-Type")
+                    .map(ct -> ct.split(";")[0].trim().toLowerCase(Locale.ROOT))
+                    .filter(ct -> ct.startsWith("image/"))
+                    .orElse("image/jpeg");
+            return new DownloadResult(Base64.getEncoder().encodeToString(response.body()), mimeType);
         } catch (IOException | InterruptedException e) {
             if (e instanceof InterruptedException) Thread.currentThread().interrupt();
             throw new CompareException(ErrorCode.COMPARE_EMBEDDING_FAILED);
         }
     }
+
+    private record DownloadResult(String base64, String mimeType) {}
 }

@@ -8,7 +8,8 @@ public record GeminiTextGenerationResponse(List<Candidate> candidates) {
         if (candidates == null || candidates.isEmpty()) return "";
         Candidate first = candidates.get(0);
         if (first.content() == null || first.content().parts() == null || first.content().parts().isEmpty()) return "";
-        return first.content().parts().get(0).text();
+        String text = first.content().parts().get(0).text();
+        return text != null ? text : "";
     }
 
     public record Candidate(Content content) {}

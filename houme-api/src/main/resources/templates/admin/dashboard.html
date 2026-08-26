@@ -6602,10 +6602,12 @@
             const priceKrw = document.getElementById('cmp-price-krw').value;
             if (!title) { alert('한글 상품명을 입력해주세요.'); return; }
             if (!priceKrw) { alert('가격(KRW)을 입력해주세요.'); return; }
+            const parsedPrice = parseFloat(priceKrw);
+            if (!isFinite(parsedPrice) || parsedPrice <= 0) { alert('가격은 0보다 큰 숫자여야 합니다.'); return; }
             runCompareSearch('/api/admin/v1/compare/text-search', {
                 title,
                 imageUrl: document.getElementById('cmp-image-url').value.trim() || null,
-                priceKrw: parseFloat(priceKrw),
+                priceKrw: parsedPrice,
                 category: document.getElementById('cmp-category').value || null
             }, 'cmp-text-result', 'cmp-text-loading', true);
         });
@@ -6615,9 +6617,11 @@
             const priceKrw = document.getElementById('cmp-price-krw').value;
             if (!imageUrl) { alert('이미지 URL을 입력해주세요.'); return; }
             if (!priceKrw) { alert('가격(KRW)을 입력해주세요.'); return; }
+            const parsedImagePrice = parseFloat(priceKrw);
+            if (!isFinite(parsedImagePrice) || parsedImagePrice <= 0) { alert('가격은 0보다 큰 숫자여야 합니다.'); return; }
             runCompareSearch('/api/admin/v1/compare/image-search', {
                 imageUrl,
-                priceKrw: parseFloat(priceKrw),
+                priceKrw: parsedImagePrice,
                 category: document.getElementById('cmp-category').value || null
             }, 'cmp-image-result', 'cmp-image-loading', false);
         });
@@ -6635,9 +6639,14 @@
             headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + accessToken },
             body: JSON.stringify(body)
         })
-        .then(res => res.json())
-        .then(json => {
+        .then(res => res.json().then(json => ({ ok: res.ok, status: res.status, json })))
+        .then(({ ok, status, json }) => {
             loadingDiv.style.display = 'none';
+            if (!ok) {
+                const msg = json?.message || json?.error || `HTTP ${status}`;
+                resultDiv.innerHTML = `<div class="alert alert-danger">오류: ${escapeHtml(msg)}</div>`;
+                return;
+            }
             const data = (json && json.data) || {};
             const items = data.items || [];
             const stats = data.filterStats;
