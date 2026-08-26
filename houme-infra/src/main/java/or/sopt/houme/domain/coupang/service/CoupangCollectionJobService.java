@@ -59,7 +59,7 @@ public class CoupangCollectionJobService {
 
         for (CoupangProductSearchResult result : distinctResults.values()) {
             CoupangProductJpaEntity product = productRepository.findByCoupangProductId(result.productId())
-                    .map(existing -> updateProduct(existing, result))
+                    .map(existing -> updateExistingProductAndRecordPriceHistory(existing, result))
                     .orElseGet(() -> saveNewProductAndPriceHistory(result));
             keywordProductRepository.save(CoupangKeywordProductJpaEntity.of(keyword, product));
         }
@@ -93,7 +93,10 @@ public class CoupangCollectionJobService {
         return product;
     }
 
-    private CoupangProductJpaEntity updateProduct(CoupangProductJpaEntity product, CoupangProductSearchResult result) {
+    private CoupangProductJpaEntity updateExistingProductAndRecordPriceHistory(
+            CoupangProductJpaEntity product,
+            CoupangProductSearchResult result
+    ) {
         BigDecimal previousPrice = product.getCurrentPrice();
         product.apply(result);
         if (previousPrice.compareTo(result.productPrice()) != 0) {
