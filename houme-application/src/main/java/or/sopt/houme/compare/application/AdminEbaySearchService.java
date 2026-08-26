@@ -28,49 +28,51 @@ public class AdminEbaySearchService {
     private final PriceSoftFilter priceSoftFilter;
     private final EbayPipelineUtils utils;
 
-    public List<AdminSearchCandidate> textSearch(
+    public AdminSearchResult textSearch(
             String koreanTitle, String imageUrl, Double priceKrw, String category) {
 
         String keyword = keywordTranslator.translateToEnglish(koreanTitle);
         log.info("[Admin 텍스트검색] 번역: '{}' → '{}'", koreanTitle, keyword);
 
-        List<EbaySearchResponse.ItemSummary> items = ebaySearchAdapter.search(keyword, 200);
-        items = applyFilters(items, category, priceKrw);
-        List<EbaySearchResponse.ItemSummary> candidates = items.stream().limit(ADMIN_TOP_N).collect(Collectors.toList());
+        List<EbaySearchResponse.ItemSummary> raw = ebaySearchAdapter.search(keyword, 200);
+        FilteredItems filtered = applyFilters(raw, category, priceKrw);
+        List<EbaySearchResponse.ItemSummary> candidates = filtered.items().stream().limit(ADMIN_TOP_N).collect(Collectors.toList());
 
         List<Double> origTextEmb = embeddingAdapter.embedText(koreanTitle);
         List<Double> origImageEmb = embedImageSafe(imageUrl);
 
-        return scoreInParallel(candidates, origTextEmb, origImageEmb);
+        List<AdminSearchCandidate> scored = scoreInParallel(candidates, origTextEmb, origImageEmb);
+        FilterStats stats = new FilterStats(filtered.totalFetched(), filtered.afterCategoryFilter(), filtered.afterPriceFilter(), scored.size());
+        return new AdminSearchResult(scored, stats);
     }
 
-    public List<AdminSearchCandidate> imageSearch(
+    public AdminSearchResult imageSearch(
             String imageUrl, Double priceKrw, String category) {
 
         String base64 = embeddingAdapter.downloadBase64(imageUrl);
         log.info("[Admin 이미지검색] base64 변환 완료: url={}", imageUrl);
 
-        List<EbaySearchResponse.ItemSummary> items = ebaySearchAdapter.searchByImage(base64, 200);
-        items = applyFilters(items, category, priceKrw);
-        List<EbaySearchResponse.ItemSummary> candidates = items.stream().limit(ADMIN_TOP_N).collect(Collectors.toList());
+        List<EbaySearchResponse.ItemSummary> raw = ebaySearchAdapter.searchByImage(base64, 200);
+        FilteredItems filtered = applyFilters(raw, category, priceKrw);
+        List<EbaySearchResponse.ItemSummary> candidates = filtered.items().stream().limit(ADMIN_TOP_N).collect(Collectors.toList());
 
         List<Double> origImageEmb = embedImageSafe(imageUrl);
 
-        return scoreInParallel(candidates, null, origImageEmb);
+        List<AdminSearchCandidate> scored = scoreInParallel(candidates, null, origImageEmb);
+        FilterStats stats = new FilterStats(filtered.totalFetched(), filtered.afterCategoryFilter(), filtered.afterPriceFilter(), scored.size());
+        return new AdminSearchResult(scored, stats);
     }
 
-    private List<EbaySearchResponse.ItemSummary> applyFilters(
-            List<EbaySearchResponse.ItemSummary> items, String category, Double priceKrw) {
+    private FilteredItems applyFilters(List<EbaySearchResponse.ItemSummary> items, String category, Double priceKrw) {
+        int totalFetched = items.size();
 
         SoozipCategory soozipCat = utils.parseSoozipCategory(category);
         if (soozipCat != null && EbayPipelineUtils.EBAY_CATEGORY_MAP.containsKey(soozipCat)) {
             Set<String> allowed = EbayPipelineUtils.EBAY_CATEGORY_MAP.get(soozipCat);
-            int before = items.size();
-            items = items.stream()
-                    .filter(item -> utils.passesHardFilter(item, allowed))
-                    .collect(Collectors.toList());
-            log.info("[Admin] 하드필터: {}개 → {}개", before, items.size());
+            items = items.stream().filter(item -> utils.passesHardFilter(item, allowed)).collect(Collectors.toList());
+            log.info("[Admin] 하드필터: {}개 → {}개", totalFetched, items.size());
         }
+        int afterCategory = items.size();
 
         if (priceKrw != null) {
             items = items.stream()
@@ -78,9 +80,12 @@ public class AdminEbaySearchService {
                     .collect(Collectors.toList());
             log.info("[Admin] 소프트필터: {}개", items.size());
         }
+        int afterPrice = items.size();
 
-        return items;
+        return new FilteredItems(items, totalFetched, afterCategory, afterPrice);
     }
+
+    private record FilteredItems(List<EbaySearchResponse.ItemSummary> items, int totalFetched, int afterCategoryFilter, int afterPriceFilter) {}
 
     private List<AdminSearchCandidate> scoreInParallel(
             List<EbaySearchResponse.ItemSummary> candidates,
@@ -135,6 +140,10 @@ public class AdminEbaySearchService {
             return null;
         }
     }
+
+    public record FilterStats(int totalFetched, int afterCategoryFilter, int afterPriceFilter, int scored) {}
+
+    public record AdminSearchResult(List<AdminSearchCandidate> items, FilterStats filterStats) {}
 
     public record AdminSearchCandidate(
             String title,

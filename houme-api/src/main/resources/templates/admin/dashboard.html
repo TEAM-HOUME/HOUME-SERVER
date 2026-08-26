@@ -6638,9 +6638,24 @@
         .then(res => res.json())
         .then(json => {
             loadingDiv.style.display = 'none';
-            const items = (json && json.data) || [];
-            if (!items.length) { resultDiv.innerHTML = '<div class="alert alert-warning">결과 없음</div>'; return; }
-            let html = '<div class="table-responsive"><table class="table table-sm table-hover align-middle"><thead><tr>';
+            const data = (json && json.data) || {};
+            const items = data.items || [];
+            const stats = data.filterStats;
+            let html = '';
+            if (stats) {
+                const badge = (label, val) => `<span class="badge bg-secondary me-1">${label}: ${val}</span>`;
+                html += `<div class="mb-2 small">
+                    ${badge('eBay 수집', stats.totalFetched)}
+                    <i class="fas fa-arrow-right text-muted mx-1"></i>
+                    ${badge('카테고리 필터 후', stats.afterCategoryFilter)}
+                    <i class="fas fa-arrow-right text-muted mx-1"></i>
+                    ${badge('가격 필터 후', stats.afterPriceFilter)}
+                    <i class="fas fa-arrow-right text-muted mx-1"></i>
+                    ${badge('스코어링', stats.scored)}
+                </div>`;
+            }
+            if (!items.length) { resultDiv.innerHTML = html + '<div class="alert alert-warning">결과 없음</div>'; return; }
+            html += '<div class="table-responsive"><table class="table table-sm table-hover align-middle"><thead><tr>';
             html += '<th>#</th><th>이미지</th><th>상품명</th><th>가격(USD)</th>';
             if (hasText) html += '<th>텍스트유사도</th>';
             html += '<th>이미지유사도</th><th>종합점수</th><th>링크</th></tr></thead><tbody>';
