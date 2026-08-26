@@ -74,11 +74,6 @@ public class CoupangCollectionJobJpaEntity extends BaseEntity {
         this.errorMessage = errorMessage;
     }
 
-    public void requeue(LocalDateTime scheduledAt) {
-        this.status = CoupangJobStatus.PENDING;
-        this.scheduledAt = scheduledAt;
-    }
-
     public void returnToQueueTail(LocalDateTime now) {
         this.status = CoupangJobStatus.PENDING;
         this.scheduledAt = now;

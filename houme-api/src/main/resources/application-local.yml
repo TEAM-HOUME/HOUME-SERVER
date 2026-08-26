@@ -82,9 +82,7 @@ coupang:
     secret-key: ${COUPANG_SECRET_KEY:}
   batch:
     enabled: ${COUPANG_BATCH_ENABLED:false}
-    poll-delay-ms: 60000
-    initial-delay-ms: 60000
-    minimum-call-interval-minutes: 7
+    execution-delay-ms: 420000
     search-limit: 10
 
 soozip:

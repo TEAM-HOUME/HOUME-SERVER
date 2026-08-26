@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * DB 영속 Job Queue에서 하나를 선점한 뒤, 전역 호출 간격을 지키며 쿠팡 상품을 수집합니다.
+ * 단일 서버에서 7분 간격으로 DB 영속 Job Queue의 작업 하나를 처리합니다.
  * 외부 API 호출은 트랜잭션 밖에서 수행하고 결과 저장만 별도 짧은 트랜잭션으로 처리합니다.
  */
 @Component
@@ -26,10 +26,7 @@ public class CoupangCollectionScheduler {
     private final CoupangPartnersClient coupangPartnersClient;
     private final CoupangBatchProperties batchProperties;
 
-    @Scheduled(
-            fixedDelayString = "${coupang.batch.poll-delay-ms:60000}",
-            initialDelayString = "${coupang.batch.initial-delay-ms:60000}"
-    )
+    @Scheduled(fixedDelayString = "${coupang.batch.execution-delay-ms:420000}")
     public void collectOneKeyword() {
         if (!batchProperties.isEnabled()) {
             return;
@@ -46,11 +43,6 @@ public class CoupangCollectionScheduler {
         }
 
         CoupangCollectionJobService.ClaimedCoupangJob job = claimedJob.get();
-        if (!collectionJobService.tryAcquireApiCallSlot()) {
-            collectionJobService.releaseWithoutCalling(job.jobId());
-            return;
-        }
-
         try {
             List<CoupangProductSearchResult> products = coupangPartnersClient.searchProducts(
                     job.keyword(), batchProperties.getSearchLimit()

@@ -2,14 +2,12 @@ package or.sopt.houme.domain.coupang.service;
 
 import lombok.RequiredArgsConstructor;
 import or.sopt.houme.coupang.domain.CoupangProductSearchResult;
-import or.sopt.houme.domain.coupang.model.entity.CoupangApiCallControlJpaEntity;
 import or.sopt.houme.domain.coupang.model.entity.CoupangCollectionJobJpaEntity;
 import or.sopt.houme.domain.coupang.model.entity.CoupangJobStatus;
 import or.sopt.houme.domain.coupang.model.entity.CoupangKeywordJpaEntity;
 import or.sopt.houme.domain.coupang.model.entity.CoupangKeywordProductJpaEntity;
 import or.sopt.houme.domain.coupang.model.entity.CoupangProductJpaEntity;
 import or.sopt.houme.domain.coupang.model.entity.CoupangProductPriceHistoryJpaEntity;
-import or.sopt.houme.domain.coupang.repository.CoupangApiCallControlJpaRepository;
 import or.sopt.houme.domain.coupang.repository.CoupangCollectionJobJpaRepository;
 import or.sopt.houme.domain.coupang.repository.CoupangKeywordProductJpaRepository;
 import or.sopt.houme.domain.coupang.repository.CoupangProductJpaRepository;
@@ -32,8 +30,6 @@ public class CoupangCollectionJobService {
     private final CoupangProductJpaRepository productRepository;
     private final CoupangKeywordProductJpaRepository keywordProductRepository;
     private final CoupangProductPriceHistoryJpaRepository priceHistoryRepository;
-    private final CoupangApiCallControlJpaRepository apiCallControlRepository;
-    private final CoupangBatchProperties batchProperties;
 
     @Transactional
     public Optional<ClaimedCoupangJob> claimNextJob() {
@@ -45,24 +41,6 @@ public class CoupangCollectionJobService {
                     job.claim(now);
                     return new ClaimedCoupangJob(job.getId(), job.getKeyword().getId(), job.getKeyword().getKeyword());
                 });
-    }
-
-    @Transactional
-    public boolean tryAcquireApiCallSlot() {
-        LocalDateTime now = LocalDateTime.now();
-        CoupangApiCallControlJpaEntity control = apiCallControlRepository
-                .findWithLockById(CoupangApiCallControlJpaEntity.SINGLETON_ID)
-                .orElseGet(() -> apiCallControlRepository.save(CoupangApiCallControlJpaEntity.initial()));
-        if (!control.canAcquire(now, batchProperties.getMinimumCallIntervalMinutes())) {
-            return false;
-        }
-        control.acquire(now);
-        return true;
-    }
-
-    @Transactional
-    public void releaseWithoutCalling(Long jobId) {
-        jobRepository.findById(jobId).ifPresent(job -> job.requeue(LocalDateTime.now().plusMinutes(1)));
     }
 
     @Transactional
