@@ -28,18 +28,19 @@ public class CoupangKeywordJpaEntity extends BaseEntity {
     @Column(nullable = false, unique = true, length = 100)
     private String keyword;
 
-    @Column(nullable = false, length = 50)
-    private String category;
+    /** furnitures 테이블의 PK. 도메인 경계를 넘는 JPA 연관 대신 DB FK로만 연결한다. */
+    @Column(name = "furniture_id")
+    private Long furnitureId;
 
     private LocalDateTime lastSuccessAt;
 
-    private CoupangKeywordJpaEntity(String keyword, String category) {
+    private CoupangKeywordJpaEntity(String keyword, Long furnitureId) {
         this.keyword = keyword;
-        this.category = category;
+        this.furnitureId = furnitureId;
     }
 
-    public static CoupangKeywordJpaEntity of(String keyword, String category) {
-        return new CoupangKeywordJpaEntity(keyword, category);
+    public static CoupangKeywordJpaEntity of(String keyword, Long furnitureId) {
+        return new CoupangKeywordJpaEntity(keyword, furnitureId);
     }
 
     public void markSucceeded(LocalDateTime now) {

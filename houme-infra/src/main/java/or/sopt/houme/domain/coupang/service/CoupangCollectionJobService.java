@@ -11,7 +11,6 @@ import or.sopt.houme.domain.coupang.model.entity.CoupangProductJpaEntity;
 import or.sopt.houme.domain.coupang.model.entity.CoupangProductPriceHistoryJpaEntity;
 import or.sopt.houme.domain.coupang.repository.CoupangApiCallControlJpaRepository;
 import or.sopt.houme.domain.coupang.repository.CoupangCollectionJobJpaRepository;
-import or.sopt.houme.domain.coupang.repository.CoupangKeywordJpaRepository;
 import or.sopt.houme.domain.coupang.repository.CoupangKeywordProductJpaRepository;
 import or.sopt.houme.domain.coupang.repository.CoupangProductJpaRepository;
 import or.sopt.houme.domain.coupang.repository.CoupangProductPriceHistoryJpaRepository;
@@ -29,30 +28,12 @@ public class CoupangCollectionJobService {
 
     private static final int RUNNING_JOB_TIMEOUT_HOURS = 1;
 
-    private final CoupangKeywordJpaRepository keywordRepository;
     private final CoupangCollectionJobJpaRepository jobRepository;
     private final CoupangProductJpaRepository productRepository;
     private final CoupangKeywordProductJpaRepository keywordProductRepository;
     private final CoupangProductPriceHistoryJpaRepository priceHistoryRepository;
     private final CoupangApiCallControlJpaRepository apiCallControlRepository;
     private final CoupangBatchProperties batchProperties;
-
-    @Transactional
-    public void seedKeywords(List<CoupangSeedKeyword> seedKeywords) {
-        LocalDateTime now = LocalDateTime.now();
-        for (CoupangSeedKeyword seedKeyword : seedKeywords) {
-            if (keywordRepository.existsByKeyword(seedKeyword.keyword())) {
-                continue;
-            }
-            CoupangKeywordJpaEntity keyword = keywordRepository.save(
-                    CoupangKeywordJpaEntity.of(seedKeyword.keyword(), seedKeyword.category())
-            );
-            jobRepository.save(CoupangCollectionJobJpaEntity.of(keyword, now));
-        }
-        if (!apiCallControlRepository.existsById(CoupangApiCallControlJpaEntity.SINGLETON_ID)) {
-            apiCallControlRepository.save(CoupangApiCallControlJpaEntity.initial());
-        }
-    }
 
     @Transactional
     public Optional<ClaimedCoupangJob> claimNextJob() {
