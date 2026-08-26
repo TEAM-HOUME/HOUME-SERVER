@@ -9,6 +9,7 @@ public record CoupangProductSearchResult(
         String productId,
         String productName,
         BigDecimal productPrice,
+        BigDecimal productDiscountRate,
         String productImage,
         String productUrl
 ) {

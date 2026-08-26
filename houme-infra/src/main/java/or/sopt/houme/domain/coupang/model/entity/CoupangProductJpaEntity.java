@@ -14,6 +14,7 @@ import or.sopt.houme.global.entity.BaseEntity;
 import org.hibernate.annotations.Comment;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 @Entity
 @Getter
@@ -21,6 +22,8 @@ import java.math.BigDecimal;
 @Table(name = "coupang_products")
 @Comment("쿠팡 파트너스 검색 상품 캐시")
 public class CoupangProductJpaEntity extends BaseEntity {
+
+    private static final BigDecimal HUNDRED = BigDecimal.valueOf(100);
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -41,6 +44,13 @@ public class CoupangProductJpaEntity extends BaseEntity {
     @Column(nullable = false, precision = 15, scale = 2)
     private BigDecimal currentPrice;
 
+    @Column(nullable = false, precision = 5, scale = 2)
+    private BigDecimal discountRate;
+
+    /** 쿠팡 파트너스 API의 판매가·할인율을 기준으로 100원 단위 반올림한 추정 원가입니다. */
+    @Column(nullable = false, precision = 15, scale = 2)
+    private BigDecimal estimatedOriginalPrice;
+
     private CoupangProductJpaEntity(CoupangProductSearchResult result) {
         apply(result);
     }
@@ -55,5 +65,24 @@ public class CoupangProductJpaEntity extends BaseEntity {
         this.imageUrl = result.productImage();
         this.productUrl = result.productUrl();
         this.currentPrice = result.productPrice();
+        this.discountRate = result.productDiscountRate();
+        this.estimatedOriginalPrice = estimateOriginalPrice(result.productPrice(), result.productDiscountRate());
+    }
+
+    private BigDecimal estimateOriginalPrice(BigDecimal currentPrice, BigDecimal discountRate) {
+        if (currentPrice == null || currentPrice.signum() <= 0) {
+            return BigDecimal.ZERO;
+        }
+        if (discountRate == null || discountRate.signum() <= 0 || discountRate.compareTo(HUNDRED) >= 0) {
+            return roundToHundred(currentPrice);
+        }
+
+        BigDecimal estimatedPrice = currentPrice.multiply(HUNDRED)
+                .divide(HUNDRED.subtract(discountRate), 10, RoundingMode.HALF_UP);
+        return roundToHundred(estimatedPrice);
+    }
+
+    private BigDecimal roundToHundred(BigDecimal price) {
+        return price.setScale(-2, RoundingMode.HALF_UP);
     }
 }
