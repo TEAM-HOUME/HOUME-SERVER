@@ -60,7 +60,7 @@ public class CoupangCollectionJobService {
         for (CoupangProductSearchResult result : distinctResults.values()) {
             CoupangProductJpaEntity product = productRepository.findByCoupangProductId(result.productId())
                     .map(existing -> updateProduct(existing, result))
-                    .orElseGet(() -> createProduct(result));
+                    .orElseGet(() -> saveNewProductAndPriceHistory(result));
             keywordProductRepository.save(CoupangKeywordProductJpaEntity.of(keyword, product));
         }
 
@@ -87,7 +87,7 @@ public class CoupangCollectionJobService {
         return expiredJobs.size();
     }
 
-    private CoupangProductJpaEntity createProduct(CoupangProductSearchResult result) {
+    private CoupangProductJpaEntity saveNewProductAndPriceHistory(CoupangProductSearchResult result) {
         CoupangProductJpaEntity product = productRepository.save(CoupangProductJpaEntity.from(result));
         priceHistoryRepository.save(CoupangProductPriceHistoryJpaEntity.of(product, result.productPrice()));
         return product;
