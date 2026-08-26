@@ -74,9 +74,10 @@ public class CoupangPartnersClient {
         }
     }
 
-    private List<CoupangProductSearchResult> parseProducts(String body) throws Exception {
+    List<CoupangProductSearchResult> parseProducts(String body) throws Exception {
         JsonNode root = objectMapper.readTree(body);
-        if (!root.path("rCode").asText("0").equals("0")) {
+        JsonNode responseCode = root.get("rCode");
+        if (responseCode == null || !"0".equals(responseCode.asText())) {
             throw new CoupangPartnersClientException("쿠팡 상품 검색 응답 오류: " + root.path("rMessage").asText());
         }
 
