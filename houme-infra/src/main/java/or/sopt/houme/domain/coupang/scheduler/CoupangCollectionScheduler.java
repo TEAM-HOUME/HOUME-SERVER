@@ -35,6 +35,11 @@ public class CoupangCollectionScheduler {
             return;
         }
 
+        int recoveredJobCount = collectionJobService.recoverExpiredRunningJobs();
+        if (recoveredJobCount > 0) {
+            log.warn("장시간 RUNNING 상태였던 쿠팡 수집 Job을 복구했습니다. count={}", recoveredJobCount);
+        }
+
         Optional<CoupangCollectionJobService.ClaimedCoupangJob> claimedJob = collectionJobService.claimNextJob();
         if (claimedJob.isEmpty()) {
             return;
@@ -53,10 +58,10 @@ public class CoupangCollectionScheduler {
             collectionJobService.completeJob(job.jobId(), products);
             log.info("쿠팡 상품 수집 완료: keyword={}, resultCount={}", job.keyword(), products.size());
         } catch (CoupangPartnersClientException e) {
-            collectionJobService.failJob(job.jobId(), "COUPANG_API_ERROR", e.getMessage());
+            collectionJobService.failAndReturnToQueueTail(job.jobId(), "COUPANG_API_ERROR", e.getMessage());
             log.warn("쿠팡 상품 수집 실패: keyword={}", job.keyword(), e);
         } catch (Exception e) {
-            collectionJobService.failJob(job.jobId(), "COUPANG_BATCH_ERROR", e.getMessage());
+            collectionJobService.failAndReturnToQueueTail(job.jobId(), "COUPANG_BATCH_ERROR", e.getMessage());
             log.error("쿠팡 배치 처리 중 예기치 못한 오류: keyword={}", job.keyword(), e);
         }
     }

@@ -14,5 +14,4 @@ public class CoupangBatchProperties {
     private boolean enabled = false;
     private int searchLimit = 10;
     private long minimumCallIntervalMinutes = 7;
-    private int maxRetryCount = 1;
 }

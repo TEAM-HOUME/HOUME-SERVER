@@ -39,9 +39,6 @@ public class CoupangCollectionJobJpaEntity extends BaseEntity {
     private CoupangJobStatus status;
 
     @Column(nullable = false)
-    private int retryCount;
-
-    @Column(nullable = false)
     private LocalDateTime scheduledAt;
 
     private LocalDateTime startedAt;
@@ -69,23 +66,9 @@ public class CoupangCollectionJobJpaEntity extends BaseEntity {
         this.startedAt = now;
     }
 
-    public void succeed(LocalDateTime now) {
-        this.status = CoupangJobStatus.SUCCEEDED;
-        this.finishedAt = now;
-        this.errorCode = null;
-        this.errorMessage = null;
-    }
-
-    public void retry(LocalDateTime nextAttemptAt, String errorCode, String errorMessage) {
-        this.status = CoupangJobStatus.RETRY_WAIT;
-        this.retryCount++;
-        this.scheduledAt = nextAttemptAt;
-        this.errorCode = errorCode;
-        this.errorMessage = errorMessage;
-    }
-
-    public void fail(LocalDateTime now, String errorCode, String errorMessage) {
-        this.status = CoupangJobStatus.FAILED;
+    public void failAndReturnToQueueTail(LocalDateTime now, String errorCode, String errorMessage) {
+        this.status = CoupangJobStatus.PENDING;
+        this.scheduledAt = now;
         this.finishedAt = now;
         this.errorCode = errorCode;
         this.errorMessage = errorMessage;
@@ -102,5 +85,13 @@ public class CoupangCollectionJobJpaEntity extends BaseEntity {
         this.finishedAt = now;
         this.errorCode = null;
         this.errorMessage = null;
+    }
+
+    public void recoverFromRunningTimeout(LocalDateTime now) {
+        this.status = CoupangJobStatus.PENDING;
+        this.scheduledAt = now;
+        this.finishedAt = now;
+        this.errorCode = "RUNNING_TIMEOUT";
+        this.errorMessage = "1시간 내에 완료되지 않은 RUNNING 작업을 복구했습니다.";
     }
 }

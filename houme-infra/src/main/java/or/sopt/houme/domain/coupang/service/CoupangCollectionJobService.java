@@ -20,7 +20,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -28,9 +27,7 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class CoupangCollectionJobService {
 
-    private static final Collection<CoupangJobStatus> CLAIMABLE_STATUSES = List.of(
-            CoupangJobStatus.PENDING, CoupangJobStatus.RETRY_WAIT
-    );
+    private static final int RUNNING_JOB_TIMEOUT_HOURS = 1;
 
     private final CoupangKeywordJpaRepository keywordRepository;
     private final CoupangCollectionJobJpaRepository jobRepository;
@@ -60,8 +57,8 @@ public class CoupangCollectionJobService {
     @Transactional
     public Optional<ClaimedCoupangJob> claimNextJob() {
         LocalDateTime now = LocalDateTime.now();
-        return jobRepository.findFirstByStatusInAndScheduledAtLessThanEqualOrderByScheduledAtAsc(
-                        CLAIMABLE_STATUSES, now
+        return jobRepository.findFirstByStatusAndScheduledAtLessThanEqualOrderByScheduledAtAsc(
+                        CoupangJobStatus.PENDING, now
                 )
                 .map(job -> {
                     job.claim(now);
@@ -106,14 +103,21 @@ public class CoupangCollectionJobService {
     }
 
     @Transactional
-    public void failJob(Long jobId, String errorCode, String errorMessage) {
-        jobRepository.findById(jobId).ifPresent(job -> {
-            if (job.getRetryCount() < batchProperties.getMaxRetryCount()) {
-                job.retry(LocalDateTime.now().plusMinutes(job.getRetryCount() + 1L), errorCode, abbreviate(errorMessage));
-                return;
-            }
-            job.fail(LocalDateTime.now(), errorCode, abbreviate(errorMessage));
-        });
+    public void failAndReturnToQueueTail(Long jobId, String errorCode, String errorMessage) {
+        jobRepository.findById(jobId).ifPresent(job ->
+                job.failAndReturnToQueueTail(LocalDateTime.now(), errorCode, abbreviate(errorMessage))
+        );
+    }
+
+    @Transactional
+    public int recoverExpiredRunningJobs() {
+        LocalDateTime now = LocalDateTime.now();
+        List<CoupangCollectionJobJpaEntity> expiredJobs = jobRepository.findAllByStatusAndStartedAtBefore(
+                CoupangJobStatus.RUNNING,
+                now.minusHours(RUNNING_JOB_TIMEOUT_HOURS)
+        );
+        expiredJobs.forEach(job -> job.recoverFromRunningTimeout(now));
+        return expiredJobs.size();
     }
 
     private CoupangProductJpaEntity createProduct(CoupangProductSearchResult result) {

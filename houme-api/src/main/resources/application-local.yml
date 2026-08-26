@@ -86,7 +86,6 @@ coupang:
     initial-delay-ms: 60000
     minimum-call-interval-minutes: 7
     search-limit: 10
-    max-retry-count: 1
 
 soozip:
   base-url: ${SOOZIP_BASE_URL}
