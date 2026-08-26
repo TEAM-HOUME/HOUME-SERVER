@@ -6,6 +6,7 @@ import or.sopt.houme.coupang.domain.CoupangProductSearchResult;
 import or.sopt.houme.domain.coupang.client.CoupangPartnersClient;
 import or.sopt.houme.domain.coupang.client.CoupangPartnersClientException;
 import or.sopt.houme.domain.coupang.service.CoupangBatchProperties;
+import or.sopt.houme.domain.coupang.service.CoupangCollectionBatchService;
 import or.sopt.houme.domain.coupang.service.CoupangCollectionJobService;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -20,7 +21,7 @@ import java.util.Optional;
 @Component
 @RequiredArgsConstructor
 @Slf4j
-public class CoupangCollectionScheduler {
+public class CoupangCollectionScheduler implements CoupangCollectionBatchService {
 
     private final CoupangCollectionJobService collectionJobService;
     private final CoupangPartnersClient coupangPartnersClient;
@@ -32,6 +33,11 @@ public class CoupangCollectionScheduler {
             return;
         }
 
+        runOneJob();
+    }
+
+    @Override
+    public void runOneJob() {
         int recoveredJobCount = collectionJobService.recoverExpiredRunningJobs();
         if (recoveredJobCount > 0) {
             log.warn("장시간 RUNNING 상태였던 쿠팡 수집 Job을 복구했습니다. count={}", recoveredJobCount);
