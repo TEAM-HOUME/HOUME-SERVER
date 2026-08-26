@@ -6,6 +6,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -17,7 +18,13 @@ import java.time.LocalDateTime;
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@Table(name = "coupang_keywords")
+@Table(
+        name = "coupang_keywords",
+        uniqueConstraints = @UniqueConstraint(
+                name = "uk_coupang_keywords_keyword",
+                columnNames = "keyword"
+        )
+)
 @Comment("쿠팡 파트너스 배치 검색 키워드")
 public class CoupangKeywordJpaEntity extends BaseEntity {
 
@@ -25,7 +32,7 @@ public class CoupangKeywordJpaEntity extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, unique = true, length = 100)
+    @Column(nullable = false, length = 100)
     private String keyword;
 
     /** furnitures 테이블의 PK. 도메인 경계를 넘는 JPA 연관 대신 DB FK로만 연결한다. */
