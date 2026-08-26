@@ -6,6 +6,7 @@ import or.sopt.houme.furniture.domain.CurationRawProductColorView;
 import or.sopt.houme.furniture.domain.CurationRawProductView;
 import or.sopt.houme.furniture.domain.Jjym;
 import or.sopt.houme.furniture.domain.RecommendFurniture;
+import or.sopt.houme.compare.domain.port.out.CompareCatalogPort;
 import or.sopt.houme.furniture.domain.port.out.CurationRawProductQueryPort;
 import or.sopt.houme.furniture.domain.port.out.JjymRepositoryPort;
 import or.sopt.houme.furniture.domain.port.out.RecommendFurniturePort;
@@ -31,12 +32,14 @@ class JjymServiceImplTest {
     private final UserRepositoryPort userRepository = mock(UserRepositoryPort.class);
     private final RecommendFurniturePort recommendFurniturePort = mock(RecommendFurniturePort.class);
     private final CurationRawProductQueryPort curationRawProductQueryPort = mock(CurationRawProductQueryPort.class);
+    private final CompareCatalogPort compareCatalogPort = mock(CompareCatalogPort.class);
 
     private final JjymServiceImpl jjymService = new JjymServiceImpl(
             jjymRepositoryPort,
             userRepository,
             recommendFurniturePort,
-            curationRawProductQueryPort
+            curationRawProductQueryPort,
+            compareCatalogPort
     );
 
     @Test
