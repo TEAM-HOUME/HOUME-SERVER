@@ -47,13 +47,24 @@ public interface CoupangPartnersFeignClient {
                 }
 
                 String signedDate = SIGNED_DATE_FORMATTER.format(Clock.systemUTC().instant());
-                String signature = createSignature(signedDate + template.method() + template.url());
+                String signature = createSignature(signatureInput(signedDate, template.method(), template.url()));
                 String authorization = "CEA algorithm=HmacSHA256, access-key=" + properties.getAccessKey()
                         + ", signed-date=" + signedDate + ", signature=" + signature;
 
                 template.header("Authorization", authorization);
                 template.header("Content-Type", "application/json");
             };
+        }
+
+        static String signatureInput(String signedDate, String method, String requestUrl) {
+            int queryStartIndex = requestUrl.indexOf('?');
+            if (queryStartIndex < 0) {
+                return signedDate + method + requestUrl;
+            }
+
+            String path = requestUrl.substring(0, queryStartIndex);
+            String query = requestUrl.substring(queryStartIndex + 1);
+            return signedDate + method + path + query;
         }
 
         private String createSignature(String message) {

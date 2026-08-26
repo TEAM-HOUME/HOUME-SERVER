@@ -31,4 +31,17 @@ class CoupangPartnersClientTest {
         ))
                 .isInstanceOf(CoupangPartnersClientException.class);
     }
+
+    @Test
+    @DisplayName("쿠팡 HMAC 서명 문자열에서는 쿼리 구분자만 제외한다")
+    void excludesOnlyQueryDelimiterFromSignatureInput() {
+        String signatureInput = CoupangPartnersFeignClient.Configuration.signatureInput(
+                "250101T000000Z",
+                "GET",
+                "/products/search?keyword=%EC%86%8C%ED%8C%8C&limit=10"
+        );
+
+        assertThat(signatureInput)
+                .isEqualTo("250101T000000ZGET/products/searchkeyword=%EC%86%8C%ED%8C%8C&limit=10");
+    }
 }
