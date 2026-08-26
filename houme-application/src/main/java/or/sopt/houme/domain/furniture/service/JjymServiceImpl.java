@@ -1,6 +1,10 @@
 package or.sopt.houme.domain.furniture.service;
 
 import lombok.RequiredArgsConstructor;
+import or.sopt.houme.compare.application.dto.CompareCatalogJjymItemResponse;
+import or.sopt.houme.compare.application.dto.CompareCatalogJjymListResponse;
+import or.sopt.houme.compare.domain.CompareCatalogItem;
+import or.sopt.houme.compare.domain.port.out.CompareCatalogPort;
 import or.sopt.houme.domain.furniture.model.entity.CurationSource;
 import or.sopt.houme.domain.furniture.presentation.dto.response.JjymItemResponse;
 import or.sopt.houme.domain.furniture.presentation.dto.response.JjymListResponse;
@@ -17,6 +21,7 @@ import or.sopt.houme.user.domain.User;
 import or.sopt.houme.user.domain.port.out.UserRepositoryPort;
 import or.sopt.houme.global.api.ErrorCode;
 import or.sopt.houme.global.api.GeneralException;
+import or.sopt.houme.global.api.handler.CompareException;
 import or.sopt.houme.global.api.handler.FurnitureException;
 import or.sopt.houme.global.api.handler.UserException;
 import org.springframework.stereotype.Service;
@@ -42,6 +47,7 @@ public class JjymServiceImpl implements JjymService {
     private final UserRepositoryPort userRepositoryPort;
     private final RecommendFurniturePort recommendFurniturePort;
     private final CurationRawProductQueryPort curationRawProductQueryPort;
+    private final CompareCatalogPort compareCatalogPort;
 
     @Override
     public boolean jjymToggle(Long userId, Long recommendFurnitureId) {
@@ -279,6 +285,51 @@ public class JjymServiceImpl implements JjymService {
             return candidate;
         }
         return current;
+    }
+
+    @Override
+    public boolean catalogJjymToggle(Long userId, Long catalogItemId) {
+        userRepositoryPort.findById(userId)
+                .orElseThrow(() -> new UserException(ErrorCode.USER_NOT_FOUND));
+
+        CompareCatalogItem catalogItem = compareCatalogPort.findById(catalogItemId)
+                .orElseThrow(() -> new CompareException(ErrorCode.COMPARE_CATALOG_ITEM_NOT_FOUND));
+
+        RecommendFurniture rf = recommendFurniturePort
+                .findBySourceAndFurnitureProductId(CurationSource.EBAY, catalogItemId)
+                .orElseGet(() -> recommendFurniturePort.save(RecommendFurniture.from(
+                        catalogItem.imageUrl(),
+                        catalogItem.productUrl(),
+                        catalogItem.title(),
+                        "eBay",
+                        catalogItemId,
+                        CurationSource.EBAY
+                )));
+
+        Optional<Jjym> existing = jjymRepositoryPort.findByUserIdAndRecommendFurnitureId(userId, rf.getId());
+        if (existing.isPresent()) {
+            jjymRepositoryPort.deleteById(existing.get().getId());
+            return false;
+        }
+        jjymRepositoryPort.save(Jjym.of(userId, rf.getId()));
+        return true;
+    }
+
+    @Transactional(readOnly = true)
+    @Override
+    public CompareCatalogJjymListResponse getMyEbayJjyms(Long userId) {
+        List<Jjym> jjyms = jjymRepositoryPort.findAllByUserIdOrderByCreatedAtDesc(userId);
+        Map<Long, RecommendFurniture> rfById = loadRecommendFurnitureById(jjyms);
+
+        List<CompareCatalogJjymItemResponse> items = jjyms.stream()
+                .map(j -> rfById.get(j.getRecommendFurnitureId()))
+                .filter(rf -> rf != null && rf.getSource() == CurationSource.EBAY)
+                .map(rf -> compareCatalogPort.findById(rf.getFurnitureProductId()).orElse(null))
+                .filter(java.util.Objects::nonNull)
+                .map(CompareCatalogJjymItemResponse::from)
+                .collect(Collectors.toList());
+
+        return CompareCatalogJjymListResponse.of(items);
     }
 
     private RecommendFurniture resolveRawProductRecommendFurniture(Long rawProductId) {

@@ -66,6 +66,7 @@ openai:
 
 gemini:
   api-key: ${GEMINI_API_KEY}
+  compare-api-key: ${GEMINI_COMPARE_API_KEY}
   api-base-url: ${GEMINI_API_BASE_URL:https://generativelanguage.googleapis.com/v1beta}
   image:
     model: gemini-3-pro-image-preview
@@ -125,7 +126,7 @@ app:
 
 external:
   image-api:
-    base-url: ${IMAGE_BASE_URL}
+    base-url: ${IMAGE_BASE_URL:http://localhost:8001}
 
 resilience4j:
   circuitbreaker:
@@ -146,6 +147,17 @@ feign:
         connectTimeout: 2000
         readTimeout: 3000
 
+
+ebay:
+  client-id: ${EBAY_CLIENT_ID}
+  client-secret: ${EBAY_CLIENT_SECRET}
+  api-base-url: https://api.ebay.com
+  oauth-base-url: https://api.ebay.com
+
+compare:
+  pipeline:
+    top-n: 7
+    usd-to-krw-rate: 1350
 
 logging:
   level:
