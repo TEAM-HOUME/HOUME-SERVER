@@ -17,7 +17,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Service
@@ -48,8 +50,14 @@ public class CoupangCollectionJobService {
         CoupangCollectionJobJpaEntity job = jobRepository.findById(jobId).orElseThrow();
         CoupangKeywordJpaEntity keyword = job.getKeyword();
         keywordProductRepository.deleteByKeywordId(keyword.getId());
+        keywordProductRepository.flush();
 
+        Map<String, CoupangProductSearchResult> distinctResults = new LinkedHashMap<>();
         for (CoupangProductSearchResult result : results) {
+            distinctResults.putIfAbsent(result.productId(), result);
+        }
+
+        for (CoupangProductSearchResult result : distinctResults.values()) {
             CoupangProductJpaEntity product = productRepository.findByCoupangProductId(result.productId())
                     .map(existing -> updateProduct(existing, result))
                     .orElseGet(() -> createProduct(result));
