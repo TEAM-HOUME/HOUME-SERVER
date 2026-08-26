@@ -29,7 +29,7 @@ public class CoupangKeywordJpaEntity extends BaseEntity {
     private String keyword;
 
     /** furnitures 테이블의 PK. 도메인 경계를 넘는 JPA 연관 대신 DB FK로만 연결한다. */
-    @Column(name = "furniture_id")
+    @Column(name = "furniture_id", nullable = false)
     private Long furnitureId;
 
     private LocalDateTime lastSuccessAt;
