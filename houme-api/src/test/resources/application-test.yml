@@ -64,6 +64,7 @@ openai:
 
 gemini:
   api-key: test-gemini-key
+  compare-api-key: test-gemini-compare-key
   api-base-url: http://localhost:65535
   image:
     model: gemini-3-pro-image-preview
@@ -150,6 +151,17 @@ resilience4j:
         waitDurationInOpenState: 10s
         permittedNumberOfCallsInHalfOpenState: 3
         automaticTransitionFromOpenToHalfOpenEnabled: true
+
+ebay:
+  client-id: test-ebay-client-id
+  client-secret: test-ebay-client-secret
+  api-base-url: http://localhost:65535
+  oauth-base-url: http://localhost:65535
+
+compare:
+  pipeline:
+    top-n: 7
+    usd-to-krw-rate: 1350
 
 feign:
   client:

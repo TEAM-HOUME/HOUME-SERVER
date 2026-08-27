@@ -66,6 +66,7 @@ openai:
 
 gemini:
   api-key: ${GEMINI_API_KEY}
+  compare-api-key: ${GEMINI_COMPARE_API_KEY}
   api-base-url: ${GEMINI_API_BASE_URL:https://generativelanguage.googleapis.com/v1beta}
   image:
     model: gemini-3-pro-image-preview
