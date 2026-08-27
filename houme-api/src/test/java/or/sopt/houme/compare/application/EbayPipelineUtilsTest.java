@@ -1,6 +1,6 @@
 package or.sopt.houme.compare.application;
 
-import or.sopt.houme.compare.infrastructure.ebay.dto.EbaySearchResponse;
+import or.sopt.houme.compare.domain.EbayCandidate;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -18,39 +18,36 @@ class EbayPipelineUtilsTest {
     @Test
     @DisplayName("카테고리가 허용 목록에 있으면 하드필터 통과한다")
     void passesHardFilter_allowedCategory_passes() {
-        EbaySearchResponse.ItemSummary item = item("3197");
+        EbayCandidate item = candidate("id", 0.0, null, List.of("3197"));
         assertThat(utils.passesHardFilter(item, Set.of("3197", "3198"))).isTrue();
     }
 
     @Test
     @DisplayName("카테고리가 허용 목록에 없으면 하드필터 차단된다")
     void passesHardFilter_unknownCategory_blocked() {
-        EbaySearchResponse.ItemSummary item = item("9999");
+        EbayCandidate item = candidate("id", 0.0, null, List.of("9999"));
         assertThat(utils.passesHardFilter(item, Set.of("3197"))).isFalse();
     }
 
     @Test
-    @DisplayName("categories가 null이면 하드필터 차단된다")
+    @DisplayName("categoryIds가 null이면 하드필터 차단된다")
     void passesHardFilter_nullCategories_blocked() {
-        EbaySearchResponse.ItemSummary item = new EbaySearchResponse.ItemSummary(
-                "id", "title", null, null, null, null);
+        EbayCandidate item = new EbayCandidate("id", "title", 0.0, null, null, null);
         assertThat(utils.passesHardFilter(item, Set.of("3197"))).isFalse();
     }
 
     @Test
-    @DisplayName("price가 null이면 parsePrice는 0.0을 반환한다")
-    void parsePrice_nullPrice_returnsZero() {
-        EbaySearchResponse.ItemSummary item = new EbaySearchResponse.ItemSummary(
-                "id", "title", null, null, List.of(), null);
-        assertThat(utils.parsePrice(item)).isEqualTo(0.0);
+    @DisplayName("parsePrice — priceUsd 값을 그대로 반환한다")
+    void parsePrice_returnsUsdPrice() {
+        EbayCandidate item = candidate("id", 199.99, null, List.of());
+        assertThat(utils.parsePrice(item)).isEqualTo(199.99, offset(0.001));
     }
 
     @Test
-    @DisplayName("price value가 숫자면 parsePrice가 파싱한다")
-    void parsePrice_validValue_parsed() {
-        EbaySearchResponse.ItemSummary item = new EbaySearchResponse.ItemSummary(
-                "id", "title", new EbaySearchResponse.Price("199.99", "USD"), null, List.of(), null);
-        assertThat(utils.parsePrice(item)).isEqualTo(199.99, offset(0.001));
+    @DisplayName("parsePrice — priceUsd가 0이면 0.0을 반환한다")
+    void parsePrice_zeroPriceReturnsZero() {
+        EbayCandidate item = candidate("id", 0.0, null, List.of());
+        assertThat(utils.parsePrice(item)).isEqualTo(0.0);
     }
 
     @Test
@@ -87,28 +84,20 @@ class EbayPipelineUtilsTest {
     }
 
     @Test
-    @DisplayName("thumbnailUrl — 첫 번째 이미지 URL을 반환한다")
-    void thumbnailUrl_returnsFirst() {
-        EbaySearchResponse.ItemSummary item = new EbaySearchResponse.ItemSummary(
-                "id", "title", null,
-                List.of(new EbaySearchResponse.ThumbnailImage("https://img1"),
-                        new EbaySearchResponse.ThumbnailImage("https://img2")),
-                List.of(), null);
+    @DisplayName("thumbnailUrl — thumbnailUrl 필드 값을 반환한다")
+    void thumbnailUrl_returnsValue() {
+        EbayCandidate item = candidate("id", 0.0, "https://img1", List.of());
         assertThat(utils.thumbnailUrl(item)).isEqualTo("https://img1");
     }
 
     @Test
-    @DisplayName("thumbnailUrl — thumbnailImages가 null이면 null 반환한다")
-    void thumbnailUrl_nullImages_returnsNull() {
-        EbaySearchResponse.ItemSummary item = new EbaySearchResponse.ItemSummary(
-                "id", "title", null, null, List.of(), null);
+    @DisplayName("thumbnailUrl — thumbnailUrl이 null이면 null 반환한다")
+    void thumbnailUrl_nullUrl_returnsNull() {
+        EbayCandidate item = candidate("id", 0.0, null, List.of());
         assertThat(utils.thumbnailUrl(item)).isNull();
     }
 
-    private EbaySearchResponse.ItemSummary item(String categoryId) {
-        return new EbaySearchResponse.ItemSummary(
-                "id", "title", null, null,
-                List.of(new EbaySearchResponse.Category(categoryId, "category")),
-                null);
+    private EbayCandidate candidate(String itemId, double priceUsd, String thumbnailUrl, List<String> categoryIds) {
+        return new EbayCandidate(itemId, "title", priceUsd, thumbnailUrl, "https://ebay.com/" + itemId, categoryIds);
     }
 }
