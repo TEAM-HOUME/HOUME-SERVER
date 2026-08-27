@@ -1,6 +1,6 @@
 package or.sopt.houme.compare.application;
 
-import or.sopt.houme.compare.infrastructure.ebay.dto.EbaySearchResponse;
+import or.sopt.houme.compare.domain.EbayCandidate;
 import or.sopt.houme.domain.furniture.model.entity.SoozipCategory;
 import org.springframework.stereotype.Component;
 
@@ -27,23 +27,17 @@ public class EbayPipelineUtils {
     public static final double IMAGE_WEIGHT = 0.7;
     public static final double TEXT_WEIGHT  = 0.3;
 
-    public boolean passesHardFilter(EbaySearchResponse.ItemSummary item, Set<String> allowed) {
-        if (item.categories() == null) return false;
-        return item.categories().stream().anyMatch(c -> allowed.contains(c.categoryId()));
+    public boolean passesHardFilter(EbayCandidate item, Set<String> allowed) {
+        if (item.categoryIds() == null) return false;
+        return item.categoryIds().stream().anyMatch(allowed::contains);
     }
 
-    public double parsePrice(EbaySearchResponse.ItemSummary item) {
-        if (item.price() == null || item.price().value() == null) return 0.0;
-        try {
-            return Double.parseDouble(item.price().value());
-        } catch (NumberFormatException e) {
-            return 0.0;
-        }
+    public double parsePrice(EbayCandidate item) {
+        return item.priceUsd();
     }
 
-    public String thumbnailUrl(EbaySearchResponse.ItemSummary item) {
-        if (item.thumbnailImages() == null || item.thumbnailImages().isEmpty()) return null;
-        return item.thumbnailImages().get(0).imageUrl();
+    public String thumbnailUrl(EbayCandidate item) {
+        return item.thumbnailUrl();
     }
 
     public Optional<SoozipCategory> parseSoozipCategory(String category) {

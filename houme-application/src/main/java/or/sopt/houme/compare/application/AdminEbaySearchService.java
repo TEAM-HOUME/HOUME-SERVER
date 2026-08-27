@@ -3,10 +3,10 @@ package or.sopt.houme.compare.application;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import or.sopt.houme.compare.application.filter.PriceSoftFilter;
-import or.sopt.houme.compare.infrastructure.ebay.EbaySearchAdapter;
-import or.sopt.houme.compare.infrastructure.ebay.dto.EbaySearchResponse;
-import or.sopt.houme.compare.infrastructure.gemini.GeminiEmbeddingAdapter;
-import or.sopt.houme.compare.infrastructure.llm.GeminiKeywordTranslator;
+import or.sopt.houme.compare.domain.EbayCandidate;
+import or.sopt.houme.compare.domain.port.out.EbaySearchPort;
+import or.sopt.houme.compare.domain.port.out.EmbeddingPort;
+import or.sopt.houme.compare.domain.port.out.KeywordTranslationPort;
 import or.sopt.houme.domain.furniture.model.entity.SoozipCategory;
 import org.springframework.stereotype.Service;
 
@@ -22,8 +22,6 @@ import java.util.stream.Collectors;
  *
  * 흐름: eBay 검색(200개) → 카테고리 하드필터 → 가격 소프트필터 → 상위 N개 임베딩 스코어링
  * combinedScore = imageSim × 0.7 + textSim × 0.3 (가중치는 실험 후 조정 예정)
- *
- * TODO (#636): 풀 파이프라인 구현 시 EbaySearchAdapter/GeminiEmbeddingAdapter를 출력 포트로 분리
  */
 @Slf4j
 @Service
@@ -32,9 +30,9 @@ public class AdminEbaySearchService {
 
     private static final int ADMIN_TOP_N = 10;
 
-    private final EbaySearchAdapter ebaySearchAdapter;
-    private final GeminiKeywordTranslator keywordTranslator;
-    private final GeminiEmbeddingAdapter embeddingAdapter;
+    private final EbaySearchPort ebaySearchPort;
+    private final KeywordTranslationPort keywordTranslator;
+    private final EmbeddingPort embeddingAdapter;
     private final PriceSoftFilter priceSoftFilter;
     private final EbayPipelineUtils utils;
 
@@ -46,9 +44,9 @@ public class AdminEbaySearchService {
         log.info("[Admin 텍스트검색] 번역: '{}' → '{}'", koreanTitle, keyword);
 
         // 2. eBay 키워드 검색 → 필터 → 상위 N개
-        List<EbaySearchResponse.ItemSummary> raw = ebaySearchAdapter.search(keyword, 200);
+        List<EbayCandidate> raw = ebaySearchPort.search(keyword, 200);
         FilteredItems filtered = applyFilters(raw, category, priceKrw);
-        List<EbaySearchResponse.ItemSummary> candidates = filtered.items().stream().limit(ADMIN_TOP_N).collect(Collectors.toList());
+        List<EbayCandidate> candidates = filtered.items().stream().limit(ADMIN_TOP_N).collect(Collectors.toList());
 
         // 3. 원본 상품 임베딩 (텍스트 + 이미지)
         List<Double> origTextEmb = embeddingAdapter.embedText(koreanTitle);
@@ -68,9 +66,9 @@ public class AdminEbaySearchService {
         log.info("[Admin 이미지검색] base64 변환 완료: url={}", imageUrl);
 
         // 2. eBay 이미지 검색 → 필터 → 상위 N개
-        List<EbaySearchResponse.ItemSummary> raw = ebaySearchAdapter.searchByImage(base64, 200);
+        List<EbayCandidate> raw = ebaySearchPort.searchByImage(base64, 200);
         FilteredItems filtered = applyFilters(raw, category, priceKrw);
-        List<EbaySearchResponse.ItemSummary> candidates = filtered.items().stream().limit(ADMIN_TOP_N).collect(Collectors.toList());
+        List<EbayCandidate> candidates = filtered.items().stream().limit(ADMIN_TOP_N).collect(Collectors.toList());
 
         // 3. 원본 이미지 임베딩만 사용 (텍스트 없음)
         List<Double> origImageEmb = embedImageSafe(imageUrl);
@@ -84,7 +82,7 @@ public class AdminEbaySearchService {
      * 카테고리 하드필터(eBay categoryId 일치) → 가격 소프트필터(로그 스케일 허용 범위) 순으로 적용.
      * 각 단계별 잔존 개수를 FilteredItems에 기록해 어드민 뷰에 표시한다.
      */
-    private FilteredItems applyFilters(List<EbaySearchResponse.ItemSummary> items, String category, Double priceKrw) {
+    private FilteredItems applyFilters(List<EbayCandidate> items, String category, Double priceKrw) {
         int totalFetched = items.size();
 
         Optional<SoozipCategory> soozipCat = utils.parseSoozipCategory(category);
@@ -106,14 +104,14 @@ public class AdminEbaySearchService {
         return new FilteredItems(items, totalFetched, afterCategory, afterPrice);
     }
 
-    private record FilteredItems(List<EbaySearchResponse.ItemSummary> items, int totalFetched, int afterCategoryFilter, int afterPriceFilter) {}
+    private record FilteredItems(List<EbayCandidate> items, int totalFetched, int afterCategoryFilter, int afterPriceFilter) {}
 
     /**
      * 후보 상품들을 병렬로 임베딩 → combinedScore 계산 → 내림차순 정렬.
      * origTextEmb가 null이면 텍스트 유사도는 0으로 처리(이미지 검색 경로).
      */
     private List<AdminSearchCandidate> scoreInParallel(
-            List<EbaySearchResponse.ItemSummary> candidates,
+            List<EbayCandidate> candidates,
             List<Double> origTextEmb,
             List<Double> origImageEmb) {
 

@@ -3,6 +3,7 @@ package or.sopt.houme.compare.infrastructure.gemini;
 import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import or.sopt.houme.compare.domain.port.out.EmbeddingPort;
 import or.sopt.houme.compare.infrastructure.gemini.client.GeminiEmbeddingClient;
 import or.sopt.houme.compare.infrastructure.gemini.dto.GeminiEmbeddingRequest;
 import or.sopt.houme.compare.infrastructure.gemini.dto.GeminiEmbeddingResponse;
@@ -24,7 +25,7 @@ import java.util.Locale;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class GeminiEmbeddingAdapter {
+public class GeminiEmbeddingAdapter implements EmbeddingPort {
 
     private static final String EMBEDDING_MODEL = "gemini-embedding-2";
 
