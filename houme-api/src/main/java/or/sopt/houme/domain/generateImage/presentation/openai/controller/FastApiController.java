@@ -7,6 +7,7 @@ import or.sopt.houme.domain.generateImage.infrastructure.openai.service.FastApiS
 import or.sopt.houme.domain.generateImage.service.prompt.dto.PromptRequestDTO;
 import or.sopt.houme.global.api.ApiResponse;
 import or.sopt.houme.global.dto.ImageUploadResponseDTO;
+import or.sopt.houme.global.legacy.LegacyApi;
 import or.sopt.houme.global.util.constant.S3Constant;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -20,7 +21,8 @@ public class FastApiController {
 
     private final FastApiService fastApiService;
 
-    @Operation(summary = "LangChain 을 활용한 이미지 저장 API",
+    @LegacyApi
+    @Operation(summary = "[DEPRECATED_CANDIDATE] LangChain 을 활용한 이미지 저장 API",
             description = "실제 성능 테스트를 위한 메서드입니다. **호출 시, 서버 전재연에게 반드시 문의해주세요**")
     @PostMapping("/generate")
     public ResponseEntity<ApiResponse<String>> generate(@RequestBody PromptRequestDTO promptRequestDTO) {

@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import or.sopt.houme.domain.credit.service.PaymentBtnClickLogService;
 import or.sopt.houme.domain.user.presentation.controller.dto.CustomUserDetails;
 import or.sopt.houme.global.api.ApiResponse;
+import or.sopt.houme.global.legacy.LegacyApi;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -18,7 +19,8 @@ public class PaymentBtnClickLogController {
     private final PaymentBtnClickLogService paymentBtnClickLogService;
 
     @PostMapping(value = "/credits/logs")
-    @Operation(summary = "충전하기 모달창에서 버튼 클릭시 로그 저장 api")
+    @LegacyApi
+    @Operation(summary = "[DEPRECATED_CANDIDATE] 충전하기 모달창에서 버튼 클릭시 로그 저장 api")
     public ResponseEntity<ApiResponse<Void>> createPaymentBtnClickLog(@AuthenticationPrincipal CustomUserDetails userDetails) {
         paymentBtnClickLogService.createPaymentBtnClickLog(userDetails.getUser());
         return ResponseEntity.ok(ApiResponse.ok(null));

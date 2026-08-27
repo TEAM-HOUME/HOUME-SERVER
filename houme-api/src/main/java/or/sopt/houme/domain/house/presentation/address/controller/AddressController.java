@@ -9,6 +9,7 @@ import or.sopt.houme.domain.house.service.address.AddressService;
 import or.sopt.houme.domain.user.presentation.controller.dto.CustomUserDetails;
 import or.sopt.houme.user.domain.User;
 import or.sopt.houme.global.api.ApiResponse;
+import or.sopt.houme.global.legacy.LegacyApi;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -24,7 +25,8 @@ public class AddressController {
 
     private final AddressService addressService;
 
-    @Operation(summary = "사용자 주소 입력받기 API",
+    @LegacyApi
+    @Operation(summary = "[DEPRECATED_CANDIDATE] 사용자 주소 입력받기 API",
             description = "사용자가 유사한 도면 템플릿이 없는 경우, 주소를 등록 할 수 있습니다.")
     @PostMapping("/addresses")
     public ResponseEntity<ApiResponse<Void>> createAddress(@AuthenticationPrincipal CustomUserDetails userDetails,

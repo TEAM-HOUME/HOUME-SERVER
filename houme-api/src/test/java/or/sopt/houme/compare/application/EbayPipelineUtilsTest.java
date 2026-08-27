@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.offset;
 
 class EbayPipelineUtilsTest {
@@ -73,6 +74,16 @@ class EbayPipelineUtilsTest {
         List<Double> zero = List.of(0.0, 0.0);
         List<Double> v    = List.of(1.0, 1.0);
         assertThat(utils.cosineSimilarity(zero, v)).isEqualTo(0.0);
+    }
+
+    @Test
+    @DisplayName("코사인 유사도 — 차원이 다르면 IllegalArgumentException을 던진다")
+    void cosineSimilarity_differentDimensions_throwsException() {
+        List<Double> a = List.of(1.0, 2.0, 3.0);
+        List<Double> b = List.of(1.0, 2.0);
+        assertThatThrownBy(() -> utils.cosineSimilarity(a, b))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("임베딩 차원이 다릅니다");
     }
 
     @Test

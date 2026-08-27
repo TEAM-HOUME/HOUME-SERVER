@@ -24,4 +24,13 @@ public enum SoozipCategory {
                 .filter(category -> category.cateNo == cateNo)
                 .findFirst();
     }
+
+    public static Optional<SoozipCategory> fromString(String name) {
+        if (name == null) return Optional.empty();
+        try {
+            return Optional.of(SoozipCategory.valueOf(name));
+        } catch (IllegalArgumentException e) {
+            return Optional.empty();
+        }
+    }
 }

@@ -4,13 +4,13 @@ import java.util.List;
 
 public record GeminiTextGenerationRequest(List<Content> contents) {
 
-    public static GeminiTextGenerationRequest of(String prompt) {
+    public static GeminiTextGenerationRequest of(String text) {
         return new GeminiTextGenerationRequest(
-                List.of(new Content(List.of(new Part(prompt))))
+                List.of(new Content("user", List.of(new Part(text))))
         );
     }
 
-    public record Content(List<Part> parts) {}
+    public record Content(String role, List<Part> parts) {}
 
     public record Part(String text) {}
 }

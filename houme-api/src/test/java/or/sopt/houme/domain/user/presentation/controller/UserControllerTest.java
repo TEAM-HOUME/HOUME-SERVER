@@ -13,6 +13,7 @@ import or.sopt.houme.domain.user.service.UserDeletionService;
 import or.sopt.houme.domain.user.service.UserService;
 import or.sopt.houme.global.config.JWTConfig;
 import or.sopt.houme.global.jwt.JWTUtil;
+import or.sopt.houme.legacyapi.application.LegacyApiCallHistoryService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -31,6 +32,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Executor;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
@@ -76,6 +78,12 @@ class UserControllerTest {
 
     @MockBean
     private BlacklistTokenRepository blacklistTokenRepository;
+
+    @MockBean
+    private LegacyApiCallHistoryService legacyApiCallHistoryService;
+
+    @MockBean(name = "legacyApiCallHistoryExecutor")
+    private Executor legacyApiCallHistoryExecutor;
 
     private CustomUserDetails mockUserDetails;
     private MyPageInfoResponse mockResponse;

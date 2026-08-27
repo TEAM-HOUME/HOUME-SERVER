@@ -7,11 +7,13 @@ import org.springframework.stereotype.Component;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 @Component
 public class EbayPipelineUtils {
 
+    // SoozipCategory → eBay categoryId 매핑 (하드필터 기준)
     public static final Map<SoozipCategory, Set<String>> EBAY_CATEGORY_MAP = new EnumMap<>(Map.of(
             SoozipCategory.FURNITURE,        Set.of("3197"),
             SoozipCategory.LIGHTING,         Set.of("20697"),
@@ -44,19 +46,17 @@ public class EbayPipelineUtils {
         return item.thumbnailImages().get(0).imageUrl();
     }
 
-    public SoozipCategory parseSoozipCategory(String category) {
-        if (category == null) return null;
-        try {
-            return SoozipCategory.valueOf(category);
-        } catch (IllegalArgumentException e) {
-            return null;
-        }
+    public Optional<SoozipCategory> parseSoozipCategory(String category) {
+        return SoozipCategory.fromString(category);
     }
 
     public double cosineSimilarity(List<Double> a, List<Double> b) {
+        if (a.size() != b.size()) {
+            throw new IllegalArgumentException(
+                    "임베딩 차원이 다릅니다: a=" + a.size() + ", b=" + b.size());
+        }
         double dot = 0, normA = 0, normB = 0;
-        int size = Math.min(a.size(), b.size());
-        for (int i = 0; i < size; i++) {
+        for (int i = 0; i < a.size(); i++) {
             dot   += a.get(i) * b.get(i);
             normA += a.get(i) * a.get(i);
             normB += b.get(i) * b.get(i);
