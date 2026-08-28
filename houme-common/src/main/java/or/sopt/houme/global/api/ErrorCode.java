@@ -30,6 +30,9 @@ public enum ErrorCode {
     // 입력값 검증 예외
     NOT_VALID_EXCEPTION(HttpStatus.BAD_REQUEST, 40008, "유효하지 않은 입력값입니다."),
 
+    // 가격 비교 관련 예외
+    COMPARE_DUMMY_NOT_ALLOWED_IN_PROD(HttpStatus.BAD_REQUEST, 40033, "더미 모드는 운영 환경에서 허용되지 않습니다."),
+
     // 회원관련
     USERNAME_DUPLICATE(HttpStatus.BAD_REQUEST,40009,"username이 중복되었습니다."),
     EMAIL_ALREADY_EXISTS(HttpStatus.BAD_REQUEST, 40021, "이미 가입된 이메일입니다."),
@@ -145,11 +148,7 @@ public enum ErrorCode {
 
     // 가격비교 관련
     COMPARE_JOB_NOT_FOUND(HttpStatus.NOT_FOUND, 40428, "비교 Job을 찾을 수 없습니다."),
-    COMPARE_DUMMY_NOT_ALLOWED_IN_PROD(HttpStatus.FORBIDDEN, 40301, "더미 모드는 프로덕션 환경에서 사용할 수 없습니다."),
-    COMPARE_SCRAPING_NOT_IMPLEMENTED(HttpStatus.BAD_REQUEST, 40033, "URL 스크래핑은 아직 구현되지 않았습니다. dummyProduct를 사용하세요."),
-    COMPARE_EBAY_SEARCH_FAILED(HttpStatus.BAD_GATEWAY, 50204, "eBay 검색 중 오류가 발생했습니다."),
-    COMPARE_EMBEDDING_FAILED(HttpStatus.BAD_GATEWAY, 50205, "임베딩 생성 중 오류가 발생했습니다."),
-    COMPARE_KEYWORD_TRANSLATION_FAILED(HttpStatus.BAD_GATEWAY, 50206, "키워드 번역 중 오류가 발생했습니다."),
+    COMPARE_CATALOG_ITEM_NOT_FOUND(HttpStatus.NOT_FOUND, 40429, "비교 카탈로그 상품을 찾을 수 없습니다."),
 
 
     /**
@@ -182,6 +181,12 @@ public enum ErrorCode {
     IMAGE_DOWNLOAD_EXCEPTION(HttpStatus.INTERNAL_SERVER_ERROR, 50022, "이미지 다운로드 중, AWS 예외가 발생하였습니다. 서버 관리자에게 문의해주세요"),
     IMAGE_VARIANT_UPLOAD_EXCEPTION(HttpStatus.INTERNAL_SERVER_ERROR, 50023, "최적화 이미지 업로드 중, 예외가 발생하였습니다. 서버 관리자에게 문의해주세요"),
     IMAGE_LIST_EXCEPTION(HttpStatus.INTERNAL_SERVER_ERROR, 50024, "이미지 목록 조회 중, AWS 예외가 발생하였습니다. 서버 관리자에게 문의해주세요"),
+
+    // 가격 비교 파이프라인 예외
+    COMPARE_SCRAPING_NOT_IMPLEMENTED(HttpStatus.INTERNAL_SERVER_ERROR, 50025, "URL 스크래핑이 아직 구현되지 않았습니다."),
+    COMPARE_EBAY_SEARCH_FAILED(HttpStatus.BAD_GATEWAY, 50026, "eBay 상품 검색에 실패했습니다."),
+    COMPARE_KEYWORD_TRANSLATION_FAILED(HttpStatus.BAD_GATEWAY, 50027, "상품 키워드 번역에 실패했습니다."),
+    COMPARE_EMBEDDING_FAILED(HttpStatus.BAD_GATEWAY, 50028, "임베딩 생성에 실패했습니다."),
     HTTP_MEDIA_TYPE_NOT_ACCEPTABLE(HttpStatus.INTERNAL_SERVER_ERROR,50007,"HTTP 리퀘스트 타입에 오류가 발생하였습니다"),
     INCODING_EXCEPTION(HttpStatus.INTERNAL_SERVER_ERROR,50008 ,"인코딩 과정 중 예외가 발생하였습니다" ),
     CHAT_GPT_CALL_EXCEPTION(HttpStatus.INTERNAL_SERVER_ERROR,50009 ,"챗 gpt 호출 중 예외가 발생하였습니다" ),

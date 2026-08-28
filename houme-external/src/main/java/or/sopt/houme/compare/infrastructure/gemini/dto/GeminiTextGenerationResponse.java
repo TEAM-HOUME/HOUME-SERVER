@@ -12,8 +12,9 @@ public record GeminiTextGenerationResponse(List<Candidate> candidates) {
 
     public String extractText() {
         if (candidates == null || candidates.isEmpty()) return "";
-        Candidate c = candidates.get(0);
-        if (c.content() == null || c.content().parts() == null || c.content().parts().isEmpty()) return "";
-        return c.content().parts().get(0).text();
+        Candidate first = candidates.get(0);
+        if (first.content() == null || first.content().parts() == null || first.content().parts().isEmpty()) return "";
+        String text = first.content().parts().get(0).text();
+        return text != null ? text : "";
     }
 }

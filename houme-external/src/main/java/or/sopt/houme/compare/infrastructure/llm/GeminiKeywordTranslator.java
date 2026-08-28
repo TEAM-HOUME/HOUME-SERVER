@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import or.sopt.houme.compare.domain.port.out.KeywordTranslationPort;
 import or.sopt.houme.compare.infrastructure.gemini.client.GeminiTextGenerationClient;
 import or.sopt.houme.compare.infrastructure.gemini.dto.GeminiTextGenerationRequest;
 import or.sopt.houme.compare.infrastructure.gemini.dto.GeminiTextGenerationResponse;
@@ -16,7 +17,7 @@ import org.springframework.stereotype.Service;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class GeminiKeywordTranslator {
+public class GeminiKeywordTranslator implements KeywordTranslationPort {
 
     private static final String TRANSLATION_MODEL = "gemini-3.5-flash-lite";
 
