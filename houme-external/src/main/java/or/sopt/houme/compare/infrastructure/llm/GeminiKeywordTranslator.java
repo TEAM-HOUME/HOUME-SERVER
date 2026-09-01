@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import or.sopt.houme.compare.domain.MarketplaceSearchKeywords;
 import or.sopt.houme.compare.domain.port.out.KeywordTranslationPort;
 import or.sopt.houme.compare.infrastructure.gemini.client.GeminiTextGenerationClient;
 import or.sopt.houme.compare.infrastructure.gemini.dto.GeminiTextGenerationRequest;
@@ -55,6 +56,12 @@ public class GeminiKeywordTranslator implements KeywordTranslationPort {
             log.error("키워드 번역 실패: product={}", koreanProductName, e);
             throw new CompareException(ErrorCode.COMPARE_KEYWORD_TRANSLATION_FAILED);
         }
+    }
+
+    @Override
+    public MarketplaceSearchKeywords translateToMarketplaceKeywords(String koreanProductName) {
+        KeywordPair keywordPair = translateToBoth(koreanProductName);
+        return new MarketplaceSearchKeywords(keywordPair.english(), keywordPair.korean());
     }
 
     public KeywordPair translateToBoth(String koreanProductName) {
