@@ -5,21 +5,25 @@ import lombok.extern.slf4j.Slf4j;
 import or.sopt.houme.compare.application.filter.PriceSoftFilter;
 import or.sopt.houme.compare.domain.CompareCatalogItem;
 import or.sopt.houme.compare.domain.CompareJob;
+import or.sopt.houme.compare.domain.EbayCandidate;
 import or.sopt.houme.compare.domain.JobStage;
 import or.sopt.houme.compare.domain.OriginalProduct;
 import or.sopt.houme.compare.domain.SimilarProduct;
 import or.sopt.houme.compare.domain.port.out.CompareCatalogPort;
-import or.sopt.houme.compare.infrastructure.ebay.EbaySearchAdapter;
-import or.sopt.houme.compare.infrastructure.ebay.dto.EbaySearchResponse;
-import or.sopt.houme.compare.infrastructure.gemini.GeminiEmbeddingAdapter;
-import or.sopt.houme.compare.infrastructure.llm.GeminiKeywordTranslator;
-import or.sopt.houme.domain.furniture.model.entity.SoozipCategory;
+import or.sopt.houme.compare.domain.port.out.EbaySearchPort;
+import or.sopt.houme.compare.domain.port.out.EmbeddingPort;
+import or.sopt.houme.compare.domain.port.out.KeywordTranslationPort;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -27,9 +31,12 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class EbayPipelineService {
 
-    private final EbaySearchAdapter ebaySearchAdapter;
-    private final GeminiKeywordTranslator keywordTranslator;
-    private final GeminiEmbeddingAdapter embeddingAdapter;
+    // ponytail: fixed pool for I/O-bound Gemini calls — EC2 단일 vCPU에서도 병렬 HTTP 대기 가능
+    private static final ExecutorService EMBED_POOL = Executors.newFixedThreadPool(10);
+
+    private final EbaySearchPort ebaySearchPort;
+    private final KeywordTranslationPort keywordTranslator;
+    private final EmbeddingPort embeddingAdapter;
     private final PriceSoftFilter priceSoftFilter;
     private final CompareCatalogPort catalogPort;
     private final EbayPipelineUtils utils;
@@ -58,17 +65,18 @@ public class EbayPipelineService {
         log.info("[타이밍] 키워드 번역: {}ms → '{}'", System.currentTimeMillis() - t1, keyword);
 
         long t2 = System.currentTimeMillis();
-        List<EbaySearchResponse.ItemSummary> items = ebaySearchAdapter.search(keyword, 200);
+        List<EbayCandidate> items = ebaySearchPort.search(keyword, 200);
         log.info("[타이밍] eBay 검색: {}ms → {}개", System.currentTimeMillis() - t2, items.size());
 
-        SoozipCategory soozipCat = utils.parseSoozipCategory(original.category());
-        if (soozipCat != null && EbayPipelineUtils.EBAY_CATEGORY_MAP.containsKey(soozipCat)) {
-            Set<String> allowed = EbayPipelineUtils.EBAY_CATEGORY_MAP.get(soozipCat);
+        Optional<or.sopt.houme.domain.furniture.model.entity.SoozipCategory> soozipCat =
+                utils.parseSoozipCategory(original.category());
+        if (soozipCat.isPresent() && EbayPipelineUtils.EBAY_CATEGORY_MAP.containsKey(soozipCat.get())) {
+            Set<String> allowed = EbayPipelineUtils.EBAY_CATEGORY_MAP.get(soozipCat.get());
             int before = items.size();
             items = items.stream()
                     .filter(item -> utils.passesHardFilter(item, allowed))
                     .collect(Collectors.toList());
-            log.info("[파이프라인] 카테고리 하드필터 후: {}개 → {}개 (category={})", before, items.size(), soozipCat);
+            log.info("[파이프라인] 카테고리 하드필터 후: {}개 → {}개 (category={})", before, items.size(), soozipCat.get());
         } else {
             log.info("[파이프라인] 카테고리 미지정 — 하드필터 스킵");
         }
@@ -82,9 +90,7 @@ public class EbayPipelineService {
                 .collect(Collectors.toList());
         log.info("[파이프라인] 소프트필터 후: {}개", items.size());
 
-        List<EbaySearchResponse.ItemSummary> candidates = items.stream()
-                .limit(topN)
-                .collect(Collectors.toList());
+        List<EbayCandidate> candidates = items.stream().limit(topN).collect(Collectors.toList());
 
         job.advanceStage(JobStage.MERGING);
 
@@ -117,7 +123,7 @@ public class EbayPipelineService {
                         }
                     }
                     return new ScoredItem(item, IMAGE_WEIGHT * imageSim + TEXT_WEIGHT * textSim, textEmb);
-                }))
+                }, EMBED_POOL))
                 .collect(Collectors.toList());
 
         List<ScoredItem> scored = futures.stream().map(CompletableFuture::join).collect(Collectors.toList());
@@ -156,18 +162,18 @@ public class EbayPipelineService {
         }
     }
 
-    private SimilarProduct toSimilarProduct(EbaySearchResponse.ItemSummary item, double score) {
-        List<SimilarProduct.EbayCategory> cats = item.categories() == null ? List.of() :
-                item.categories().stream()
-                        .map(c -> new SimilarProduct.EbayCategory(c.categoryId(), c.categoryName()))
+    private SimilarProduct toSimilarProduct(EbayCandidate item, double score) {
+        List<SimilarProduct.EbayCategory> cats = item.categoryIds() == null ? List.of() :
+                item.categoryIds().stream()
+                        .map(id -> new SimilarProduct.EbayCategory(id, null))
                         .collect(Collectors.toList());
         return new SimilarProduct(
                 "EBAY", item.title(), utils.thumbnailUrl(item),
                 utils.parsePrice(item),
-                item.price() != null ? item.price().currency() : "USD",
+                "USD",
                 item.itemWebUrl(), score, cats
         );
     }
 
-    private record ScoredItem(EbaySearchResponse.ItemSummary item, double score, List<Double> textEmb) {}
+    private record ScoredItem(EbayCandidate item, double score, List<Double> textEmb) {}
 }
