@@ -146,7 +146,7 @@ public enum ErrorCode {
     NOT_FOUND_BANNER(HttpStatus.NOT_FOUND, 40426, "배너 객체를 찾을 수 없습니다."),
     NOT_FOUND_STYLE(HttpStatus.NOT_FOUND, 40427, "스타일 객체를 찾을 수 없습니다."),
 
-    // 가격 비교 관련 예외
+    // 가격비교 관련
     COMPARE_JOB_NOT_FOUND(HttpStatus.NOT_FOUND, 40428, "가격 비교 작업을 찾을 수 없습니다."),
     COMPARE_CATALOG_ITEM_NOT_FOUND(HttpStatus.NOT_FOUND, 40429, "비교 카탈로그 상품을 찾을 수 없습니다."),
 

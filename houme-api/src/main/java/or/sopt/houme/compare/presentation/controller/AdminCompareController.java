@@ -5,14 +5,13 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import or.sopt.houme.compare.application.AdminEbaySearchService;
-import or.sopt.houme.compare.application.AdminEbaySearchService.AdminSearchCandidate;
+import or.sopt.houme.compare.application.AdminEbaySearchService.AdminSearchResult;
 import or.sopt.houme.compare.presentation.dto.request.AdminImageSearchRequest;
 import or.sopt.houme.compare.presentation.dto.request.AdminTextSearchRequest;
 import or.sopt.houme.global.api.ApiResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -27,13 +26,12 @@ public class AdminCompareController {
             description = "한글 상품명 → 키워드 번역 → eBay 검색 → 필터 → 상위 10개 유사도 스코어 반환. 파이프라인 로직 의사결정용."
     )
     @PostMapping("/text-search")
-    public ResponseEntity<ApiResponse<List<AdminSearchCandidate>>> textSearch(
+    public ResponseEntity<ApiResponse<AdminSearchResult>> textSearch(
             @Valid @RequestBody AdminTextSearchRequest request
     ) {
-        List<AdminSearchCandidate> results = adminEbaySearchService.textSearch(
-                request.title(), request.imageUrl(), request.priceKrw(), request.category()
-        );
-        return ResponseEntity.ok(ApiResponse.ok(results));
+        return ResponseEntity.ok(ApiResponse.ok(
+                adminEbaySearchService.textSearch(request.title(), request.imageUrl(), request.priceKrw(), request.category())
+        ));
     }
 
     @Operation(
@@ -41,12 +39,11 @@ public class AdminCompareController {
             description = "이미지 URL → base64 변환 → eBay search_by_image → 필터 → 상위 10개 유사도 스코어 반환. 파이프라인 로직 의사결정용."
     )
     @PostMapping("/image-search")
-    public ResponseEntity<ApiResponse<List<AdminSearchCandidate>>> imageSearch(
+    public ResponseEntity<ApiResponse<AdminSearchResult>> imageSearch(
             @Valid @RequestBody AdminImageSearchRequest request
     ) {
-        List<AdminSearchCandidate> results = adminEbaySearchService.imageSearch(
-                request.imageUrl(), request.priceKrw(), request.category()
-        );
-        return ResponseEntity.ok(ApiResponse.ok(results));
+        return ResponseEntity.ok(ApiResponse.ok(
+                adminEbaySearchService.imageSearch(request.imageUrl(), request.priceKrw(), request.category())
+        ));
     }
 }

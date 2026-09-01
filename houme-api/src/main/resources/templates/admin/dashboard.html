@@ -914,6 +914,11 @@
                 <i class="fas fa-coins"></i>회원 크레딧 추가
             </a>
         </li>
+        <li class="nav-item">
+            <a class="nav-link" href="#" data-target="compare-management">
+                <i class="fas fa-search-dollar"></i>가격비교 검색
+            </a>
+        </li>
     </ul>
 </div>
 
@@ -2085,6 +2090,75 @@
             </div>
         </div>
     </div>
+
+    <!-- ==================== 가격비교 검색 ==================== -->
+    <div id="compare-management" class="content-section">
+        <h2>가격비교 검색 (의사결정용)</h2>
+        <p class="text-muted">텍스트 검색과 이미지 검색 각각의 결과를 비교해 파이프라인 로직을 결정합니다.</p>
+
+        <div class="card mb-3">
+            <div class="card-header fw-bold">공통 파라미터</div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <label class="form-label">이미지 URL</label>
+                        <input type="text" class="form-control" id="cmp-image-url" placeholder="https://cdn.houme.kr/...">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">가격 (원, KRW) <span class="text-danger">*</span></label>
+                        <input type="number" class="form-control" id="cmp-price-krw" placeholder="350000">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">카테고리 (선택)</label>
+                        <select class="form-select" id="cmp-category">
+                            <option value="">전체</option>
+                            <option value="CHAIR">CHAIR</option>
+                            <option value="TABLE">TABLE</option>
+                            <option value="SOFA">SOFA</option>
+                            <option value="BED">BED</option>
+                            <option value="STORAGE">STORAGE</option>
+                            <option value="LIGHTING">LIGHTING</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2 d-flex align-items-end">
+                        <div id="cmp-image-preview" style="display:none;">
+                            <div class="text-muted small mb-1">원본 상품</div>
+                            <img id="cmp-image-preview-img" src="" alt="원본 상품 이미지"
+                                 style="width:80px;height:80px;object-fit:cover;border-radius:6px;border:1px solid #dee2e6;">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card h-100">
+                    <div class="card-header fw-bold">📝 텍스트 검색</div>
+                    <div class="card-body d-flex flex-column">
+                        <div class="mb-3">
+                            <label class="form-label">한글 상품명 <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="cmp-text-title" placeholder="원목 4인 식탁">
+                        </div>
+                        <button class="btn btn-primary mb-3" id="cmp-text-search-btn">텍스트 검색 실행</button>
+                        <div id="cmp-text-loading" class="text-muted small" style="display:none;">⏳ 검색 중 (번역 + 임베딩, 약 20~30초)...</div>
+                        <div id="cmp-text-result" class="flex-grow-1"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card h-100">
+                    <div class="card-header fw-bold">🖼️ 이미지 검색</div>
+                    <div class="card-body d-flex flex-column">
+                        <p class="text-muted small">이미지 URL → base64 → eBay 이미지 검색. 위 공통 파라미터의 이미지 URL을 사용합니다.</p>
+                        <button class="btn btn-secondary mb-3" id="cmp-image-search-btn">이미지 검색 실행</button>
+                        <div id="cmp-image-loading" class="text-muted small" style="display:none;">⏳ 검색 중 (이미지 임베딩, 약 20~30초)...</div>
+                        <div id="cmp-image-result" class="flex-grow-1"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 </div>
 
@@ -2168,6 +2242,7 @@
         initializeFloorPlanManagement();
         populateRawFurnitureTypeDropdownForRawMapping();
         loadRawColorOptions();
+        initializeCompareManagement();
 
         // Sidebar navigation
         document.querySelectorAll('#sidebar .nav-link').forEach(link => {
@@ -6512,6 +6587,107 @@
                 });
         });
     })();
+
+    function initializeCompareManagement() {
+        document.getElementById('cmp-image-url').addEventListener('input', function () {
+            const url = this.value.trim();
+            const preview = document.getElementById('cmp-image-preview');
+            const img = document.getElementById('cmp-image-preview-img');
+            if (url) { img.src = url; preview.style.display = 'block'; }
+            else { preview.style.display = 'none'; }
+        });
+
+        document.getElementById('cmp-text-search-btn').addEventListener('click', function () {
+            const title = document.getElementById('cmp-text-title').value.trim();
+            const priceKrw = document.getElementById('cmp-price-krw').value;
+            if (!title) { alert('한글 상품명을 입력해주세요.'); return; }
+            if (!priceKrw) { alert('가격(KRW)을 입력해주세요.'); return; }
+            const parsedPrice = parseFloat(priceKrw);
+            if (!isFinite(parsedPrice) || parsedPrice <= 0) { alert('가격은 0보다 큰 숫자여야 합니다.'); return; }
+            runCompareSearch('/api/admin/v1/compare/text-search', {
+                title,
+                imageUrl: document.getElementById('cmp-image-url').value.trim() || null,
+                priceKrw: parsedPrice,
+                category: document.getElementById('cmp-category').value || null
+            }, 'cmp-text-result', 'cmp-text-loading', true);
+        });
+
+        document.getElementById('cmp-image-search-btn').addEventListener('click', function () {
+            const imageUrl = document.getElementById('cmp-image-url').value.trim();
+            const priceKrw = document.getElementById('cmp-price-krw').value;
+            if (!imageUrl) { alert('이미지 URL을 입력해주세요.'); return; }
+            if (!priceKrw) { alert('가격(KRW)을 입력해주세요.'); return; }
+            const parsedImagePrice = parseFloat(priceKrw);
+            if (!isFinite(parsedImagePrice) || parsedImagePrice <= 0) { alert('가격은 0보다 큰 숫자여야 합니다.'); return; }
+            runCompareSearch('/api/admin/v1/compare/image-search', {
+                imageUrl,
+                priceKrw: parsedImagePrice,
+                category: document.getElementById('cmp-category').value || null
+            }, 'cmp-image-result', 'cmp-image-loading', false);
+        });
+    }
+
+    function runCompareSearch(endpoint, body, resultId, loadingId, hasText) {
+        const accessToken = localStorage.getItem('accessToken');
+        const resultDiv = document.getElementById(resultId);
+        const loadingDiv = document.getElementById(loadingId);
+        resultDiv.innerHTML = '';
+        loadingDiv.style.display = 'block';
+
+        fetch(endpoint, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + accessToken },
+            body: JSON.stringify(body)
+        })
+        .then(res => res.json().then(json => ({ ok: res.ok, status: res.status, json })))
+        .then(({ ok, status, json }) => {
+            loadingDiv.style.display = 'none';
+            if (!ok) {
+                const msg = json?.message || json?.error || `HTTP ${status}`;
+                resultDiv.innerHTML = `<div class="alert alert-danger">오류: ${escapeHtml(msg)}</div>`;
+                return;
+            }
+            const data = (json && json.data) || {};
+            const items = data.items || [];
+            const stats = data.filterStats;
+            let html = '';
+            if (stats) {
+                const badge = (label, val) => `<span class="badge bg-secondary me-1">${label}: ${val}</span>`;
+                html += `<div class="mb-2 small">
+                    ${badge('eBay 수집', stats.totalFetched)}
+                    <i class="fas fa-arrow-right text-muted mx-1"></i>
+                    ${badge('카테고리 필터 후', stats.afterCategoryFilter)}
+                    <i class="fas fa-arrow-right text-muted mx-1"></i>
+                    ${badge('가격 필터 후', stats.afterPriceFilter)}
+                    <i class="fas fa-arrow-right text-muted mx-1"></i>
+                    ${badge('스코어링', stats.scored)}
+                </div>`;
+            }
+            if (!items.length) { resultDiv.innerHTML = html + '<div class="alert alert-warning">결과 없음</div>'; return; }
+            html += '<div class="table-responsive"><table class="table table-sm table-hover align-middle"><thead><tr>';
+            html += '<th>#</th><th>이미지</th><th>상품명</th><th>가격(USD)</th>';
+            if (hasText) html += '<th>텍스트유사도</th>';
+            html += '<th>이미지유사도</th><th>종합점수</th><th>링크</th></tr></thead><tbody>';
+            items.forEach((item, i) => {
+                html += `<tr>
+                    <td>${i + 1}</td>
+                    <td>${item.imageUrl ? `<img src="${escapeHtml(item.imageUrl)}" style="width:60px;height:60px;object-fit:cover;border-radius:4px;">` : '-'}</td>
+                    <td style="max-width:200px;font-size:0.8rem;">${escapeHtml(item.title)}</td>
+                    <td>$${item.priceUsd.toFixed(2)}</td>`;
+                if (hasText) html += `<td>${(item.textSimilarity * 100).toFixed(1)}%</td>`;
+                html += `<td>${(item.imageSimilarity * 100).toFixed(1)}%</td>
+                    <td><strong>${(item.combinedScore * 100).toFixed(1)}%</strong></td>
+                    <td><a href="${escapeHtml(item.productUrl)}" target="_blank" class="btn btn-sm btn-outline-secondary">eBay</a></td>
+                </tr>`;
+            });
+            html += '</tbody></table></div>';
+            resultDiv.innerHTML = html;
+        })
+        .catch(err => {
+            loadingDiv.style.display = 'none';
+            resultDiv.innerHTML = `<div class="alert alert-danger">오류: ${escapeHtml(String(err))}</div>`;
+        });
+    }
 </script>
 </body>
 </html>

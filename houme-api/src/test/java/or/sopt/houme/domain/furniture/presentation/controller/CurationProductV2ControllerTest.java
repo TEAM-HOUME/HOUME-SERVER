@@ -4,6 +4,7 @@ import or.sopt.houme.domain.furniture.presentation.dto.response.CurationProductL
 import or.sopt.houme.domain.furniture.presentation.dto.response.CurationProductMetaResponse;
 import or.sopt.houme.domain.furniture.service.CurationProductService;
 import or.sopt.houme.global.jwt.JWTFilter;
+import or.sopt.houme.legacyapi.application.LegacyApiCallHistoryService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +20,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
+import java.util.concurrent.Executor;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -43,6 +45,12 @@ class CurationProductV2ControllerTest {
 
     @MockBean
     private CurationProductService curationProductService;
+
+    @MockBean
+    private LegacyApiCallHistoryService legacyApiCallHistoryService;
+
+    @MockBean(name = "legacyApiCallHistoryExecutor")
+    private Executor legacyApiCallHistoryExecutor;
 
     @Test
     @WithMockUser

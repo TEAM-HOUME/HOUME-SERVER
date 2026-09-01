@@ -75,6 +75,13 @@ naver:
   client-secret: test-naver-client-secret
   allowed-malls: 테스트몰
 
+coupang:
+  partners:
+    access-key: test-coupang-access-key
+    secret-key: test-coupang-secret-key
+  batch:
+    enabled: false
+
 soozip:
   base-url: http://localhost:65535
 
