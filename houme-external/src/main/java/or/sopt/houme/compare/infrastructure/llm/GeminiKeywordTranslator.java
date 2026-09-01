@@ -86,9 +86,10 @@ public class GeminiKeywordTranslator implements KeywordTranslationPort {
             throw new CompareException(ErrorCode.COMPARE_KEYWORD_TRANSLATION_FAILED);
         }
 
+        KeywordPair keywordPair = new KeywordPair(parsed.ebayKeywords().trim(), parsed.coupangKeywords().trim());
         return new MarketplaceSearchKeywords(
-                parsed.ebayKeywords().trim(),
-                parsed.coupangKeywords().trim(),
+                keywordPair.english(),
+                keywordPair.korean(),
                 parsed.furnitureId()
         );
     }
