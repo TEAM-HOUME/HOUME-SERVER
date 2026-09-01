@@ -12,8 +12,12 @@ import or.sopt.houme.compare.infrastructure.gemini.dto.GeminiTextGenerationReque
 import or.sopt.houme.compare.infrastructure.gemini.dto.GeminiTextGenerationResponse;
 import or.sopt.houme.global.api.ErrorCode;
 import or.sopt.houme.global.api.handler.CompareException;
+import or.sopt.houme.furniture.domain.FurnitureWithTypeView;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.Set;
 
 @Slf4j
 @Service
@@ -30,7 +34,9 @@ public class GeminiKeywordTranslator implements KeywordTranslationPort {
 
     public record KeywordPair(String english, String korean) {}
 
-    private record KeywordJson(String ebayKeywords, String coupangKeywords) {}
+    private record KeywordJson(String ebayKeywords, String coupangKeywords, Long furnitureId) {}
+
+    private record FurnitureCandidate(Long id, String nameKr, String typeNameKr) {}
 
     public String translateToEnglish(String koreanProductName) {
         String prompt = """
@@ -59,41 +65,98 @@ public class GeminiKeywordTranslator implements KeywordTranslationPort {
     }
 
     @Override
-    public MarketplaceSearchKeywords translateToMarketplaceKeywords(String koreanProductName) {
-        KeywordPair keywordPair = translateToBoth(koreanProductName);
-        return new MarketplaceSearchKeywords(keywordPair.english(), keywordPair.korean());
+    public MarketplaceSearchKeywords translateToMarketplaceKeywords(
+            String koreanProductName,
+            List<FurnitureWithTypeView> furnitureCandidates
+    ) {
+        if (furnitureCandidates == null || furnitureCandidates.isEmpty()) {
+            throw new CompareException(ErrorCode.COMPARE_KEYWORD_TRANSLATION_FAILED);
+        }
+
+        String furnitureCandidatesJson = toFurnitureCandidatesJson(furnitureCandidates);
+        String raw = generateKeywordJson(koreanProductName, buildDualKeywordPrompt(koreanProductName, furnitureCandidatesJson));
+        KeywordJson parsed = parseKeywordJson(koreanProductName, raw);
+        validateKeywords(koreanProductName, raw, parsed);
+
+        Set<Long> candidateIds = furnitureCandidates.stream()
+                .map(FurnitureWithTypeView::id)
+                .collect(java.util.stream.Collectors.toUnmodifiableSet());
+        if (parsed.furnitureId() == null || !candidateIds.contains(parsed.furnitureId())) {
+            log.error("가구 분류 결과가 후보 목록에 없습니다: product={}, furnitureId={}", koreanProductName, parsed.furnitureId());
+            throw new CompareException(ErrorCode.COMPARE_KEYWORD_TRANSLATION_FAILED);
+        }
+
+        return new MarketplaceSearchKeywords(
+                parsed.ebayKeywords().trim(),
+                parsed.coupangKeywords().trim(),
+                parsed.furnitureId()
+        );
     }
 
     public KeywordPair translateToBoth(String koreanProductName) {
-        String prompt = buildDualKeywordPrompt(koreanProductName);
+        String raw = generateKeywordJson(koreanProductName, buildDualKeywordPrompt(koreanProductName, null));
+        KeywordJson parsed = parseKeywordJson(koreanProductName, raw);
+        validateKeywords(koreanProductName, raw, parsed);
+        log.debug("키워드 번역: '{}' → en='{}', ko='{}'", koreanProductName, parsed.ebayKeywords(), parsed.coupangKeywords());
+        return new KeywordPair(parsed.ebayKeywords().trim(), parsed.coupangKeywords().trim());
+    }
+
+    private String generateKeywordJson(String koreanProductName, String prompt) {
         try {
             GeminiTextGenerationRequest req = GeminiTextGenerationRequest.of(prompt);
             GeminiTextGenerationResponse resp = textGenerationClient.generateContent(TRANSLATION_MODEL, apiKey, req);
-            String raw = stripCodeFence(resp.extractText().trim());
-
-            KeywordJson parsed;
-            try {
-                parsed = objectMapper.readValue(raw, KeywordJson.class);
-            } catch (JsonProcessingException e) {
-                log.error("키워드 JSON 파싱 실패: product={}, raw={}", koreanProductName, raw);
-                throw new CompareException(ErrorCode.COMPARE_KEYWORD_TRANSLATION_FAILED);
-            }
-
-            if (parsed.ebayKeywords() == null || parsed.ebayKeywords().isBlank()
-                    || parsed.coupangKeywords() == null || parsed.coupangKeywords().isBlank()) {
-                log.error("키워드 결과가 비어있음: product={}, raw={}", koreanProductName, raw);
-                throw new CompareException(ErrorCode.COMPARE_KEYWORD_TRANSLATION_FAILED);
-            }
-
-            log.debug("키워드 번역: '{}' → en='{}', ko='{}'", koreanProductName, parsed.ebayKeywords(), parsed.coupangKeywords());
-            return new KeywordPair(parsed.ebayKeywords().trim(), parsed.coupangKeywords().trim());
+            return stripCodeFence(resp.extractText().trim());
         } catch (FeignException e) {
             log.error("키워드 번역 실패: product={}", koreanProductName, e);
             throw new CompareException(ErrorCode.COMPARE_KEYWORD_TRANSLATION_FAILED);
         }
     }
 
-    private String buildDualKeywordPrompt(String koreanProductName) {
+    private KeywordJson parseKeywordJson(String koreanProductName, String raw) {
+        try {
+            return objectMapper.readValue(raw, KeywordJson.class);
+        } catch (JsonProcessingException e) {
+            log.error("키워드 JSON 파싱 실패: product={}, raw={}", koreanProductName, raw);
+            throw new CompareException(ErrorCode.COMPARE_KEYWORD_TRANSLATION_FAILED);
+        }
+    }
+
+    private void validateKeywords(String koreanProductName, String raw, KeywordJson parsed) {
+        if (parsed.ebayKeywords() == null || parsed.ebayKeywords().isBlank()
+                || parsed.coupangKeywords() == null || parsed.coupangKeywords().isBlank()) {
+            log.error("키워드 결과가 비어있음: product={}, raw={}", koreanProductName, raw);
+            throw new CompareException(ErrorCode.COMPARE_KEYWORD_TRANSLATION_FAILED);
+        }
+    }
+
+    private String toFurnitureCandidatesJson(List<FurnitureWithTypeView> furnitureCandidates) {
+        try {
+            List<FurnitureCandidate> candidates = furnitureCandidates.stream()
+                    .map(furniture -> new FurnitureCandidate(
+                            furniture.id(),
+                            furniture.furnitureNameKr(),
+                            furniture.furnitureTypeNameKr()
+                    ))
+                    .toList();
+            return objectMapper.writeValueAsString(candidates);
+        } catch (JsonProcessingException e) {
+            throw new CompareException(ErrorCode.COMPARE_KEYWORD_TRANSLATION_FAILED);
+        }
+    }
+
+    private String buildDualKeywordPrompt(String koreanProductName, String furnitureCandidatesJson) {
+        String outputSchema = furnitureCandidatesJson == null
+                ? "{\"ebayKeywords\": \"2-4 generic English words\", \"coupangKeywords\": \"2-4 generic Korean words\"}"
+                : "{\"ebayKeywords\": \"2-4 generic English words\", \"coupangKeywords\": \"2-4 generic Korean words\", \"furnitureId\": one candidate ID}";
+        String furnitureClassificationInstruction = furnitureCandidatesJson == null
+                ? ""
+                : """
+
+                Also choose exactly one furnitureId from the provided Houme furniture candidates.
+                Do not invent an ID. Use the candidate whose Korean name and type best match the product.
+                Houme furniture candidates: %s
+                """.formatted(furnitureCandidatesJson);
+
         return """
                 You are extracting search keywords for a Korean furniture/home-goods product,
                 to be used on two different marketplaces: eBay (English) and Coupang (Korean).
@@ -111,10 +174,10 @@ public class GeminiKeywordTranslator implements KeywordTranslationPort {
                 - Product type/category (침대 프레임, 서랍장, 펜던트 조명, 소파 커버)
                 - Material (원목, 린넨, 라탄, 패브릭)
                 - Structural/functional descriptors that generalize across sellers
-                  (5단, 2인용, 무헤드, 접이식, 방수)
+                (5단, 2인용, 무헤드, 접이식, 방수)
 
                 OUTPUT: valid JSON only. No explanation, no markdown code fence, no extra text.
-                {"ebayKeywords": "2-4 generic English words", "coupangKeywords": "2-4 generic Korean words"}
+                %s
 
                 Examples:
                 Input: "플렌토 속 깊은 5단 서랍장 800"
@@ -129,7 +192,7 @@ public class GeminiKeywordTranslator implements KeywordTranslationPort {
                 Input: "린넨 2인용 소파 커버 방수 아이보리"
                 Output: {"ebayKeywords": "linen sofa cover waterproof", "coupangKeywords": "린넨 소파 커버 방수"}
 
-                Product: """ + koreanProductName;
+                Product: """.formatted(outputSchema) + koreanProductName + furnitureClassificationInstruction;
     }
 
     private String stripCodeFence(String raw) {

@@ -3,6 +3,10 @@ package or.sopt.houme.compare.application;
 import or.sopt.houme.compare.domain.MarketplaceSearchKeywords;
 import or.sopt.houme.compare.domain.port.out.KeywordTranslationPort;
 import or.sopt.houme.domain.coupang.service.CoupangPriorityKeywordQueueService;
+import or.sopt.houme.furniture.domain.FurnitureWithTypeView;
+import or.sopt.houme.furniture.domain.port.out.FurnitureRepositoryPort;
+
+import java.util.List;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -18,15 +22,21 @@ class UserRequestedCoupangKeywordServiceTest {
     void enqueuesCoupangKeywordFromMarketplaceKeywords() {
         KeywordTranslationPort keywordTranslationPort = mock(KeywordTranslationPort.class);
         CoupangPriorityKeywordQueueService priorityKeywordQueueService = mock(CoupangPriorityKeywordQueueService.class);
+        FurnitureRepositoryPort furnitureRepositoryPort = mock(FurnitureRepositoryPort.class);
         UserRequestedCoupangKeywordService service = new UserRequestedCoupangKeywordService(
                 keywordTranslationPort,
-                priorityKeywordQueueService
+                priorityKeywordQueueService,
+                furnitureRepositoryPort
         );
-        MarketplaceSearchKeywords keywords = new MarketplaceSearchKeywords("wood dining table", "원목 식탁");
-        when(keywordTranslationPort.translateToMarketplaceKeywords("브랜드 원목 식탁 1200"))
+        List<FurnitureWithTypeView> furnitureCandidates = List.of(
+                new FurnitureWithTypeView(16L, "dining table", "식탁", 1, 3L, "테이블", "table")
+        );
+        MarketplaceSearchKeywords keywords = new MarketplaceSearchKeywords("wood dining table", "원목 식탁", 16L);
+        when(furnitureRepositoryPort.findAllWithType()).thenReturn(furnitureCandidates);
+        when(keywordTranslationPort.translateToMarketplaceKeywords("브랜드 원목 식탁 1200", furnitureCandidates))
                 .thenReturn(keywords);
 
-        MarketplaceSearchKeywords result = service.translateAndEnqueue("브랜드 원목 식탁 1200", 16L);
+        MarketplaceSearchKeywords result = service.translateAndEnqueue("브랜드 원목 식탁 1200");
 
         verify(priorityKeywordQueueService).enqueueIfAbsent("원목 식탁", 16L);
         assertThat(result).isEqualTo(keywords);
