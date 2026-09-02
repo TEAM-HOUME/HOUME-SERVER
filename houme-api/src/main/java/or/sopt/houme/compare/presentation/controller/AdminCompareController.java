@@ -6,10 +6,8 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import or.sopt.houme.compare.application.AdminEbaySearchService;
 import or.sopt.houme.compare.application.AdminEbaySearchService.AdminSearchResult;
-import or.sopt.houme.compare.application.GeminiPromptService;
 import or.sopt.houme.compare.presentation.dto.request.AdminImageSearchRequest;
 import or.sopt.houme.compare.presentation.dto.request.AdminTextSearchRequest;
-import or.sopt.houme.compare.presentation.dto.request.GeminiPromptRequest;
 import or.sopt.houme.global.api.ApiResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -22,7 +20,6 @@ import org.springframework.web.bind.annotation.*;
 public class AdminCompareController {
 
     private final AdminEbaySearchService adminEbaySearchService;
-    private final GeminiPromptService geminiPromptService;
 
     @Operation(
             summary = "eBay 텍스트 검색 결과 조회",
@@ -50,14 +47,4 @@ public class AdminCompareController {
         ));
     }
 
-    @Operation(
-            summary = "[TEMP] Gemini 프롬프트 실행",
-            description = "입력한 프롬프트를 gemini-3.5-flash-lite에 전달하고 텍스트 응답을 반환합니다."
-    )
-    @PostMapping("/gemini/prompt")
-    public ResponseEntity<ApiResponse<String>> generateGeminiPrompt(
-            @Valid @RequestBody GeminiPromptRequest request
-    ) {
-        return ResponseEntity.ok(ApiResponse.ok(geminiPromptService.generate(request.prompt())));
-    }
 }
