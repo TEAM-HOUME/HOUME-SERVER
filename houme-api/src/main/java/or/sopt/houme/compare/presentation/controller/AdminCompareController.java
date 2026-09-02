@@ -46,5 +46,4 @@ public class AdminCompareController {
                 adminEbaySearchService.imageSearch(request.imageUrl(), request.priceKrw(), request.category())
         ));
     }
-
 }
