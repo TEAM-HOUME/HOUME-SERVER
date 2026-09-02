@@ -42,7 +42,7 @@ public class CoupangCollectionJobJpaEntity extends BaseEntity {
     private LocalDateTime scheduledAt;
 
     /** 사용자 요청으로 새로 등록된 Job은 다음 선점 전까지 일반 순환 Job보다 먼저 처리한다. */
-    @Column(nullable = false, columnDefinition = "boolean default false")
+    @Column
     private boolean priority;
 
     private LocalDateTime startedAt;
