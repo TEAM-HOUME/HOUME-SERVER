@@ -5,6 +5,7 @@ import or.sopt.houme.global.api.ErrorCode;
 import or.sopt.houme.global.api.handler.PriceCompareException;
 import org.springframework.stereotype.Component;
 
+import java.net.Inet6Address;
 import java.net.InetAddress;
 import java.net.URI;
 import java.net.UnknownHostException;
@@ -64,6 +65,14 @@ public class SourceUrlValidator {
                 || address.isLoopbackAddress()  // 127.0.0.0/8, ::1
                 || address.isLinkLocalAddress() // 169.254.0.0/16 (EC2 메타데이터)
                 || address.isSiteLocalAddress() // 10./172.16-31./192.168.
-                || address.isMulticastAddress();
+                || address.isMulticastAddress()
+                || isIpv6Ula(address);          // fc00::/7 (ULA — isSiteLocalAddress 미포함)
+    }
+
+    private boolean isIpv6Ula(InetAddress address) {
+        if (!(address instanceof Inet6Address)) return false;
+        byte firstByte = address.getAddress()[0];
+        // fc00::/7: 첫 바이트의 상위 7비트가 1111110x
+        return (firstByte & 0xFE) == 0xFC;
     }
 }
