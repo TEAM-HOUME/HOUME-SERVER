@@ -2,7 +2,7 @@ package or.sopt.houme.compare.presentation.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import or.sopt.houme.compare.presentation.dto.response.CompareJobHistoryResponse;
+import or.sopt.houme.compare.application.dto.CompareJobHistoryResponse;
 import or.sopt.houme.global.api.ApiResponse;
 import or.sopt.houme.domain.user.presentation.controller.dto.CustomUserDetails;
 import org.springframework.http.ResponseEntity;
