@@ -1,5 +1,6 @@
 package or.sopt.houme.domain.furniture.service;
 
+import or.sopt.houme.compare.application.dto.CompareCatalogJjymListResponse;
 import or.sopt.houme.domain.furniture.presentation.dto.response.JjymListResponse;
 import or.sopt.houme.domain.furniture.presentation.dto.response.JjymV2ListResponse;
 
@@ -13,4 +14,8 @@ public interface JjymService {
     JjymListResponse getMyJjyms(Long userId);
 
     JjymV2ListResponse getMyRawProductJjyms(Long userId);
+
+    boolean catalogJjymToggle(Long userId, Long catalogItemId);
+
+    CompareCatalogJjymListResponse getMyEbayJjyms(Long userId);
 }

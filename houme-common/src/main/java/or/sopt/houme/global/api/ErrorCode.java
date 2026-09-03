@@ -33,7 +33,6 @@ public enum ErrorCode {
     // 가격 비교 관련 예외
     COMPARE_DUMMY_NOT_ALLOWED_IN_PROD(HttpStatus.BAD_REQUEST, 40033, "더미 모드는 운영 환경에서 허용되지 않습니다."),
     INVALID_COUPANG_PRIORITY_QUEUE_REQUEST(HttpStatus.BAD_REQUEST, 40034, "쿠팡 우선 수집 키워드 또는 가구 ID가 유효하지 않습니다."),
-
     // 회원관련
     USERNAME_DUPLICATE(HttpStatus.BAD_REQUEST,40009,"username이 중복되었습니다."),
     EMAIL_ALREADY_EXISTS(HttpStatus.BAD_REQUEST, 40021, "이미 가입된 이메일입니다."),
@@ -74,6 +73,12 @@ public enum ErrorCode {
     INVALID_BANNER_ANSWER_CHIP(HttpStatus.BAD_REQUEST, 40025, "배너 답변 칩 데이터가 유효하지 않습니다."),
     INVALID_BANNER_SIZE(HttpStatus.BAD_REQUEST, 40026, "size는 1 이상의 값이어야 합니다."),
     INVALID_FLOOR_PLAN_SIZE(HttpStatus.BAD_REQUEST, 40027, "size는 1 이상의 값이어야 합니다."),
+
+    // 가격 비교 - 상품 URL 스크래핑 관련 예외
+    INVALID_PRODUCT_URL(HttpStatus.BAD_REQUEST, 40036, "유효하지 않은 상품 URL입니다."),
+    FORBIDDEN_PRODUCT_URL(HttpStatus.BAD_REQUEST, 40037, "접근이 허용되지 않은 주소입니다."),
+    PRODUCT_METADATA_PARSE_FAILED(HttpStatus.BAD_REQUEST, 40038, "상품 페이지에서 정보를 추출하지 못했습니다. 다른 URL로 시도해주세요."),
+    INVALID_COMPARE_HISTORY_LIMIT(HttpStatus.BAD_REQUEST, 40039, "유효하지 않은 limit 값입니다."),
 
 
     /**
@@ -148,7 +153,7 @@ public enum ErrorCode {
     NOT_FOUND_STYLE(HttpStatus.NOT_FOUND, 40427, "스타일 객체를 찾을 수 없습니다."),
 
     // 가격비교 관련
-    COMPARE_JOB_NOT_FOUND(HttpStatus.NOT_FOUND, 40428, "비교 Job을 찾을 수 없습니다."),
+    COMPARE_JOB_NOT_FOUND(HttpStatus.NOT_FOUND, 40428, "가격 비교 작업을 찾을 수 없습니다."),
     COMPARE_CATALOG_ITEM_NOT_FOUND(HttpStatus.NOT_FOUND, 40429, "비교 카탈로그 상품을 찾을 수 없습니다."),
 
 
@@ -228,6 +233,9 @@ public enum ErrorCode {
     // FastAPI imageHash 관련
     IMAGE_HASH_SERVER_ERROR(HttpStatus.BAD_GATEWAY, 50202, "Fast API 서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요."),
     IMAGE_HASH_EMPTY_RESPONSE(HttpStatus.BAD_GATEWAY, 50203, "Fast API imageHash 응답이 비어 있습니다."),
+
+    // 가격 비교 - 상품 페이지 스크래핑 관련
+    PRODUCT_PAGE_FETCH_FAILED(HttpStatus.BAD_GATEWAY, 50204, "상품 페이지를 불러오지 못했습니다. 잠시 후 다시 시도해주세요."),
 
 
     /**

@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>에스테 3인용 패브릭 소파 - 예시몰</title>
+
+    <!-- JSON-LD 가 있으면 OG 보다 정확하므로 1순위로 채택되어야 한다 -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Product",
+      "name": "에스테 3인용 패브릭 소파",
+      "image": [
+        "/images/products/sofa-main.jpg",
+        "//cdn.example-mall.co.kr/images/sofa-detail-1.jpg"
+      ],
+      "brand": { "@type": "Brand", "name": "에싸" },
+      "description": "린넨 혼방 패브릭을 사용한 3인용 소파입니다.",
+      "offers": {
+        "@type": "Offer",
+        "price": "459,000",
+        "priceCurrency": "KRW"
+      }
+    }
+    </script>
+
+    <!-- OG 태그에는 일부러 다른 값을 넣어, JSON-LD 가 우선되는지 검증한다 -->
+    <meta property="og:title" content="OG 제목 - 채택되면 안 됨">
+    <meta property="og:image" content="https://cdn.example-mall.co.kr/images/og-fallback.jpg">
+</head>
+<body>
+<h1>에스테 3인용 패브릭 소파</h1>
+</body>
+</html>
