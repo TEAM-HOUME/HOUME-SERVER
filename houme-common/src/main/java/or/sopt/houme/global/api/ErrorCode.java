@@ -150,6 +150,7 @@ public enum ErrorCode {
     // 가격비교 관련
     COMPARE_JOB_NOT_FOUND(HttpStatus.NOT_FOUND, 40428, "비교 Job을 찾을 수 없습니다."),
     COMPARE_CATALOG_ITEM_NOT_FOUND(HttpStatus.NOT_FOUND, 40429, "비교 카탈로그 상품을 찾을 수 없습니다."),
+    COMPARE_PRESET_NOT_FOUND(HttpStatus.NOT_FOUND, 40430, "존재하지 않는 프리셋입니다."),
 
 
     /**
