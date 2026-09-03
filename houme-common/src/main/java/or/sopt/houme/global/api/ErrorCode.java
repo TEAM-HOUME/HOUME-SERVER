@@ -30,6 +30,9 @@ public enum ErrorCode {
     // 입력값 검증 예외
     NOT_VALID_EXCEPTION(HttpStatus.BAD_REQUEST, 40008, "유효하지 않은 입력값입니다."),
 
+    // 가격 비교 관련 예외
+    COMPARE_DUMMY_NOT_ALLOWED_IN_PROD(HttpStatus.BAD_REQUEST, 40033, "더미 모드는 운영 환경에서 허용되지 않습니다."),
+    INVALID_COUPANG_PRIORITY_QUEUE_REQUEST(HttpStatus.BAD_REQUEST, 40034, "쿠팡 우선 수집 키워드 또는 가구 ID가 유효하지 않습니다."),
     // 회원관련
     USERNAME_DUPLICATE(HttpStatus.BAD_REQUEST,40009,"username이 중복되었습니다."),
     EMAIL_ALREADY_EXISTS(HttpStatus.BAD_REQUEST, 40021, "이미 가입된 이메일입니다."),
@@ -72,9 +75,9 @@ public enum ErrorCode {
     INVALID_FLOOR_PLAN_SIZE(HttpStatus.BAD_REQUEST, 40027, "size는 1 이상의 값이어야 합니다."),
 
     // 가격 비교 - 상품 URL 스크래핑 관련 예외
-    INVALID_PRODUCT_URL(HttpStatus.BAD_REQUEST, 40033, "유효하지 않은 상품 URL입니다."),
-    FORBIDDEN_PRODUCT_URL(HttpStatus.BAD_REQUEST, 40034, "접근이 허용되지 않은 주소입니다."),
-    PRODUCT_METADATA_PARSE_FAILED(HttpStatus.BAD_REQUEST, 40035, "상품 페이지에서 정보를 추출하지 못했습니다. 다른 URL로 시도해주세요."),
+    INVALID_PRODUCT_URL(HttpStatus.BAD_REQUEST, 40036, "유효하지 않은 상품 URL입니다."),
+    FORBIDDEN_PRODUCT_URL(HttpStatus.BAD_REQUEST, 40037, "접근이 허용되지 않은 주소입니다."),
+    PRODUCT_METADATA_PARSE_FAILED(HttpStatus.BAD_REQUEST, 40038, "상품 페이지에서 정보를 추출하지 못했습니다. 다른 URL로 시도해주세요."),
 
 
     /**

@@ -36,7 +36,7 @@ public class CoupangCollectionJobService {
     @Transactional
     public Optional<ClaimedCoupangJob> claimNextJob() {
         LocalDateTime now = LocalDateTime.now();
-        return jobRepository.findFirstByStatusAndScheduledAtLessThanEqualOrderByScheduledAtAsc(
+        return jobRepository.findFirstByStatusAndScheduledAtLessThanEqualOrderByPriorityDescScheduledAtAsc(
                         CoupangJobStatus.PENDING, now
                 )
                 .map(job -> {
