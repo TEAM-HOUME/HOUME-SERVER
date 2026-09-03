@@ -18,8 +18,8 @@ public class CurationProductSearchAdapter implements CurationProductSearchPort {
     private final CurationProductSearchRepository repository;
 
     @Override
-    public List<CurationCandidate> findCandidates(String category, int limit) {
-        return repository.findCandidatesByCategory(category, limit).stream()
+    public List<CurationCandidate> findCandidates(String category) {
+        return repository.findCandidatesByCategory(category).stream()
                 .map(this::toCandidate)
                 .collect(Collectors.toList());
     }

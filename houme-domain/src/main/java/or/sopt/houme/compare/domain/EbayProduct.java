@@ -8,7 +8,7 @@ public record EbayProduct(
         String ebayItemId,
         String title,
         String imageUrl,
-        double priceUsd,
+        Double priceUsd,
         String productUrl,
         String soozipCategory,
         String titleEmbedding,   // pgvector format: "[0.1,0.2,...]"
@@ -16,7 +16,7 @@ public record EbayProduct(
 ) {
     public static EbayProduct forUpsert(
             String ebayItemId, String title, String imageUrl,
-            double priceUsd, String productUrl, String soozipCategory,
+            Double priceUsd, String productUrl, String soozipCategory,
             List<Double> titleEmbedding, List<Double> imageEmbedding
     ) {
         return new EbayProduct(

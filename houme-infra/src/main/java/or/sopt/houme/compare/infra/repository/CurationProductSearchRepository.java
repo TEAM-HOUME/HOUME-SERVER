@@ -15,10 +15,8 @@ public interface CurationProductSearchRepository extends JpaRepository<CurationR
               AND title_embedding IS NOT NULL
               AND is_exposed = true
               AND (:category IS NULL OR category = :category)
-            LIMIT :limit
             """, nativeQuery = true)
     List<CurationRawProduct> findCandidatesByCategory(
-            @Param("category") String category,
-            @Param("limit") int limit
+            @Param("category") String category
     );
 }

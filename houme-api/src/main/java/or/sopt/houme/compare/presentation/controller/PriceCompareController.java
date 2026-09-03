@@ -7,6 +7,7 @@ import or.sopt.houme.compare.domain.CompareJob;
 import or.sopt.houme.compare.domain.OriginalProduct;
 import or.sopt.houme.compare.domain.port.in.PriceCompareUseCase;
 import or.sopt.houme.compare.domain.port.out.SaveCompareHistoryPort;
+import jakarta.validation.Valid;
 import or.sopt.houme.compare.application.dto.CreateCompareJobRequest;
 import or.sopt.houme.compare.application.dto.CompareJobResponse;
 import or.sopt.houme.compare.application.dto.CreateJobResponse;
@@ -29,7 +30,7 @@ public class PriceCompareController {
     @Operation(summary = "가격비교 Job 생성 (202 Accepted)")
     @PostMapping("/jobs")
     public ResponseEntity<ApiResponse<CreateJobResponse>> createJob(
-            @RequestBody CreateCompareJobRequest request,
+            @RequestBody @Valid CreateCompareJobRequest request,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
         CompareJob job = priceCompareUseCase.createJobByUrl(request.url());
@@ -50,8 +51,7 @@ public class PriceCompareController {
                 job.getSourceUrl(),
                 op != null ? op.title() : null,
                 op != null ? op.imageUrl() : null,
-                price,
-                null
+                price
         );
         return ResponseEntity.status(HttpStatus.ACCEPTED)
                 .body(new ApiResponse<>(202, "응답 성공", response));

@@ -178,7 +178,7 @@ public class EbayPipelineService {
         // 자체 카탈로그 — 저장된 임베딩으로 Java 내 cosine sim 계산 (Gemini 호출 없음)
         try {
             String categoryName = soozipCat.map(Enum::name).orElse(null);
-            List<CurationCandidate> curationRaw = curationSearchPort.findCandidates(categoryName, MAX_RESULTS);
+            List<CurationCandidate> curationRaw = curationSearchPort.findCandidates(categoryName);
             log.info("[파이프라인] 자체 카탈로그 후보: {}개", curationRaw.size());
             curationRaw.stream()
                     .filter(c -> c.price() != null && priceSoftFilter.passes(originalKrw, c.price()))

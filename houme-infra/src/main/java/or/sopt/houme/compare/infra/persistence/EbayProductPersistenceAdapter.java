@@ -44,7 +44,7 @@ public class EbayProductPersistenceAdapter implements EbayProductPort {
     private EbayProduct toDomain(EbayProductJpaEntity e) {
         return new EbayProduct(
                 e.getId(), e.getEbayItemId(), e.getTitle(), e.getImageUrl(),
-                e.getPriceUsd() != null ? e.getPriceUsd() : 0.0,
+                e.getPriceUsd(),
                 e.getProductUrl(), e.getSoozipCategory(), e.getTitleEmbedding(), e.getImageEmbedding()
         );
     }

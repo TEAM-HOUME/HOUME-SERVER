@@ -6,5 +6,5 @@ import java.util.List;
 
 public interface CurationProductSearchPort {
 
-    List<CurationCandidate> findCandidates(String category, int limit);
+    List<CurationCandidate> findCandidates(String category);
 }
