@@ -57,7 +57,15 @@ public class EbayPipelineService {
         } catch (Exception e) {
             log.error("파이프라인 실행 중 예외 발생: jobId={}", job.getJobId(), e);
             job.markFailed(e.getClass().getSimpleName());
+            trySave(job);
+        }
+    }
+
+    private void trySave(CompareJob job) {
+        try {
             jobStore.save(job);
+        } catch (Exception e) {
+            log.error("Job 상태 저장 실패: jobId={}", job.getJobId(), e);
         }
     }
 
@@ -66,7 +74,7 @@ public class EbayPipelineService {
         long t0 = System.currentTimeMillis();
 
         job.markRunning(JobStage.SEARCHING);
-        jobStore.save(job);
+        trySave(job);
 
         long t1 = System.currentTimeMillis();
         String keyword = keywordTranslator.translateToEnglish(original.title());
@@ -209,7 +217,7 @@ public class EbayPipelineService {
 
         log.info("[타이밍] 전체 파이프라인: {}ms", System.currentTimeMillis() - t0);
         job.markDone(results);
-        jobStore.save(job);
+        trySave(job);
         log.info("파이프라인 완료: jobId={}, results={}", job.getJobId(), results.size());
 
         upsertToCatalog(topScored, original.category());
