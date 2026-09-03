@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import or.sopt.houme.compare.application.PresetUseCase;
+import or.sopt.houme.compare.application.dto.PresetDetailResponse;
 import or.sopt.houme.compare.application.dto.PresetListResponse;
 import or.sopt.houme.global.api.ApiResponse;
 import org.springframework.http.ResponseEntity;
@@ -21,5 +22,13 @@ public class PresetController {
     @GetMapping("/presets")
     public ResponseEntity<ApiResponse<PresetListResponse>> getPresets() {
         return ResponseEntity.ok(ApiResponse.ok(presetUseCase.getPresets()));
+    }
+
+    @Operation(summary = "프리셋 가격비교 결과 조회")
+    @GetMapping("/presets/{presetId}")
+    public ResponseEntity<ApiResponse<PresetDetailResponse>> getPresetDetail(
+            @PathVariable Long presetId
+    ) {
+        return ResponseEntity.ok(ApiResponse.ok(presetUseCase.getPresetDetail(presetId)));
     }
 }
