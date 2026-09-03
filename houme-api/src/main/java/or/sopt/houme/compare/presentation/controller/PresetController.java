@@ -29,7 +29,6 @@ public class PresetController {
     public ResponseEntity<ApiResponse<PresetDetailResponse>> getPresetDetail(
             @PathVariable Long presetId
     ) {
-        // TODO: #654 구현
-        throw new UnsupportedOperationException("미구현 — #654 참조");
+        return ResponseEntity.ok(ApiResponse.ok(PresetDetailResponse.from(presetUseCase.getPresetDetail(presetId))));
     }
 }
