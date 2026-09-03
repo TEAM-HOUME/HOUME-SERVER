@@ -8,6 +8,7 @@ import or.sopt.houme.compare.application.dto.CreateJobResponse;
 import or.sopt.houme.global.api.ApiResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -18,7 +19,7 @@ public class PriceCompareController {
     @Operation(summary = "가격비교 Job 생성 (202 Accepted)")
     @PostMapping("/jobs")
     public ResponseEntity<ApiResponse<CreateJobResponse>> createJob(
-            @RequestBody CreateCompareJobRequest request
+            @RequestBody @Valid CreateCompareJobRequest request
     ) {
         // TODO: implement
         return ResponseEntity.status(HttpStatus.ACCEPTED)
