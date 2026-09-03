@@ -1,4 +1,4 @@
-package or.sopt.houme.compare.presentation.dto.response;
+package or.sopt.houme.compare.application.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import or.sopt.houme.compare.domain.CompareJob;

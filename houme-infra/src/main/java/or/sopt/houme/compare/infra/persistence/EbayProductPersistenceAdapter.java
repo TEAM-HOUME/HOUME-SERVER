@@ -1,35 +1,35 @@
 package or.sopt.houme.compare.infra.persistence;
 
 import lombok.RequiredArgsConstructor;
-import or.sopt.houme.compare.domain.CompareCatalogItem;
-import or.sopt.houme.compare.domain.port.out.CompareCatalogPort;
-import or.sopt.houme.compare.infra.entity.CompareCatalogItemEntity;
-import or.sopt.houme.compare.infra.repository.CompareCatalogItemRepository;
+import or.sopt.houme.compare.domain.EbayProduct;
+import or.sopt.houme.compare.domain.port.out.EbayProductPort;
+import or.sopt.houme.compare.infra.entity.EbayProductJpaEntity;
+import or.sopt.houme.compare.infra.repository.EbayProductRepository;
 import org.springframework.stereotype.Component;
 
 import java.util.Optional;
 
 @Component
 @RequiredArgsConstructor
-public class CompareCatalogPersistenceAdapter implements CompareCatalogPort {
+public class EbayProductPersistenceAdapter implements EbayProductPort {
 
-    private final CompareCatalogItemRepository repository;
+    private final EbayProductRepository repository;
 
     @Override
-    public CompareCatalogItem upsert(CompareCatalogItem item) {
-        CompareCatalogItemEntity entity = repository.findByEbayItemId(item.ebayItemId())
+    public EbayProduct upsert(EbayProduct item) {
+        EbayProductJpaEntity entity = repository.findByEbayItemId(item.ebayItemId())
                 .map(existing -> toEntity(item).withId(existing.getId()))
                 .orElseGet(() -> toEntity(item));
         return toDomain(repository.save(entity));
     }
 
     @Override
-    public Optional<CompareCatalogItem> findById(Long id) {
+    public Optional<EbayProduct> findById(Long id) {
         return repository.findById(id).map(this::toDomain);
     }
 
-    private CompareCatalogItemEntity toEntity(CompareCatalogItem item) {
-        return CompareCatalogItemEntity.builder()
+    private EbayProductJpaEntity toEntity(EbayProduct item) {
+        return EbayProductJpaEntity.builder()
                 .ebayItemId(item.ebayItemId())
                 .title(item.title())
                 .imageUrl(item.imageUrl())
@@ -37,14 +37,15 @@ public class CompareCatalogPersistenceAdapter implements CompareCatalogPort {
                 .productUrl(item.productUrl())
                 .soozipCategory(item.soozipCategory())
                 .titleEmbedding(item.titleEmbedding())
+                .imageEmbedding(item.imageEmbedding())
                 .build();
     }
 
-    private CompareCatalogItem toDomain(CompareCatalogItemEntity e) {
-        return new CompareCatalogItem(
+    private EbayProduct toDomain(EbayProductJpaEntity e) {
+        return new EbayProduct(
                 e.getId(), e.getEbayItemId(), e.getTitle(), e.getImageUrl(),
                 e.getPriceUsd() != null ? e.getPriceUsd() : 0.0,
-                e.getProductUrl(), e.getSoozipCategory(), e.getTitleEmbedding()
+                e.getProductUrl(), e.getSoozipCategory(), e.getTitleEmbedding(), e.getImageEmbedding()
         );
     }
 }

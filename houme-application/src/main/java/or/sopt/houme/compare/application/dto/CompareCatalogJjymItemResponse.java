@@ -1,6 +1,6 @@
 package or.sopt.houme.compare.application.dto;
 
-import or.sopt.houme.compare.domain.CompareCatalogItem;
+import or.sopt.houme.compare.domain.EbayProduct;
 
 public record CompareCatalogJjymItemResponse(
         Long catalogItemId,
@@ -9,7 +9,7 @@ public record CompareCatalogJjymItemResponse(
         double priceUsd,
         String productUrl
 ) {
-    public static CompareCatalogJjymItemResponse from(CompareCatalogItem item) {
+    public static CompareCatalogJjymItemResponse from(EbayProduct item) {
         return new CompareCatalogJjymItemResponse(
                 item.id(), item.title(), item.imageUrl(), item.priceUsd(), item.productUrl()
         );

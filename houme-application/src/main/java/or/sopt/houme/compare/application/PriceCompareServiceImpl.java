@@ -1,44 +1,60 @@
 package or.sopt.houme.compare.application;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import or.sopt.houme.compare.domain.CompareJob;
 import or.sopt.houme.compare.domain.OriginalProduct;
 import or.sopt.houme.compare.domain.port.in.PriceCompareUseCase;
 import or.sopt.houme.compare.domain.port.out.CompareJobStorePort;
 import or.sopt.houme.global.api.ErrorCode;
-import or.sopt.houme.global.api.handler.CompareException;
+import or.sopt.houme.global.api.handler.PriceCompareException;
+import or.sopt.houme.priceCompare.domain.ScrapedProduct;
+import or.sopt.houme.priceCompare.domain.SourceUrl;
+import or.sopt.houme.priceCompare.domain.port.out.ProductPageScrapePort;
 import org.springframework.stereotype.Service;
 
 import java.util.UUID;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class PriceCompareServiceImpl implements PriceCompareUseCase {
 
     private final CompareJobStorePort jobStore;
     private final EbayPipelineService pipelineService;
+    private final ProductPageScrapePort productPageScrapePort;
 
     @Override
-    public CompareJob createJobByUrl(String sourceUrl) {
-        // 동일 sourceUrl PENDING/RUNNING 중복 방지 (향후 scraping 구현 시 기존 job 재활용)
-        return jobStore.findActiveBySourceUrl(sourceUrl).orElseThrow(
-                () -> new CompareException(ErrorCode.COMPARE_SCRAPING_NOT_IMPLEMENTED)
-        );
-    }
+    public CompareJob createJobByUrl(String rawUrl) {
+        SourceUrl sourceUrl = SourceUrl.normalize(rawUrl);
 
-    @Override
-    public CompareJob createJobByDummy(OriginalProduct dummyProduct) {
-        CompareJob job = new CompareJob(UUID.randomUUID().toString(), null);
-        job.setOriginalProduct(dummyProduct);
-        jobStore.save(job);
-        pipelineService.runAsync(job);
-        return job;
+        // 동일 URL 진행 중인 job 재활용
+        return jobStore.findActiveBySourceUrl(sourceUrl.value()).orElseGet(() -> {
+            ScrapedProduct scraped = productPageScrapePort.scrape(sourceUrl);
+            if (!scraped.hasEssentials()) {
+                throw new PriceCompareException(ErrorCode.PRODUCT_METADATA_PARSE_FAILED);
+            }
+
+            OriginalProduct original = OriginalProduct.of(
+                    scraped.title(),
+                    scraped.thumbnailUrl(),
+                    scraped.price() != null ? scraped.price().doubleValue() : null,
+                    null
+            );
+
+            CompareJob job = new CompareJob(UUID.randomUUID().toString(), sourceUrl.value());
+            job.setOriginalProduct(original);
+            jobStore.save(job);
+            pipelineService.runAsync(job);
+
+            log.info("가격 비교 job 생성: jobId={}, url={}", job.getJobId(), sourceUrl.value());
+            return job;
+        });
     }
 
     @Override
     public CompareJob getJob(String jobId) {
         return jobStore.findById(jobId)
-                .orElseThrow(() -> new CompareException(ErrorCode.COMPARE_JOB_NOT_FOUND));
+                .orElseThrow(() -> new PriceCompareException(ErrorCode.COMPARE_JOB_NOT_FOUND));
     }
-
 }

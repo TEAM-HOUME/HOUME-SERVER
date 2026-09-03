@@ -14,11 +14,11 @@ import java.time.LocalDateTime;
 @Builder
 @Entity
 @Table(
-        name = "compare_catalog_items",
-        uniqueConstraints = @UniqueConstraint(name = "uk_catalog_ebay_item_id", columnNames = "ebay_item_id"),
-        indexes = @Index(name = "idx_catalog_soozip_category", columnList = "soozip_category")
+        name = "ebay_products",
+        uniqueConstraints = @UniqueConstraint(name = "uk_ebay_products_item_id", columnNames = "ebay_item_id"),
+        indexes = @Index(name = "idx_ebay_products_soozip_category", columnList = "soozip_category")
 )
-public class CompareCatalogItemEntity {
+public class EbayProductJpaEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -53,6 +53,10 @@ public class CompareCatalogItemEntity {
     @Comment("제목 임베딩 벡터 (pgvector 문자열 형식)")
     private String titleEmbedding;
 
+    @Column(name = "image_embedding", columnDefinition = "TEXT")
+    @Comment("이미지 임베딩 벡터 (pgvector 문자열 형식)")
+    private String imageEmbedding;
+
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
@@ -61,8 +65,8 @@ public class CompareCatalogItemEntity {
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 
-    public CompareCatalogItemEntity withId(Long id) {
-        return CompareCatalogItemEntity.builder()
+    public EbayProductJpaEntity withId(Long id) {
+        return EbayProductJpaEntity.builder()
                 .id(id)
                 .ebayItemId(this.ebayItemId)
                 .title(this.title)
@@ -71,6 +75,7 @@ public class CompareCatalogItemEntity {
                 .productUrl(this.productUrl)
                 .soozipCategory(this.soozipCategory)
                 .titleEmbedding(this.titleEmbedding)
+                .imageEmbedding(this.imageEmbedding)
                 .build();
     }
 }

@@ -3,7 +3,7 @@ package or.sopt.houme.compare.domain;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public record CompareCatalogItem(
+public record EbayProduct(
         Long id,
         String ebayItemId,
         String title,
@@ -11,16 +11,17 @@ public record CompareCatalogItem(
         double priceUsd,
         String productUrl,
         String soozipCategory,
-        String titleEmbedding  // pgvector format: "[0.1,0.2,...]"
+        String titleEmbedding,   // pgvector format: "[0.1,0.2,...]"
+        String imageEmbedding
 ) {
-    public static CompareCatalogItem forUpsert(
+    public static EbayProduct forUpsert(
             String ebayItemId, String title, String imageUrl,
             double priceUsd, String productUrl, String soozipCategory,
-            List<Double> titleEmbedding
+            List<Double> titleEmbedding, List<Double> imageEmbedding
     ) {
-        return new CompareCatalogItem(
+        return new EbayProduct(
                 null, ebayItemId, title, imageUrl, priceUsd, productUrl, soozipCategory,
-                toVectorString(titleEmbedding)
+                toVectorString(titleEmbedding), toVectorString(imageEmbedding)
         );
     }
 

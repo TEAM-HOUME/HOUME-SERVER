@@ -1,4 +1,4 @@
-package or.sopt.houme.compare.presentation.dto.response;
+package or.sopt.houme.compare.application.dto;
 
 public record SourcesStatusResponse(
         String ebay,
@@ -6,6 +6,6 @@ public record SourcesStatusResponse(
         String catalog
 ) {
     public static SourcesStatusResponse of(String ebayStatus) {
-        return new SourcesStatusResponse(ebayStatus, "WAITING", "WAITING");
+        return new SourcesStatusResponse(ebayStatus, ebayStatus, ebayStatus);
     }
 }
