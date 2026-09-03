@@ -2,10 +2,12 @@ package or.sopt.houme.compare.application;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import or.sopt.houme.compare.domain.CompareHistoryItem;
 import or.sopt.houme.compare.domain.CompareJob;
 import or.sopt.houme.compare.domain.OriginalProduct;
 import or.sopt.houme.compare.domain.port.in.PriceCompareUseCase;
 import or.sopt.houme.compare.domain.port.out.CompareJobStorePort;
+import or.sopt.houme.compare.domain.port.out.GetCompareHistoryPort;
 import or.sopt.houme.global.api.ErrorCode;
 import or.sopt.houme.global.api.handler.PriceCompareException;
 import or.sopt.houme.priceCompare.domain.ScrapedProduct;
@@ -13,6 +15,7 @@ import or.sopt.houme.priceCompare.domain.SourceUrl;
 import or.sopt.houme.priceCompare.domain.port.out.ProductPageScrapePort;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.UUID;
 
 @Slf4j
@@ -23,6 +26,7 @@ public class PriceCompareServiceImpl implements PriceCompareUseCase {
     private final CompareJobStorePort jobStore;
     private final EbayPipelineService pipelineService;
     private final ProductPageScrapePort productPageScrapePort;
+    private final GetCompareHistoryPort getCompareHistoryPort;
 
     @Override
     public CompareJob createJobByUrl(String rawUrl) {
@@ -56,5 +60,10 @@ public class PriceCompareServiceImpl implements PriceCompareUseCase {
     public CompareJob getJob(String jobId) {
         return jobStore.findById(jobId)
                 .orElseThrow(() -> new PriceCompareException(ErrorCode.COMPARE_JOB_NOT_FOUND));
+    }
+
+    @Override
+    public List<CompareHistoryItem> getHistory(Long userId, int limit) {
+        return getCompareHistoryPort.findByUserId(userId, limit);
     }
 }

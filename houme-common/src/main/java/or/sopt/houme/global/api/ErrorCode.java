@@ -78,6 +78,7 @@ public enum ErrorCode {
     INVALID_PRODUCT_URL(HttpStatus.BAD_REQUEST, 40036, "유효하지 않은 상품 URL입니다."),
     FORBIDDEN_PRODUCT_URL(HttpStatus.BAD_REQUEST, 40037, "접근이 허용되지 않은 주소입니다."),
     PRODUCT_METADATA_PARSE_FAILED(HttpStatus.BAD_REQUEST, 40038, "상품 페이지에서 정보를 추출하지 못했습니다. 다른 URL로 시도해주세요."),
+    INVALID_COMPARE_HISTORY_LIMIT(HttpStatus.BAD_REQUEST, 40039, "유효하지 않은 limit 값입니다."),
 
 
     /**
