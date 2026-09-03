@@ -2,9 +2,9 @@ package or.sopt.houme.compare.presentation.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import or.sopt.houme.compare.presentation.dto.request.CreateCompareJobRequest;
-import or.sopt.houme.compare.presentation.dto.response.CompareJobStatusResponse;
-import or.sopt.houme.compare.presentation.dto.response.CreateJobResponse;
+import or.sopt.houme.compare.application.dto.CreateCompareJobRequest;
+import or.sopt.houme.compare.application.dto.CompareJobStatusResponse;
+import or.sopt.houme.compare.application.dto.CreateJobResponse;
 import or.sopt.houme.global.api.ApiResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
