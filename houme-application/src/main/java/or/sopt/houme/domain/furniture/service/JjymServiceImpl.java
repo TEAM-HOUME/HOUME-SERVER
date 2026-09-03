@@ -3,8 +3,8 @@ package or.sopt.houme.domain.furniture.service;
 import lombok.RequiredArgsConstructor;
 import or.sopt.houme.compare.application.dto.CompareCatalogJjymItemResponse;
 import or.sopt.houme.compare.application.dto.CompareCatalogJjymListResponse;
-import or.sopt.houme.compare.domain.CompareCatalogItem;
-import or.sopt.houme.compare.domain.port.out.CompareCatalogPort;
+import or.sopt.houme.compare.domain.EbayProduct;
+import or.sopt.houme.compare.domain.port.out.EbayProductPort;
 import or.sopt.houme.domain.furniture.model.entity.CurationSource;
 import or.sopt.houme.domain.furniture.presentation.dto.response.JjymItemResponse;
 import or.sopt.houme.domain.furniture.presentation.dto.response.JjymListResponse;
@@ -47,7 +47,7 @@ public class JjymServiceImpl implements JjymService {
     private final UserRepositoryPort userRepositoryPort;
     private final RecommendFurniturePort recommendFurniturePort;
     private final CurationRawProductQueryPort curationRawProductQueryPort;
-    private final CompareCatalogPort compareCatalogPort;
+    private final EbayProductPort compareCatalogPort;
 
     @Override
     public boolean jjymToggle(Long userId, Long recommendFurnitureId) {
@@ -292,7 +292,7 @@ public class JjymServiceImpl implements JjymService {
         userRepositoryPort.findById(userId)
                 .orElseThrow(() -> new UserException(ErrorCode.USER_NOT_FOUND));
 
-        CompareCatalogItem catalogItem = compareCatalogPort.findById(catalogItemId)
+        EbayProduct catalogItem = compareCatalogPort.findById(catalogItemId)
                 .orElseThrow(() -> new CompareException(ErrorCode.COMPARE_CATALOG_ITEM_NOT_FOUND));
 
         RecommendFurniture rf = recommendFurniturePort
