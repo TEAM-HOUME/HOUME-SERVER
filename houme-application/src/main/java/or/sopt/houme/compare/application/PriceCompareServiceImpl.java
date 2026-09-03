@@ -14,6 +14,7 @@ import or.sopt.houme.priceCompare.domain.ScrapedProduct;
 import or.sopt.houme.priceCompare.domain.SourceUrl;
 import or.sopt.houme.priceCompare.domain.port.out.ProductPageScrapePort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.UUID;
@@ -62,6 +63,7 @@ public class PriceCompareServiceImpl implements PriceCompareUseCase {
                 .orElseThrow(() -> new PriceCompareException(ErrorCode.COMPARE_JOB_NOT_FOUND));
     }
 
+    @Transactional(readOnly = true)
     @Override
     public List<CompareHistoryItem> getHistory(Long userId, int limit) {
         return getCompareHistoryPort.findByUserId(userId, limit);
