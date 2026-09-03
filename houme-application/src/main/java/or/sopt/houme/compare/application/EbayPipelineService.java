@@ -45,6 +45,7 @@ public class EbayPipelineService {
     private final CoupangSearchPort coupangSearchPort;
     private final CurationProductSearchPort curationSearchPort;
     private final EbayPipelineUtils utils;
+    private final or.sopt.houme.compare.domain.port.out.CompareJobStorePort jobStore;
 
     @Value("${compare.pipeline.top-n:7}")
     private int topN;
@@ -56,6 +57,7 @@ public class EbayPipelineService {
         } catch (Exception e) {
             log.error("파이프라인 실행 중 예외 발생: jobId={}", job.getJobId(), e);
             job.markFailed(e.getClass().getSimpleName());
+            jobStore.save(job);
         }
     }
 
@@ -64,6 +66,7 @@ public class EbayPipelineService {
         long t0 = System.currentTimeMillis();
 
         job.markRunning(JobStage.SEARCHING);
+        jobStore.save(job);
 
         long t1 = System.currentTimeMillis();
         String keyword = keywordTranslator.translateToEnglish(original.title());
@@ -206,6 +209,7 @@ public class EbayPipelineService {
 
         log.info("[타이밍] 전체 파이프라인: {}ms", System.currentTimeMillis() - t0);
         job.markDone(results);
+        jobStore.save(job);
         log.info("파이프라인 완료: jobId={}, results={}", job.getJobId(), results.size());
 
         upsertToCatalog(topScored, original.category());

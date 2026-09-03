@@ -49,4 +49,16 @@ public class CompareJob {
         this.errorCode = errorCode;
         this.status = JobStatus.FAILED;
     }
+
+    public static CompareJob restore(String jobId, String sourceUrl, JobStatus status,
+            JobStage currentStage, OriginalProduct originalProduct,
+            List<SimilarProduct> similarProducts, String errorCode) {
+        CompareJob job = new CompareJob(jobId, sourceUrl);
+        job.status = status;
+        job.currentStage = currentStage;
+        job.originalProduct = originalProduct;
+        job.similarProducts = similarProducts;
+        job.errorCode = errorCode;
+        return job;
+    }
 }
