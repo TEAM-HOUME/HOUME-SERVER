@@ -21,6 +21,7 @@ import java.time.Duration;
 import java.util.Base64;
 import java.util.List;
 import java.util.Locale;
+import java.util.concurrent.ThreadLocalRandom;
 
 @Slf4j
 @Service
@@ -38,9 +39,10 @@ public class GeminiEmbeddingAdapter implements EmbeddingPort {
     @Value("${gemini.compare-api-key:}")
     private String apiKey;
 
-    // ponytail: 5 RPM free-tier ceiling — 15s wait covers one rate-limit window; upgrade path: batch API or paid tier
-    private static final long RETRY_DELAY_MS = 15_000;
-    private static final int MAX_RETRIES = 2;
+    // ponytail: truncated exponential backoff with jitter — Google-recommended for 429 acceleration limits
+    private static final int MAX_RETRIES = 3;
+    private static final long BASE_DELAY_MS = 5_000;
+    private static final long MAX_DELAY_MS  = 20_000;
 
     public List<Double> embedText(String text) {
         GeminiEmbeddingRequest req = GeminiEmbeddingRequest.forText(text);
@@ -59,8 +61,10 @@ public class GeminiEmbeddingAdapter implements EmbeddingPort {
                 return call.call().embedding().values();
             } catch (FeignException e) {
                 if (e.status() == 429 && attempt < MAX_RETRIES) {
-                    log.warn("Gemini 429 (attempt {}/{}) — {}ms 대기 후 재시도: {}", attempt, MAX_RETRIES, RETRY_DELAY_MS, hint);
-                    try { Thread.sleep(RETRY_DELAY_MS); } catch (InterruptedException ie) { Thread.currentThread().interrupt(); }
+                    long delay = Math.min(BASE_DELAY_MS * (1L << (attempt - 1)), MAX_DELAY_MS)
+                            + ThreadLocalRandom.current().nextLong(1000);
+                    log.warn("Gemini 429 (attempt {}/{}) — {}ms 후 재시도: {}", attempt, MAX_RETRIES, delay, hint);
+                    try { Thread.sleep(delay); } catch (InterruptedException ie) { Thread.currentThread().interrupt(); }
                 } else {
                     log.error("임베딩 실패 (attempt {}): {}", attempt, hint, e);
                     throw new CompareException(ErrorCode.COMPARE_EMBEDDING_FAILED);
