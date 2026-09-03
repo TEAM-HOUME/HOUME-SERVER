@@ -45,6 +45,7 @@ public class EbayPipelineUtils {
     }
 
     public double cosineSimilarity(List<Double> a, List<Double> b) {
+        if (a == null || b == null) return 0.0;
         if (a.size() != b.size()) {
             throw new IllegalArgumentException(
                     "임베딩 차원이 다릅니다: a=" + a.size() + ", b=" + b.size());

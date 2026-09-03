@@ -21,6 +21,7 @@ import java.time.Duration;
 import java.util.Base64;
 import java.util.List;
 import java.util.Locale;
+import java.util.concurrent.ThreadLocalRandom;
 
 @Slf4j
 @Service
@@ -38,27 +39,42 @@ public class GeminiEmbeddingAdapter implements EmbeddingPort {
     @Value("${gemini.compare-api-key:}")
     private String apiKey;
 
+    // ponytail: truncated exponential backoff with jitter — Google-recommended for 429 acceleration limits
+    private static final int MAX_RETRIES = 3;
+    private static final long BASE_DELAY_MS = 5_000;
+    private static final long MAX_DELAY_MS  = 20_000;
+
     public List<Double> embedText(String text) {
-        try {
-            GeminiEmbeddingRequest req = GeminiEmbeddingRequest.forText(text);
-            GeminiEmbeddingResponse resp = embeddingClient.embedContent(EMBEDDING_MODEL, apiKey, req);
-            return resp.embedding().values();
-        } catch (FeignException e) {
-            log.error("텍스트 임베딩 실패", e);
-            throw new CompareException(ErrorCode.COMPARE_EMBEDDING_FAILED);
-        }
+        GeminiEmbeddingRequest req = GeminiEmbeddingRequest.forText(text);
+        return embedWithRetry(() -> embeddingClient.embedContent(EMBEDDING_MODEL, apiKey, req), "text");
     }
 
     public List<Double> embedImageUrl(String imageUrl) {
-        try {
-            DownloadResult download = downloadWithMimeType(imageUrl);
-            GeminiEmbeddingRequest req = GeminiEmbeddingRequest.forImage(download.mimeType(), download.base64());
-            GeminiEmbeddingResponse resp = embeddingClient.embedContent(EMBEDDING_MODEL, apiKey, req);
-            return resp.embedding().values();
-        } catch (FeignException e) {
-            log.error("이미지 임베딩 실패: url={}", imageUrl, e);
-            throw new CompareException(ErrorCode.COMPARE_EMBEDDING_FAILED);
+        DownloadResult download = downloadWithMimeType(imageUrl);
+        GeminiEmbeddingRequest req = GeminiEmbeddingRequest.forImage(download.mimeType(), download.base64());
+        return embedWithRetry(() -> embeddingClient.embedContent(EMBEDDING_MODEL, apiKey, req), "image:" + imageUrl);
+    }
+
+    private List<Double> embedWithRetry(java.util.concurrent.Callable<GeminiEmbeddingResponse> call, String hint) {
+        for (int attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+            try {
+                return call.call().embedding().values();
+            } catch (FeignException e) {
+                if (e.status() == 429 && attempt < MAX_RETRIES) {
+                    long delay = Math.min(BASE_DELAY_MS * (1L << (attempt - 1)), MAX_DELAY_MS)
+                            + ThreadLocalRandom.current().nextLong(1000);
+                    log.warn("Gemini 429 (attempt {}/{}) — {}ms 후 재시도: {}", attempt, MAX_RETRIES, delay, hint);
+                    try { Thread.sleep(delay); } catch (InterruptedException ie) { Thread.currentThread().interrupt(); }
+                } else {
+                    log.error("임베딩 실패 (attempt {}): {}", attempt, hint, e);
+                    throw new CompareException(ErrorCode.COMPARE_EMBEDDING_FAILED);
+                }
+            } catch (Exception e) {
+                log.error("임베딩 실패: {}", hint, e);
+                throw new CompareException(ErrorCode.COMPARE_EMBEDDING_FAILED);
+            }
         }
+        throw new CompareException(ErrorCode.COMPARE_EMBEDDING_FAILED);
     }
 
     public String downloadBase64(String url) {

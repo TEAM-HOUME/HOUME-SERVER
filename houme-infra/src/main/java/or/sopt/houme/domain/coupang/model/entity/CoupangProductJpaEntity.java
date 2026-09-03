@@ -51,6 +51,14 @@ public class CoupangProductJpaEntity extends BaseEntity {
     @Column(nullable = false, precision = 15, scale = 2)
     private BigDecimal estimatedOriginalPrice;
 
+    @Column(name = "title_embedding", columnDefinition = "text")
+    @Comment("상품명 임베딩 벡터 (pgvector 형식, 배치로 채움)")
+    private String titleEmbedding;
+
+    @Column(name = "image_embedding", columnDefinition = "text")
+    @Comment("상품 이미지 임베딩 벡터 (pgvector 형식, 배치로 채움)")
+    private String imageEmbedding;
+
     private CoupangProductJpaEntity(CoupangProductSearchResult result) {
         apply(result);
     }
