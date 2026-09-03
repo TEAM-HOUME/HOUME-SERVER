@@ -919,6 +919,11 @@
                 <i class="fas fa-search-dollar"></i>가격비교 검색
             </a>
         </li>
+        <li class="nav-item">
+            <a class="nav-link" href="#" data-target="compare-preset-management">
+                <i class="fas fa-star"></i>프리셋 관리
+            </a>
+        </li>
     </ul>
 </div>
 
@@ -2160,6 +2165,72 @@
         </div>
     </div>
 </div>
+
+    <!-- 프리셋 관리 섹션 -->
+    <div id="compare-preset-management" class="content-section">
+        <h2>프리셋 관리</h2>
+        <p class="text-muted">가격비교 홈에 노출되는 예시 상품 프리셋을 등록·수정·삭제합니다.</p>
+
+        <!-- 목록 -->
+        <div class="card mb-4">
+            <div class="card-header fw-bold d-flex justify-content-between align-items-center">
+                등록된 프리셋
+                <button class="btn btn-sm btn-secondary" onclick="loadPresets()">새로고침</button>
+            </div>
+            <div class="card-body">
+                <div id="preset-list-result"></div>
+            </div>
+        </div>
+
+        <!-- 등록 / 수정 폼 -->
+        <div class="card">
+            <div class="card-header fw-bold" id="preset-form-title">신규 프리셋 등록</div>
+            <div class="card-body">
+                <input type="hidden" id="preset-editing-id">
+                <div class="row g-3 mb-3">
+                    <div class="col-md-6">
+                        <label class="form-label">원본 상품 URL <span class="text-danger">*</span></label>
+                        <input type="url" class="form-control" id="preset-source-url" placeholder="https://www.ohou.se/...">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">상품명 <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="preset-title">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">썸네일 URL</label>
+                        <input type="url" class="form-control" id="preset-thumbnail-url">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">브랜드</label>
+                        <input type="text" class="form-control" id="preset-brand">
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">가격 (원)</label>
+                        <input type="number" class="form-control" id="preset-price" placeholder="299000">
+                    </div>
+                    <div class="col-md-1">
+                        <label class="form-label">통화</label>
+                        <input type="text" class="form-control" id="preset-currency" value="KRW">
+                    </div>
+                </div>
+
+                <!-- 유사상품 -->
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <label class="form-label mb-0 fw-bold">유사상품 목록</label>
+                        <button type="button" class="btn btn-sm btn-outline-primary" onclick="addPresetItem()">+ 항목 추가</button>
+                    </div>
+                    <div id="preset-items-container"></div>
+                </div>
+
+                <div class="d-flex gap-2">
+                    <button class="btn btn-primary" onclick="submitPreset()">저장</button>
+                    <button class="btn btn-outline-secondary" onclick="resetPresetForm()">초기화</button>
+                </div>
+                <div id="preset-form-result" class="api-result mt-3" style="display:none;"></div>
+            </div>
+        </div>
+    </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
@@ -6688,6 +6759,149 @@
             resultDiv.innerHTML = `<div class="alert alert-danger">오류: ${escapeHtml(String(err))}</div>`;
         });
     }
+
+    // ========== 프리셋 관리 ==========
+    function getToken() {
+        return new URLSearchParams(window.location.search).get('token') || '';
+    }
+
+    function authHeaders() {
+        return { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + getToken() };
+    }
+
+    function loadPresets() {
+        fetch('/api/admin/v1/compare/presets', { headers: authHeaders() })
+            .then(r => r.json())
+            .then(data => {
+                const presets = data.data?.presets || [];
+                if (!presets.length) {
+                    document.getElementById('preset-list-result').innerHTML = '<p class="text-muted">등록된 프리셋이 없습니다.</p>';
+                    return;
+                }
+                let html = '<div class="table-responsive"><table class="table table-sm"><thead><tr><th>ID</th><th>썸네일</th><th>상품명</th><th>액션</th></tr></thead><tbody>';
+                presets.forEach(p => {
+                    html += `<tr>
+                        <td>${p.presetId}</td>
+                        <td>${p.thumbnailUrl ? `<img src="${escapeHtml(p.thumbnailUrl)}" style="width:48px;height:48px;object-fit:cover;border-radius:4px;">` : '-'}</td>
+                        <td>${escapeHtml(p.title)}</td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-primary me-1" onclick="loadPresetForEdit(${p.presetId})">수정</button>
+                            <button class="btn btn-sm btn-outline-danger" onclick="deletePreset(${p.presetId})">삭제</button>
+                        </td>
+                    </tr>`;
+                });
+                html += '</tbody></table></div>';
+                document.getElementById('preset-list-result').innerHTML = html;
+            })
+            .catch(err => document.getElementById('preset-list-result').innerHTML = `<div class="alert alert-danger">${escapeHtml(String(err))}</div>`);
+    }
+
+    function loadPresetForEdit(presetId) {
+        fetch(`/api/v1/price-compare/presets/${presetId}`)
+            .then(r => r.json())
+            .then(data => {
+                const d = data.data;
+                document.getElementById('preset-editing-id').value = presetId;
+                document.getElementById('preset-form-title').textContent = `프리셋 수정 (ID: ${presetId})`;
+                document.getElementById('preset-source-url').value = d.originalProduct.sourceUrl || '';
+                document.getElementById('preset-title').value = d.originalProduct.title || '';
+                document.getElementById('preset-thumbnail-url').value = d.originalProduct.thumbnailUrl || '';
+                document.getElementById('preset-brand').value = d.originalProduct.brand || '';
+                document.getElementById('preset-price').value = d.originalProduct.price || '';
+                document.getElementById('preset-currency').value = d.originalProduct.currency || 'KRW';
+                document.getElementById('preset-items-container').innerHTML = '';
+                (d.similarProducts || []).forEach(i => addPresetItem(i));
+                document.querySelector('[data-target="compare-preset-management"]').click();
+            });
+    }
+
+    let presetItemIndex = 0;
+    function addPresetItem(data = {}) {
+        const idx = presetItemIndex++;
+        const container = document.getElementById('preset-items-container');
+        const div = document.createElement('div');
+        div.className = 'border rounded p-3 mb-2 bg-light';
+        div.id = `preset-item-${idx}`;
+        div.innerHTML = `
+            <div class="row g-2">
+                <div class="col-md-2"><label class="form-label small">소스</label><input class="form-control form-control-sm" placeholder="EBAY" value="${escapeHtml(data.source||'')}"></div>
+                <div class="col-md-2"><label class="form-label small">productId</label><input class="form-control form-control-sm" value="${escapeHtml(data.productId||'')}"></div>
+                <div class="col-md-3"><label class="form-label small">상품명</label><input class="form-control form-control-sm" value="${escapeHtml(data.title||'')}"></div>
+                <div class="col-md-3"><label class="form-label small">imageUrl</label><input class="form-control form-control-sm" value="${escapeHtml(data.imageUrl||'')}"></div>
+                <div class="col-md-1"><label class="form-label small">가격</label><input type="number" class="form-control form-control-sm" value="${data.price||''}"></div>
+                <div class="col-md-1"><label class="form-label small">통화</label><input class="form-control form-control-sm" value="${escapeHtml(data.currency||'KRW')}"></div>
+                <div class="col-md-2"><label class="form-label small">사이트명</label><input class="form-control form-control-sm" value="${escapeHtml(data.siteName||'')}"></div>
+                <div class="col-md-4"><label class="form-label small">productUrl</label><input class="form-control form-control-sm" value="${escapeHtml(data.productUrl||'')}"></div>
+                <div class="col-md-4"><label class="form-label small">priceUpdatedAt (ISO)</label><input class="form-control form-control-sm" placeholder="2026-08-24T05:10:00Z" value="${escapeHtml(data.priceUpdatedAt||'')}"></div>
+                <div class="col-md-2 d-flex align-items-end"><button class="btn btn-sm btn-outline-danger w-100" onclick="document.getElementById('preset-item-${idx}').remove()">삭제</button></div>
+            </div>`;
+        container.appendChild(div);
+    }
+
+    function collectPresetItems() {
+        const items = [];
+        document.querySelectorAll('#preset-items-container > div').forEach(div => {
+            const inputs = div.querySelectorAll('input');
+            items.push({
+                source: inputs[0].value.trim(),
+                productId: inputs[1].value.trim(),
+                title: inputs[2].value.trim(),
+                imageUrl: inputs[3].value.trim() || null,
+                price: parseFloat(inputs[4].value),
+                currency: inputs[5].value.trim(),
+                siteName: inputs[6].value.trim() || null,
+                productUrl: inputs[7].value.trim(),
+                priceUpdatedAt: inputs[8].value.trim()
+            });
+        });
+        return items;
+    }
+
+    function submitPreset() {
+        const editingId = document.getElementById('preset-editing-id').value;
+        const body = {
+            sourceUrl: document.getElementById('preset-source-url').value.trim(),
+            title: document.getElementById('preset-title').value.trim(),
+            thumbnailUrl: document.getElementById('preset-thumbnail-url').value.trim() || null,
+            brand: document.getElementById('preset-brand').value.trim() || null,
+            price: document.getElementById('preset-price').value ? parseInt(document.getElementById('preset-price').value) : null,
+            currency: document.getElementById('preset-currency').value.trim() || 'KRW',
+            similarProducts: collectPresetItems()
+        };
+        const url = editingId ? `/api/admin/v1/compare/presets/${editingId}` : '/api/admin/v1/compare/presets';
+        const method = editingId ? 'PUT' : 'POST';
+        const resultDiv = document.getElementById('preset-form-result');
+        resultDiv.style.display = 'block';
+        resultDiv.textContent = '저장 중...';
+        fetch(url, { method, headers: authHeaders(), body: JSON.stringify(body) })
+            .then(r => r.json())
+            .then(data => {
+                resultDiv.textContent = JSON.stringify(data, null, 2);
+                loadPresets();
+            })
+            .catch(err => { resultDiv.textContent = '오류: ' + err; });
+    }
+
+    function deletePreset(presetId) {
+        if (!confirm(`프리셋 ${presetId}를 삭제하시겠습니까?`)) return;
+        fetch(`/api/admin/v1/compare/presets/${presetId}`, { method: 'DELETE', headers: authHeaders() })
+            .then(() => loadPresets())
+            .catch(err => alert('삭제 실패: ' + err));
+    }
+
+    function resetPresetForm() {
+        document.getElementById('preset-editing-id').value = '';
+        document.getElementById('preset-form-title').textContent = '신규 프리셋 등록';
+        ['preset-source-url','preset-title','preset-thumbnail-url','preset-brand','preset-price'].forEach(id => document.getElementById(id).value = '');
+        document.getElementById('preset-currency').value = 'KRW';
+        document.getElementById('preset-items-container').innerHTML = '';
+        document.getElementById('preset-form-result').style.display = 'none';
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        document.querySelector('[data-target="compare-preset-management"]')
+            ?.addEventListener('click', loadPresets);
+    });
 </script>
 </body>
 </html>
