@@ -13,6 +13,20 @@ import static org.assertj.core.api.Assertions.assertThat;
 class CoupangSeedJobTest {
 
     @Test
+    @DisplayName("사용자 요청으로 등록된 우선 Job은 첫 선점 후 일반 순환 Job이 된다")
+    void priorityJobBecomesSeedJobAfterClaim() {
+        LocalDateTime now = LocalDateTime.now();
+        CoupangKeywordJpaEntity keyword = CoupangKeywordJpaEntity.of("원목 식탁", 16L);
+        CoupangCollectionJobJpaEntity job = CoupangCollectionJobJpaEntity.priorityOf(keyword, now);
+
+        assertThat(job.isPriority()).isTrue();
+
+        job.claim(now);
+
+        assertThat(job.isPriority()).isFalse();
+    }
+
+    @Test
     @DisplayName("수집 Job은 완료 후 시간 기반 갱신 예약 없이 큐의 뒤로 돌아간다")
     void jobReturnsToQueueTailAfterSuccess() {
         LocalDateTime now = LocalDateTime.now();

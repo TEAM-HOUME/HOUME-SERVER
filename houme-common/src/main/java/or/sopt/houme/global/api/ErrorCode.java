@@ -32,6 +32,7 @@ public enum ErrorCode {
 
     // 가격 비교 관련 예외
     COMPARE_DUMMY_NOT_ALLOWED_IN_PROD(HttpStatus.BAD_REQUEST, 40033, "더미 모드는 운영 환경에서 허용되지 않습니다."),
+    INVALID_COUPANG_PRIORITY_QUEUE_REQUEST(HttpStatus.BAD_REQUEST, 40034, "쿠팡 우선 수집 키워드 또는 가구 ID가 유효하지 않습니다."),
 
     // 회원관련
     USERNAME_DUPLICATE(HttpStatus.BAD_REQUEST,40009,"username이 중복되었습니다."),
