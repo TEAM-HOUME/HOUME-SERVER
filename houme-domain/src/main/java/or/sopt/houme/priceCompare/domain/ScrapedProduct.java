@@ -46,7 +46,7 @@ public record ScrapedProduct(
                 firstPresent(title, other.title()),
                 firstPresent(thumbnailUrl, other.thumbnailUrl()),
                 firstPresent(brand, other.brand()),
-                price != null ? price : other.price(),
+                hasPrice() ? price : other.price(),
                 firstPresent(currency, other.currency()),
                 mergeImages(additionalImageUrls, other.additionalImageUrls()),
                 firstPresent(description, other.description())
@@ -74,7 +74,11 @@ public record ScrapedProduct(
         return ScrapeQuality.MINIMAL;
     }
 
-    /** 0원 이하는 가격을 못 뽑은 것과 같다(비교 대상이 되지 않는다). */
+    /**
+     * 0원 이하는 가격을 못 뽑은 것과 같다(비교 대상이 되지 않는다).
+     * 병합·필수 판정·품질 판정이 모두 이 하나의 기준을 쓴다 — 기준이 갈리면
+     * 앞선 파서의 0원이 뒤 파서의 실제 가격을 막는다.
+     */
     private boolean hasPrice() {
         return price != null && price > 0;
     }

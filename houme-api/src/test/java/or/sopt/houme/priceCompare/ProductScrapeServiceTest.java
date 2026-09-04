@@ -82,6 +82,20 @@ class ProductScrapeServiceTest {
     }
 
     @Test
+    @DisplayName("앞선 파서의 0원은 뒤 파서의 실제 가격을 막지 않는다")
+    void 앞선_파서의_0원은_실제_가격을_막지_않는다() {
+        ScrapedProduct zeroPrice = new ScrapedProduct(
+                "https://ohou.se/productions/123", "패브릭 소파", null, null, 0L, "KRW", List.of(), null);
+        ScrapedProduct next = new ScrapedProduct(
+                "https://ohou.se/productions/123", null, null, "에싸", 459000L, "KRW", List.of(), null);
+
+        ScrapedProduct merged = zeroPrice.fillMissingFrom(next);
+
+        assertThat(merged.price()).isEqualTo(459000L);
+        assertThat(merged.hasEssentials()).isTrue();
+    }
+
+    @Test
     @DisplayName("상품명도 이미지도 못 건지면 추출 실패로 처리한다")
     void 필수_정보가_없으면_실패로_처리한다() {
         when(scrapePort.scrape(any()))
