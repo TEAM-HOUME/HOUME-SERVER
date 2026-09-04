@@ -45,11 +45,16 @@ public class FallbackProductParser implements ProductPageParser {
     /**
      * width/height 속성이 명시된 이미지 중 가장 큰 것을 고른다.
      * 속성이 전혀 없는 페이지에서는 첫 번째 유효 이미지로 대신한다(아이콘·로고를 집을 위험은 감수).
+     *
+     * <p>크기 정보가 하나라도 있는 페이지에서는 기준을 통과한 이미지가 없을 때 빈 값을 돌려준다.
+     * 그때도 첫 이미지로 폴백하면 1x1 추적 픽셀이나 아이콘이 상품 썸네일로 응답에 실리는데,
+     * 잘못된 이미지는 없는 것보다 나쁘다(이후 이미지 검색이 엉뚱한 상품을 찾는다).
      */
     private Optional<String> findLargestImage(Document document, String sourceUrl) {
         String best = null;
         long bestArea = -1;
         String firstValid = null;
+        boolean anyDimensionDeclared = false;
 
         for (Element image : document.select("img")) {
             Optional<String> url = imageUrlResolver.resolveFromElement(image, sourceUrl);
@@ -60,8 +65,14 @@ public class FallbackProductParser implements ProductPageParser {
                 firstValid = url.get();
             }
 
-            long width = parseDimension(image.attr("width"));
-            long height = parseDimension(image.attr("height"));
+            String rawWidth = image.attr("width");
+            String rawHeight = image.attr("height");
+            if (!rawWidth.isBlank() || !rawHeight.isBlank()) {
+                anyDimensionDeclared = true;
+            }
+
+            long width = parseDimension(rawWidth);
+            long height = parseDimension(rawHeight);
             if (width < MIN_IMAGE_DIMENSION || height < MIN_IMAGE_DIMENSION) {
                 continue;
             }
@@ -71,7 +82,10 @@ public class FallbackProductParser implements ProductPageParser {
                 best = url.get();
             }
         }
-        return Optional.ofNullable(best != null ? best : firstValid);
+        if (best != null) {
+            return Optional.of(best);
+        }
+        return anyDimensionDeclared ? Optional.empty() : Optional.ofNullable(firstValid);
     }
 
     private long parseDimension(String raw) {

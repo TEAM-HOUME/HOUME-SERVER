@@ -20,15 +20,18 @@ class PriceTextParserTest {
             "'₩129,000', 129000",
             "'329000', 329000",
             "'$1,299.00', 1299",
-            "'판매가 89,900원 (10% 할인)', 89900"
+            "'판매가 89,900원 (10% 할인)', 89900",
+            "'10% 할인 89,900원', 89900",
+            "'10 % 할인 89,900원', 89900",
+            "'정가 1,290,000원 판매가 890,000원', 1290000"
     })
     void 가격_문자열에서_숫자를_뽑는다(String text, long expected) {
         assertThat(priceTextParser.parseAmount(text)).contains(expected);
     }
 
     @ParameterizedTest(name = "[{index}] \"{0}\"")
-    @DisplayName("숫자가 없는 문자열은 가격으로 보지 않는다")
-    @CsvSource({"'품절'", "'가격문의'", "'   '"})
+    @DisplayName("숫자가 없거나 0원인 문자열은 가격으로 보지 않는다")
+    @CsvSource({"'품절'", "'가격문의'", "'   '", "'최대 30% 할인'", "'0'", "'0원'"})
     void 숫자가_없으면_비어있는_값을_반환한다(String text) {
         assertThat(priceTextParser.parseAmount(text)).isEmpty();
     }

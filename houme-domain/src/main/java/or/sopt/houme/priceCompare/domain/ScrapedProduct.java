@@ -55,20 +55,28 @@ public record ScrapedProduct(
 
     /**
      * 검색 파이프라인을 태울 수 있는 최소 입력을 확보했는지.
-     * 상품명·이미지 중 하나라도 있으면 키워드 검색이든 이미지 검색이든 시도할 수 있다.
+     *
+     * <p>상품명·이미지 중 하나는 있어야 키워드 검색이든 이미지 검색이든 시도할 수 있고,
+     * 가격도 반드시 있어야 한다 — 후속 필터가 원본 상품의 가격을 기준으로 후보를 걸러내므로
+     * 가격이 없으면 검색까지는 되더라도 비교 결과를 만들 수 없다.
      */
     public boolean hasEssentials() {
-        return isPresent(title) || isPresent(thumbnailUrl);
+        return (isPresent(title) || isPresent(thumbnailUrl)) && hasPrice();
     }
 
     public ScrapeQuality quality() {
-        if (isPresent(title) && isPresent(thumbnailUrl) && isPresent(brand) && price != null) {
+        if (isPresent(title) && isPresent(thumbnailUrl) && isPresent(brand) && hasPrice()) {
             return ScrapeQuality.FULL;
         }
         if (isPresent(title) && isPresent(thumbnailUrl)) {
             return ScrapeQuality.PARTIAL;
         }
         return ScrapeQuality.MINIMAL;
+    }
+
+    /** 0원 이하는 가격을 못 뽑은 것과 같다(비교 대상이 되지 않는다). */
+    private boolean hasPrice() {
+        return price != null && price > 0;
     }
 
     private static String firstPresent(String current, String candidate) {

@@ -28,7 +28,7 @@ public class ProductScrapeService implements ProductScrapeUseCase {
         SourceUrl sourceUrl = SourceUrl.normalize(rawUrl);
         ScrapedProduct product = productPageScrapePort.scrape(sourceUrl);
 
-        // 상품명·이미지 중 하나도 못 건지면 이후 검색을 태울 입력 자체가 없으므로 여기서 끊는다.
+        // 상품명·이미지를 하나도 못 건지거나 가격이 없으면 이후 비교를 태울 입력이 안 되므로 여기서 끊는다.
         if (!product.hasEssentials()) {
             log.warn("상품 메타데이터 추출 실패 - 필수 정보 없음: url={}", sourceUrl.value());
             throw new PriceCompareException(ErrorCode.PRODUCT_METADATA_PARSE_FAILED);

@@ -32,7 +32,9 @@ class SourceUrlValidatorTest {
             "http://10.0.0.5/internal",
             "http://192.168.0.1/router",
             "http://172.16.0.1/internal",
-            "http://[::1]/admin"
+            "http://[::1]/admin",
+            "http://[fd00::1]/internal",  // IPv6 ULA — isSiteLocalAddress() 로는 잡히지 않는다
+            "http://[fc00::1]/internal"
     })
     void 내부망_주소는_차단한다(String url) {
         assertThatThrownBy(() -> validator.validate(URI.create(url)))

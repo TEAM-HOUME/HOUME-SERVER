@@ -22,8 +22,12 @@ public record SourceUrl(String value) {
     private static final List<String> ALLOWED_SCHEMES = List.of("http", "https");
     private static final List<String> TRACKING_PARAM_PREFIXES = List.of("utm_");
     private static final List<String> TRACKING_PARAM_NAMES =
-            List.of("gclid", "fbclid", "igshid", "spm", "srsltid", "_fromlogger");
+            List.of("gclid", "fbclid", "msclkid", "igshid", "spm", "srsltid", "_ga", "_gl", "_fromlogger");
     private static final int MAX_URL_LENGTH = 2048;
+
+    /** 우리 앱이 원본 URL을 감싸 보내는 딥링크 형태. 이 접두사로 시작할 때만 언랩한다. */
+    private static final List<String> DEEP_LINK_PREFIXES =
+            List.of("https://houme.kr/", "http://houme.kr/", "houme.kr/");
 
     public static SourceUrl normalize(String rawInput) {
         if (rawInput == null || rawInput.isBlank()) {
@@ -50,12 +54,25 @@ public record SourceUrl(String value) {
     /**
      * `houme.kr/https://ohou.se/...` 처럼 원본 URL을 뒤에 붙인 딥링크에서 원본만 떼어낸다.
      * 딥링크 파싱은 프론트 라우팅 책임이지만, 서버도 그대로 받았을 때 동작하도록 방어한다.
+     *
+     * <p>"어디든 http 가 나오면 거기서 자른다"로 두면 딥링크가 아닌 정상 주소까지 망친다 —
+     * 쇼핑몰은 `?returnUrl=https://...` 같은 파라미터에 절대 URL을 자주 싣고,
+     * 그걸 잘라내면 유저가 요청하지 않은 페이지를 긁어서 응답하게 된다.
+     * 그래서 언랩은 "우리 호스트가 원본 URL을 감싼 형태"일 때만 한다.
      */
     private static String stripDeepLinkPrefix(String input) {
-        int httpsAt = input.indexOf("https://", 1);
-        int httpAt = input.indexOf("http://", 1);
-        int embeddedAt = min(httpsAt, httpAt);
-        return embeddedAt > 0 ? input.substring(embeddedAt) : input;
+        String lower = input.toLowerCase(Locale.ROOT);
+        for (String prefix : DEEP_LINK_PREFIXES) {
+            if (!lower.startsWith(prefix)) {
+                continue;
+            }
+            String embedded = input.substring(prefix.length());
+            String embeddedLower = embedded.toLowerCase(Locale.ROOT);
+            if (embeddedLower.startsWith("https://") || embeddedLower.startsWith("http://")) {
+                return embedded;
+            }
+        }
+        return input;
     }
 
     private static String ensureScheme(String input) {
@@ -103,16 +120,6 @@ public record SourceUrl(String value) {
         }
         return TRACKING_PARAM_NAMES.contains(name)
                 || TRACKING_PARAM_PREFIXES.stream().anyMatch(name::startsWith);
-    }
-
-    private static int min(int left, int right) {
-        if (left < 0) {
-            return right;
-        }
-        if (right < 0) {
-            return left;
-        }
-        return Math.min(left, right);
     }
 
     private static String lowerCase(String value) {

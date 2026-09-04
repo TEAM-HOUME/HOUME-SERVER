@@ -9,6 +9,7 @@ import org.springframework.stereotype.Component;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
 
 /**
@@ -22,6 +23,12 @@ import java.util.Optional;
 public class OpenGraphProductParser implements ProductPageParser {
 
     private static final int ORDER = 2;
+
+    /**
+     * 값이 아니라 자리만 채운 문자열. 템플릿 변수가 치환되지 않은 채 배포된 몰이 실제로 있다
+     * (무신사 `product:brand` = `undefined`). 그대로 받으면 브랜드명이 "undefined" 로 응답에 실린다.
+     */
+    private static final List<String> PLACEHOLDER_CONTENTS = List.of("undefined", "null", "none", "-", "n/a");
 
     private final ProductImageUrlResolver imageUrlResolver;
     private final PriceTextParser priceTextParser;
@@ -79,7 +86,7 @@ public class OpenGraphProductParser implements ProductPageParser {
     private String firstContent(Document document, String... selectors) {
         for (String selector : selectors) {
             String content = document.select(selector).attr("content").trim();
-            if (!content.isBlank()) {
+            if (!content.isBlank() && !PLACEHOLDER_CONTENTS.contains(content.toLowerCase(Locale.ROOT))) {
                 return content;
             }
         }

@@ -45,16 +45,40 @@ class ProductScrapeServiceTest {
     }
 
     @Test
-    @DisplayName("상품명과 이미지 중 하나만 있어도 부분 성공으로 통과시킨다")
+    @DisplayName("가격이 있고 상품명·이미지 중 하나만 있으면 부분 성공으로 통과시킨다")
     void 부분_성공은_실패로_보지_않는다() {
         when(scrapePort.scrape(any())).thenReturn(new ScrapedProduct(
                 "https://ohou.se/productions/123", "패브릭 소파", null,
-                null, null, null, List.of(), null));
+                null, 459000L, "KRW", List.of(), null));
 
         ScrapedProductResponse response = productScrapeService.scrape("https://ohou.se/productions/123");
 
         assertThat(response.title()).isEqualTo("패브릭 소파");
         assertThat(response.quality()).isEqualTo("MINIMAL");
+    }
+
+    @Test
+    @DisplayName("상품명·이미지가 있어도 가격이 없으면 추출 실패로 처리한다")
+    void 가격이_없으면_실패로_처리한다() {
+        when(scrapePort.scrape(any())).thenReturn(new ScrapedProduct(
+                "https://ohou.se/productions/123", "패브릭 소파", "https://cdn.ohou.se/a.jpg",
+                "에싸", null, "KRW", List.of(), null));
+
+        assertThatThrownBy(() -> productScrapeService.scrape("https://ohou.se/productions/123"))
+                .isInstanceOf(PriceCompareException.class)
+                .hasFieldOrPropertyWithValue("errorCode", ErrorCode.PRODUCT_METADATA_PARSE_FAILED);
+    }
+
+    @Test
+    @DisplayName("가격이 0원이면 가격을 못 뽑은 것과 같게 실패로 처리한다")
+    void 가격이_0원이면_실패로_처리한다() {
+        when(scrapePort.scrape(any())).thenReturn(new ScrapedProduct(
+                "https://ohou.se/productions/123", "패브릭 소파", "https://cdn.ohou.se/a.jpg",
+                "에싸", 0L, "KRW", List.of(), null));
+
+        assertThatThrownBy(() -> productScrapeService.scrape("https://ohou.se/productions/123"))
+                .isInstanceOf(PriceCompareException.class)
+                .hasFieldOrPropertyWithValue("errorCode", ErrorCode.PRODUCT_METADATA_PARSE_FAILED);
     }
 
     @Test

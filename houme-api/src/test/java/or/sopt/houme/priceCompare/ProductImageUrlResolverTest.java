@@ -51,6 +51,13 @@ class ProductImageUrlResolverTest {
     }
 
     @Test
+    @DisplayName("파일명에 공백이 섞여 있어도 버리지 않고 인코딩해서 해석한다")
+    void 공백이_섞인_경로도_해석한다() {
+        assertThat(resolver.resolve("/images/sofa main.jpg", BASE_URI))
+                .contains("https://example-mall.co.kr/images/sofa%20main.jpg");
+    }
+
+    @Test
     @DisplayName("srcset 이 있으면 가장 큰 해상도를 고른다")
     void srcset_에서_가장_큰_해상도를_고른다() {
         Element image = imageElement(

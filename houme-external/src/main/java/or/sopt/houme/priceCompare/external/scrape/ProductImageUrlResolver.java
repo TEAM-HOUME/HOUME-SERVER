@@ -99,9 +99,15 @@ public class ProductImageUrlResolver {
         }
     }
 
+    /**
+     * 상대 주소를 base 에 붙여 절대 URL로 만든다.
+     *
+     * <p>공백은 먼저 퍼센트 인코딩한다 — `/images/sofa main.jpg` 처럼 파일명에 공백이 든 몰이 실제로 있고,
+     * {@link URI} 는 공백을 불법 문자로 보고 예외를 던져 정상 이미지가 버려진다.
+     */
     private String toAbsolute(String candidate, String baseUri) {
         try {
-            URI resolved = new URI(baseUri).resolve(candidate);
+            URI resolved = new URI(baseUri).resolve(candidate.replace(" ", "%20"));
             return resolved.isAbsolute() ? resolved.toString() : null;
         } catch (URISyntaxException | IllegalArgumentException e) {
             return null;

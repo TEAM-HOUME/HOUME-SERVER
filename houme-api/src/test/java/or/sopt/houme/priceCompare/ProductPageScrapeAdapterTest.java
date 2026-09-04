@@ -104,7 +104,17 @@ class ProductPageScrapeAdapterTest {
         // 플레이스홀더(data URI, blank.gif)와 아이콘(24x24)을 걸러내고 상품 이미지를 골라야 한다
         assertThat(product.thumbnailUrl()).isEqualTo("https://example-mall.co.kr/images/products/bed-main.jpg");
         assertThat(product.quality()).isEqualTo(ScrapeQuality.PARTIAL);
-        assertThat(product.hasEssentials()).isTrue();
+        // 폴백 파서는 가격을 뽑지 못하고, 가격 없이는 비교 필터를 태울 수 없다
+        assertThat(product.hasEssentials()).isFalse();
+    }
+
+    @Test
+    @DisplayName("크기가 명시된 이미지가 모두 기준 미달이면 추적 픽셀을 썸네일로 쓰지 않는다")
+    void 추적_픽셀을_썸네일로_쓰지_않는다() {
+        ScrapedProduct product = scrape("scrape/tracking-pixel-product.html");
+
+        assertThat(product.title()).isEqualTo("원목 사이드 테이블 - 예시몰");
+        assertThat(product.thumbnailUrl()).isNull();
     }
 
     private ScrapedProduct scrape(String fixturePath) {

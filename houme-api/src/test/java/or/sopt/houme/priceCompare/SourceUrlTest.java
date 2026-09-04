@@ -31,10 +31,19 @@ class SourceUrlTest {
     }
 
     @Test
+    @DisplayName("쿼리 파라미터에 실린 URL은 딥링크로 보지 않고 그대로 보존한다")
+    void 쿼리_파라미터의_URL은_잘라내지_않는다() {
+        SourceUrl url = SourceUrl.normalize("https://mall.co.kr/products/1?returnUrl=https://naver.com/x");
+
+        assertThat(url.value()).isEqualTo("https://mall.co.kr/products/1?returnUrl=https://naver.com/x");
+    }
+
+    @Test
     @DisplayName("트래킹 파라미터는 제거하고 상품 식별에 필요한 파라미터는 남긴다")
     void 트래킹_파라미터만_제거한다() {
         SourceUrl url = SourceUrl.normalize(
-                "https://ohou.se/productions/123?utm_source=kakao&color=beige&gclid=abc123");
+                "https://ohou.se/productions/123"
+                        + "?utm_source=kakao&color=beige&gclid=abc123&msclkid=def456&_ga=GA1.2.3");
 
         assertThat(url.value()).isEqualTo("https://ohou.se/productions/123?color=beige");
     }

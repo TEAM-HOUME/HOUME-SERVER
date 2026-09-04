@@ -81,15 +81,21 @@ public class ProductPageFetcher {
 
             Optional<URI> redirect = redirectTarget(response, target);
             if (redirect.isPresent()) {
+                discard(response);
                 target = redirect.get();
                 continue;
             }
 
             if (response.statusCode() < 200 || response.statusCode() >= 300) {
+                discard(response);
                 log.warn("상품 페이지 응답 실패: url={}, status={}", target, response.statusCode());
                 throw new PriceCompareException(ErrorCode.PRODUCT_PAGE_FETCH_FAILED);
             }
-            requireHtml(response, target);
+            if (!isHtml(response)) {
+                discard(response);
+                log.warn("HTML 이 아닌 응답: url={}, contentType={}", target, contentType(response));
+                throw new PriceCompareException(ErrorCode.PRODUCT_METADATA_PARSE_FAILED);
+            }
             return parse(response, target);
         }
 
@@ -115,22 +121,56 @@ public class ProductPageFetcher {
         }
     }
 
+    /**
+     * 3xx 응답의 다음 홉을 구한다.
+     *
+     * <p>{@code Location} 은 남의 서버가 넣은 값이라 공백·제어문자가 섞여 URI 로 파싱되지 않는 경우가 있다.
+     * 그대로 두면 {@code resolve} 의 {@link IllegalArgumentException} 이 밖으로 나가 502 대신 500 이 되므로,
+     * 여기서 삼켜 "리다이렉트 없음"으로 돌려보내고 호출부의 상태 코드 검사에서 조회 실패로 처리하게 한다.
+     */
     private Optional<URI> redirectTarget(HttpResponse<InputStream> response, URI current) {
         int status = response.statusCode();
         if (status < 300 || status >= 400) {
             return Optional.empty();
         }
-        return response.headers().firstValue("location").map(current::resolve);
+        return response.headers().firstValue("location").flatMap(location -> {
+            try {
+                return Optional.of(current.resolve(location));
+            } catch (IllegalArgumentException e) {
+                log.warn("리다이렉트 Location 헤더를 해석할 수 없음: url={}, location={}", current, location);
+                return Optional.empty();
+            }
+        });
     }
 
-    /** 이미지·PDF URL 이 들어와도 파싱을 시도하지 않도록 컨텐츠 타입을 먼저 거른다. */
-    private void requireHtml(HttpResponse<InputStream> response, URI target) {
-        String contentType = response.headers().firstValue("content-type")
+    /**
+     * 이미지·PDF URL 이 들어와도 파싱을 시도하지 않도록 컨텐츠 타입을 먼저 거른다.
+     *
+     * <p>헤더가 아예 없는 응답도 HTML 로 보지 않는다 — 정상 몰은 예외 없이 Content-Type 을 보내므로,
+     * 없는 쪽을 통과시키면 얻는 것 없이 "HTML 아닌 응답은 파싱하지 않는다"는 전제만 깨진다.
+     */
+    private boolean isHtml(HttpResponse<InputStream> response) {
+        return contentType(response).contains("html");
+    }
+
+    private String contentType(HttpResponse<InputStream> response) {
+        return response.headers().firstValue("content-type")
                 .map(value -> value.toLowerCase(Locale.ROOT))
                 .orElse("");
-        if (!contentType.isBlank() && !contentType.contains("html")) {
-            log.warn("HTML 이 아닌 응답: url={}, contentType={}", target, contentType);
-            throw new PriceCompareException(ErrorCode.PRODUCT_METADATA_PARSE_FAILED);
+    }
+
+    /**
+     * 파싱하지 않고 버리는 응답의 본문을 닫는다.
+     *
+     * <p>{@link HttpResponse.BodyHandlers#ofInputStream()} 은 본문을 닫거나 끝까지 읽을 때만
+     * 커넥션을 풀에 반환한다. 리다이렉트로 넘어가거나 예외로 빠지는 경로에서 닫지 않으면
+     * 요청이 쌓일수록 커넥션이 고갈된다. 닫기 실패는 원래의 실패 원인을 가리지 않도록 로그만 남긴다.
+     */
+    private void discard(HttpResponse<InputStream> response) {
+        try {
+            response.body().close();
+        } catch (IOException e) {
+            log.warn("응답 본문 스트림 닫기 실패: message={}", e.getMessage());
         }
     }
 
