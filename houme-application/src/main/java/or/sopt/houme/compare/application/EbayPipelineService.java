@@ -16,6 +16,7 @@ import or.sopt.houme.compare.domain.port.out.CurationProductSearchPort;
 import or.sopt.houme.compare.domain.port.out.EbaySearchPort;
 import or.sopt.houme.compare.domain.port.out.EmbeddingPort;
 import or.sopt.houme.compare.domain.port.out.KeywordTranslationPort;
+import or.sopt.houme.domain.furniture.model.entity.SoozipCategory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
@@ -84,7 +85,7 @@ public class EbayPipelineService {
         List<EbayCandidate> items = ebaySearchPort.search(keyword, 200);
         log.info("[타이밍] eBay 검색: {}ms → {}개", System.currentTimeMillis() - t2, items.size());
 
-        Optional<or.sopt.houme.domain.furniture.model.entity.SoozipCategory> soozipCat =
+        Optional<SoozipCategory> soozipCat =
                 utils.parseSoozipCategory(original.category());
         if (soozipCat.isPresent() && EbayPipelineUtils.EBAY_CATEGORY_MAP.containsKey(soozipCat.get())) {
             Set<String> allowed = EbayPipelineUtils.EBAY_CATEGORY_MAP.get(soozipCat.get());
