@@ -165,6 +165,8 @@ public class EbayPipelineService {
         // eBay 스코어링 결과
         List<UnifiedCandidate> unified = new java.util.ArrayList<>();
         topScored.forEach(s -> unified.add(new UnifiedCandidate(toSimilarProduct(s.item(), s.score()), s.score())));
+        job.markEbayDone();
+        trySave(job);
 
         // 쿠팡 — 저장된 임베딩으로 Java 내 cosine sim 계산 (Gemini 호출 없음)
         try {
@@ -181,8 +183,10 @@ public class EbayPipelineService {
                                 "KRW", c.productUrl(), score, List.of()
                         ), score));
                     });
+            job.markCoupangDone();
             log.info("[파이프라인] 쿠팡 스코어링 완료");
         } catch (Exception e) {
+            job.markCoupangFailed();
             log.warn("[파이프라인] 쿠팡 조회 실패: {}", e.getMessage());
         }
 
@@ -204,7 +208,9 @@ public class EbayPipelineService {
                                 "KRW", c.productUrl(), score, List.of()
                         ), score));
                     });
+            job.markCatalogDone();
         } catch (Exception e) {
+            job.markCatalogFailed();
             log.warn("[파이프라인] 자체 카탈로그 조회 실패: {}", e.getMessage());
         }
 

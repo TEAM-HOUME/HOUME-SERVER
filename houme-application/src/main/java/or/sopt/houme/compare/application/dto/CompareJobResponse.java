@@ -17,25 +17,13 @@ public record CompareJobResponse(
         JobResultResponse result
 ) {
     public static CompareJobResponse from(CompareJob job) {
-        String ebayStatus = resolveEbayStatus(job);
-        JobResultResponse result = buildResult(job);
-
         return new CompareJobResponse(
                 job.getJobId(),
                 job.getStatus().name(),
-                SourcesStatusResponse.of(ebayStatus),
+                new SourcesStatusResponse(job.getEbayStatus(), job.getCoupangStatus(), job.getCatalogStatus()),
                 OriginalProductResponse.from(job.getOriginalProduct()),
-                result
+                buildResult(job)
         );
-    }
-
-    private static String resolveEbayStatus(CompareJob job) {
-        return switch (job.getStatus()) {
-            case PENDING  -> "WAITING";
-            case RUNNING  -> "RUNNING";
-            case DONE     -> "DONE";
-            case FAILED   -> "FAILED";
-        };
     }
 
     private static JobResultResponse buildResult(CompareJob job) {

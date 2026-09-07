@@ -11,6 +11,9 @@ public class CompareJob {
     private volatile OriginalProduct originalProduct;
     private volatile List<SimilarProduct> similarProducts;
     private volatile String errorCode;
+    private volatile String ebayStatus = "WAITING";
+    private volatile String coupangStatus = "WAITING";
+    private volatile String catalogStatus = "WAITING";
 
     public CompareJob(String jobId, String sourceUrl) {
         this.jobId = jobId;
@@ -26,11 +29,22 @@ public class CompareJob {
     public OriginalProduct getOriginalProduct() { return originalProduct; }
     public List<SimilarProduct> getSimilarProducts() { return similarProducts; }
     public String getErrorCode() { return errorCode; }
+    public String getEbayStatus() { return ebayStatus; }
+    public String getCoupangStatus() { return coupangStatus; }
+    public String getCatalogStatus() { return catalogStatus; }
 
     public synchronized void markRunning(JobStage stage) {
         this.status = JobStatus.RUNNING;
         this.currentStage = stage;
+        this.ebayStatus = "RUNNING";
     }
+
+    public synchronized void markEbayDone() { this.ebayStatus = "DONE"; }
+    public synchronized void markEbayFailed() { this.ebayStatus = "FAILED"; }
+    public synchronized void markCoupangDone() { this.coupangStatus = "DONE"; }
+    public synchronized void markCoupangFailed() { this.coupangStatus = "FAILED"; }
+    public synchronized void markCatalogDone() { this.catalogStatus = "DONE"; }
+    public synchronized void markCatalogFailed() { this.catalogStatus = "FAILED"; }
 
     public synchronized void advanceStage(JobStage stage) {
         this.currentStage = stage;
@@ -52,13 +66,17 @@ public class CompareJob {
 
     public static CompareJob restore(String jobId, String sourceUrl, JobStatus status,
             JobStage currentStage, OriginalProduct originalProduct,
-            List<SimilarProduct> similarProducts, String errorCode) {
+            List<SimilarProduct> similarProducts, String errorCode,
+            String ebayStatus, String coupangStatus, String catalogStatus) {
         CompareJob job = new CompareJob(jobId, sourceUrl);
         job.status = status;
         job.currentStage = currentStage;
         job.originalProduct = originalProduct;
         job.similarProducts = similarProducts;
         job.errorCode = errorCode;
+        job.ebayStatus = ebayStatus != null ? ebayStatus : "WAITING";
+        job.coupangStatus = coupangStatus != null ? coupangStatus : "WAITING";
+        job.catalogStatus = catalogStatus != null ? catalogStatus : "WAITING";
         return job;
     }
 }
