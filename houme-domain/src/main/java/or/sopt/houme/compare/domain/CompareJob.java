@@ -62,6 +62,9 @@ public class CompareJob {
     public synchronized void markFailed(String errorCode) {
         this.errorCode = errorCode;
         this.status = JobStatus.FAILED;
+        if (!"DONE".equals(this.ebayStatus)) this.ebayStatus = "FAILED";
+        if (!"DONE".equals(this.coupangStatus)) this.coupangStatus = "FAILED";
+        if (!"DONE".equals(this.catalogStatus)) this.catalogStatus = "FAILED";
     }
 
     public static CompareJob restore(String jobId, String sourceUrl, JobStatus status,

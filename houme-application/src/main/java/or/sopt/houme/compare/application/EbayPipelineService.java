@@ -189,6 +189,7 @@ public class EbayPipelineService {
             job.markCoupangFailed();
             log.warn("[파이프라인] 쿠팡 조회 실패: {}", e.getMessage());
         }
+        trySave(job);
 
         // 자체 카탈로그 — 저장된 임베딩으로 Java 내 cosine sim 계산 (Gemini 호출 없음)
         try {
@@ -213,6 +214,7 @@ public class EbayPipelineService {
             job.markCatalogFailed();
             log.warn("[파이프라인] 자체 카탈로그 조회 실패: {}", e.getMessage());
         }
+        trySave(job);
 
         // 통합 랭킹 — 점수 내림차순 top MAX_RESULTS
         List<SimilarProduct> results = unified.stream()
