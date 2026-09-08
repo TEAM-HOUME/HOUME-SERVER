@@ -3,7 +3,7 @@ package or.sopt.houme.compare.infra;
 import lombok.RequiredArgsConstructor;
 import or.sopt.houme.compare.domain.CurationCandidate;
 import or.sopt.houme.compare.domain.port.out.CurationProductSearchPort;
-import or.sopt.houme.compare.infra.repository.CurationProductSearchRepository;
+import or.sopt.houme.compare.infra.repository.CurationProductQueryRepository;
 import or.sopt.houme.domain.furniture.model.entity.CurationRawProduct;
 import org.springframework.stereotype.Component;
 
@@ -15,7 +15,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class CurationProductSearchAdapter implements CurationProductSearchPort {
 
-    private final CurationProductSearchRepository repository;
+    private final CurationProductQueryRepository repository;
 
     @Override
     public List<CurationCandidate> findCandidates(String category) {
