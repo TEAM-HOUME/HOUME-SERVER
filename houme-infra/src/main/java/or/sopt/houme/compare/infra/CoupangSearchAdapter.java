@@ -39,7 +39,8 @@ public class CoupangSearchAdapter implements CoupangSearchPort {
         if (raw == null || raw.isBlank()) return null;
         try {
             String trimmed = raw.strip();
-            if (trimmed.startsWith("[")) trimmed = trimmed.substring(1, trimmed.length() - 1);
+            if (trimmed.startsWith("[") && trimmed.endsWith("]") && trimmed.length() >= 2)
+                trimmed = trimmed.substring(1, trimmed.length() - 1);
             return Arrays.stream(trimmed.split(","))
                     .map(String::trim)
                     .map(Double::parseDouble)

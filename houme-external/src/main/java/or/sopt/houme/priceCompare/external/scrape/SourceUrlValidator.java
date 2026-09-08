@@ -5,6 +5,7 @@ import or.sopt.houme.global.api.ErrorCode;
 import or.sopt.houme.global.api.handler.PriceCompareException;
 import org.springframework.stereotype.Component;
 
+import java.net.Inet4Address;
 import java.net.Inet6Address;
 import java.net.InetAddress;
 import java.net.URI;
@@ -61,12 +62,20 @@ public class SourceUrlValidator {
     }
 
     private boolean isInternal(InetAddress address) {
-        return address.isAnyLocalAddress()      // 0.0.0.0
-                || address.isLoopbackAddress()  // 127.0.0.0/8, ::1
-                || address.isLinkLocalAddress() // 169.254.0.0/16 (EC2 메타데이터)
-                || address.isSiteLocalAddress() // 10./172.16-31./192.168.
+        return address.isAnyLocalAddress()        // 0.0.0.0
+                || address.isLoopbackAddress()    // 127.0.0.0/8, ::1
+                || address.isLinkLocalAddress()   // 169.254.0.0/16 (EC2 메타데이터)
+                || address.isSiteLocalAddress()   // 10./172.16-31./192.168.
                 || address.isMulticastAddress()
-                || isIpv6Ula(address);          // fc00::/7 (ULA — isSiteLocalAddress 미포함)
+                || isIpv6Ula(address)             // fc00::/7 (ULA — isSiteLocalAddress 미포함)
+                || isSharedAddressSpace(address); // 100.64.0.0/10 (RFC 6598 CGNAT)
+    }
+
+    // 100.64.0.0/10: isSiteLocalAddress가 포함하지 않는 CGNAT 대역
+    private boolean isSharedAddressSpace(InetAddress address) {
+        if (!(address instanceof Inet4Address)) return false;
+        byte[] addr = address.getAddress();
+        return (addr[0] & 0xFF) == 100 && (addr[1] & 0xFF) >= 64 && (addr[1] & 0xFF) <= 127;
     }
 
     private boolean isIpv6Ula(InetAddress address) {
