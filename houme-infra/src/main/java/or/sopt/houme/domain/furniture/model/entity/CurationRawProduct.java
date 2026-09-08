@@ -121,6 +121,14 @@ public class CurationRawProduct {
     @Comment("검색용 사전 토큰화 데이터 (상품명/브랜드/가구유형/커스텀 키워드 공백 구분)")
     private String searchTokens;
 
+    @Column(name = "image_embedding", columnDefinition = "text")
+    @Comment("상품 이미지 임베딩 벡터 (pgvector 형식, 배치로 채움)")
+    private String imageEmbedding;
+
+    @Column(name = "title_embedding", columnDefinition = "text")
+    @Comment("상품명 임베딩 벡터 (pgvector 형식, 배치로 채움)")
+    private String titleEmbedding;
+
     @OneToMany(mappedBy = "curationRawProduct", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     @Comment("수동 매핑된 가구 태그(다중 매핑)")

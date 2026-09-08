@@ -1,6 +1,7 @@
 package or.sopt.houme.compare.application;
 
 import or.sopt.houme.compare.domain.EbayCandidate;
+import or.sopt.houme.global.api.handler.CompareException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -74,13 +75,12 @@ class EbayPipelineUtilsTest {
     }
 
     @Test
-    @DisplayName("코사인 유사도 — 차원이 다르면 IllegalArgumentException을 던진다")
+    @DisplayName("코사인 유사도 — 차원이 다르면 CompareException을 던진다")
     void cosineSimilarity_differentDimensions_throwsException() {
         List<Double> a = List.of(1.0, 2.0, 3.0);
         List<Double> b = List.of(1.0, 2.0);
         assertThatThrownBy(() -> utils.cosineSimilarity(a, b))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("임베딩 차원이 다릅니다");
+                .isInstanceOf(CompareException.class);
     }
 
     @Test

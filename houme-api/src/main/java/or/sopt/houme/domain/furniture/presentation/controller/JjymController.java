@@ -3,6 +3,7 @@ package or.sopt.houme.domain.furniture.presentation.controller;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import or.sopt.houme.compare.application.dto.CompareCatalogJjymListResponse;
 import or.sopt.houme.domain.furniture.presentation.dto.response.JjymListResponse;
 import or.sopt.houme.domain.furniture.presentation.dto.response.JjymToggleResponse;
 import or.sopt.houme.domain.furniture.presentation.dto.response.JjymV2ListResponse;
@@ -64,6 +65,25 @@ public class JjymController {
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
         JjymV2ListResponse response = jjymService.getMyRawProductJjyms(userDetails.getUser().getId());
+        return ResponseEntity.ok(ApiResponse.ok(response));
+    }
+
+    @Operation(summary = "eBay 비교 상품 찜 토글 API v3", description = "가격 비교 결과 eBay 상품을 찜하거나 해제합니다.")
+    @PostMapping("/api/v3/compare-catalog-items/{catalogItemId}/jjym")
+    public ResponseEntity<ApiResponse<JjymToggleResponse>> toggleCatalogItemJjym(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @PathVariable Long catalogItemId
+    ) {
+        boolean favorited = jjymOptimisticLockFacade.toggleCatalogItem(userDetails.getUser(), catalogItemId);
+        return ResponseEntity.ok(ApiResponse.ok(new JjymToggleResponse(favorited)));
+    }
+
+    @Operation(summary = "내가 찜한 eBay 상품 목록 조회 API v3", description = "찜한 eBay 비교 상품 목록을 반환합니다.")
+    @GetMapping("/api/v3/jjyms")
+    public ResponseEntity<ApiResponse<CompareCatalogJjymListResponse>> getMyEbayJjyms(
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        CompareCatalogJjymListResponse response = jjymService.getMyEbayJjyms(userDetails.getUser().getId());
         return ResponseEntity.ok(ApiResponse.ok(response));
     }
 }

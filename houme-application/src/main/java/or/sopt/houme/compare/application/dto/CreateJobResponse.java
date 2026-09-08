@@ -6,6 +6,5 @@ public record CreateJobResponse(
         String sourceUrl,
         String title,
         String thumbnail,
-        Long price,
-        String brand
+        Long price
 ) {}

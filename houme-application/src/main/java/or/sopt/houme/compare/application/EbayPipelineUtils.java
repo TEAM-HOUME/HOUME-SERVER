@@ -2,6 +2,8 @@ package or.sopt.houme.compare.application;
 
 import or.sopt.houme.compare.domain.EbayCandidate;
 import or.sopt.houme.domain.furniture.model.entity.SoozipCategory;
+import or.sopt.houme.global.api.ErrorCode;
+import or.sopt.houme.global.api.handler.CompareException;
 import org.springframework.stereotype.Component;
 
 import java.util.EnumMap;
@@ -45,9 +47,9 @@ public class EbayPipelineUtils {
     }
 
     public double cosineSimilarity(List<Double> a, List<Double> b) {
+        if (a == null || b == null) return 0.0;
         if (a.size() != b.size()) {
-            throw new IllegalArgumentException(
-                    "임베딩 차원이 다릅니다: a=" + a.size() + ", b=" + b.size());
+            throw new CompareException(ErrorCode.COMPARE_EMBEDDING_FAILED);
         }
         double dot = 0, normA = 0, normB = 0;
         for (int i = 0; i < a.size(); i++) {
