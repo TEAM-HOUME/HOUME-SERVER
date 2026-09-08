@@ -35,8 +35,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class EbayPipelineService {
 
-    // ponytail: fixed pool for I/O-bound Gemini calls — EC2 단일 vCPU에서도 병렬 HTTP 대기 가능
-    private static final ExecutorService EMBED_POOL = Executors.newFixedThreadPool(10);
+    private static final ExecutorService EMBED_POOL = Executors.newVirtualThreadPerTaskExecutor();
 
     private final EbaySearchPort ebaySearchPort;
     private final KeywordTranslationPort keywordTranslator;
