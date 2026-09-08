@@ -75,7 +75,10 @@ public class RedisCompareJobStore implements CompareJobStorePort {
             String currentStage,
             OriginalProduct originalProduct,
             List<SimilarProduct> similarProducts,
-            String errorCode
+            String errorCode,
+            String ebayStatus,
+            String coupangStatus,
+            String catalogStatus
     ) {
         static Dto from(CompareJob job) {
             return new Dto(
@@ -85,7 +88,10 @@ public class RedisCompareJobStore implements CompareJobStorePort {
                     job.getCurrentStage() != null ? job.getCurrentStage().name() : null,
                     job.getOriginalProduct(),
                     job.getSimilarProducts(),
-                    job.getErrorCode()
+                    job.getErrorCode(),
+                    job.getEbayStatus(),
+                    job.getCoupangStatus(),
+                    job.getCatalogStatus()
             );
         }
 
@@ -94,7 +100,8 @@ public class RedisCompareJobStore implements CompareJobStorePort {
                     jobId, sourceUrl,
                     JobStatus.valueOf(status),
                     currentStage != null ? JobStage.valueOf(currentStage) : null,
-                    originalProduct, similarProducts, errorCode
+                    originalProduct, similarProducts, errorCode,
+                    ebayStatus, coupangStatus, catalogStatus
             );
         }
     }

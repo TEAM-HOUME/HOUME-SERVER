@@ -64,7 +64,10 @@ public class GeminiEmbeddingAdapter implements EmbeddingPort {
                     long delay = Math.min(BASE_DELAY_MS * (1L << (attempt - 1)), MAX_DELAY_MS)
                             + ThreadLocalRandom.current().nextLong(1000);
                     log.warn("Gemini 429 (attempt {}/{}) — {}ms 후 재시도: {}", attempt, MAX_RETRIES, delay, hint);
-                    try { Thread.sleep(delay); } catch (InterruptedException ie) { Thread.currentThread().interrupt(); }
+                    try { Thread.sleep(delay); } catch (InterruptedException ie) {
+                        Thread.currentThread().interrupt();
+                        throw new CompareException(ErrorCode.COMPARE_EMBEDDING_FAILED);
+                    }
                 } else {
                     log.error("임베딩 실패 (attempt {}): {}", attempt, hint, e);
                     throw new CompareException(ErrorCode.COMPARE_EMBEDDING_FAILED);
