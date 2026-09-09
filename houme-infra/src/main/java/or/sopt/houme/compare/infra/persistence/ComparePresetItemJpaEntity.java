@@ -29,7 +29,6 @@ public class ComparePresetItemJpaEntity extends BaseEntity {
     @Column(nullable = false)
     private String title;
 
-    @Column
     private String imageUrl;
 
     @Column(nullable = false)
@@ -38,7 +37,6 @@ public class ComparePresetItemJpaEntity extends BaseEntity {
     @Column(nullable = false, length = 10)
     private String currency;
 
-    @Column
     private String siteName;
 
     @Column(nullable = false, length = 1000)

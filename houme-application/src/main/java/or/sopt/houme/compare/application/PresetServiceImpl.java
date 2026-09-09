@@ -2,7 +2,7 @@ package or.sopt.houme.compare.application;
 
 import lombok.RequiredArgsConstructor;
 import or.sopt.houme.compare.domain.ComparePresetView;
-import or.sopt.houme.compare.domain.port.in.PresetUseCase;
+import or.sopt.houme.compare.application.PresetUseCase;
 import or.sopt.houme.compare.domain.port.out.GetPresetListPort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

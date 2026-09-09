@@ -56,4 +56,24 @@ public class JjymOptimisticLockFacade {
 
         throw new DataIntegrityViolationException("찜 시도가 정해진 횟수를 초과하였습니다");
     }
+
+    public boolean toggleCatalogItem(User user, Long catalogItemId) {
+        int retryCount = 0;
+        while (retryCount < MAX_RETRIES) {
+            try {
+                return jjymService.catalogJjymToggle(user.getId(), catalogItemId);
+            } catch (OptimisticLockException | DataIntegrityViolationException e) {
+                long backoffTime = (long) Math.pow(2, retryCount) * RETRY_DELAY_MS;
+                try {
+                    Thread.sleep(backoffTime);
+                } catch (InterruptedException ie) {
+                    Thread.currentThread().interrupt();
+                    throw new DataIntegrityViolationException("찜 토글 처리 중 인터럽트가 발생했습니다", ie);
+                }
+                retryCount++;
+            }
+        }
+
+        throw new DataIntegrityViolationException("찜 시도가 정해진 횟수를 초과하였습니다");
+    }
 }
