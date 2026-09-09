@@ -43,7 +43,8 @@ public class ComparePresetJpaEntity extends BaseEntity {
         this.currency = currency;
     }
 
-    public void update(String title, String thumbnailUrl, String brand, Long price, String currency) {
+    public void update(String sourceUrl, String title, String thumbnailUrl, String brand, Long price, String currency) {
+        this.sourceUrl = sourceUrl;
         this.title = title;
         this.thumbnailUrl = thumbnailUrl;
         this.brand = brand;
