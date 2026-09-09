@@ -6762,7 +6762,7 @@
 
     // ========== 프리셋 관리 ==========
     function getToken() {
-        return new URLSearchParams(window.location.search).get('token') || '';
+        return new URLSearchParams(window.location.search).get('token') || localStorage.getItem('accessToken') || '';
     }
 
     function authHeaders() {
