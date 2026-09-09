@@ -5,7 +5,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import or.sopt.houme.compare.domain.CompareJob;
 import or.sopt.houme.compare.domain.OriginalProduct;
-import or.sopt.houme.compare.domain.port.in.PriceCompareUseCase;
+import or.sopt.houme.compare.application.PriceCompareUseCase;
 import or.sopt.houme.compare.domain.port.out.SaveCompareHistoryPort;
 import jakarta.validation.Valid;
 import or.sopt.houme.compare.application.dto.CreateCompareJobRequest;

@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import or.sopt.houme.compare.domain.CompareJob;
 import or.sopt.houme.compare.domain.OriginalProduct;
-import or.sopt.houme.compare.domain.port.in.PriceCompareUseCase;
+import or.sopt.houme.compare.application.PriceCompareUseCase;
 import or.sopt.houme.compare.domain.port.out.CompareJobStorePort;
 import or.sopt.houme.global.api.ErrorCode;
 import or.sopt.houme.global.api.handler.PriceCompareException;
