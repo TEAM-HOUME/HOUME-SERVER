@@ -8,11 +8,14 @@ import or.sopt.houme.compare.domain.OriginalProduct;
 import or.sopt.houme.compare.domain.port.in.PriceCompareUseCase;
 import or.sopt.houme.compare.domain.port.out.SaveCompareHistoryPort;
 import jakarta.validation.Valid;
+import or.sopt.houme.compare.application.dto.CompareHistoryResponse;
 import or.sopt.houme.compare.application.dto.CreateCompareJobRequest;
 import or.sopt.houme.compare.application.dto.CompareJobResponse;
 import or.sopt.houme.compare.application.dto.CreateJobResponse;
 import or.sopt.houme.domain.user.presentation.controller.dto.CustomUserDetails;
 import or.sopt.houme.global.api.ApiResponse;
+import or.sopt.houme.global.api.ErrorCode;
+import or.sopt.houme.global.api.handler.PriceCompareException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -62,5 +65,20 @@ public class PriceCompareController {
     public ResponseEntity<ApiResponse<CompareJobResponse>> getJob(@PathVariable String jobId) {
         CompareJob job = priceCompareUseCase.getJob(jobId);
         return ResponseEntity.ok(ApiResponse.ok(CompareJobResponse.from(job)));
+    }
+
+    @Operation(summary = "가격비교 이력 조회")
+    @GetMapping("/jobs/history")
+    public ResponseEntity<ApiResponse<CompareHistoryResponse>> getHistory(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @RequestParam(defaultValue = "3") int limit
+    ) {
+        if (limit < 1) {
+            throw new PriceCompareException(ErrorCode.INVALID_COMPARE_HISTORY_LIMIT);
+        }
+        CompareHistoryResponse response = CompareHistoryResponse.from(
+                priceCompareUseCase.getHistory(userDetails.getUser().getId(), limit)
+        );
+        return ResponseEntity.ok(ApiResponse.ok(response));
     }
 }

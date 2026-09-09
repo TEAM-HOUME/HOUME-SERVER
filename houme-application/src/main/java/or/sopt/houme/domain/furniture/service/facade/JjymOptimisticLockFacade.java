@@ -22,14 +22,15 @@ public class JjymOptimisticLockFacade {
             try {
                 return jjymService.jjymToggle(user.getId(), recommendFurnitureId);
             } catch (OptimisticLockException | DataIntegrityViolationException e) {
-                long backoffTime = (long) Math.pow(2, retryCount) * RETRY_DELAY_MS;
+                retryCount++;
+                if (retryCount >= MAX_RETRIES) break;
+                long backoffTime = (long) Math.pow(2, retryCount - 1) * RETRY_DELAY_MS;
                 try {
                     Thread.sleep(backoffTime);
                 } catch (InterruptedException ie) {
                     Thread.currentThread().interrupt();
                     throw new DataIntegrityViolationException("찜 토글 처리 중 인터럽트가 발생했습니다", ie);
                 }
-                retryCount++;
             }
         }
 
@@ -43,14 +44,15 @@ public class JjymOptimisticLockFacade {
             try {
                 return jjymService.rawProductJjymToggle(user.getId(), rawProductId);
             } catch (OptimisticLockException | DataIntegrityViolationException e) {
-                long backoffTime = (long) Math.pow(2, retryCount) * RETRY_DELAY_MS;
+                retryCount++;
+                if (retryCount >= MAX_RETRIES) break;
+                long backoffTime = (long) Math.pow(2, retryCount - 1) * RETRY_DELAY_MS;
                 try {
                     Thread.sleep(backoffTime);
                 } catch (InterruptedException ie) {
                     Thread.currentThread().interrupt();
                     throw new DataIntegrityViolationException("찜 토글 처리 중 인터럽트가 발생했습니다", ie);
                 }
-                retryCount++;
             }
         }
 
@@ -63,14 +65,15 @@ public class JjymOptimisticLockFacade {
             try {
                 return jjymService.catalogJjymToggle(user.getId(), catalogItemId);
             } catch (OptimisticLockException | DataIntegrityViolationException e) {
-                long backoffTime = (long) Math.pow(2, retryCount) * RETRY_DELAY_MS;
+                retryCount++;
+                if (retryCount >= MAX_RETRIES) break;
+                long backoffTime = (long) Math.pow(2, retryCount - 1) * RETRY_DELAY_MS;
                 try {
                     Thread.sleep(backoffTime);
                 } catch (InterruptedException ie) {
                     Thread.currentThread().interrupt();
                     throw new DataIntegrityViolationException("찜 토글 처리 중 인터럽트가 발생했습니다", ie);
                 }
-                retryCount++;
             }
         }
 

@@ -120,7 +120,14 @@ public class ProductPageFetcher {
         if (status < 300 || status >= 400) {
             return Optional.empty();
         }
-        return response.headers().firstValue("location").map(current::resolve);
+        return response.headers().firstValue("location").map(loc -> {
+            try {
+                return current.resolve(loc);
+            } catch (IllegalArgumentException e) {
+                log.warn("잘못된 Location 헤더: url={}, location={}", current, loc);
+                throw new PriceCompareException(ErrorCode.PRODUCT_PAGE_FETCH_FAILED);
+            }
+        });
     }
 
     /** 이미지·PDF URL 이 들어와도 파싱을 시도하지 않도록 컨텐츠 타입을 먼저 거른다. */
