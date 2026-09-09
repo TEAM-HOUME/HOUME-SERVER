@@ -10,7 +10,7 @@ import java.util.List;
 public record SavePresetRequest(
         @NotBlank String sourceUrl,
         @NotBlank String title,
-        String thumbnailUrl,
+        @NotBlank String thumbnailUrl,
         String brand,
         Long price,
         @NotBlank String currency,

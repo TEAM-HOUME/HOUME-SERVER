@@ -2197,8 +2197,8 @@
                         <input type="text" class="form-control" id="preset-title">
                     </div>
                     <div class="col-md-6">
-                        <label class="form-label">썸네일 URL</label>
-                        <input type="url" class="form-control" id="preset-thumbnail-url">
+                        <label class="form-label">썸네일 URL <span class="text-danger">*</span></label>
+                        <input type="url" class="form-control" id="preset-thumbnail-url" required>
                     </div>
                     <div class="col-md-3">
                         <label class="form-label">브랜드</label>
@@ -6862,7 +6862,7 @@
         const body = {
             sourceUrl: document.getElementById('preset-source-url').value.trim(),
             title: document.getElementById('preset-title').value.trim(),
-            thumbnailUrl: document.getElementById('preset-thumbnail-url').value.trim() || null,
+            thumbnailUrl: document.getElementById('preset-thumbnail-url').value.trim(),
             brand: document.getElementById('preset-brand').value.trim() || null,
             price: document.getElementById('preset-price').value ? parseInt(document.getElementById('preset-price').value) : null,
             currency: document.getElementById('preset-currency').value.trim() || 'KRW',
