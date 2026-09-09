@@ -23,6 +23,7 @@ public class CurationProductQueryRepository {
             try {
                 soozipCategory = SoozipCategory.valueOf(category);
             } catch (IllegalArgumentException ignored) {
+                return List.of();
             }
         }
 
