@@ -1,4 +1,4 @@
-package or.sopt.houme.compare.domain.port.in;
+package or.sopt.houme.compare.application;
 
 import or.sopt.houme.compare.domain.CompareHistoryItem;
 import or.sopt.houme.compare.domain.CompareJob;
