@@ -1,13 +1,10 @@
 package or.sopt.houme.compare.application;
 
 import lombok.RequiredArgsConstructor;
-import or.sopt.houme.compare.domain.ComparePresetView;
-import or.sopt.houme.compare.application.PresetUseCase;
+import or.sopt.houme.compare.application.dto.PresetListResponse;
 import or.sopt.houme.compare.domain.port.out.GetPresetListPort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -17,7 +14,7 @@ public class PresetServiceImpl implements PresetUseCase {
 
     @Transactional(readOnly = true)
     @Override
-    public List<ComparePresetView> getPresets() {
-        return getPresetListPort.findAll();
+    public PresetListResponse getPresets() {
+        return PresetListResponse.from(getPresetListPort.findAll());
     }
 }

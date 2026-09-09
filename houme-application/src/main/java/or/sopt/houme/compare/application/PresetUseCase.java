@@ -1,9 +1,7 @@
 package or.sopt.houme.compare.application;
 
-import or.sopt.houme.compare.domain.ComparePresetView;
-
-import java.util.List;
+import or.sopt.houme.compare.application.dto.PresetListResponse;
 
 public interface PresetUseCase {
-    List<ComparePresetView> getPresets();
+    PresetListResponse getPresets();
 }
