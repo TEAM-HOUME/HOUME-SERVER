@@ -36,6 +36,9 @@ import java.util.stream.Collectors;
 public class EbayPipelineService {
 
     private static final ExecutorService EMBED_POOL = Executors.newVirtualThreadPerTaskExecutor();
+    private static final double IMAGE_WEIGHT = EbayPipelineUtils.IMAGE_WEIGHT;
+    private static final double TEXT_WEIGHT  = EbayPipelineUtils.TEXT_WEIGHT;
+    private static final int MAX_RESULTS = 20;
 
     private final EbaySearchPort ebaySearchPort;
     private final KeywordTranslationPort keywordTranslator;
@@ -230,10 +233,6 @@ public class EbayPipelineService {
 
         upsertToCatalog(topScored, original.category());
     }
-
-    private static final double IMAGE_WEIGHT = EbayPipelineUtils.IMAGE_WEIGHT;
-    private static final double TEXT_WEIGHT  = EbayPipelineUtils.TEXT_WEIGHT;
-    private static final int MAX_RESULTS = 20;
 
     private record UnifiedCandidate(SimilarProduct product, double score) {}
 

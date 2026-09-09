@@ -15,8 +15,7 @@ import java.time.LocalDateTime;
 @Entity
 @Table(
         name = "ebay_products",
-        uniqueConstraints = @UniqueConstraint(name = "uk_ebay_products_item_id", columnNames = "ebay_item_id"),
-        indexes = @Index(name = "idx_ebay_products_soozip_category", columnList = "soozip_category")
+        uniqueConstraints = @UniqueConstraint(name = "uk_ebay_products_item_id", columnNames = "ebay_item_id")
 )
 public class EbayProductJpaEntity {
 
