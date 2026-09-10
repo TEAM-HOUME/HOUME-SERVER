@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import or.sopt.houme.compare.domain.KeywordPair;
 import or.sopt.houme.compare.domain.MarketplaceSearchKeywords;
 import or.sopt.houme.compare.domain.port.out.KeywordTranslationPort;
 import or.sopt.houme.compare.infrastructure.gemini.client.GeminiTextGenerationClient;
@@ -31,8 +32,6 @@ public class GeminiKeywordTranslator implements KeywordTranslationPort {
 
     @Value("${gemini.compare-api-key:}")
     private String apiKey;
-
-    public record KeywordPair(String english, String korean) {}
 
     private record KeywordJson(String ebayKeywords, String coupangKeywords, Long furnitureId) {}
 
@@ -94,6 +93,7 @@ public class GeminiKeywordTranslator implements KeywordTranslationPort {
         );
     }
 
+    @Override
     public KeywordPair translateToBoth(String koreanProductName) {
         String raw = generateKeywordJson(koreanProductName, buildDualKeywordPrompt(koreanProductName, null));
         KeywordJson parsed = parseKeywordJson(koreanProductName, raw);
