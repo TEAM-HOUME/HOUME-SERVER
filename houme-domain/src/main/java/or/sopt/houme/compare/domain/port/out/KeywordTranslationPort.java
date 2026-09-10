@@ -1,5 +1,6 @@
 package or.sopt.houme.compare.domain.port.out;
 
+import or.sopt.houme.compare.domain.KeywordPair;
 import or.sopt.houme.compare.domain.MarketplaceSearchKeywords;
 import or.sopt.houme.furniture.domain.FurnitureWithTypeView;
 
@@ -13,4 +14,6 @@ public interface KeywordTranslationPort {
             String koreanProductName,
             List<FurnitureWithTypeView> furnitureCandidates
     );
+
+    KeywordPair translateToBoth(String koreanProductName);
 }
