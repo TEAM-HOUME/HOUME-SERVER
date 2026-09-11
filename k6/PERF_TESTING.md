@@ -12,7 +12,15 @@ Grafana 대시보드에서 다음을 선택한다.
 - `환경`: `perf`
 - `app_instance`: `13.209.178.230:8080`
 
-시나리오는 `/access?userId=557`에서 perf 전용 액세스 토큰을 런타임에 발급한다. 토큰을 파일이나 셸 히스토리에 저장할 필요가 없다.
+시나리오는 `/access?userId=`에서 perf 전용 액세스 토큰을 런타임에 발급한다. 기본값은 `557~561` 다섯 사용자이며, VU별로 다른 토큰을 사용해 사용자별 크레딧 락이 동시성을 직렬화하지 않도록 한다. 토큰을 파일이나 셸 히스토리에 저장할 필요가 없다.
+
+테스트 전 perf DB에 사용자를 seed한다.
+
+```bash
+ssh -i houme-perf-key.pem ubuntu@13.209.178.230 \
+  'docker exec -i houme-perf-postgres psql -U houme_perf -d houme_perf' \
+  < k6/seeds/perf_load_users.sql
+```
 
 ## V4 smoke
 
@@ -22,16 +30,20 @@ TEST_MODE=smoke \
 k6 run k6/scenarios/perf_image_generation_step.js
 ```
 
-## API별 단계 부하
+## API별 초기 단계 부하
 
-기본 단계는 `1 VU(2분) → 3 VU(3분) → 5 VU(3분)`이며, 각 단계 사이에 1분 램프업이 있습니다.
+초기 실험은 아래처럼 VU당 정확히 한 건만 보내는 burst로 실행합니다. 사용자별 크레딧 락 재진입을 피하고, 해당 동시성의 JVM·GC 반응을 분리하기 위함입니다. 각 실행 뒤 5분 회복 구간을 둡니다.
 
 ```bash
 CONFIRM_PERF=true \
 IMAGE_API=v4 \
+TEST_MODE=burst \
+BURST_VUS=1 \
 REQUEST_TIMEOUT=90s \
 k6 run k6/scenarios/perf_image_generation_step.js
 ```
+
+`BURST_VUS`를 `1 → 3 → 5` 순서로 바꿔 실행합니다. 각 VU에는 서로 다른 perf 사용자 토큰이 배정됩니다. 결과에서는 `image_generation_duration`, `image_generation_failed` custom metric을 기준으로 판단합니다. 반복 장시간 부하는 이 단계가 모두 통과한 뒤에만 기본 `TEST_MODE=step`으로 진행합니다.
 
 기본값은 perf seed 데이터에 맞춰 네 API 모두 준비되어 있습니다. API만 바꿔 실행합니다.
 

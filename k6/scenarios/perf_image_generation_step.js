@@ -1,5 +1,6 @@
 import http from 'k6/http';
 import { check, fail, sleep } from 'k6';
+import { Rate, Trend } from 'k6/metrics';
 
 // perf 전용 시나리오다. 실수로 운영 환경에 요청을 보내지 않도록 명시적인 확인값을 요구한다.
 if ((__ENV.CONFIRM_PERF || '').toLowerCase() !== 'true') {
@@ -8,10 +9,17 @@ if ((__ENV.CONFIRM_PERF || '').toLowerCase() !== 'true') {
 
 const BASE_URL = (__ENV.BASE_URL || 'http://13.209.178.230:8080').replace(/\/$/, '');
 const IMAGE_API = __ENV.IMAGE_API || 'v4';
-const PERF_USER_ID = __ENV.PERF_USER_ID || '557';
+const PERF_USER_IDS = (__ENV.PERF_USER_IDS || '557,558,559,560,561')
+  .split(',')
+  .map((userId) => userId.trim())
+  .filter((userId) => userId.length > 0);
 const REQUEST_TIMEOUT = __ENV.REQUEST_TIMEOUT || '90s';
 const THINK_TIME_SECONDS = Number(__ENV.THINK_TIME_SECONDS || '1');
 const TEST_MODE = __ENV.TEST_MODE || 'step';
+const BURST_VUS = Number(__ENV.BURST_VUS || '1');
+
+const imageGenerationDuration = new Trend('image_generation_duration', true);
+const imageGenerationFailed = new Rate('image_generation_failed');
 
 const API_PATHS = {
   v4: '/api/v4/generated-images/generate',
@@ -88,6 +96,22 @@ export const options = TEST_MODE === 'smoke'
         http_req_failed: ['rate==0'],
       },
     }
+  : TEST_MODE === 'burst'
+    ? {
+        scenarios: {
+          perf_burst: {
+            // VU마다 정확히 한 건만 실행해 사용자별 크레딧 락 재진입을 배제한다.
+            executor: 'per-vu-iterations',
+            vus: BURST_VUS,
+            iterations: 1,
+            maxDuration: REQUEST_TIMEOUT,
+          },
+        },
+        thresholds: {
+          image_generation_failed: ['rate==0'],
+          image_generation_duration: ['p(95)<45000'],
+        },
+      }
   : {
       scenarios: {
         perf_step: {
@@ -117,25 +141,38 @@ function getAccessToken(response) {
 }
 
 export function setup() {
-  const response = http.get(`${BASE_URL}/access?userId=${PERF_USER_ID}`, {
-    tags: { endpoint: '/access', scenario: 'perf-token' },
-    timeout: '10s',
-  });
-  const accessToken = getAccessToken(response);
-
-  if (response.status !== 200 || !accessToken) {
-    fail(`perf 테스트 토큰 발급 실패: HTTP ${response.status}`);
+  const requiredUserCount = TEST_MODE === 'burst' ? BURST_VUS : PERF_USER_IDS.length;
+  if (PERF_USER_IDS.length < requiredUserCount) {
+    fail(`BURST_VUS=${requiredUserCount}에 필요한 PERF_USER_IDS가 부족합니다.`);
   }
-  return { accessToken };
+
+  const accessTokens = PERF_USER_IDS.slice(0, requiredUserCount).map((userId) => {
+    const response = http.get(`${BASE_URL}/access?userId=${userId}`, {
+      tags: { endpoint: '/access', scenario: 'perf-token' },
+      timeout: '10s',
+    });
+    const accessToken = getAccessToken(response);
+
+    if (response.status !== 200 || !accessToken) {
+      fail(`perf 테스트 토큰 발급 실패(userId=${userId}): HTTP ${response.status}`);
+    }
+    return accessToken;
+  });
+
+  if (accessTokens.length === 0) {
+    fail('PERF_USER_IDS에 하나 이상의 사용자 ID가 필요합니다.');
+  }
+  return { accessTokens };
 }
 
 export default function (data) {
+  const accessToken = data.accessTokens[(__VU - 1) % data.accessTokens.length];
   const response = http.post(
     `${BASE_URL}${TARGET_PATH}`,
     JSON.stringify(REQUEST_PAYLOAD),
     {
       headers: {
-        Authorization: `Bearer ${data.accessToken}`,
+        Authorization: `Bearer ${accessToken}`,
         'Content-Type': 'application/json',
       },
       tags: { endpoint: TARGET_PATH, image_api: IMAGE_API, scenario: `perf-${TEST_MODE}` },
@@ -143,7 +180,7 @@ export default function (data) {
     },
   );
 
-  check(response, {
+  const succeeded = check(response, {
     'status is 200': (result) => result.status === 200,
     'response has success code': (result) => {
       try {
@@ -153,6 +190,8 @@ export default function (data) {
       }
     },
   });
+  imageGenerationDuration.add(response.timings.duration);
+  imageGenerationFailed.add(!succeeded);
 
   if (THINK_TIME_SECONDS > 0) {
     sleep(THINK_TIME_SECONDS);
