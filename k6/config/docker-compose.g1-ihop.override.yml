@@ -1,0 +1,5 @@
+services:
+  app:
+    environment:
+      # JVM이 시작 시 읽는다. 값은 perf A/B 실행 시에만 주입한다.
+      JAVA_TOOL_OPTIONS: ${JAVA_TOOL_OPTIONS:-}
