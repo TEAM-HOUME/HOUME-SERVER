@@ -15,6 +15,8 @@ import org.hibernate.annotations.Comment;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.List;
+import java.util.Objects;
 
 @Entity
 @Getter
@@ -68,6 +70,9 @@ public class CoupangProductJpaEntity extends BaseEntity {
     }
 
     public void apply(CoupangProductSearchResult result) {
+        if (!Objects.equals(this.imageUrl, result.productImage())) {
+            this.imageEmbedding = null;
+        }
         this.coupangProductId = result.productId();
         this.name = result.productName();
         this.imageUrl = result.productImage();
@@ -75,6 +80,15 @@ public class CoupangProductJpaEntity extends BaseEntity {
         this.currentPrice = result.productPrice();
         this.discountRate = result.productDiscountRate();
         this.estimatedOriginalPrice = estimateOriginalPrice(result.productPrice(), result.productDiscountRate());
+    }
+
+    public boolean needsImageEmbedding() {
+        return imageUrl != null && !imageUrl.isBlank()
+                && (imageEmbedding == null || imageEmbedding.isBlank());
+    }
+
+    public void updateImageEmbedding(List<Double> embedding) {
+        this.imageEmbedding = embedding.toString();
     }
 
     private BigDecimal estimateOriginalPrice(BigDecimal currentPrice, BigDecimal discountRate) {

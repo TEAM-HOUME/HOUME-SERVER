@@ -46,7 +46,7 @@ public class CoupangCollectionJobService {
     }
 
     @Transactional
-    public void completeJob(Long jobId, List<CoupangProductSearchResult> results) {
+    public List<CoupangProductImageEmbeddingTarget> completeJob(Long jobId, List<CoupangProductSearchResult> results) {
         CoupangCollectionJobJpaEntity job = jobRepository.findById(jobId).orElseThrow();
         CoupangKeywordJpaEntity keyword = job.getKeyword();
         keywordProductRepository.deleteByKeywordId(keyword.getId());
@@ -57,16 +57,23 @@ public class CoupangCollectionJobService {
             distinctResults.putIfAbsent(result.productId(), result);
         }
 
+        List<CoupangProductImageEmbeddingTarget> embeddingTargets = new java.util.ArrayList<>();
         for (CoupangProductSearchResult result : distinctResults.values()) {
             CoupangProductJpaEntity product = productRepository.findByCoupangProductId(result.productId())
                     .map(existing -> updateExistingProductAndRecordPriceHistory(existing, result))
                     .orElseGet(() -> saveNewProductAndPriceHistory(result));
             keywordProductRepository.save(CoupangKeywordProductJpaEntity.of(keyword, product));
+            if (product.needsImageEmbedding()) {
+                embeddingTargets.add(new CoupangProductImageEmbeddingTarget(
+                        product.getCoupangProductId(), product.getImageUrl()
+                ));
+            }
         }
 
         LocalDateTime now = LocalDateTime.now();
         keyword.markSucceeded(now);
         job.returnToQueueTail(now);
+        return embeddingTargets;
     }
 
     @Transactional
@@ -113,5 +120,8 @@ public class CoupangCollectionJobService {
     }
 
     public record ClaimedCoupangJob(Long jobId, Long keywordId, String keyword) {
+    }
+
+    public record CoupangProductImageEmbeddingTarget(String coupangProductId, String imageUrl) {
     }
 }

@@ -7,6 +7,7 @@ import or.sopt.houme.domain.coupang.client.CoupangPartnersClient;
 import or.sopt.houme.domain.coupang.client.CoupangPartnersClientException;
 import or.sopt.houme.domain.coupang.service.CoupangBatchProperties;
 import or.sopt.houme.domain.coupang.service.CoupangCollectionJobService;
+import or.sopt.houme.domain.coupang.service.CoupangProductImageEmbeddingService;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -23,6 +24,7 @@ import java.util.Optional;
 public class CoupangCollectionScheduler {
 
     private final CoupangCollectionJobService collectionJobService;
+    private final CoupangProductImageEmbeddingService productImageEmbeddingService;
     private final CoupangPartnersClient coupangPartnersClient;
     private final CoupangBatchProperties batchProperties;
 
@@ -47,7 +49,9 @@ public class CoupangCollectionScheduler {
             List<CoupangProductSearchResult> products = coupangPartnersClient.searchProducts(
                     job.keyword(), batchProperties.getSearchLimit()
             );
-            collectionJobService.completeJob(job.jobId(), products);
+            List<CoupangCollectionJobService.CoupangProductImageEmbeddingTarget> embeddingTargets =
+                    collectionJobService.completeJob(job.jobId(), products);
+            productImageEmbeddingService.embedAndSaveImages(embeddingTargets);
             log.info("쿠팡 상품 수집 완료: keyword={}, resultCount={}", job.keyword(), products.size());
         } catch (CoupangPartnersClientException e) {
             collectionJobService.failAndReturnToQueueTail(job.jobId(), "COUPANG_API_ERROR", e.getMessage());
