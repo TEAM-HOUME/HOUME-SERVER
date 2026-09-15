@@ -2,6 +2,7 @@ package or.sopt.houme.domain.furniture.infrastructure.scheduler;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -12,8 +13,14 @@ public class CurationEmbeddingScheduler {
 
     private final CurationEmbeddingBatchService batchService;
 
+    @Value("${curation.embedding.batch.enabled:false}")
+    private boolean enabled;
+
     @Scheduled(cron = "0 0 3 * * *", zone = "Asia/Seoul")
     public void fillEmbeddings() {
+        if (!enabled) {
+            return;
+        }
         log.info("[임베딩 배치] 시작");
         try {
             int processed = batchService.fillMissingEmbeddings();
