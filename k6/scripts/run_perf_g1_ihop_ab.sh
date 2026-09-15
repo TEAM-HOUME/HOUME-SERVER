@@ -19,6 +19,7 @@ SKIP_DEFAULT="${SKIP_DEFAULT:-false}"
 BASELINE_IDLE_SECONDS="${BASELINE_IDLE_SECONDS:-60}"
 RECOVERY_IDLE_SECONDS="${RECOVERY_IDLE_SECONDS:-60}"
 SAMPLE_INTERVAL_SECONDS="${SAMPLE_INTERVAL_SECONDS:-2}"
+SAMPLER_CURL_TIMEOUT_SECONDS="${SAMPLER_CURL_TIMEOUT_SECONDS:-10}"
 RUN_ID="$(date +%Y%m%d-%H%M%S)"
 RESULT_DIR="${RESULT_DIR:-/private/tmp/houme-perf/g1-ihop-ab-${RUN_ID}}"
 SSH_ARGS=(-i "${PERF_SSH_KEY}" -o BatchMode=yes -o StrictHostKeyChecking=no)
@@ -29,9 +30,25 @@ mkdir -p "${RESULT_DIR}"
 
 stop_sampler() {
   if [[ -n "${SAMPLER_PID}" ]]; then
-    kill "${SAMPLER_PID}" 2>/dev/null || true
-    wait "${SAMPLER_PID}" 2>/dev/null || true
+    local sampler_pid="${SAMPLER_PID}"
+    local sampler_status
     SAMPLER_PID=""
+
+    if kill -0 "${sampler_pid}" 2>/dev/null; then
+      if kill "${sampler_pid}"; then
+        if wait "${sampler_pid}"; then
+          return 0
+        fi
+        sampler_status=$?
+        # stop_sampler가 보낸 SIGTERM은 정상 종료로 취급한다.
+        if [[ "${sampler_status}" -eq 143 ]]; then
+          return 0
+        fi
+        return "${sampler_status}"
+      fi
+    fi
+
+    wait "${sampler_pid}"
   fi
 }
 
@@ -44,9 +61,14 @@ restore_default_mode() {
       -f docker-compose.real-gemini.yml \
       -f docker-compose.g1-ihop.override.yml \
       up -d --force-recreate app
-  ' >/dev/null 2>&1 || true
+  ' >/dev/null 2>&1
 }
-trap restore_default_mode EXIT
+
+restore_default_mode_on_exit() {
+  stop_sampler || true
+  restore_default_mode || true
+}
+trap restore_default_mode_on_exit EXIT
 
 wait_until_ready() {
   local attempt
@@ -120,7 +142,7 @@ start_sampler() {
   while true; do
     local now
     now="$(date +%s)"
-    /usr/bin/curl -fsS "${BASE_URL}/actuator/prometheus" | awk -v now="${now}" '
+    if /usr/bin/curl -fsS --max-time "${SAMPLER_CURL_TIMEOUT_SECONDS}" "${BASE_URL}/actuator/prometheus" | awk -v now="${now}" '
       /^jvm_memory_used_bytes/ && /id="G1 Old Gen"/ {old=$NF}
       /^jvm_memory_used_bytes/ && /id="G1 Eden Space"/ {eden=$NF}
       /^jvm_gc_live_data_size_bytes/ {live=$NF}
@@ -131,7 +153,13 @@ start_sampler() {
       /^jvm_gc_memory_allocated_bytes_total/ {allocated=$NF}
       /^jvm_gc_memory_promoted_bytes_total/ {promoted=$NF}
       END {printf "%s %.0f %.0f %.0f %.0f %.9f %.0f %.9f %.0f %.0f\\n", now, old, eden, live, gc_count, gc_sum, hum_count, hum_sum, allocated, promoted}
-    ' >> "${RESULT_DIR}/${name}-timeseries.tsv"
+    ' >> "${RESULT_DIR}/${name}-timeseries.tsv"; then
+      :
+    else
+      local sampler_status=$?
+      echo "[sampler] ${name} Prometheus 수집 실패(status=${sampler_status})" >&2
+      return "${sampler_status}"
+    fi
     sleep "${SAMPLE_INTERVAL_SECONDS}"
   done &
   SAMPLER_PID="$!"
@@ -141,6 +169,7 @@ run_mode() {
   local mode="$1"
   local options="$2"
   local round
+  local sampler_status
   restart_mode "${mode}" "${options}"
   wait_seconds "${mode}-baseline" "${BASELINE_IDLE_SECONDS}"
   snapshot "${mode}-00-baseline"
@@ -152,7 +181,13 @@ run_mode() {
       BURST_VUS="${IMAGE_VUS}" REQUEST_TIMEOUT=240s \
       k6 run --quiet --summary-export "${RESULT_DIR}/${mode}-round-${round}.json" \
       k6/scenarios/perf_image_generation_step.js
-    stop_sampler
+    if stop_sampler; then
+      :
+    else
+      sampler_status=$?
+      echo "[failed] ${mode} ${round}/${ROUNDS}: sampler 종료(status=${sampler_status})" >&2
+      return "${sampler_status}"
+    fi
     snapshot "${mode}-round-${round}-immediate"
     wait_seconds "${mode}-round-${round}-recovery" "${RECOVERY_IDLE_SECONDS}"
     snapshot "${mode}-round-${round}-recovered"

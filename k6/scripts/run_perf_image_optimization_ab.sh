@@ -17,6 +17,7 @@ IMAGE_VUS="${IMAGE_VUS:-5}"
 BASELINE_IDLE_MINUTES="${BASELINE_IDLE_MINUTES:-5}"
 RECOVERY_IDLE_MINUTES="${RECOVERY_IDLE_MINUTES:-5}"
 SAMPLE_INTERVAL_SECONDS="${SAMPLE_INTERVAL_SECONDS:-2}"
+SAMPLER_CURL_TIMEOUT_SECONDS="${SAMPLER_CURL_TIMEOUT_SECONDS:-10}"
 RUN_ID="$(date +%Y%m%d-%H%M%S)"
 RESULT_DIR="${RESULT_DIR:-/private/tmp/houme-perf/optimization-ab-${RUN_ID}}"
 SSH_ARGS=(-i "${PERF_SSH_KEY}" -o BatchMode=yes -o StrictHostKeyChecking=no)
@@ -26,21 +27,49 @@ mkdir -p "${RESULT_DIR}"
 
 stop_sampler() {
   if [[ -n "${SAMPLER_PID}" ]]; then
-    kill "${SAMPLER_PID}" 2>/dev/null || true
-    wait "${SAMPLER_PID}" 2>/dev/null || true
+    local sampler_pid="${SAMPLER_PID}"
+    local sampler_status
     SAMPLER_PID=""
+
+    if kill -0 "${sampler_pid}" 2>/dev/null; then
+      if kill "${sampler_pid}"; then
+        if wait "${sampler_pid}"; then
+          return 0
+        fi
+        sampler_status=$?
+        # stop_sampler가 보낸 SIGTERM은 정상 종료로 취급한다.
+        if [[ "${sampler_status}" -eq 143 ]]; then
+          return 0
+        fi
+        return "${sampler_status}"
+      fi
+    fi
+
+    wait "${sampler_pid}"
   fi
 }
 
 restore_optimized_mode() {
+  local restore_status
   stop_sampler
-  ssh "${SSH_ARGS[@]}" "${PERF_USER}@${PERF_HOST}" '
+  if ssh "${SSH_ARGS[@]}" "${PERF_USER}@${PERF_HOST}" '
     cd /opt/houme-perf
     IMAGE_GEMINI_OPTIMIZATION_ENABLED=true \
       docker compose -f docker-compose.app.yml -f docker-compose.real-gemini.yml up -d --force-recreate app
-  ' >/dev/null 2>&1 || true
+  ' >/dev/null 2>&1; then
+    return 0
+  else
+    restore_status=$?
+  fi
+  echo "[failed] optimized mode 복구 실패(status=${restore_status})" >&2
+  return "${restore_status}"
 }
-trap restore_optimized_mode EXIT
+
+restore_optimized_mode_on_exit() {
+  stop_sampler || true
+  restore_optimized_mode || true
+}
+trap restore_optimized_mode_on_exit EXIT
 
 wait_minutes() {
   local label="$1"
@@ -92,7 +121,7 @@ start_sampler() {
   while true; do
     local now
     now="$(date +%s)"
-    /usr/bin/curl -fsS "${BASE_URL}/actuator/prometheus" | awk -v now="${now}" '
+    if /usr/bin/curl -fsS --max-time "${SAMPLER_CURL_TIMEOUT_SECONDS}" "${BASE_URL}/actuator/prometheus" | awk -v now="${now}" '
         /^jvm_memory_used_bytes/ && /id="G1 Old Gen"/ {old=$NF}
         /^jvm_memory_used_bytes/ && /id="G1 Eden Space"/ {eden=$NF}
         /^jvm_memory_used_bytes/ && /id="G1 Survivor Space"/ {survivor=$NF}
@@ -106,7 +135,13 @@ start_sampler() {
         /^jvm_gc_memory_promoted_bytes_total/ {promoted=$NF}
         /^process_resident_memory_bytes/ {rss=$NF}
         END {printf "%s %.0f %.0f %.0f %.0f %.0f %.0f %.9f %.0f %.9f %.0f %.0f %.0f\n", now, old, eden, survivor, live, max, gc_count, gc_sum, hum_count, hum_sum, allocated, promoted, rss}
-      ' >> "${RESULT_DIR}/${name}-timeseries.tsv"
+      ' >> "${RESULT_DIR}/${name}-timeseries.tsv"; then
+      :
+    else
+      local sampler_status=$?
+      echo "[sampler] ${name} Prometheus 수집 실패(status=${sampler_status})" >&2
+      return "${sampler_status}"
+    fi
     sleep "${SAMPLE_INTERVAL_SECONDS}"
   done &
   SAMPLER_PID="$!"
@@ -139,6 +174,7 @@ run_mode() {
   local mode="$1"
   local enabled="$2"
   local round
+  local sampler_status
 
   restart_mode "${enabled}"
   wait_minutes "${mode}-baseline" "${BASELINE_IDLE_MINUTES}"
@@ -157,7 +193,13 @@ run_mode() {
       k6 run --quiet \
         --summary-export "${RESULT_DIR}/${mode}-round-${round}.json" \
         k6/scenarios/perf_image_generation_step.js
-    stop_sampler
+    if stop_sampler; then
+      :
+    else
+      sampler_status=$?
+      echo "[failed] ${mode} round ${round}/${ROUNDS}: sampler 종료(status=${sampler_status})" >&2
+      return "${sampler_status}"
+    fi
     snapshot "${mode}-round-${round}-immediate"
     wait_minutes "${mode}-round-${round}-recovery" "${RECOVERY_IDLE_MINUTES}"
     snapshot "${mode}-round-${round}-recovered"
