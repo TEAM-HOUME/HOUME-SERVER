@@ -10,12 +10,14 @@ import or.sopt.houme.compare.domain.port.out.EmbeddingPort;
 import or.sopt.houme.coupang.domain.CoupangProductSearchResult;
 import or.sopt.houme.domain.coupang.model.entity.CoupangProductJpaEntity;
 import or.sopt.houme.domain.coupang.repository.CoupangProductJpaRepository;
+import org.springframework.data.domain.Pageable;
 
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -43,6 +45,24 @@ class CoupangProductImageEmbeddingServiceTest {
                 new CoupangCollectionJobService.CoupangProductImageEmbeddingTarget("1", imageUrl)
         ));
 
+        assertThat(product.getImageEmbedding()).isEqualTo("[0.1, 0.2]");
+        verify(productRepository).save(product);
+    }
+
+    @Test
+    @DisplayName("기존 수집 결과와 무관하게 임베딩이 비어 있는 상품을 조회해 재시도한다")
+    void retriesMissingImageEmbeddings() {
+        String imageUrl = "https://image";
+        CoupangProductJpaEntity product = CoupangProductJpaEntity.from(new CoupangProductSearchResult(
+                "1", "테스트 소파", new BigDecimal("10000"), BigDecimal.ZERO, imageUrl, "https://product"
+        ));
+        when(productRepository.findProductsNeedingImageEmbedding(any(Pageable.class))).thenReturn(List.of(product));
+        when(embeddingPort.embedImageUrl(imageUrl)).thenReturn(List.of(0.1, 0.2));
+        when(productRepository.findByCoupangProductId("1")).thenReturn(Optional.of(product));
+
+        int targetCount = imageEmbeddingService.embedMissingImages(10);
+
+        assertThat(targetCount).isEqualTo(1);
         assertThat(product.getImageEmbedding()).isEqualTo("[0.1, 0.2]");
         verify(productRepository).save(product);
     }

@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import or.sopt.houme.compare.domain.port.out.EmbeddingPort;
 import or.sopt.houme.domain.coupang.model.entity.CoupangProductJpaEntity;
 import or.sopt.houme.domain.coupang.repository.CoupangProductJpaRepository;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -16,6 +17,17 @@ public class CoupangProductImageEmbeddingService {
 
     private final EmbeddingPort embeddingPort;
     private final CoupangProductJpaRepository productRepository;
+
+    public int embedMissingImages(int batchSize) {
+        List<CoupangCollectionJobService.CoupangProductImageEmbeddingTarget> targets =
+                productRepository.findProductsNeedingImageEmbedding(PageRequest.of(0, batchSize)).stream()
+                        .map(product -> new CoupangCollectionJobService.CoupangProductImageEmbeddingTarget(
+                                product.getCoupangProductId(), product.getImageUrl()
+                        ))
+                        .toList();
+        embedAndSaveImages(targets);
+        return targets.size();
+    }
 
     /**
      * Gemini 호출은 수집 트랜잭션이 종료된 뒤 수행한다. 개별 상품의 실패는 다음 수집에서 재시도한다.
