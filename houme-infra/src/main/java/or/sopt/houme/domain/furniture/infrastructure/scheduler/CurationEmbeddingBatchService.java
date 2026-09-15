@@ -8,7 +8,6 @@ import or.sopt.houme.domain.furniture.repository.CurationRawProductRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -24,11 +23,11 @@ public class CurationEmbeddingBatchService {
 
     public int fillMissingEmbeddings() {
         int totalProcessed = 0;
-        int page = 0;
 
         while (true) {
+            // 처리 후 titleEmbedding이 채워지면 결과셋에서 빠지므로 항상 page 0 조회
             Page<CurationRawProduct> batch = repository.findAllByTitleEmbeddingIsNull(
-                    PageRequest.of(page, PAGE_SIZE)
+                    PageRequest.of(0, PAGE_SIZE)
             );
             if (batch.isEmpty()) {
                 break;
@@ -37,16 +36,15 @@ public class CurationEmbeddingBatchService {
             int processed = processBatch(batch.getContent());
             totalProcessed += processed;
 
-            if (!batch.hasNext()) {
+            if (processed == 0) {
+                // 전부 실패한 경우 무한루프 방지
                 break;
             }
-            page++;
         }
 
         return totalProcessed;
     }
 
-    @Transactional
     public int processBatch(List<CurationRawProduct> products) {
         int count = 0;
         for (CurationRawProduct product : products) {
@@ -63,6 +61,7 @@ public class CurationEmbeddingBatchService {
                     }
                 }
 
+                repository.save(product);
                 count++;
             } catch (Exception e) {
                 log.warn("[임베딩 배치] 상품 스킵: productId={}", product.getId(), e);
