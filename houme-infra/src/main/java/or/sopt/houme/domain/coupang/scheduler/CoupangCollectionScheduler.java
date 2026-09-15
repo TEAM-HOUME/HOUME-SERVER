@@ -30,7 +30,7 @@ public class CoupangCollectionScheduler {
 
     @Scheduled(fixedDelayString = "${coupang.batch.execution-delay-ms:420000}")
     public void collectOneKeyword() {
-        if (!batchProperties.isEnabled()) {
+        if (!batchProperties.isCoupangCollectionBatchEnabled()) {
             return;
         }
 

@@ -14,4 +14,8 @@ public class CoupangBatchProperties {
     private boolean enabled = false;
     private int searchLimit = 10;
     private int embeddingBatchSize = 10;
+
+    public boolean isCoupangCollectionBatchEnabled() {
+        return enabled;
+    }
 }

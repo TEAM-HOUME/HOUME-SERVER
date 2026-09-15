@@ -17,7 +17,7 @@ public class CoupangProductImageEmbeddingScheduler {
 
     @Scheduled(cron = "${coupang.batch.embedding-cron:0 0 4 * * *}", zone = "Asia/Seoul")
     public void retryMissingImageEmbeddings() {
-        if (!batchProperties.isEnabled()) {
+        if (!batchProperties.isCoupangCollectionBatchEnabled()) {
             return;
         }
 
