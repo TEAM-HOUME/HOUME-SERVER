@@ -70,11 +70,13 @@ export const options = {
   thresholds: TEST_MODE === 'interference'
     ? {
         probe_failed: ['rate==0'],
+        dropped_iterations: ['count<10'],
         image_generation_failed: ['rate==0'],
         image_generation_duration: ['p(95)<45000'],
       }
     : {
         probe_failed: ['rate==0'],
+        dropped_iterations: ['count<10'],
       },
 };
 

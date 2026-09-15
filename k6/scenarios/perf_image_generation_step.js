@@ -16,6 +16,11 @@ const PERF_USER_IDS = (__ENV.PERF_USER_IDS || '557,558,559,560,561')
 const REQUEST_TIMEOUT = __ENV.REQUEST_TIMEOUT || '90s';
 const THINK_TIME_SECONDS = Number(__ENV.THINK_TIME_SECONDS || '1');
 const TEST_MODE = __ENV.TEST_MODE || 'step';
+
+if (!['step', 'smoke', 'burst'].includes(TEST_MODE)) {
+  fail('TEST_MODE는 step, smoke, burst 중 하나여야 합니다.');
+}
+
 const BURST_VUS = Number(__ENV.BURST_VUS || '1');
 
 const imageGenerationDuration = new Trend('image_generation_duration', true);
