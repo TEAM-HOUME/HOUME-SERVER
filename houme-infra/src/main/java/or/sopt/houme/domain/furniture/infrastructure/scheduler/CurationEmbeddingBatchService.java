@@ -5,7 +5,6 @@ import lombok.extern.slf4j.Slf4j;
 import or.sopt.houme.compare.domain.port.out.EmbeddingPort;
 import or.sopt.houme.domain.furniture.model.entity.CurationRawProduct;
 import or.sopt.houme.domain.furniture.repository.CurationRawProductRepository;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
@@ -29,27 +28,26 @@ public class CurationEmbeddingBatchService {
 
     private int fillMissingTitleEmbeddings() {
         int totalProcessed = 0;
+        long lastId = 0;
         while (true) {
-            Page<CurationRawProduct> batch = repository.findAllByTitleEmbeddingIsNull(PageRequest.of(0, PAGE_SIZE));
+            List<CurationRawProduct> batch = repository.findForTitleEmbeddingBatch(lastId, PageRequest.of(0, PAGE_SIZE));
             if (batch.isEmpty()) break;
 
-            int processed = processTitleAndImageBatch(batch.getContent());
-            totalProcessed += processed;
-            if (processed == 0) break; // 전부 실패 — 무한루프 방지
+            lastId = batch.get(batch.size() - 1).getId(); // 실패해도 커서 전진 → 이후 상품 차단 방지
+            totalProcessed += processTitleAndImageBatch(batch);
         }
         return totalProcessed;
     }
 
     private int fillMissingImageEmbeddings() {
         int totalProcessed = 0;
+        long lastId = 0;
         while (true) {
-            // title은 있지만 image가 없는 상품 재시도 (이전 배치에서 이미지 실패한 케이스)
-            Page<CurationRawProduct> batch = repository.findAllByImageEmbeddingMissing(PageRequest.of(0, PAGE_SIZE));
+            List<CurationRawProduct> batch = repository.findForImageEmbeddingBatch(lastId, PageRequest.of(0, PAGE_SIZE));
             if (batch.isEmpty()) break;
 
-            int processed = processImageOnlyBatch(batch.getContent());
-            totalProcessed += processed;
-            if (processed == 0) break;
+            lastId = batch.get(batch.size() - 1).getId();
+            totalProcessed += processImageOnlyBatch(batch);
         }
         return totalProcessed;
     }

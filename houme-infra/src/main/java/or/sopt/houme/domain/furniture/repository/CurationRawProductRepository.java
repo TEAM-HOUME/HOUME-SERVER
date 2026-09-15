@@ -46,11 +46,11 @@ public interface CurationRawProductRepository extends JpaRepository<CurationRawP
 
     List<CurationRawProduct> findAllByProductIdIn(List<Long> productIds);
 
-    @Query("select rp from CurationRawProduct rp where rp.titleEmbedding is null order by rp.id asc")
-    Page<CurationRawProduct> findAllByTitleEmbeddingIsNull(Pageable pageable);
+    @Query("select rp from CurationRawProduct rp where rp.titleEmbedding is null and rp.id > :lastId order by rp.id asc")
+    List<CurationRawProduct> findForTitleEmbeddingBatch(@Param("lastId") long lastId, Pageable pageable);
 
-    @Query("select rp from CurationRawProduct rp where rp.titleEmbedding is not null and rp.imageEmbedding is null and rp.productImageUrl is not null order by rp.id asc")
-    Page<CurationRawProduct> findAllByImageEmbeddingMissing(Pageable pageable);
+    @Query("select rp from CurationRawProduct rp where rp.titleEmbedding is not null and rp.imageEmbedding is null and rp.productImageUrl is not null and rp.id > :lastId order by rp.id asc")
+    List<CurationRawProduct> findForImageEmbeddingBatch(@Param("lastId") long lastId, Pageable pageable);
 
     @Query("""
             select distinct rp from CurationRawProduct rp
