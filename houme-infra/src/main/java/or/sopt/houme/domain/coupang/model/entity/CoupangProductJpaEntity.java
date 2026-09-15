@@ -15,6 +15,9 @@ import org.hibernate.annotations.Comment;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Objects;
 
 @Entity
 @Getter
@@ -59,6 +62,10 @@ public class CoupangProductJpaEntity extends BaseEntity {
     @Comment("상품 이미지 임베딩 벡터 (pgvector 형식, 배치로 채움)")
     private String imageEmbedding;
 
+    @Column(name = "image_embedding_last_failed_at")
+    @Comment("이미지 임베딩 마지막 실패 시각 (누락 임베딩 재시도 우선순위용)")
+    private LocalDateTime imageEmbeddingLastFailedAt;
+
     private CoupangProductJpaEntity(CoupangProductSearchResult result) {
         apply(result);
     }
@@ -68,6 +75,10 @@ public class CoupangProductJpaEntity extends BaseEntity {
     }
 
     public void apply(CoupangProductSearchResult result) {
+        if (!Objects.equals(this.imageUrl, result.productImage())) {
+            this.imageEmbedding = null;
+            this.imageEmbeddingLastFailedAt = null;
+        }
         this.coupangProductId = result.productId();
         this.name = result.productName();
         this.imageUrl = result.productImage();
@@ -75,6 +86,20 @@ public class CoupangProductJpaEntity extends BaseEntity {
         this.currentPrice = result.productPrice();
         this.discountRate = result.productDiscountRate();
         this.estimatedOriginalPrice = estimateOriginalPrice(result.productPrice(), result.productDiscountRate());
+    }
+
+    public boolean needsImageEmbedding() {
+        return imageUrl != null && !imageUrl.isBlank()
+                && (imageEmbedding == null || imageEmbedding.isBlank());
+    }
+
+    public void updateImageEmbedding(List<Double> embedding) {
+        this.imageEmbedding = embedding.toString();
+        this.imageEmbeddingLastFailedAt = null;
+    }
+
+    public void markImageEmbeddingFailed() {
+        this.imageEmbeddingLastFailedAt = LocalDateTime.now();
     }
 
     private BigDecimal estimateOriginalPrice(BigDecimal currentPrice, BigDecimal discountRate) {
