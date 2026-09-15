@@ -66,4 +66,22 @@ class CoupangProductImageEmbeddingServiceTest {
         assertThat(product.getImageEmbedding()).isEqualTo("[0.1, 0.2]");
         verify(productRepository).save(product);
     }
+
+    @Test
+    @DisplayName("이미지 임베딩 실패 시 재시도 우선순위를 위한 실패 시각을 저장한다")
+    void recordsFailureTimeWhenEmbeddingFails() {
+        String imageUrl = "https://image";
+        CoupangProductJpaEntity product = CoupangProductJpaEntity.from(new CoupangProductSearchResult(
+                "1", "테스트 소파", new BigDecimal("10000"), BigDecimal.ZERO, imageUrl, "https://product"
+        ));
+        when(embeddingPort.embedImageUrl(imageUrl)).thenThrow(new RuntimeException("Gemini 오류"));
+        when(productRepository.findByCoupangProductId("1")).thenReturn(Optional.of(product));
+
+        imageEmbeddingService.embedAndSaveImages(List.of(
+                new CoupangCollectionJobService.CoupangProductImageEmbeddingTarget("1", imageUrl)
+        ));
+
+        assertThat(product.getImageEmbeddingLastFailedAt()).isNotNull();
+        verify(productRepository).save(product);
+    }
 }

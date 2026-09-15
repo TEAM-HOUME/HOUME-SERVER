@@ -17,7 +17,10 @@ public interface CoupangProductJpaRepository extends JpaRepository<CoupangProduc
             where product.imageUrl is not null
               and trim(product.imageUrl) <> ''
               and (product.imageEmbedding is null or trim(product.imageEmbedding) = '')
-            order by product.id asc
+            order by
+              case when product.imageEmbeddingLastFailedAt is null then 0 else 1 end,
+              product.imageEmbeddingLastFailedAt asc,
+              product.id asc
             """)
     List<CoupangProductJpaEntity> findProductsNeedingImageEmbedding(Pageable pageable);
 }

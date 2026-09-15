@@ -45,7 +45,22 @@ public class CoupangProductImageEmbeddingService {
                         });
             } catch (Exception e) {
                 log.warn("쿠팡 상품 이미지 임베딩 실패: productId={}", target.coupangProductId(), e);
+                saveFailureAttempt(target);
             }
+        }
+    }
+
+    private void saveFailureAttempt(CoupangCollectionJobService.CoupangProductImageEmbeddingTarget target) {
+        try {
+            productRepository.findByCoupangProductId(target.coupangProductId())
+                    .filter(product -> target.imageUrl().equals(product.getImageUrl()))
+                    .filter(CoupangProductJpaEntity::needsImageEmbedding)
+                    .ifPresent(product -> {
+                        product.markImageEmbeddingFailed();
+                        productRepository.save(product);
+                    });
+        } catch (Exception e) {
+            log.error("쿠팡 상품 이미지 임베딩 실패 시각 저장 실패: productId={}", target.coupangProductId(), e);
         }
     }
 }
