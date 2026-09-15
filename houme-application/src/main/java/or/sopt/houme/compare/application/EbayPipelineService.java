@@ -9,14 +9,19 @@ import or.sopt.houme.compare.domain.EbayCandidate;
 import or.sopt.houme.compare.domain.JobStage;
 import or.sopt.houme.compare.domain.OriginalProduct;
 import or.sopt.houme.compare.domain.SimilarProduct;
+import or.sopt.houme.compare.domain.CoupangCandidate;
 import or.sopt.houme.compare.domain.CurationCandidate;
+import or.sopt.houme.compare.domain.MarketplaceSearchKeywords;
 import or.sopt.houme.compare.domain.port.out.EbayProductPort;
 import or.sopt.houme.compare.domain.port.out.CoupangSearchPort;
 import or.sopt.houme.compare.domain.port.out.CurationProductSearchPort;
 import or.sopt.houme.compare.domain.port.out.EbaySearchPort;
 import or.sopt.houme.compare.domain.port.out.EmbeddingPort;
 import or.sopt.houme.compare.domain.port.out.KeywordTranslationPort;
+import or.sopt.houme.domain.coupang.service.CoupangPriorityKeywordQueueService;
 import or.sopt.houme.domain.furniture.model.entity.SoozipCategory;
+import or.sopt.houme.furniture.domain.FurnitureWithTypeView;
+import or.sopt.houme.furniture.domain.port.out.FurnitureRepositoryPort;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
@@ -49,6 +54,8 @@ public class EbayPipelineService {
     private final CurationProductSearchPort curationSearchPort;
     private final EbayPipelineUtils utils;
     private final or.sopt.houme.compare.domain.port.out.CompareJobStorePort jobStore;
+    private final FurnitureRepositoryPort furnitureRepositoryPort;
+    private final CoupangPriorityKeywordQueueService coupangPriorityKeywordQueueService;
 
     @Value("${compare.pipeline.top-n:7}")
     private int topN;
@@ -80,8 +87,12 @@ public class EbayPipelineService {
         trySave(job);
 
         long t1 = System.currentTimeMillis();
-        String keyword = keywordTranslator.translateToEnglish(original.title());
-        log.info("[타이밍] 키워드 번역: {}ms → '{}'", System.currentTimeMillis() - t1, keyword);
+        List<FurnitureWithTypeView> furnitureCandidates = furnitureRepositoryPort.findAllWithType();
+        MarketplaceSearchKeywords keywords = keywordTranslator.translateToMarketplaceKeywords(original.title(), furnitureCandidates);
+        String keyword = keywords.ebayKeyword();
+        String coupangKeyword = keywords.coupangKeyword();
+        Long furnitureId = keywords.furnitureId();
+        log.info("[타이밍] 키워드 번역: {}ms → ebay='{}', coupang='{}'", System.currentTimeMillis() - t1, keyword, coupangKeyword);
 
         long t2 = System.currentTimeMillis();
         List<EbayCandidate> items = ebaySearchPort.search(keyword, 200);
@@ -173,7 +184,17 @@ public class EbayPipelineService {
 
         // 쿠팡 — 저장된 임베딩으로 Java 내 cosine sim 계산 (Gemini 호출 없음)
         try {
-            coupangSearchPort.findCandidatesByKeyword(keyword).stream()
+            List<CoupangCandidate> coupangCandidates =
+                    coupangSearchPort.findCandidatesByKeyword(coupangKeyword);
+            if (coupangCandidates.isEmpty()) {
+                try {
+                    coupangPriorityKeywordQueueService.enqueueIfAbsent(coupangKeyword, furnitureId);
+                    log.info("[파이프라인] 쿠팡 캐시 미스 — 수집 큐 등록: keyword={}", coupangKeyword);
+                } catch (Exception qe) {
+                    log.warn("[파이프라인] 쿠팡 큐 등록 실패: {}", qe.getMessage());
+                }
+            }
+            coupangCandidates.stream()
                     .filter(c -> c.price() != null && priceSoftFilter.passes(originalKrw, c.price()))
                     .forEach(c -> {
                         double textSim = c.titleEmbedding() != null
