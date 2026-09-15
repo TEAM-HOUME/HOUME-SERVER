@@ -22,30 +22,39 @@ public class CurationEmbeddingBatchService {
     private final EmbeddingPort embeddingPort;
 
     public int fillMissingEmbeddings() {
+        int titleProcessed = fillMissingTitleEmbeddings();
+        int imageProcessed = fillMissingImageEmbeddings();
+        return titleProcessed + imageProcessed;
+    }
+
+    private int fillMissingTitleEmbeddings() {
         int totalProcessed = 0;
-
         while (true) {
-            // 처리 후 titleEmbedding이 채워지면 결과셋에서 빠지므로 항상 page 0 조회
-            Page<CurationRawProduct> batch = repository.findAllByTitleEmbeddingIsNull(
-                    PageRequest.of(0, PAGE_SIZE)
-            );
-            if (batch.isEmpty()) {
-                break;
-            }
+            Page<CurationRawProduct> batch = repository.findAllByTitleEmbeddingIsNull(PageRequest.of(0, PAGE_SIZE));
+            if (batch.isEmpty()) break;
 
-            int processed = processBatch(batch.getContent());
+            int processed = processTitleAndImageBatch(batch.getContent());
             totalProcessed += processed;
-
-            if (processed == 0) {
-                // 전부 실패한 경우 무한루프 방지
-                break;
-            }
+            if (processed == 0) break; // 전부 실패 — 무한루프 방지
         }
-
         return totalProcessed;
     }
 
-    public int processBatch(List<CurationRawProduct> products) {
+    private int fillMissingImageEmbeddings() {
+        int totalProcessed = 0;
+        while (true) {
+            // title은 있지만 image가 없는 상품 재시도 (이전 배치에서 이미지 실패한 케이스)
+            Page<CurationRawProduct> batch = repository.findAllByImageEmbeddingMissing(PageRequest.of(0, PAGE_SIZE));
+            if (batch.isEmpty()) break;
+
+            int processed = processImageOnlyBatch(batch.getContent());
+            totalProcessed += processed;
+            if (processed == 0) break;
+        }
+        return totalProcessed;
+    }
+
+    private int processTitleAndImageBatch(List<CurationRawProduct> products) {
         int count = 0;
         for (CurationRawProduct product : products) {
             try {
@@ -57,7 +66,7 @@ public class CurationEmbeddingBatchService {
                         List<Double> imageEmb = embeddingPort.embedImageUrl(product.getProductImageUrl());
                         product.updateImageEmbedding(toVectorString(imageEmb));
                     } catch (Exception e) {
-                        log.warn("[임베딩 배치] 이미지 임베딩 실패 — title 임베딩은 저장: productId={}", product.getId(), e);
+                        log.warn("[임베딩 배치] 이미지 임베딩 실패 — title만 저장: productId={}", product.getId(), e);
                     }
                 }
 
@@ -65,6 +74,21 @@ public class CurationEmbeddingBatchService {
                 count++;
             } catch (Exception e) {
                 log.warn("[임베딩 배치] 상품 스킵: productId={}", product.getId(), e);
+            }
+        }
+        return count;
+    }
+
+    private int processImageOnlyBatch(List<CurationRawProduct> products) {
+        int count = 0;
+        for (CurationRawProduct product : products) {
+            try {
+                List<Double> imageEmb = embeddingPort.embedImageUrl(product.getProductImageUrl());
+                product.updateImageEmbedding(toVectorString(imageEmb));
+                repository.save(product);
+                count++;
+            } catch (Exception e) {
+                log.warn("[임베딩 배치] 이미지 재시도 실패: productId={}", product.getId(), e);
             }
         }
         return count;

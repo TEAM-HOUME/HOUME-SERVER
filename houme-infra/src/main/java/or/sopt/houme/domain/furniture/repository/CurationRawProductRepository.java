@@ -49,6 +49,9 @@ public interface CurationRawProductRepository extends JpaRepository<CurationRawP
     @Query("select rp from CurationRawProduct rp where rp.titleEmbedding is null order by rp.id asc")
     Page<CurationRawProduct> findAllByTitleEmbeddingIsNull(Pageable pageable);
 
+    @Query("select rp from CurationRawProduct rp where rp.titleEmbedding is not null and rp.imageEmbedding is null and rp.productImageUrl is not null order by rp.id asc")
+    Page<CurationRawProduct> findAllByImageEmbeddingMissing(Pageable pageable);
+
     @Query("""
             select distinct rp from CurationRawProduct rp
             left join fetch rp.furnitureTagMappings mapping
