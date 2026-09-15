@@ -3,7 +3,8 @@
 ## 목적
 
 - 부하는 로컬 Mac에서 발생시키고, perf EC2의 JVM·GC·Hikari·호스트 메모리 지표를 Grafana에서 관측한다.
-- perf 환경은 `load_test` Gemini Stub(약 30초)을 사용한다. 따라서 이 단계는 외부 Gemini 비용 없이 동시 장시간 요청에 대한 서버 자원 한계를 확인한다.
+- `load_test` 시나리오는 Gemini Stub을 사용한다. Stub은 설정된 지연과 실패율을 시뮬레이션할 뿐 외부 Gemini API를 호출하지 않으므로 Gemini 비용 없이 동시 장시간 요청에 대한 서버 자원 한계를 확인한다.
+- `k6/scripts/run_perf_g1_ihop_ab.sh` 시나리오는 perf 서버에서 `docker-compose.real-gemini.yml`을 합성해 앱을 실행하고 실제 Gemini V4 요청을 보낸다. 따라서 외부 Gemini 호출과 비용이 발생할 수 있으며, 실제 Gemini 지연과 perf S3 저장을 포함한 G1 IHOP A/B 측정에 사용한다.
 
 ## 사전 확인
 
