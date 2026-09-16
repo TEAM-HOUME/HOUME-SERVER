@@ -280,6 +280,14 @@ public class CurationRawProduct {
         this.searchTokens = searchTokens;
     }
 
+    public void updateTitleEmbedding(String titleEmbedding) {
+        this.titleEmbedding = titleEmbedding;
+    }
+
+    public void updateImageEmbedding(String imageEmbedding) {
+        this.imageEmbedding = imageEmbedding;
+    }
+
     private static String normalizeSource(String source) {
         if (source == null || source.isBlank()) {
             throw new FurnitureException(ErrorCode.NOT_VALID_EXCEPTION);

@@ -86,6 +86,11 @@ coupang:
     execution-delay-ms: 420000
     search-limit: 10
 
+curation:
+  embedding:
+    batch:
+      enabled: ${CURATION_EMBEDDING_BATCH_ENABLED:false}
+
 soozip:
   base-url: ${SOOZIP_BASE_URL}
 
