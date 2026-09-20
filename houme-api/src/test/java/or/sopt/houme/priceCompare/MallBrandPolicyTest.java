@@ -31,8 +31,8 @@ import static org.mockito.Mockito.when;
 /**
  * 몰 브랜드 정책 검증.
  *
- * <p>입점몰이 brand 자리에 몰 이름을 넣는 경우를 걷어내되,
- * 자사 브랜드를 파는 몰의 정답까지 지우지 않는다는 것이 핵심이다.
+ * <p>입점몰의 브랜드 칸을 몰 이름으로 통일하되,
+ * 자사 브랜드를 파는 몰의 실제 브랜드는 덮지 않는다는 것이 핵심이다.
  */
 @DisplayName("몰 브랜드 정책")
 class MallBrandPolicyTest {
@@ -45,21 +45,32 @@ class MallBrandPolicyTest {
     private final MallBrandPolicy policy = new MallBrandPolicy();
 
     @Test
-    @DisplayName("수집은 몰 이름이 brand 로 선언되므로 비운다")
-    void 수집은_몰_이름_브랜드를_비운다() {
+    @DisplayName("수집은 브랜드가 비어 있으면 몰 이름으로 채운다")
+    void 빈_브랜드를_몰_이름으로_채운다() {
+        Document document = load("scrape/soozip-product.html", SOOZIP_URL);
+        ScrapedProduct parsed = product(null, SOOZIP_URL);
+
+        ScrapedProduct result = policy.apply(parsed, document, SOOZIP_URL);
+
+        assertThat(result.brand()).isEqualTo("수집");
+    }
+
+    @Test
+    @DisplayName("몰이 제 이름을 넣어둔 경우 표기를 몰 이름으로 통일한다")
+    void 몰이_넣은_제_이름을_통일한다() {
         Document document = load("scrape/soozip-product.html", SOOZIP_URL);
         ScrapedProduct parsed = product("SOOZIP 수집", SOOZIP_URL);
 
         ScrapedProduct result = policy.apply(parsed, document, SOOZIP_URL);
 
-        assertThat(result.brand()).isNull();
+        assertThat(result.brand()).isEqualTo("수집");
     }
 
     @Test
-    @DisplayName("브랜드를 비워도 나머지 필드는 건드리지 않는다")
+    @DisplayName("브랜드를 채워도 나머지 필드는 건드리지 않는다")
     void 브랜드_외의_필드는_유지한다() {
         Document document = load("scrape/soozip-product.html", SOOZIP_URL);
-        ScrapedProduct parsed = product("SOOZIP 수집", SOOZIP_URL);
+        ScrapedProduct parsed = product(null, SOOZIP_URL);
 
         ScrapedProduct result = policy.apply(parsed, document, SOOZIP_URL);
 
@@ -69,19 +80,8 @@ class MallBrandPolicyTest {
     }
 
     @Test
-    @DisplayName("이케아는 og:site_name 과 brand 가 둘 다 IKEA 여도 지우지 않는다")
-    void 자사_브랜드_몰은_지우지_않는다() {
-        Document document = load("scrape/ikea-product.html", IKEA_URL);
-        ScrapedProduct parsed = product("IKEA", IKEA_URL);
-
-        ScrapedProduct result = policy.apply(parsed, document, IKEA_URL);
-
-        assertThat(result.brand()).isEqualTo("IKEA");
-    }
-
-    @Test
-    @DisplayName("대상 몰이라도 몰 이름과 다른 브랜드는 그대로 둔다")
-    void 실제_브랜드는_그대로_둔다() {
+    @DisplayName("대상 몰이라도 실제 브랜드가 들어오면 덮지 않는다")
+    void 실제_브랜드는_덮지_않는다() {
         Document document = load("scrape/soozip-product.html", SOOZIP_URL);
         ScrapedProduct parsed = product("리샘", SOOZIP_URL);
 
@@ -91,8 +91,19 @@ class MallBrandPolicyTest {
     }
 
     @Test
-    @DisplayName("체인 전체에서 수집은 brand 없이 PARTIAL 로 내려간다")
-    void 체인에서_수집은_PARTIAL_이_된다() {
+    @DisplayName("대상이 아닌 몰은 건드리지 않는다 - 이케아의 IKEA 를 유지한다")
+    void 자사_브랜드_몰은_건드리지_않는다() {
+        Document document = load("scrape/ikea-product.html", IKEA_URL);
+        ScrapedProduct parsed = product("IKEA", IKEA_URL);
+
+        ScrapedProduct result = policy.apply(parsed, document, IKEA_URL);
+
+        assertThat(result.brand()).isEqualTo("IKEA");
+    }
+
+    @Test
+    @DisplayName("체인 전체에서 수집은 브랜드가 채워져 FULL 이 된다")
+    void 체인에서_수집은_FULL_이_된다() {
         ProductImageUrlResolver imageUrlResolver = new ProductImageUrlResolver();
         PriceTextParser priceTextParser = new PriceTextParser();
         List<ProductPageParser> parsers = List.of(
@@ -107,10 +118,10 @@ class MallBrandPolicyTest {
         ScrapedProduct result = new ProductPageScrapeAdapter(fetcher, parsers, new MallBrandPolicy())
                 .scrape(new SourceUrl(SOOZIP_URL));
 
-        assertThat(result.brand()).isNull();
+        assertThat(result.brand()).isEqualTo("수집");
         assertThat(result.title()).isEqualTo("리샘 모엘로 2인 3인 스틸 다리 가죽소파");
         assertThat(result.price()).isEqualTo(419900L);
-        assertThat(result.quality()).isEqualTo(ScrapeQuality.PARTIAL);
+        assertThat(result.quality()).isEqualTo(ScrapeQuality.FULL);
     }
 
     private ScrapedProduct product(String brand, String sourceUrl) {

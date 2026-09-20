@@ -7,55 +7,63 @@ import org.springframework.stereotype.Component;
 
 import java.net.URI;
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
 
 /**
- * 구조화 데이터가 선언한 브랜드를 믿어도 되는지 몰 단위로 판정한다.
+ * 입점몰의 브랜드 칸을 몰 이름으로 채운다.
  *
- * <p>편집샵·입점몰은 {@code schema.org/Product} 의 {@code brand} 에 입점 브랜드가 아니라
- * <b>몰 이름</b>을 그대로 넣어두는 경우가 있다. 수집이 그렇다 —
- * "리샘 모엘로 가죽소파"의 brand 가 {@code "SOOZIP 수집"} 으로 내려온다.
- * 그대로 두면 잘못된 값이 들어갈 뿐 아니라 brand 가 채워졌다는 이유로 품질이 FULL 로 승격되고,
- * 뒤이은 eBay·쿠팡 검색이 몰 이름을 브랜드로 알고 질의하게 된다.
+ * <p>편집샵·입점몰은 {@code schema.org/Product} 의 {@code brand} 를 상품 브랜드로 쓰지 않는다.
+ * 수집이 그렇다 — 같은 "리샘" 소파 3건인데 한 건만 {@code "SOOZIP 수집"} 이 들어오고 나머지는 비어,
+ * 몰 안에서 값이 갈린다. 실제 브랜드("리샘")는 상품명 접두어로만 존재해 구조화 데이터로는 얻을 수 없다.
  *
- * <p>"brand 가 {@code og:site_name} 과 같으면 버린다"는 전역 규칙은 쓸 수 없다 —
- * 이케아는 자사 브랜드를 파는 몰이라 {@code og:site_name} 과 {@code brand} 가 둘 다 {@code "IKEA"} 이고,
- * 이 경우의 brand 는 정답이다. 몰의 성격은 HTML 구조로 구분되지 않으므로 호스트로 분기한다.
+ * <p>그래서 해당 몰에서는 브랜드 칸을 <b>몰 이름으로 통일</b>한다. 값을 얻지 못했다고 비워두는 것보다
+ * 출처가 드러나고 몰 안에서 일관되기 때문이다. 상품의 제조 브랜드가 아니라는 점은 감수한다 —
+ * 현재 {@code brand} 는 eBay·쿠팡 검색 입력으로 들어가지 않고
+ * ({@code PriceCompareServiceImpl} 은 title·thumbnail·price 만 넘긴다) 응답 표시와 품질 판정에만 쓰인다.
+ *
+ * <p>{@code og:site_name} 을 그대로 쓰지 않는 이유는 몰이 거기에 프로모션 문구를 넣기 때문이다
+ * (마켓비: {@code "모두 만원대 아이템! - 마켓비"}). 호스트별로 쓸 이름을 명시한다.
+ *
+ * <p>자사 브랜드를 파는 몰(이케아·마켓비)은 대상이 아니다 — 그쪽 {@code brand} 는 실제 브랜드라 정확하다.
  */
 @Slf4j
 @Component
 public class MallBrandPolicy {
 
     /**
-     * 구조화 데이터의 brand 가 상품 브랜드가 아니라 몰 이름인 호스트.
+     * 브랜드 칸을 몰 이름으로 채울 호스트와 그때 쓸 이름.
      *
-     * <p>자사 브랜드를 파는 몰(이케아·마켓비)은 여기 넣으면 안 된다 — 그쪽 brand 는 정확하다.
+     * <p>자사 브랜드를 파는 몰을 여기 넣으면 실제 브랜드가 몰 이름으로 덮인다. 입점몰만 등록한다.
      */
-    private static final Set<String> MALL_NAME_AS_BRAND_HOSTS = Set.of("soozip.co.kr");
+    private static final Map<String, String> MALL_BRAND_NAMES = Map.of("soozip.co.kr", "수집");
 
     private static final List<String> SITE_NAME_SELECTORS = List.of(
             "meta[property=og:site_name]", "meta[name=application-name]");
 
     /**
-     * 몰 이름이 브랜드 자리에 들어온 경우 그 칸을 비운다.
-     * 몰 전용 파서가 실제 브랜드를 찾아낸 경우(=몰 이름과 다른 값)는 건드리지 않는다.
+     * 대상 몰이면 브랜드를 몰 이름으로 맞춘다.
+     *
+     * <p>비어 있으면 채우고, 몰이 제 이름을 넣어둔 경우({@code og:site_name} 과 같은 값)는 표기를 통일한다.
+     * 둘 다 아니면 실제 브랜드가 들어온 것으로 보고 건드리지 않는다.
      */
     public ScrapedProduct apply(ScrapedProduct product, Document document, String sourceUrl) {
-        if (product.brand() == null || !isMallNameAsBrand(sourceUrl)) {
+        String mallBrand = mallBrandOf(sourceUrl);
+        if (mallBrand == null || mallBrand.equals(product.brand())) {
             return product;
         }
 
-        String siteName = siteNameOf(document);
-        if (!isSameName(product.brand(), siteName)) {
+        String current = product.brand();
+        boolean fillable = isBlank(current) || isSameName(current, siteNameOf(document));
+        if (!fillable) {
             return product;
         }
 
-        log.debug("몰 이름이 브랜드로 선언되어 제외: url={}, brand={}", sourceUrl, product.brand());
+        log.debug("입점몰 브랜드를 몰 이름으로 설정: url={}, before={}, after={}", sourceUrl, current, mallBrand);
         return new ScrapedProduct(
                 product.sourceUrl(),
                 product.title(),
                 product.thumbnailUrl(),
-                null,
+                mallBrand,
                 product.price(),
                 product.currency(),
                 product.additionalImageUrls(),
@@ -63,14 +71,17 @@ public class MallBrandPolicy {
         );
     }
 
-    private boolean isMallNameAsBrand(String sourceUrl) {
+    private String mallBrandOf(String sourceUrl) {
         String host = hostOf(sourceUrl);
         if (host == null) {
-            return false;
+            return null;
         }
         String normalized = host.toLowerCase();
-        return MALL_NAME_AS_BRAND_HOSTS.stream()
-                .anyMatch(each -> normalized.equals(each) || normalized.endsWith("." + each));
+        return MALL_BRAND_NAMES.entrySet().stream()
+                .filter(each -> normalized.equals(each.getKey()) || normalized.endsWith("." + each.getKey()))
+                .map(Map.Entry::getValue)
+                .findFirst()
+                .orElse(null);
     }
 
     private String siteNameOf(Document document) {
@@ -84,15 +95,16 @@ public class MallBrandPolicy {
     }
 
     private boolean isSameName(String brand, String siteName) {
-        if (siteName == null) {
-            return false;
-        }
-        return normalize(brand).equals(normalize(siteName));
+        return siteName != null && normalize(brand).equals(normalize(siteName));
     }
 
     /** 공백·대소문자 차이로 판정이 갈리지 않도록 맞춘다. */
     private String normalize(String value) {
         return value.trim().replaceAll("\\s+", " ").toLowerCase();
+    }
+
+    private boolean isBlank(String value) {
+        return value == null || value.isBlank();
     }
 
     private String hostOf(String sourceUrl) {
