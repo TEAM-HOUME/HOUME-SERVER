@@ -23,9 +23,13 @@ public class ProductPageScrapeAdapter implements ProductPageScrapePort {
 
     private final ProductPageFetcher productPageFetcher;
     private final List<ProductPageParser> parsers;
+    private final MallBrandPolicy mallBrandPolicy;
 
-    public ProductPageScrapeAdapter(ProductPageFetcher productPageFetcher, List<ProductPageParser> parsers) {
+    public ProductPageScrapeAdapter(ProductPageFetcher productPageFetcher,
+                                    List<ProductPageParser> parsers,
+                                    MallBrandPolicy mallBrandPolicy) {
         this.productPageFetcher = productPageFetcher;
+        this.mallBrandPolicy = mallBrandPolicy;
         this.parsers = parsers.stream()
                 .sorted(Comparator.comparingInt(ProductPageParser::order))
                 .toList();
@@ -39,6 +43,10 @@ public class ProductPageScrapeAdapter implements ProductPageScrapePort {
         for (ProductPageParser parser : parsers) {
             accumulated = accumulated.fillMissingFrom(parser.parse(document, sourceUrl.value()).orElse(null));
         }
+
+        // 몰 이름이 브랜드 자리에 들어온 경우를 마지막에 걷어낸다.
+        // 병합은 빈 칸만 채우므로, 앞선 파서가 넣은 잘못된 값은 여기서만 제거할 수 있다.
+        accumulated = mallBrandPolicy.apply(accumulated, document, sourceUrl.value());
 
         log.info("상품 페이지 스크래핑 완료: url={}, quality={}", sourceUrl.value(), accumulated.quality());
         return accumulated;
