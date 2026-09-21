@@ -28,7 +28,11 @@ import java.util.concurrent.TimeUnit;
 public class PriceCompareServiceImpl implements PriceCompareUseCase {
 
     private static final ScheduledExecutorService TIMEOUT_SCHEDULER =
-            Executors.newSingleThreadScheduledExecutor();
+            Executors.newSingleThreadScheduledExecutor(r -> {
+                Thread t = new Thread(r, "job-timeout");
+                t.setDaemon(true);
+                return t;
+            });
     private static final int JOB_TIMEOUT_SECONDS = 15;
 
     private final CompareJobStorePort jobStore;

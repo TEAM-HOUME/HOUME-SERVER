@@ -22,7 +22,8 @@ public record CompareJobResponse(
         return new CompareJobResponse(
                 job.getJobId(),
                 job.getStatus().name(),
-                job.getCurrentStage() != null ? job.getCurrentStage().name() : null,
+                job.getStatus() == JobStatus.RUNNING && job.getCurrentStage() != null
+                        ? job.getCurrentStage().name() : null,
                 job.getErrorCode(),
                 new SourcesStatusResponse(job.getEbayStatus(), job.getCoupangStatus(), job.getCatalogStatus()),
                 OriginalProductResponse.from(job.getOriginalProduct()),
