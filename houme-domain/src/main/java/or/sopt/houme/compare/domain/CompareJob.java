@@ -55,6 +55,7 @@ public class CompareJob {
     }
 
     public synchronized void markDone(List<SimilarProduct> results) {
+        if (this.status == JobStatus.FAILED) return;
         this.similarProducts = results;
         this.status = JobStatus.DONE;
     }

@@ -18,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -73,11 +74,13 @@ public class PriceCompareServiceImpl implements PriceCompareUseCase {
         TIMEOUT_SCHEDULER.schedule(() -> {
             if (job.tryMarkFailed("JOB_TIMEOUT")) {
                 log.warn("Job 타임아웃: jobId={}", job.getJobId());
-                try {
-                    jobStore.save(job);
-                } catch (Exception e) {
-                    log.error("타임아웃 후 Job 저장 실패: jobId={}", job.getJobId(), e);
-                }
+                CompletableFuture.runAsync(() -> {
+                    try {
+                        jobStore.save(job);
+                    } catch (Exception e) {
+                        log.error("타임아웃 후 Job 저장 실패: jobId={}", job.getJobId(), e);
+                    }
+                });
             }
         }, JOB_TIMEOUT_SECONDS, TimeUnit.SECONDS);
     }
