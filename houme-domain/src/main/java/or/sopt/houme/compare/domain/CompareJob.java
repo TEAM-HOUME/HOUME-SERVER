@@ -67,6 +67,15 @@ public class CompareJob {
         if (!"DONE".equals(this.catalogStatus)) this.catalogStatus = "FAILED";
     }
 
+    /** DONE/FAILED 이미 확정된 job은 건드리지 않는다 — 타임아웃과 파이프라인 완료의 경쟁 조건 방지. */
+    public synchronized boolean tryMarkFailed(String errorCode) {
+        if (this.status == JobStatus.DONE || this.status == JobStatus.FAILED) {
+            return false;
+        }
+        markFailed(errorCode);
+        return true;
+    }
+
     public static CompareJob restore(String jobId, String sourceUrl, JobStatus status,
             JobStage currentStage, OriginalProduct originalProduct,
             List<SimilarProduct> similarProducts, String errorCode,

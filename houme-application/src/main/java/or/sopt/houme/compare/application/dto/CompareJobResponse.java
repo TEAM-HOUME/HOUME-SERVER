@@ -12,6 +12,8 @@ import java.util.stream.Collectors;
 public record CompareJobResponse(
         String jobId,
         String status,
+        String currentStage,
+        String errorCode,
         SourcesStatusResponse sources,
         OriginalProductResponse originalProduct,
         JobResultResponse result
@@ -20,6 +22,8 @@ public record CompareJobResponse(
         return new CompareJobResponse(
                 job.getJobId(),
                 job.getStatus().name(),
+                job.getCurrentStage() != null ? job.getCurrentStage().name() : null,
+                job.getErrorCode(),
                 new SourcesStatusResponse(job.getEbayStatus(), job.getCoupangStatus(), job.getCatalogStatus()),
                 OriginalProductResponse.from(job.getOriginalProduct()),
                 buildResult(job)
