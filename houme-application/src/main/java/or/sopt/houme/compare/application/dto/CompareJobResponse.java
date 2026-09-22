@@ -24,7 +24,7 @@ public record CompareJobResponse(
                 job.getStatus().name(),
                 job.getStatus() == JobStatus.RUNNING && job.getCurrentStage() != null
                         ? job.getCurrentStage().name() : null,
-                job.getErrorCode(),
+                job.getStatus() == JobStatus.FAILED ? job.getErrorCode() : null,
                 new SourcesStatusResponse(job.getEbayStatus(), job.getCoupangStatus(), job.getCatalogStatus()),
                 OriginalProductResponse.from(job.getOriginalProduct()),
                 buildResult(job)
