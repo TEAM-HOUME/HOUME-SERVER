@@ -190,7 +190,8 @@ public enum ErrorCode {
     IMAGE_LIST_EXCEPTION(HttpStatus.INTERNAL_SERVER_ERROR, 50024, "이미지 목록 조회 중, AWS 예외가 발생하였습니다. 서버 관리자에게 문의해주세요"),
 
     // 가격 비교 파이프라인 예외
-    COMPARE_SCRAPING_NOT_IMPLEMENTED(HttpStatus.INTERNAL_SERVER_ERROR, 50025, "URL 스크래핑이 아직 구현되지 않았습니다."),
+    COMPARE_JOB_TIMEOUT(HttpStatus.INTERNAL_SERVER_ERROR, 50025, "비교 처리 시간이 초과되었습니다."),
+    COMPARE_PIPELINE_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, 50029, "가격비교 처리 중 오류가 발생했습니다."),
     COMPARE_EBAY_SEARCH_FAILED(HttpStatus.BAD_GATEWAY, 50026, "eBay 상품 검색에 실패했습니다."),
     COMPARE_KEYWORD_TRANSLATION_FAILED(HttpStatus.BAD_GATEWAY, 50027, "상품 키워드 번역에 실패했습니다."),
     COMPARE_EMBEDDING_FAILED(HttpStatus.BAD_GATEWAY, 50028, "임베딩 생성에 실패했습니다."),

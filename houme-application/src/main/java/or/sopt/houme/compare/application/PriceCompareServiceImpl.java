@@ -72,7 +72,7 @@ public class PriceCompareServiceImpl implements PriceCompareUseCase {
 
     private void scheduleTimeout(CompareJob job) {
         TIMEOUT_SCHEDULER.schedule(() -> {
-            if (job.tryMarkFailed("JOB_TIMEOUT")) {
+            if (job.tryMarkFailed(ErrorCode.COMPARE_JOB_TIMEOUT)) {
                 log.warn("Job 타임아웃: jobId={}", job.getJobId());
                 CompletableFuture.runAsync(() -> {
                     try {

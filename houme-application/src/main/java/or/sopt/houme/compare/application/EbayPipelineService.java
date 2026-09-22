@@ -18,6 +18,8 @@ import or.sopt.houme.compare.domain.port.out.CurationProductSearchPort;
 import or.sopt.houme.compare.domain.port.out.EbaySearchPort;
 import or.sopt.houme.compare.domain.port.out.EmbeddingPort;
 import or.sopt.houme.compare.domain.port.out.KeywordTranslationPort;
+import or.sopt.houme.global.api.ErrorCode;
+import or.sopt.houme.global.api.handler.PriceCompareException;
 import or.sopt.houme.domain.coupang.service.CoupangPriorityKeywordQueueService;
 import or.sopt.houme.domain.furniture.model.entity.SoozipCategory;
 import or.sopt.houme.furniture.domain.FurnitureWithTypeView;
@@ -64,9 +66,13 @@ public class EbayPipelineService {
     public void runAsync(CompareJob job) {
         try {
             run(job);
+        } catch (PriceCompareException e) {
+            log.error("파이프라인 실행 중 예외: jobId={}, error={}", job.getJobId(), e.getErrorCode());
+            job.markFailed(e.getErrorCode());
+            trySave(job);
         } catch (Exception e) {
-            log.error("파이프라인 실행 중 예외 발생: jobId={}", job.getJobId(), e);
-            job.markFailed(e.getClass().getSimpleName());
+            log.error("파이프라인 실행 중 예상치 못한 예외: jobId={}", job.getJobId(), e);
+            job.markFailed(ErrorCode.COMPARE_PIPELINE_FAILED);
             trySave(job);
         }
     }
