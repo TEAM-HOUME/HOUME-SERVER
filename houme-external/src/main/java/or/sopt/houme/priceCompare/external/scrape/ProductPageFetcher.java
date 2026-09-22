@@ -85,6 +85,10 @@ public class ProductPageFetcher {
                 continue;
             }
 
+            if (response.statusCode() == 403) {
+                log.warn("상품 페이지 접근 차단: url={}, status=403", target);
+                throw new PriceCompareException(ErrorCode.UNSUPPORTED_MALL_URL);
+            }
             if (response.statusCode() < 200 || response.statusCode() >= 300) {
                 log.warn("상품 페이지 응답 실패: url={}, status={}", target, response.statusCode());
                 throw new PriceCompareException(ErrorCode.PRODUCT_PAGE_FETCH_FAILED);

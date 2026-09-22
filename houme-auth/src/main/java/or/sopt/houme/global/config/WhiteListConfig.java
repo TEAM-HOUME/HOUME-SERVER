@@ -91,4 +91,12 @@ public class WhiteListConfig {
                 "/admin/login"
         );
     }
+
+    // 가격비교 탭 관련 인가 설정
+    public static final List<String> compareWhiteList() {
+        return List.of(
+                "/api/v1/price-compare/presets",
+                "/api/v1/price-compare/presets/**"
+        );
+    }
 }

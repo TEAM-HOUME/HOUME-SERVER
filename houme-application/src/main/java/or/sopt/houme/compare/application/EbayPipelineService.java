@@ -278,8 +278,8 @@ public class EbayPipelineService {
                         .collect(Collectors.toList());
         return new SimilarProduct(
                 "EBAY", item.title(), utils.thumbnailUrl(item),
-                utils.parsePrice(item),
-                "USD",
+                utils.parsePrice(item) * EbayPipelineUtils.USD_TO_KRW,
+                "KRW",
                 item.itemWebUrl(), score, cats
         );
     }
