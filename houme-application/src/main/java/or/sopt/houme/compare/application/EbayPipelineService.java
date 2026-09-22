@@ -68,12 +68,10 @@ public class EbayPipelineService {
             run(job);
         } catch (PriceCompareException e) {
             log.error("파이프라인 실행 중 예외: jobId={}, error={}", job.getJobId(), e.getErrorCode());
-            job.markFailed(e.getErrorCode());
-            trySave(job);
+            if (job.tryMarkFailed(e.getErrorCode())) trySave(job);
         } catch (Exception e) {
             log.error("파이프라인 실행 중 예상치 못한 예외: jobId={}", job.getJobId(), e);
-            job.markFailed(ErrorCode.COMPARE_PIPELINE_FAILED);
-            trySave(job);
+            if (job.tryMarkFailed(ErrorCode.COMPARE_PIPELINE_FAILED)) trySave(job);
         }
     }
 

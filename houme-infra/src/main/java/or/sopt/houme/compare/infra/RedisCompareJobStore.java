@@ -102,9 +102,15 @@ public class RedisCompareJobStore implements CompareJobStorePort {
                     JobStatus.valueOf(status),
                     currentStage != null ? JobStage.valueOf(currentStage) : null,
                     originalProduct, similarProducts,
-                    errorCode != null ? ErrorCode.valueOf(errorCode) : null,
+                    parseErrorCode(errorCode),
                     ebayStatus, coupangStatus, catalogStatus
             );
         }
+    }
+
+    private static ErrorCode parseErrorCode(String code) {
+        if (code == null) return null;
+        try { return ErrorCode.valueOf(code); }
+        catch (IllegalArgumentException e) { return null; }
     }
 }
