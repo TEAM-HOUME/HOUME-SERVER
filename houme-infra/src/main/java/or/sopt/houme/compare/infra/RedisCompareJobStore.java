@@ -10,6 +10,7 @@ import or.sopt.houme.compare.domain.JobStatus;
 import or.sopt.houme.compare.domain.OriginalProduct;
 import or.sopt.houme.compare.domain.SimilarProduct;
 import or.sopt.houme.compare.domain.port.out.CompareJobStorePort;
+import or.sopt.houme.global.api.ErrorCode;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
 
@@ -88,7 +89,7 @@ public class RedisCompareJobStore implements CompareJobStorePort {
                     job.getCurrentStage() != null ? job.getCurrentStage().name() : null,
                     job.getOriginalProduct(),
                     job.getSimilarProducts(),
-                    job.getErrorCode(),
+                    job.getErrorCode() != null ? job.getErrorCode().name() : null,
                     job.getEbayStatus(),
                     job.getCoupangStatus(),
                     job.getCatalogStatus()
@@ -100,9 +101,16 @@ public class RedisCompareJobStore implements CompareJobStorePort {
                     jobId, sourceUrl,
                     JobStatus.valueOf(status),
                     currentStage != null ? JobStage.valueOf(currentStage) : null,
-                    originalProduct, similarProducts, errorCode,
+                    originalProduct, similarProducts,
+                    parseErrorCode(errorCode),
                     ebayStatus, coupangStatus, catalogStatus
             );
         }
+    }
+
+    private static ErrorCode parseErrorCode(String code) {
+        if (code == null) return null;
+        try { return ErrorCode.valueOf(code); }
+        catch (IllegalArgumentException e) { return null; }
     }
 }

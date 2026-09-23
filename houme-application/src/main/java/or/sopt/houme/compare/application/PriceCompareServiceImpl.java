@@ -18,11 +18,23 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class PriceCompareServiceImpl implements PriceCompareUseCase {
+
+    private static final ScheduledExecutorService TIMEOUT_SCHEDULER =
+            Executors.newSingleThreadScheduledExecutor(r -> {
+                Thread t = new Thread(r, "job-timeout");
+                t.setDaemon(true);
+                return t;
+            });
+    private static final int JOB_TIMEOUT_SECONDS = 15;
 
     private final CompareJobStorePort jobStore;
     private final EbayPipelineService pipelineService;
@@ -51,10 +63,26 @@ public class PriceCompareServiceImpl implements PriceCompareUseCase {
             job.setOriginalProduct(original);
             jobStore.save(job);
             pipelineService.runAsync(job);
+            scheduleTimeout(job);
 
             log.info("가격 비교 job 생성: jobId={}, url={}", job.getJobId(), sourceUrl.value());
             return job;
         });
+    }
+
+    private void scheduleTimeout(CompareJob job) {
+        TIMEOUT_SCHEDULER.schedule(() -> {
+            if (job.tryMarkFailed(ErrorCode.COMPARE_JOB_TIMEOUT)) {
+                log.warn("Job 타임아웃: jobId={}", job.getJobId());
+                CompletableFuture.runAsync(() -> {
+                    try {
+                        jobStore.save(job);
+                    } catch (Exception e) {
+                        log.error("타임아웃 후 Job 저장 실패: jobId={}", job.getJobId(), e);
+                    }
+                });
+            }
+        }, JOB_TIMEOUT_SECONDS, TimeUnit.SECONDS);
     }
 
     @Override

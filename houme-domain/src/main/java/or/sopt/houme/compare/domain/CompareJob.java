@@ -1,5 +1,7 @@
 package or.sopt.houme.compare.domain;
 
+import or.sopt.houme.global.api.ErrorCode;
+
 import java.util.List;
 
 public class CompareJob {
@@ -10,7 +12,7 @@ public class CompareJob {
     private volatile JobStage currentStage;
     private volatile OriginalProduct originalProduct;
     private volatile List<SimilarProduct> similarProducts;
-    private volatile String errorCode;
+    private volatile ErrorCode errorCode;
     private volatile String ebayStatus = "WAITING";
     private volatile String coupangStatus = "WAITING";
     private volatile String catalogStatus = "WAITING";
@@ -28,7 +30,7 @@ public class CompareJob {
     public JobStage getCurrentStage() { return currentStage; }
     public OriginalProduct getOriginalProduct() { return originalProduct; }
     public List<SimilarProduct> getSimilarProducts() { return similarProducts; }
-    public String getErrorCode() { return errorCode; }
+    public ErrorCode getErrorCode() { return errorCode; }
     public String getEbayStatus() { return ebayStatus; }
     public String getCoupangStatus() { return coupangStatus; }
     public String getCatalogStatus() { return catalogStatus; }
@@ -55,11 +57,12 @@ public class CompareJob {
     }
 
     public synchronized void markDone(List<SimilarProduct> results) {
+        if (this.status == JobStatus.FAILED) return;
         this.similarProducts = results;
         this.status = JobStatus.DONE;
     }
 
-    public synchronized void markFailed(String errorCode) {
+    public synchronized void markFailed(ErrorCode errorCode) {
         this.errorCode = errorCode;
         this.status = JobStatus.FAILED;
         if (!"DONE".equals(this.ebayStatus)) this.ebayStatus = "FAILED";
@@ -67,9 +70,18 @@ public class CompareJob {
         if (!"DONE".equals(this.catalogStatus)) this.catalogStatus = "FAILED";
     }
 
+    /** DONE/FAILED 이미 확정된 job은 건드리지 않는다 — 타임아웃과 파이프라인 완료의 경쟁 조건 방지. */
+    public synchronized boolean tryMarkFailed(ErrorCode errorCode) {
+        if (this.status == JobStatus.DONE || this.status == JobStatus.FAILED) {
+            return false;
+        }
+        markFailed(errorCode);
+        return true;
+    }
+
     public static CompareJob restore(String jobId, String sourceUrl, JobStatus status,
             JobStage currentStage, OriginalProduct originalProduct,
-            List<SimilarProduct> similarProducts, String errorCode,
+            List<SimilarProduct> similarProducts, ErrorCode errorCode,
             String ebayStatus, String coupangStatus, String catalogStatus) {
         CompareJob job = new CompareJob(jobId, sourceUrl);
         job.status = status;
