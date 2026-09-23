@@ -94,7 +94,7 @@ class JjymV2ControllerTest {
         given(jjymService.getMyRawProductJjyms(1L)).willReturn(
                 JjymV2ListResponse.of(List.of(
                         JjymV2ItemResponse.of(
-                                10L,
+                                "RAW", 10L, null,
                                 true,
                                 "https://image",
                                 "https://site",

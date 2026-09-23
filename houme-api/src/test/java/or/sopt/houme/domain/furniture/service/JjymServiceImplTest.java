@@ -33,13 +33,16 @@ class JjymServiceImplTest {
     private final RecommendFurniturePort recommendFurniturePort = mock(RecommendFurniturePort.class);
     private final CurationRawProductQueryPort curationRawProductQueryPort = mock(CurationRawProductQueryPort.class);
     private final EbayProductPort compareCatalogPort = mock(EbayProductPort.class);
+    private final or.sopt.houme.coupang.domain.port.out.CoupangProductPort coupangProductPort =
+            mock(or.sopt.houme.coupang.domain.port.out.CoupangProductPort.class);
 
     private final JjymServiceImpl jjymService = new JjymServiceImpl(
             jjymRepositoryPort,
             userRepository,
             recommendFurniturePort,
             curationRawProductQueryPort,
-            compareCatalogPort
+            compareCatalogPort,
+            coupangProductPort
     );
 
     @Test

@@ -26,6 +26,7 @@ public class CurationProductSearchAdapter implements CurationProductSearchPort {
 
     private CurationCandidate toCandidate(CurationRawProduct p) {
         return new CurationCandidate(
+                p.getId(),
                 p.getSource().toUpperCase(),
                 p.getProductName(),
                 p.getProductImageUrl(),

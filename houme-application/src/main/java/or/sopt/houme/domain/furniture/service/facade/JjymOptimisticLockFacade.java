@@ -59,11 +59,11 @@ public class JjymOptimisticLockFacade {
         throw new DataIntegrityViolationException("찜 시도가 정해진 횟수를 초과하였습니다");
     }
 
-    public boolean toggleCatalogItem(User user, Long catalogItemId) {
+    public boolean toggleCatalogItem(User user, Long catalogItemId, String source) {
         int retryCount = 0;
         while (retryCount < MAX_RETRIES) {
             try {
-                return jjymService.catalogJjymToggle(user.getId(), catalogItemId);
+                return jjymService.catalogJjymToggle(user.getId(), catalogItemId, source);
             } catch (OptimisticLockException | DataIntegrityViolationException e) {
                 retryCount++;
                 if (retryCount >= MAX_RETRIES) break;

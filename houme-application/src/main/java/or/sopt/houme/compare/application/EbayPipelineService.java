@@ -27,7 +27,9 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
@@ -203,7 +205,8 @@ public class EbayPipelineService {
                                 ? utils.cosineSimilarity(finalOrigImageEmb, c.imageEmbedding()) : 0.0;
                         double score = IMAGE_WEIGHT * imageSim + TEXT_WEIGHT * textSim;
                         unified.add(new UnifiedCandidate(new SimilarProduct(
-                                "COUPANG", c.title(), c.imageUrl(), c.price(),
+                                "COUPANG", c.id() != null ? String.valueOf(c.id()) : null,
+                                c.title(), c.imageUrl(), c.price(),
                                 "KRW", c.productUrl(), score, List.of()
                         ), score));
                     });
@@ -229,7 +232,7 @@ public class EbayPipelineService {
                                 ? utils.cosineSimilarity(finalOrigImageEmb, c.imageEmbedding()) : 0.0;
                         double score = IMAGE_WEIGHT * imageSim + TEXT_WEIGHT * textSim;
                         unified.add(new UnifiedCandidate(new SimilarProduct(
-                                c.source(), c.title(), c.imageUrl(), c.price(),
+                                c.source(), String.valueOf(c.catalogItemId()), c.title(), c.imageUrl(), c.price(),
                                 "KRW", c.productUrl(), score, List.of()
                         ), score));
                     });
@@ -240,35 +243,52 @@ public class EbayPipelineService {
         }
         trySave(job);
 
-        // 통합 랭킹 — 점수 내림차순 top MAX_RESULTS
+        // eBay 후보 카탈로그 저장 — ebayItemId → 내부 ID 맵 획득 후 productId 교체
+        Map<String, Long> ebayIdMap = upsertToCatalog(topScored, original.category());
+
+        // 통합 랭킹 — 점수 내림차순 top MAX_RESULTS, EBAY productId를 내부 ID로 치환
         List<SimilarProduct> results = unified.stream()
                 .sorted(Comparator.comparingDouble(UnifiedCandidate::score).reversed())
                 .limit(MAX_RESULTS)
-                .map(UnifiedCandidate::product)
+                .map(c -> {
+                    SimilarProduct p = c.product();
+                    if ("EBAY".equals(p.source()) && p.productId() != null) {
+                        Long internalId = ebayIdMap.get(p.productId());
+                        if (internalId != null) {
+                            return new SimilarProduct(p.source(), String.valueOf(internalId),
+                                    p.title(), p.imageUrl(), p.price(), p.currency(),
+                                    p.productUrl(), p.similarityScore(), p.categories());
+                        }
+                    }
+                    return p;
+                })
                 .collect(Collectors.toList());
 
         log.info("[타이밍] 전체 파이프라인: {}ms", System.currentTimeMillis() - t0);
         job.markDone(results);
         trySave(job);
         log.info("파이프라인 완료: jobId={}, results={}", job.getJobId(), results.size());
-
-        upsertToCatalog(topScored, original.category());
     }
 
     private record UnifiedCandidate(SimilarProduct product, double score) {}
 
-    private void upsertToCatalog(List<ScoredItem> topScored, String soozipCategory) {
+    private Map<String, Long> upsertToCatalog(List<ScoredItem> topScored, String soozipCategory) {
+        Map<String, Long> idMap = new HashMap<>();
         for (ScoredItem s : topScored) {
             try {
-                catalogPort.upsert(EbayProduct.forUpsert(
+                EbayProduct saved = catalogPort.upsert(EbayProduct.forUpsert(
                         s.item().itemId(), s.item().title(), utils.thumbnailUrl(s.item()),
                         utils.parsePrice(s.item()), s.item().itemWebUrl(), soozipCategory,
                         s.textEmb(), s.imageEmb()
                 ));
+                if (saved.id() != null) {
+                    idMap.put(s.item().itemId(), saved.id());
+                }
             } catch (Exception e) {
                 log.warn("카탈로그 upsert 실패: itemId={}", s.item().itemId(), e);
             }
         }
+        return idMap;
     }
 
     private SimilarProduct toSimilarProduct(EbayCandidate item, double score) {
@@ -277,7 +297,7 @@ public class EbayPipelineService {
                         .map(id -> new SimilarProduct.EbayCategory(id, null))
                         .collect(Collectors.toList());
         return new SimilarProduct(
-                "EBAY", item.title(), utils.thumbnailUrl(item),
+                "EBAY", item.itemId(), item.title(), utils.thumbnailUrl(item),
                 utils.parsePrice(item) * EbayPipelineUtils.USD_TO_KRW,
                 "KRW",
                 item.itemWebUrl(), score, cats
