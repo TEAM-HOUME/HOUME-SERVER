@@ -184,7 +184,7 @@ class JjymServiceImplTest {
 
         given(jjymRepositoryPort.findAllByUserIdOrderByCreatedAtDesc(1L)).willReturn(List.of(jjym));
         given(recommendFurniturePort.findAllByIdIn(List.of(20L))).willReturn(List.of(rf));
-        given(coupangProductPort.findById(5L)).willReturn(Optional.of(product));
+        given(coupangProductPort.findAllByIdIn(List.of(5L))).willReturn(List.of(product));
         given(jjymRepositoryPort.countByRecommendFurnitureIds(List.of(20L))).willReturn(Map.of(20L, 3L));
 
         JjymV2ListResponse response = jjymService.getMyRawProductJjyms(1L);

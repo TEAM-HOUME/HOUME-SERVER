@@ -134,6 +134,7 @@ public class JjymServiceImpl implements JjymService {
 
         Map<Long, CurationRawProductView> rawProductByProductId = buildRawProductByProductId(rawJjyms, furnitureById);
         Map<Long, List<String>> colorsByRawProductId = buildColorNamesByRawProductId(rawProductByProductId);
+        Map<Long, CoupangProduct> coupangProductById = buildCoupangProductById(jjyms, furnitureById);
 
         List<Long> allRfIds = jjyms.stream()
                 .map(Jjym::getRecommendFurnitureId)
@@ -155,7 +156,7 @@ public class JjymServiceImpl implements JjymService {
                         return toEbayJjymResponse(rf, jjymCountByRecommendFurnitureId);
                     }
                     if (rf.getSource() == CurationSource.COUPANG) {
-                        return toCoupangJjymResponse(rf, jjymCountByRecommendFurnitureId);
+                        return toCoupangJjymResponse(rf, coupangProductById, jjymCountByRecommendFurnitureId);
                     }
                     return null;
                 })
@@ -284,12 +285,27 @@ public class JjymServiceImpl implements JjymService {
         );
     }
 
+    private Map<Long, CoupangProduct> buildCoupangProductById(
+            List<Jjym> jjyms, Map<Long, RecommendFurniture> furnitureById) {
+        List<Long> ids = jjyms.stream()
+                .map(j -> furnitureById.get(j.getRecommendFurnitureId()))
+                .filter(rf -> rf != null && rf.getSource() == CurationSource.COUPANG)
+                .map(RecommendFurniture::getFurnitureProductId)
+                .filter(java.util.Objects::nonNull)
+                .distinct()
+                .toList();
+        if (ids.isEmpty()) return Map.of();
+        return coupangProductPort.findAllByIdIn(ids).stream()
+                .collect(Collectors.toMap(CoupangProduct::id, Function.identity()));
+    }
+
     private JjymV2ItemResponse toCoupangJjymResponse(
             RecommendFurniture rf,
+            Map<Long, CoupangProduct> coupangProductById,
             Map<Long, Long> jjymCountByRecommendFurnitureId
     ) {
         long jjymCount = jjymCountByRecommendFurnitureId.getOrDefault(rf.getId(), 0L);
-        CoupangProduct product = coupangProductPort.findById(rf.getFurnitureProductId()).orElse(null);
+        CoupangProduct product = coupangProductById.get(rf.getFurnitureProductId());
 
         if (product == null) {
             return JjymV2ItemResponse.of(
@@ -336,8 +352,13 @@ public class JjymServiceImpl implements JjymService {
         return current;
     }
 
+    private static final Set<String> SUPPORTED_CATALOG_SOURCES = Set.of("EBAY", "COUPANG", "RAW");
+
     @Override
     public boolean catalogJjymToggle(Long userId, Long catalogItemId, String source) {
+        if (!SUPPORTED_CATALOG_SOURCES.contains(source)) {
+            throw new GeneralException(ErrorCode.NOT_VALID_EXCEPTION);
+        }
         userRepositoryPort.findById(userId)
                 .orElseThrow(() -> new UserException(ErrorCode.USER_NOT_FOUND));
 

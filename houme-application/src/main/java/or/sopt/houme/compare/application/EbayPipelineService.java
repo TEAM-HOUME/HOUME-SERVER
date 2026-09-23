@@ -231,8 +231,9 @@ public class EbayPipelineService {
                         double imageSim = (finalOrigImageEmb != null && c.imageEmbedding() != null)
                                 ? utils.cosineSimilarity(finalOrigImageEmb, c.imageEmbedding()) : 0.0;
                         double score = IMAGE_WEIGHT * imageSim + TEXT_WEIGHT * textSim;
+                        // 찜 API는 source=RAW로만 원천 상품을 조회하므로 source를 RAW로 고정
                         unified.add(new UnifiedCandidate(new SimilarProduct(
-                                c.source(), String.valueOf(c.catalogItemId()), c.title(), c.imageUrl(), c.price(),
+                                "RAW", String.valueOf(c.catalogItemId()), c.title(), c.imageUrl(), c.price(),
                                 "KRW", c.productUrl(), score, List.of()
                         ), score));
                     });
@@ -252,13 +253,12 @@ public class EbayPipelineService {
                 .limit(MAX_RESULTS)
                 .map(c -> {
                     SimilarProduct p = c.product();
-                    if ("EBAY".equals(p.source()) && p.productId() != null) {
-                        Long internalId = ebayIdMap.get(p.productId());
-                        if (internalId != null) {
-                            return new SimilarProduct(p.source(), String.valueOf(internalId),
-                                    p.title(), p.imageUrl(), p.price(), p.currency(),
-                                    p.productUrl(), p.similarityScore(), p.categories());
-                        }
+                    if ("EBAY".equals(p.source())) {
+                        // upsert 실패 시 null — 외부 itemId를 내부 id로 오인하지 않도록
+                        Long internalId = p.productId() != null ? ebayIdMap.get(p.productId()) : null;
+                        return new SimilarProduct(p.source(), internalId != null ? String.valueOf(internalId) : null,
+                                p.title(), p.imageUrl(), p.price(), p.currency(),
+                                p.productUrl(), p.similarityScore(), p.categories());
                     }
                     return p;
                 })
