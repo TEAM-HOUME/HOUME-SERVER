@@ -6,6 +6,7 @@ import or.sopt.houme.priceCompare.domain.ScrapedProduct;
 import or.sopt.houme.priceCompare.domain.SourceUrl;
 import or.sopt.houme.priceCompare.external.scrape.FallbackProductParser;
 import or.sopt.houme.priceCompare.external.scrape.JsonLdProductParser;
+import or.sopt.houme.priceCompare.external.scrape.MallBrandPolicy;
 import or.sopt.houme.priceCompare.external.scrape.OpenGraphProductParser;
 import or.sopt.houme.priceCompare.external.scrape.PriceTextParser;
 import or.sopt.houme.priceCompare.external.scrape.ProductImageUrlResolver;
@@ -52,7 +53,7 @@ class ProductPageScrapeAdapterTest {
         );
 
         productPageFetcher = mock(ProductPageFetcher.class);
-        adapter = new ProductPageScrapeAdapter(productPageFetcher, parsers);
+        adapter = new ProductPageScrapeAdapter(productPageFetcher, parsers, new MallBrandPolicy());
     }
 
     @Test
