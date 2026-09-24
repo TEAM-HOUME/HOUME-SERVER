@@ -34,7 +34,7 @@ public class PriceCompareServiceImpl implements PriceCompareUseCase {
                 t.setDaemon(true);
                 return t;
             });
-    private static final int JOB_TIMEOUT_SECONDS = 15;
+    private static final int JOB_TIMEOUT_SECONDS = 30;
 
     private final CompareJobStorePort jobStore;
     private final EbayPipelineService pipelineService;
