@@ -3,7 +3,9 @@ package or.sopt.houme.domain.furniture.presentation.dto.response;
 import java.util.List;
 
 public record JjymV2ItemResponse(
+        String source,
         Long rawProductId,
+        Long catalogItemId,
         boolean isJjym,
         String productImageUrl,
         String productSiteUrl,
@@ -16,7 +18,9 @@ public record JjymV2ItemResponse(
         Long jjymCount
 ) {
     public static JjymV2ItemResponse of(
+            String source,
             Long rawProductId,
+            Long catalogItemId,
             boolean isJjym,
             String productImageUrl,
             String productSiteUrl,
@@ -29,7 +33,9 @@ public record JjymV2ItemResponse(
             Long jjymCount
     ) {
         return new JjymV2ItemResponse(
+                source,
                 rawProductId,
+                catalogItemId,
                 isJjym,
                 productImageUrl,
                 productSiteUrl,

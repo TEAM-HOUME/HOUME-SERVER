@@ -4,6 +4,7 @@ import java.util.List;
 
 public record SimilarProduct(
         String source,
+        String productId,
         String title,
         String imageUrl,
         Double price,

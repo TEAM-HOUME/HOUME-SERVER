@@ -15,7 +15,7 @@ public interface JjymService {
 
     JjymV2ListResponse getMyRawProductJjyms(Long userId);
 
-    boolean catalogJjymToggle(Long userId, Long catalogItemId);
+    boolean catalogJjymToggle(Long userId, Long catalogItemId, String source);
 
     CompareCatalogJjymListResponse getMyEbayJjyms(Long userId);
 }

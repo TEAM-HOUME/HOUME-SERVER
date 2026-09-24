@@ -68,13 +68,14 @@ public class JjymController {
         return ResponseEntity.ok(ApiResponse.ok(response));
     }
 
-    @Operation(summary = "eBay 비교 상품 찜 토글 API", description = "가격 비교 결과 eBay 상품을 찜하거나 해제합니다.")
+    @Operation(summary = "가격 비교 상품 찜 토글 API", description = "가격 비교 결과 상품(EBAY/COUPANG/RAW)을 찜하거나 해제합니다. source 파라미터에 SimilarProductItemResponse.source 값을 전달하세요.")
     @PostMapping("/api/v1/compare-catalog-items/{catalogItemId}/jjym")
     public ResponseEntity<ApiResponse<JjymToggleResponse>> toggleCatalogItemJjym(
             @AuthenticationPrincipal CustomUserDetails userDetails,
-            @PathVariable Long catalogItemId
+            @PathVariable Long catalogItemId,
+            @RequestParam(defaultValue = "EBAY") String source
     ) {
-        boolean favorited = jjymOptimisticLockFacade.toggleCatalogItem(userDetails.getUser(), catalogItemId);
+        boolean favorited = jjymOptimisticLockFacade.toggleCatalogItem(userDetails.getUser(), catalogItemId, source);
         return ResponseEntity.ok(ApiResponse.ok(new JjymToggleResponse(favorited)));
     }
 

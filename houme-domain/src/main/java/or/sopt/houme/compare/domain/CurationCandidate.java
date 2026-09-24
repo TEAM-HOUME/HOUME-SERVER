@@ -3,6 +3,7 @@ package or.sopt.houme.compare.domain;
 import java.util.List;
 
 public record CurationCandidate(
+        Long catalogItemId,
         String source,
         String title,
         String imageUrl,

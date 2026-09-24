@@ -3,6 +3,7 @@ package or.sopt.houme.compare.domain;
 import java.util.List;
 
 public record CoupangCandidate(
+        Long id,
         String title,
         String imageUrl,
         Double price,

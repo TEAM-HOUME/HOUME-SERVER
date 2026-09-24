@@ -26,6 +26,7 @@ public class CoupangSearchAdapter implements CoupangSearchPort {
 
     private CoupangCandidate toCandidate(CoupangProductJpaEntity entity) {
         return new CoupangCandidate(
+                entity.getId(),
                 entity.getName(),
                 entity.getImageUrl(),
                 entity.getCurrentPrice().doubleValue(),
