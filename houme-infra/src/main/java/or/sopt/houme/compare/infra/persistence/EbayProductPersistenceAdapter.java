@@ -7,7 +7,9 @@ import or.sopt.houme.compare.infra.entity.EbayProductJpaEntity;
 import or.sopt.houme.compare.infra.repository.EbayProductRepository;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
@@ -26,6 +28,13 @@ public class EbayProductPersistenceAdapter implements EbayProductPort {
     @Override
     public Optional<EbayProduct> findById(Long id) {
         return repository.findById(id).map(this::toDomain);
+    }
+
+    @Override
+    public List<EbayProduct> findAllByIdIn(List<Long> ids) {
+        return repository.findAllById(ids).stream()
+                .map(this::toDomain)
+                .collect(Collectors.toList());
     }
 
     private EbayProductJpaEntity toEntity(EbayProduct item) {

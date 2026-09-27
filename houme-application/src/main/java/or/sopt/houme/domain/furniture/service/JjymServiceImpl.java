@@ -3,6 +3,7 @@ package or.sopt.houme.domain.furniture.service;
 import lombok.RequiredArgsConstructor;
 import or.sopt.houme.compare.application.dto.CompareCatalogJjymItemResponse;
 import or.sopt.houme.compare.application.dto.CompareCatalogJjymListResponse;
+import or.sopt.houme.compare.application.EbayPipelineUtils;
 import or.sopt.houme.compare.domain.EbayProduct;
 import or.sopt.houme.compare.domain.port.out.EbayProductPort;
 import or.sopt.houme.coupang.domain.CoupangProduct;
@@ -135,6 +136,7 @@ public class JjymServiceImpl implements JjymService {
         Map<Long, CurationRawProductView> rawProductByProductId = buildRawProductByProductId(rawJjyms, furnitureById);
         Map<Long, List<String>> colorsByRawProductId = buildColorNamesByRawProductId(rawProductByProductId);
         Map<Long, CoupangProduct> coupangProductById = buildCoupangProductById(jjyms, furnitureById);
+        Map<Long, EbayProduct> ebayProductById = buildEbayProductById(jjyms, furnitureById);
 
         List<Long> allRfIds = jjyms.stream()
                 .map(Jjym::getRecommendFurnitureId)
@@ -153,7 +155,7 @@ public class JjymServiceImpl implements JjymService {
                         return toV2ItemResponse(rf, rawProductByProductId, colorsByRawProductId, jjymCountByRecommendFurnitureId);
                     }
                     if (rf.getSource() == CurationSource.EBAY) {
-                        return toEbayJjymResponse(rf, jjymCountByRecommendFurnitureId);
+                        return toEbayJjymResponse(rf, ebayProductById, jjymCountByRecommendFurnitureId);
                     }
                     if (rf.getSource() == CurationSource.COUPANG) {
                         return toCoupangJjymResponse(rf, coupangProductById, jjymCountByRecommendFurnitureId);
@@ -272,17 +274,35 @@ public class JjymServiceImpl implements JjymService {
 
     private JjymV2ItemResponse toEbayJjymResponse(
             RecommendFurniture rf,
+            Map<Long, EbayProduct> ebayProductById,
             Map<Long, Long> jjymCountByRecommendFurnitureId
     ) {
+        EbayProduct product = ebayProductById.get(rf.getFurnitureProductId());
+        Long listPrice = product != null && product.priceUsd() != null
+                ? (long) Math.round(product.priceUsd() * EbayPipelineUtils.USD_TO_KRW) : null;
         return JjymV2ItemResponse.of(
                 "EBAY", null, rf.getFurnitureProductId(), true,
                 rf.getFurnitureProductImageUrl(),
                 rf.getFurnitureProductSiteUrl(),
                 null, rf.getFurnitureProductMallName(),
                 rf.getFurnitureProductName(),
-                null, null, null,
+                listPrice, null, null,
                 jjymCountByRecommendFurnitureId.getOrDefault(rf.getId(), 0L)
         );
+    }
+
+    private Map<Long, EbayProduct> buildEbayProductById(
+            List<Jjym> jjyms, Map<Long, RecommendFurniture> furnitureById) {
+        List<Long> ids = jjyms.stream()
+                .map(j -> furnitureById.get(j.getRecommendFurnitureId()))
+                .filter(rf -> rf != null && rf.getSource() == CurationSource.EBAY)
+                .map(RecommendFurniture::getFurnitureProductId)
+                .filter(java.util.Objects::nonNull)
+                .distinct()
+                .toList();
+        if (ids.isEmpty()) return Map.of();
+        return compareCatalogPort.findAllByIdIn(ids).stream()
+                .collect(Collectors.toMap(EbayProduct::id, Function.identity()));
     }
 
     private Map<Long, CoupangProduct> buildCoupangProductById(
