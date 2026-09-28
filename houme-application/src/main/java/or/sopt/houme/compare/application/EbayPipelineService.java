@@ -139,6 +139,7 @@ public class EbayPipelineService {
                 .collect(Collectors.toList());
 
         job.advanceStage(JobStage.MERGING);
+        trySave(job);
 
         long t3 = System.currentTimeMillis();
         List<Double> origTextEmb = embeddingAdapter.embedText(original.title());
