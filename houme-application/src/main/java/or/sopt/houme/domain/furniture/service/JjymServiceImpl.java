@@ -286,7 +286,7 @@ public class JjymServiceImpl implements JjymService {
                 rf.getFurnitureProductSiteUrl(),
                 null, rf.getFurnitureProductMallName(),
                 rf.getFurnitureProductName(),
-                listPrice, null, null,
+                listPrice, 0, listPrice,
                 jjymCountByRecommendFurnitureId.getOrDefault(rf.getId(), 0L)
         );
     }
