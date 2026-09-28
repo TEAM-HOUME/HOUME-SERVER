@@ -139,6 +139,7 @@ public class EbayPipelineService {
                 .collect(Collectors.toList());
 
         job.advanceStage(JobStage.MERGING);
+        trySave(job);
 
         long t3 = System.currentTimeMillis();
         List<Double> origTextEmb = embeddingAdapter.embedText(original.title());
@@ -177,6 +178,7 @@ public class EbayPipelineService {
         log.info("[타이밍] 후보 {}개 병렬 임베딩+스코어링: {}ms", candidates.size(), System.currentTimeMillis() - t4);
 
         job.advanceStage(JobStage.SORTING);
+        trySave(job);
         List<ScoredItem> topScored = scored.stream()
                 .sorted(Comparator.comparingDouble(ScoredItem::score).reversed())
                 .limit(topN)
@@ -302,7 +304,7 @@ public class EbayPipelineService {
                         .collect(Collectors.toList());
         return new SimilarProduct(
                 "EBAY", item.itemId(), item.title(), utils.thumbnailUrl(item),
-                utils.parsePrice(item) * EbayPipelineUtils.USD_TO_KRW,
+                (double) Math.round(utils.parsePrice(item) * EbayPipelineUtils.USD_TO_KRW),
                 "KRW",
                 item.itemWebUrl(), score, cats
         );
