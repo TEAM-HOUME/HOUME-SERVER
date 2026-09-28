@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>GLOSTAD 글로스타드 2인용소파 - 크니사 다크그레이</title>
+
+    <!--
+      이케아는 자사 브랜드를 파는 몰이라 og:site_name 과 brand 가 둘 다 "IKEA" 다.
+      "brand 가 site_name 과 같으면 버린다"는 전역 규칙을 쓰면 여기서 정답이 지워진다.
+      몰 브랜드 정책이 호스트로 분기해야 하는 이유를 고정해두는 픽스처.
+    -->
+    <meta property="og:site_name" content="IKEA"/>
+    <meta property="og:title" content="GLOSTAD 글로스타드 2인용소파 - 크니사 다크그레이"/>
+    <meta property="og:image" content="https://www.ikea.com/kr/ko/images/products/glostad-2-seat-sofa.jpg"/>
+    <meta property="product:price:amount" content="150000"/>
+    <meta property="product:price:currency" content="KRW"/>
+
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Product",
+      "name": "GLOSTAD 글로스타드 2인용소파 - 크니사 다크그레이",
+      "image": ["https://www.ikea.com/kr/ko/images/products/glostad-2-seat-sofa.jpg"],
+      "brand": { "@type": "Brand", "name": "IKEA" },
+      "offers": {
+        "@type": "Offer",
+        "priceCurrency": "KRW",
+        "price": 150000
+      }
+    }
+    </script>
+</head>
+<body>
+<h1>GLOSTAD 글로스타드 2인용소파</h1>
+</body>
+</html>
