@@ -178,6 +178,7 @@ public class EbayPipelineService {
         log.info("[타이밍] 후보 {}개 병렬 임베딩+스코어링: {}ms", candidates.size(), System.currentTimeMillis() - t4);
 
         job.advanceStage(JobStage.SORTING);
+        trySave(job);
         List<ScoredItem> topScored = scored.stream()
                 .sorted(Comparator.comparingDouble(ScoredItem::score).reversed())
                 .limit(topN)
