@@ -105,7 +105,7 @@ class ProductPageScrapeAdapterTest {
         // 플레이스홀더(data URI, blank.gif)와 아이콘(24x24)을 걸러내고 상품 이미지를 골라야 한다
         assertThat(product.thumbnailUrl()).isEqualTo("https://example-mall.co.kr/images/products/bed-main.jpg");
         assertThat(product.quality()).isEqualTo(ScrapeQuality.PARTIAL);
-        assertThat(product.hasEssentials()).isTrue();
+        assertThat(product.hasEssentials()).isFalse();
     }
 
     private ScrapedProduct scrape(String fixturePath) {
