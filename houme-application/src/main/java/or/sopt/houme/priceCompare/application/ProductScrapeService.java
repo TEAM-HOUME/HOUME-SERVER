@@ -30,7 +30,11 @@ public class ProductScrapeService implements ProductScrapeUseCase {
 
         // 상품명·이미지 중 하나도 못 건지면 이후 검색을 태울 입력 자체가 없으므로 여기서 끊는다.
         if (!product.hasEssentials()) {
-            log.warn("상품 메타데이터 추출 실패 - 필수 정보 없음: url={}", sourceUrl.value());
+            log.warn("상품 메타데이터 추출 실패: url={}, title={}, thumbnailUrl={}, price={}",
+                    sourceUrl.value(),
+                    product.title() != null ? "OK" : "NULL",
+                    product.thumbnailUrl() != null ? "OK" : "NULL",
+                    product.price() != null ? "OK" : "NULL");
             throw new PriceCompareException(ErrorCode.PRODUCT_METADATA_PARSE_FAILED);
         }
         return ScrapedProductResponse.from(product);

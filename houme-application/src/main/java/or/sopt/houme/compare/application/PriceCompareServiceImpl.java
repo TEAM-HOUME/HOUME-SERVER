@@ -49,6 +49,11 @@ public class PriceCompareServiceImpl implements PriceCompareUseCase {
         return jobStore.findActiveBySourceUrl(sourceUrl.value()).orElseGet(() -> {
             ScrapedProduct scraped = productPageScrapePort.scrape(sourceUrl);
             if (!scraped.hasEssentials()) {
+                log.warn("상품 메타데이터 추출 실패: url={}, title={}, thumbnailUrl={}, price={}",
+                        sourceUrl.value(),
+                        scraped.title() != null ? "OK" : "NULL",
+                        scraped.thumbnailUrl() != null ? "OK" : "NULL",
+                        scraped.price() != null ? "OK" : "NULL");
                 throw new PriceCompareException(ErrorCode.PRODUCT_METADATA_PARSE_FAILED);
             }
 
