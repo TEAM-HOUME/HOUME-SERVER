@@ -58,7 +58,7 @@ public record ScrapedProduct(
      * 상품명·이미지 중 하나라도 있으면 키워드 검색이든 이미지 검색이든 시도할 수 있다.
      */
     public boolean hasEssentials() {
-        return isPresent(title) || isPresent(thumbnailUrl);
+        return isPresent(title) && isPresent(thumbnailUrl) && price != null;
     }
 
     public ScrapeQuality quality() {
