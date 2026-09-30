@@ -11,12 +11,13 @@ public record SimilarProductItemResponse(
         String imageUrl,
         Double price,
         String currency,
-        String productUrl
+        String productUrl,
+        String brand
 ) {
     public static SimilarProductItemResponse from(SimilarProduct p) {
         return new SimilarProductItemResponse(
                 p.source(), p.productId(), p.title(), p.imageUrl(), p.price(),
-                p.currency(), p.productUrl()
+                p.currency(), p.productUrl(), p.brand()
         );
     }
 }

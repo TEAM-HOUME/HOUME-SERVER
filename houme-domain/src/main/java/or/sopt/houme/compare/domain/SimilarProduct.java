@@ -11,7 +11,8 @@ public record SimilarProduct(
         String currency,
         String productUrl,
         double similarityScore,
-        List<EbayCategory> categories
+        List<EbayCategory> categories,
+        String brand
 ) {
     public record EbayCategory(String categoryId, String categoryName) {}
 }

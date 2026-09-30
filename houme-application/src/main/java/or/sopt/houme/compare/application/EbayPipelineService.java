@@ -213,7 +213,7 @@ public class EbayPipelineService {
                         unified.add(new UnifiedCandidate(new SimilarProduct(
                                 "COUPANG", c.id() != null ? String.valueOf(c.id()) : null,
                                 c.title(), c.imageUrl(), c.price(),
-                                "KRW", c.productUrl(), score, List.of()
+                                "KRW", c.productUrl(), score, List.of(), null
                         ), score));
                     });
             job.markCoupangDone();
@@ -240,7 +240,7 @@ public class EbayPipelineService {
                         // 찜 API는 source=RAW로만 원천 상품을 조회하므로 source를 RAW로 고정
                         unified.add(new UnifiedCandidate(new SimilarProduct(
                                 "RAW", String.valueOf(c.catalogItemId()), c.title(), c.imageUrl(), c.price(),
-                                "KRW", c.productUrl(), score, List.of()
+                                "KRW", c.productUrl(), score, List.of(), null
                         ), score));
                     });
             job.markCatalogDone();
@@ -264,7 +264,7 @@ public class EbayPipelineService {
                         Long internalId = p.productId() != null ? ebayIdMap.get(p.productId()) : null;
                         return new SimilarProduct(p.source(), internalId != null ? String.valueOf(internalId) : null,
                                 p.title(), p.imageUrl(), p.price(), p.currency(),
-                                p.productUrl(), p.similarityScore(), p.categories());
+                                p.productUrl(), p.similarityScore(), p.categories(), p.brand());
                     }
                     return p;
                 })
@@ -306,7 +306,7 @@ public class EbayPipelineService {
                 "EBAY", item.itemId(), item.title(), utils.thumbnailUrl(item),
                 (double) Math.round(utils.parsePrice(item) * EbayPipelineUtils.USD_TO_KRW),
                 "KRW",
-                item.itemWebUrl(), score, cats
+                item.itemWebUrl(), score, cats, item.brand()
         );
     }
 

@@ -6,5 +6,6 @@ public record EbayCandidate(
         double priceUsd,
         String thumbnailUrl,
         String itemWebUrl,
-        java.util.List<String> categoryIds
+        java.util.List<String> categoryIds,
+        String brand
 ) {}
