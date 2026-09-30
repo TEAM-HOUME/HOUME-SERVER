@@ -33,7 +33,7 @@ class EbayPipelineUtilsTest {
     @Test
     @DisplayName("categoryIds가 null이면 하드필터 차단된다")
     void passesHardFilter_nullCategories_blocked() {
-        EbayCandidate item = new EbayCandidate("id", "title", 0.0, null, null, null);
+        EbayCandidate item = new EbayCandidate("id", "title", 0.0, null, null, null, null);
         assertThat(utils.passesHardFilter(item, Set.of("3197"))).isFalse();
     }
 
@@ -98,6 +98,6 @@ class EbayPipelineUtilsTest {
     }
 
     private EbayCandidate candidate(String itemId, double priceUsd, String thumbnailUrl, List<String> categoryIds) {
-        return new EbayCandidate(itemId, "title", priceUsd, thumbnailUrl, "https://ebay.com/" + itemId, categoryIds);
+        return new EbayCandidate(itemId, "title", priceUsd, thumbnailUrl, "https://ebay.com/" + itemId, categoryIds, null);
     }
 }
