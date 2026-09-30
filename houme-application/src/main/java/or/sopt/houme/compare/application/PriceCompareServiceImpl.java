@@ -61,7 +61,8 @@ public class PriceCompareServiceImpl implements PriceCompareUseCase {
                     scraped.title(),
                     scraped.thumbnailUrl(),
                     scraped.price() != null ? scraped.price().doubleValue() : null,
-                    null
+                    null,
+                    scraped.brand()
             );
 
             CompareJob job = new CompareJob(UUID.randomUUID().toString(), sourceUrl.value());
