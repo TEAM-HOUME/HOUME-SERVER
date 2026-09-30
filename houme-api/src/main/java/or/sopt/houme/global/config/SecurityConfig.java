@@ -113,6 +113,7 @@ public class SecurityConfig {
                 .requestMatchers(WhiteListConfig.adminWhiteList().toArray(new String[0])).permitAll()
                 .requestMatchers(WhiteListConfig.curationWhiteList().toArray(new String[0])).permitAll()
                 .requestMatchers(HttpMethod.GET, WhiteListConfig.compareWhiteList().toArray(new String[0])).permitAll()
+                .requestMatchers("/api/admin/**").hasAuthority("ROLE_ADMIN")
                 .anyRequest().authenticated());
 
 
