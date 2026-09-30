@@ -285,7 +285,7 @@ public class EbayPipelineService {
                 EbayProduct saved = catalogPort.upsert(EbayProduct.forUpsert(
                         s.item().itemId(), s.item().title(), utils.thumbnailUrl(s.item()),
                         utils.parsePrice(s.item()), s.item().itemWebUrl(), soozipCategory,
-                        s.textEmb(), s.imageEmb()
+                        s.textEmb(), s.imageEmb(), s.item().brand()
                 ));
                 if (saved.id() != null) {
                     idMap.put(s.item().itemId(), saved.id());

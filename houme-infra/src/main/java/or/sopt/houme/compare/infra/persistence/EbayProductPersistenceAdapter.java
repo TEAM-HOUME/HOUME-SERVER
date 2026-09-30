@@ -47,14 +47,15 @@ public class EbayProductPersistenceAdapter implements EbayProductPort {
                 .soozipCategory(item.soozipCategory())
                 .titleEmbedding(item.titleEmbedding())
                 .imageEmbedding(item.imageEmbedding())
+                .brand(item.brand())
                 .build();
     }
 
     private EbayProduct toDomain(EbayProductJpaEntity e) {
         return new EbayProduct(
                 e.getId(), e.getEbayItemId(), e.getTitle(), e.getImageUrl(),
-                e.getPriceUsd(),
-                e.getProductUrl(), e.getSoozipCategory(), e.getTitleEmbedding(), e.getImageEmbedding()
+                e.getPriceUsd(), e.getProductUrl(), e.getSoozipCategory(),
+                e.getTitleEmbedding(), e.getImageEmbedding(), e.getBrand()
         );
     }
 }

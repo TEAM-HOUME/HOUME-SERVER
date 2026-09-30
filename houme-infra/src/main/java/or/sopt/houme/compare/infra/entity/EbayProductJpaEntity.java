@@ -56,6 +56,10 @@ public class EbayProductJpaEntity {
     @Comment("이미지 임베딩 벡터 (pgvector 문자열 형식)")
     private String imageEmbedding;
 
+    @Column(name = "brand", length = 255)
+    @Comment("eBay 상품 브랜드 (nullable)")
+    private String brand;
+
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
@@ -75,6 +79,7 @@ public class EbayProductJpaEntity {
                 .soozipCategory(this.soozipCategory)
                 .titleEmbedding(this.titleEmbedding)
                 .imageEmbedding(this.imageEmbedding)
+                .brand(this.brand)
                 .build();
     }
 }
