@@ -9,6 +9,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 @Slf4j
 @Service
@@ -19,34 +20,58 @@ public class CurationEmbeddingBatchService {
 
     private final CurationRawProductRepository repository;
     private final EmbeddingPort embeddingPort;
+    private final AtomicBoolean running = new AtomicBoolean(false);
 
-    public int fillMissingEmbeddings() {
-        int titleProcessed = fillMissingTitleEmbeddings();
-        int imageProcessed = fillMissingImageEmbeddings();
-        return titleProcessed + imageProcessed;
+    public boolean isRunning() {
+        return running.get();
     }
 
-    private int fillMissingTitleEmbeddings() {
+    public int fillMissingEmbeddings() {
+        return fillMissingEmbeddings(Integer.MAX_VALUE);
+    }
+
+    public int fillMissingEmbeddings(int limit) {
+        if (!running.compareAndSet(false, true)) {
+            log.warn("[임베딩 배치] 이미 실행 중 — 요청 무시");
+            return -1;
+        }
+        try {
+            int titleProcessed = fillMissingTitleEmbeddings(limit);
+            int imageProcessed = fillMissingImageEmbeddings(limit);
+            return titleProcessed + imageProcessed;
+        } finally {
+            running.set(false);
+        }
+    }
+
+    private int fillMissingTitleEmbeddings(int limit) {
+        int totalAttempted = 0;
         int totalProcessed = 0;
         long lastId = 0;
-        while (true) {
-            List<CurationRawProduct> batch = repository.findForTitleEmbeddingBatch(lastId, PageRequest.of(0, PAGE_SIZE));
+        while (totalAttempted < limit) {
+            int fetchSize = Math.min(PAGE_SIZE, limit - totalAttempted);
+            List<CurationRawProduct> batch = repository.findForTitleEmbeddingBatch(lastId, PageRequest.of(0, fetchSize));
             if (batch.isEmpty()) break;
 
             lastId = batch.get(batch.size() - 1).getId(); // 실패해도 커서 전진 → 이후 상품 차단 방지
+            totalAttempted += batch.size();
             totalProcessed += processTitleAndImageBatch(batch);
         }
         return totalProcessed;
     }
 
-    private int fillMissingImageEmbeddings() {
+    private int fillMissingImageEmbeddings(int limit) {
+        if (limit <= 0) return 0;
+        int totalAttempted = 0;
         int totalProcessed = 0;
         long lastId = 0;
-        while (true) {
-            List<CurationRawProduct> batch = repository.findForImageEmbeddingBatch(lastId, PageRequest.of(0, PAGE_SIZE));
+        while (totalAttempted < limit) {
+            int fetchSize = Math.min(PAGE_SIZE, limit - totalAttempted);
+            List<CurationRawProduct> batch = repository.findForImageEmbeddingBatch(lastId, PageRequest.of(0, fetchSize));
             if (batch.isEmpty()) break;
 
             lastId = batch.get(batch.size() - 1).getId();
+            totalAttempted += batch.size();
             totalProcessed += processImageOnlyBatch(batch);
         }
         return totalProcessed;

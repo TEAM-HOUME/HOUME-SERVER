@@ -6,9 +6,10 @@ public record OriginalProduct(
         Double price,
         String currency,
         String quality,
-        String category  // nullable, e.g. "FURNITURE"
+        String category,  // nullable, e.g. "FURNITURE"
+        String brand      // nullable
 ) {
-    public static OriginalProduct of(String title, String imageUrl, Double price, String category) {
-        return new OriginalProduct(title, imageUrl, price, "KRW", "FULL", category);
+    public static OriginalProduct of(String title, String imageUrl, Double price, String category, String brand) {
+        return new OriginalProduct(title, imageUrl, price, "KRW", "FULL", category, brand);
     }
 }

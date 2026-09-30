@@ -10,5 +10,6 @@ public record CurationCandidate(
         Double price,
         String productUrl,
         List<Double> titleEmbedding,
-        List<Double> imageEmbedding
+        List<Double> imageEmbedding,
+        String brand
 ) {}

@@ -12,16 +12,17 @@ public record EbayProduct(
         String productUrl,
         String soozipCategory,
         String titleEmbedding,   // pgvector format: "[0.1,0.2,...]"
-        String imageEmbedding
+        String imageEmbedding,
+        String brand
 ) {
     public static EbayProduct forUpsert(
             String ebayItemId, String title, String imageUrl,
             Double priceUsd, String productUrl, String soozipCategory,
-            List<Double> titleEmbedding, List<Double> imageEmbedding
+            List<Double> titleEmbedding, List<Double> imageEmbedding, String brand
     ) {
         return new EbayProduct(
                 null, ebayItemId, title, imageUrl, priceUsd, productUrl, soozipCategory,
-                toVectorString(titleEmbedding), toVectorString(imageEmbedding)
+                toVectorString(titleEmbedding), toVectorString(imageEmbedding), brand
         );
     }
 

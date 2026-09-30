@@ -14,8 +14,11 @@ public record EbaySearchResponse(
             Price price,
             List<ThumbnailImage> thumbnailImages,
             List<Category> categories,
-            String itemWebUrl
+            String itemWebUrl,
+            List<LocalizedAspect> localizedAspects
     ) {}
+
+    public record LocalizedAspect(String type, String name, String value) {}
 
     public record Price(String value, String currency) {}
 

@@ -27,7 +27,7 @@ public class EbaySearchAdapter implements EbaySearchPort {
     public List<EbayCandidate> search(String keyword, int limit) {
         try {
             String bearer = "Bearer " + tokenManager.getToken();
-            EbaySearchResponse resp = ebayBrowseClient.search(bearer, "EBAY_US", keyword, limit, "MATCHING_ITEMS");
+            EbaySearchResponse resp = ebayBrowseClient.search(bearer, "EBAY_US", keyword, limit, "MATCHING_ITEMS,EXTENDED");
             if (resp == null || resp.itemSummaries() == null) return Collections.emptyList();
             return resp.itemSummaries().stream().map(this::toCandidate).toList();
         } catch (FeignException e) {
@@ -41,7 +41,7 @@ public class EbaySearchAdapter implements EbaySearchPort {
         try {
             String bearer = "Bearer " + tokenManager.getToken();
             EbaySearchResponse resp = ebayBrowseClient.searchByImage(
-                    bearer, "EBAY_US", limit, "MATCHING_ITEMS", new EbayImageSearchRequest(base64Image));
+                    bearer, "EBAY_US", limit, "MATCHING_ITEMS,EXTENDED", new EbayImageSearchRequest(base64Image));
             if (resp == null || resp.itemSummaries() == null) return Collections.emptyList();
             return resp.itemSummaries().stream().map(this::toCandidate).toList();
         } catch (FeignException e) {
@@ -59,6 +59,10 @@ public class EbaySearchAdapter implements EbaySearchPort {
                 ? item.thumbnailImages().get(0).imageUrl() : null;
         List<String> categoryIds = item.categories() == null ? List.of()
                 : item.categories().stream().map(EbaySearchResponse.Category::categoryId).toList();
-        return new EbayCandidate(item.itemId(), item.title(), price, thumbnail, item.itemWebUrl(), categoryIds);
+        String brand = item.localizedAspects() == null ? null : item.localizedAspects().stream()
+                .filter(a -> "Brand".equalsIgnoreCase(a.name()))
+                .map(EbaySearchResponse.LocalizedAspect::value)
+                .findFirst().orElse(null);
+        return new EbayCandidate(item.itemId(), item.title(), price, thumbnail, item.itemWebUrl(), categoryIds, brand);
     }
 }

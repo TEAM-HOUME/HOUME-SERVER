@@ -7,10 +7,11 @@ public record OriginalProductResponse(
         String imageUrl,
         Double price,
         String currency,
-        String quality
+        String quality,
+        String brand
 ) {
     public static OriginalProductResponse from(OriginalProduct p) {
         if (p == null) return null;
-        return new OriginalProductResponse(p.title(), p.imageUrl(), p.price(), p.currency(), p.quality());
+        return new OriginalProductResponse(p.title(), p.imageUrl(), p.price(), p.currency(), p.quality(), p.brand());
     }
 }

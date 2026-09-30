@@ -54,7 +54,8 @@ public class PriceCompareController {
                 job.getSourceUrl(),
                 op != null ? op.title() : null,
                 op != null ? op.imageUrl() : null,
-                price
+                price,
+                op != null ? op.brand() : null
         );
         return ResponseEntity.status(HttpStatus.ACCEPTED)
                 .body(new ApiResponse<>(202, "응답 성공", response));
