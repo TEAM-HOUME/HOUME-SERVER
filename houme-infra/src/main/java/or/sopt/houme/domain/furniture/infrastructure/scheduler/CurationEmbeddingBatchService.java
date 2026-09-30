@@ -26,7 +26,7 @@ public class CurationEmbeddingBatchService {
 
     public int fillMissingEmbeddings(int limit) {
         int titleProcessed = fillMissingTitleEmbeddings(limit);
-        int imageProcessed = fillMissingImageEmbeddings(limit - titleProcessed);
+        int imageProcessed = fillMissingImageEmbeddings(limit);
         return titleProcessed + imageProcessed;
     }
 
