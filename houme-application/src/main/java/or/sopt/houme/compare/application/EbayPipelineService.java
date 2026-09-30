@@ -240,7 +240,7 @@ public class EbayPipelineService {
                         // 찜 API는 source=RAW로만 원천 상품을 조회하므로 source를 RAW로 고정
                         unified.add(new UnifiedCandidate(new SimilarProduct(
                                 "RAW", String.valueOf(c.catalogItemId()), c.title(), c.imageUrl(), c.price(),
-                                "KRW", c.productUrl(), score, List.of(), null
+                                "KRW", c.productUrl(), score, List.of(), c.brand()
                         ), score));
                     });
             job.markCatalogDone();

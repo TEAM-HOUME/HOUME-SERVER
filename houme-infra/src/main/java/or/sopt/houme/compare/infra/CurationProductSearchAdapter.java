@@ -34,7 +34,8 @@ public class CurationProductSearchAdapter implements CurationProductSearchPort {
                         : p.getListPrice() != null ? p.getListPrice().doubleValue() : null,
                 p.getProductSiteUrl(),
                 parseEmbedding(p.getTitleEmbedding()),
-                parseEmbedding(p.getImageEmbedding())
+                parseEmbedding(p.getImageEmbedding()),
+                p.getBrand()
         );
     }
 
