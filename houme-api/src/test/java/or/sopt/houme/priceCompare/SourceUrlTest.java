@@ -87,6 +87,24 @@ class SourceUrlTest {
     }
 
     @ParameterizedTest(name = "[{index}] {0}")
+    @DisplayName("쿠팡 앱 공유·파트너스 링크는 단축 링크로 본다")
+    @ValueSource(strings = {
+            "https://link.coupang.com/a/bQ7xyz",
+            "https://link.coupang.com/re/AFFSDP?lptag=AF1234567&pageKey=7335597976",
+            "coupa.ng/bKjSxL"
+    })
+    void 쿠팡_단축_링크를_알아본다(String rawInput) {
+        assertThat(SourceUrl.normalize(rawInput).isCoupangShortLink()).isTrue();
+    }
+
+    @ParameterizedTest(name = "[{index}] {0}")
+    @DisplayName("쿠팡 상품 URL 과 다른 몰 URL 은 단축 링크가 아니다")
+    @ValueSource(strings = {"https://www.coupang.com/vp/products/7335597976", "https://ohou.se/productions/123"})
+    void 단축_링크가_아니다(String rawInput) {
+        assertThat(SourceUrl.normalize(rawInput).isCoupangShortLink()).isFalse();
+    }
+
+    @ParameterizedTest(name = "[{index}] {0}")
     @DisplayName("URL 로 볼 수 없는 입력은 INVALID_PRODUCT_URL 로 거절한다")
     @ValueSource(strings = {"", "   ", "http://"})
     void 유효하지_않은_입력은_거절한다(String rawInput) {

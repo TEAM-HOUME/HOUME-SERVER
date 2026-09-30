@@ -31,6 +31,7 @@ public record SourceUrl(String value) {
     private static final List<String> COUPANG_HOSTS = List.of("coupang.com", "www.coupang.com", "m.coupang.com");
     private static final Pattern COUPANG_PRODUCT_PATH = Pattern.compile("^/v[pm]/products/(\\d+)/?$");
     private static final String COUPANG_CANONICAL_PREFIX = "https://www.coupang.com/vp/products/";
+    private static final List<String> COUPANG_SHORT_LINK_HOSTS = List.of("link.coupang.com", "coupa.ng");
 
     public static SourceUrl normalize(String rawInput) {
         if (rawInput == null || rawInput.isBlank()) {
@@ -70,10 +71,19 @@ public record SourceUrl(String value) {
     }
 
     /**
+     * 쿠팡 앱 공유·파트너스 링크(`link.coupang.com/a/..`, `link.coupang.com/re/..`, `coupa.ng/..`)인지.
+     * URL 에 상품 ID 가 없어 리다이렉트를 풀어야 카탈로그 조회와 정규화를 태울 수 있다.
+     */
+    public boolean isCoupangShortLink() {
+        return COUPANG_SHORT_LINK_HOSTS.contains(lowerCase(URI.create(value).getHost()));
+    }
+
+    /**
      * 쿠팡은 공유 경로마다 같은 상품이 다른 URL 로 온다
      * (`m.coupang.com/vm/products/{id}`, `?itemId=..&vendorItemId=..&clickEventId=..` 등).
-     * 모바일 페이지는 서버 요청을 403 으로 막았고, {@code itemId} 쿼리가 붙은 페이지는 같은 상품인데도 가격이 빠진 채 파싱됐다.
-     * 그래서 상품 ID 만 남긴 데스크톱 URL 하나로 모은다 — 카탈로그 조회 키와 진행 중 job 재활용 키도 이 값 하나가 된다.
+     * 모바일 페이지는 서버 요청을 403 으로 막았고, 옵션 쿼리({@code itemId})가 붙은 페이지에서 가격이 빠진 채 파싱된 사례가 있었다.
+     * 쿼리 없는 상품 URL 은 JSON-LD {@code offers.price} 에 대표가가 들어 있다(실측).
+     * 그래서 상품 ID 만 남긴 데스크톱 URL 하나로 모은다 — 카탈로그 조회 키, 스크래핑 캐시 키, 진행 중 job 재활용 키도 이 값 하나가 된다.
      * 옵션(itemId) 단위 가격 대신 상품 대표가를 쓰게 되는 점은 감수한다.
      */
     private static String extractCoupangProductId(String host, String rawPath) {
