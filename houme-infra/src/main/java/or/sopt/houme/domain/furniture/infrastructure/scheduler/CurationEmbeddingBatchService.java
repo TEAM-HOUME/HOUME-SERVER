@@ -21,16 +21,21 @@ public class CurationEmbeddingBatchService {
     private final EmbeddingPort embeddingPort;
 
     public int fillMissingEmbeddings() {
-        int titleProcessed = fillMissingTitleEmbeddings();
-        int imageProcessed = fillMissingImageEmbeddings();
+        return fillMissingEmbeddings(Integer.MAX_VALUE);
+    }
+
+    public int fillMissingEmbeddings(int limit) {
+        int titleProcessed = fillMissingTitleEmbeddings(limit);
+        int imageProcessed = fillMissingImageEmbeddings(limit - titleProcessed);
         return titleProcessed + imageProcessed;
     }
 
-    private int fillMissingTitleEmbeddings() {
+    private int fillMissingTitleEmbeddings(int limit) {
         int totalProcessed = 0;
         long lastId = 0;
-        while (true) {
-            List<CurationRawProduct> batch = repository.findForTitleEmbeddingBatch(lastId, PageRequest.of(0, PAGE_SIZE));
+        while (totalProcessed < limit) {
+            int fetchSize = Math.min(PAGE_SIZE, limit - totalProcessed);
+            List<CurationRawProduct> batch = repository.findForTitleEmbeddingBatch(lastId, PageRequest.of(0, fetchSize));
             if (batch.isEmpty()) break;
 
             lastId = batch.get(batch.size() - 1).getId(); // 실패해도 커서 전진 → 이후 상품 차단 방지
@@ -39,11 +44,13 @@ public class CurationEmbeddingBatchService {
         return totalProcessed;
     }
 
-    private int fillMissingImageEmbeddings() {
+    private int fillMissingImageEmbeddings(int limit) {
+        if (limit <= 0) return 0;
         int totalProcessed = 0;
         long lastId = 0;
-        while (true) {
-            List<CurationRawProduct> batch = repository.findForImageEmbeddingBatch(lastId, PageRequest.of(0, PAGE_SIZE));
+        while (totalProcessed < limit) {
+            int fetchSize = Math.min(PAGE_SIZE, limit - totalProcessed);
+            List<CurationRawProduct> batch = repository.findForImageEmbeddingBatch(lastId, PageRequest.of(0, fetchSize));
             if (batch.isEmpty()) break;
 
             lastId = batch.get(batch.size() - 1).getId();

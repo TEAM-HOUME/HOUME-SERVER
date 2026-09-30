@@ -16,14 +16,17 @@ public class CurationEmbeddingScheduler {
     @Value("${curation.embedding.batch.enabled:false}")
     private boolean enabled;
 
+    @Value("${curation.embedding.batch.limit:500}")
+    private int limit;
+
     @Scheduled(cron = "0 0 3 * * *", zone = "Asia/Seoul")
     public void fillEmbeddings() {
         if (!enabled) {
             return;
         }
-        log.info("[임베딩 배치] 시작");
+        log.info("[임베딩 배치] 시작: limit={}", limit);
         try {
-            int processed = batchService.fillMissingEmbeddings();
+            int processed = batchService.fillMissingEmbeddings(limit);
             log.info("[임베딩 배치] 완료: processed={}", processed);
         } catch (Exception e) {
             log.error("[임베딩 배치] 실패", e);

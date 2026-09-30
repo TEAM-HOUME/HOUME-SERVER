@@ -1,5 +1,6 @@
 package or.sopt.houme.compare.application;
 
 public interface AdminCurationEmbeddingUseCase {
-    int triggerEmbedding();
+    void triggerEmbeddingAsync(int limit);
+    boolean isRunning();
 }

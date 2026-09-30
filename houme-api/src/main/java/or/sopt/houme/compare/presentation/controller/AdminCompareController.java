@@ -13,6 +13,7 @@ import or.sopt.houme.compare.application.dto.AdminTextSearchRequest;
 import or.sopt.houme.compare.application.dto.KeywordCheckRequest;
 import or.sopt.houme.compare.application.dto.KeywordCheckResponse;
 import or.sopt.houme.global.api.ApiResponse;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -53,11 +54,17 @@ public class AdminCompareController {
         ));
     }
 
-    @Operation(summary = "자체 카탈로그 임베딩 배치 즉시 실행", description = "임베딩 누락된 자체 카탈로그 상품에 title·image 임베딩을 채운다.")
+    @Operation(summary = "자체 카탈로그 임베딩 배치 즉시 실행", description = "비동기 실행. limit개 처리 후 종료. 실행 중 중복 요청은 409 반환.")
     @PostMapping("/curation-embedding/trigger")
-    public ResponseEntity<ApiResponse<String>> triggerEmbedding() {
-        int processed = adminCurationEmbeddingUseCase.triggerEmbedding();
-        return ResponseEntity.ok(ApiResponse.ok("임베딩 완료: " + processed + "개 처리"));
+    public ResponseEntity<ApiResponse<String>> triggerEmbedding(
+            @RequestParam(defaultValue = "100") int limit
+    ) {
+        if (adminCurationEmbeddingUseCase.isRunning()) {
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body(ApiResponse.fail(409, "이미 실행 중입니다. 완료 후 다시 시도해주세요."));
+        }
+        adminCurationEmbeddingUseCase.triggerEmbeddingAsync(limit);
+        return ResponseEntity.accepted().body(ApiResponse.ok(limit + "개 임베딩 처리 시작 (백그라운드 실행 중)"));
     }
 
     @Operation(
