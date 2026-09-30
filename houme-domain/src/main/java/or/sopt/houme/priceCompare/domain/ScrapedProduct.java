@@ -54,11 +54,11 @@ public record ScrapedProduct(
     }
 
     /**
-     * 검색 파이프라인을 태울 수 있는 최소 입력을 확보했는지.
-     * 상품명·이미지 중 하나라도 있으면 키워드 검색이든 이미지 검색이든 시도할 수 있다.
+     * 가격비교 파이프라인을 태울 수 있는 최소 입력을 확보했는지.
+     * 상품명·썸네일·가격 세 가지가 모두 있어야 의미 있는 비교가 가능하다.
      */
     public boolean hasEssentials() {
-        return isPresent(title) || isPresent(thumbnailUrl);
+        return isPresent(title) && isPresent(thumbnailUrl) && price != null;
     }
 
     public ScrapeQuality quality() {

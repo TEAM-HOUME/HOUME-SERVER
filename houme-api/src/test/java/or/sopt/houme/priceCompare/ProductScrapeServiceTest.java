@@ -45,16 +45,15 @@ class ProductScrapeServiceTest {
     }
 
     @Test
-    @DisplayName("상품명과 이미지 중 하나만 있어도 부분 성공으로 통과시킨다")
-    void 부분_성공은_실패로_보지_않는다() {
+    @DisplayName("가격이 없으면 필수 정보 부족으로 실패 처리한다")
+    void 가격이_없으면_실패로_처리한다() {
         when(scrapePort.scrape(any())).thenReturn(new ScrapedProduct(
-                "https://ohou.se/productions/123", "패브릭 소파", null,
+                "https://ohou.se/productions/123", "패브릭 소파", "https://cdn.ohou.se/a.jpg",
                 null, null, null, List.of(), null));
 
-        ScrapedProductResponse response = productScrapeService.scrape("https://ohou.se/productions/123");
-
-        assertThat(response.title()).isEqualTo("패브릭 소파");
-        assertThat(response.quality()).isEqualTo("MINIMAL");
+        assertThatThrownBy(() -> productScrapeService.scrape("https://ohou.se/productions/123"))
+                .isInstanceOf(PriceCompareException.class)
+                .hasFieldOrPropertyWithValue("errorCode", ErrorCode.PRODUCT_METADATA_PARSE_FAILED);
     }
 
     @Test
