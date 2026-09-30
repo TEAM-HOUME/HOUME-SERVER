@@ -59,6 +59,10 @@ public class AdminCompareController {
     public ResponseEntity<ApiResponse<String>> triggerEmbedding(
             @RequestParam(defaultValue = "100") int limit
     ) {
+        if (limit < 1) {
+            return ResponseEntity.badRequest()
+                    .body(ApiResponse.fail(400, "limit은 1 이상이어야 합니다."));
+        }
         if (adminCurationEmbeddingUseCase.isRunning()) {
             return ResponseEntity.status(HttpStatus.CONFLICT)
                     .body(ApiResponse.fail(409, "이미 실행 중입니다. 완료 후 다시 시도해주세요."));
