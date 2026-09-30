@@ -11,8 +11,8 @@ import or.sopt.houme.compare.domain.port.out.GetCompareHistoryPort;
 import or.sopt.houme.global.api.ErrorCode;
 import or.sopt.houme.global.api.handler.PriceCompareException;
 import or.sopt.houme.priceCompare.domain.ScrapedProduct;
+import or.sopt.houme.priceCompare.application.SourceProductProvider;
 import or.sopt.houme.priceCompare.domain.SourceUrl;
-import or.sopt.houme.priceCompare.domain.port.out.ProductPageScrapePort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -38,7 +38,7 @@ public class PriceCompareServiceImpl implements PriceCompareUseCase {
 
     private final CompareJobStorePort jobStore;
     private final EbayPipelineService pipelineService;
-    private final ProductPageScrapePort productPageScrapePort;
+    private final SourceProductProvider sourceProductProvider;
     private final GetCompareHistoryPort getCompareHistoryPort;
 
     @Override
@@ -47,7 +47,7 @@ public class PriceCompareServiceImpl implements PriceCompareUseCase {
 
         // 동일 URL 진행 중인 job 재활용
         return jobStore.findActiveBySourceUrl(sourceUrl.value()).orElseGet(() -> {
-            ScrapedProduct scraped = productPageScrapePort.scrape(sourceUrl);
+            ScrapedProduct scraped = sourceProductProvider.provide(sourceUrl);
             if (!scraped.hasEssentials()) {
                 log.warn("상품 메타데이터 추출 실패: url={}, title={}, thumbnailUrl={}, price={}",
                         sourceUrl.value(),
