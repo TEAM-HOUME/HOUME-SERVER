@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import or.sopt.houme.compare.application.AdminCurationEmbeddingUseCase;
 import or.sopt.houme.compare.application.AdminEbaySearchService;
 import or.sopt.houme.compare.application.AdminEbaySearchService.AdminSearchResult;
 import or.sopt.houme.compare.application.AdminKeywordCheckUseCase;
@@ -24,6 +25,7 @@ public class AdminCompareController {
 
     private final AdminEbaySearchService adminEbaySearchService;
     private final AdminKeywordCheckUseCase adminKeywordCheckUseCase;
+    private final AdminCurationEmbeddingUseCase adminCurationEmbeddingUseCase;
 
     @Operation(
             summary = "eBay 텍스트 검색 결과 조회",
@@ -49,6 +51,13 @@ public class AdminCompareController {
         return ResponseEntity.ok(ApiResponse.ok(
                 adminEbaySearchService.imageSearch(request.imageUrl(), request.priceKrw(), request.category())
         ));
+    }
+
+    @Operation(summary = "자체 카탈로그 임베딩 배치 즉시 실행", description = "임베딩 누락된 자체 카탈로그 상품에 title·image 임베딩을 채운다.")
+    @PostMapping("/curation-embedding/trigger")
+    public ResponseEntity<ApiResponse<String>> triggerEmbedding() {
+        int processed = adminCurationEmbeddingUseCase.triggerEmbedding();
+        return ResponseEntity.ok(ApiResponse.ok("임베딩 완료: " + processed + "개 처리"));
     }
 
     @Operation(
