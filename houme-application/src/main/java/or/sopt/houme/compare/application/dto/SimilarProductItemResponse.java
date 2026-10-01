@@ -17,7 +17,7 @@ public record SimilarProductItemResponse(
     public static SimilarProductItemResponse from(SimilarProduct p) {
         return new SimilarProductItemResponse(
                 p.source(), p.productId(), p.title(), p.imageUrl(), p.price(),
-                p.currency(), p.productUrl(), p.brand()
+                p.currency(), p.productUrl(), p.brand() != null ? p.brand() : p.source()
         );
     }
 }
