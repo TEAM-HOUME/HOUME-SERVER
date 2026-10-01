@@ -7,13 +7,12 @@ import or.sopt.houme.global.api.handler.PriceCompareException;
 import or.sopt.houme.priceCompare.application.dto.ScrapedProductResponse;
 import or.sopt.houme.priceCompare.domain.ScrapedProduct;
 import or.sopt.houme.priceCompare.domain.SourceUrl;
-import or.sopt.houme.priceCompare.domain.port.out.ProductPageScrapePort;
 import org.springframework.stereotype.Service;
 
 /**
  * 상품 URL 메타데이터 추출 유스케이스.
  *
- * <p>DB를 건드리지 않고 외부 HTTP 호출만 하므로 트랜잭션 경계를 두지 않는다
+ * <p>쓰기 없이 카탈로그 단건 조회와 외부 HTTP 호출만 하므로 트랜잭션 경계를 두지 않는다
  * (외부 호출을 트랜잭션 안에 넣지 않는다는 규칙과도 맞는다).
  */
 @Slf4j
@@ -21,12 +20,12 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class ProductScrapeService implements ProductScrapeUseCase {
 
-    private final ProductPageScrapePort productPageScrapePort;
+    private final SourceProductProvider sourceProductProvider;
 
     @Override
     public ScrapedProductResponse scrape(String rawUrl) {
         SourceUrl sourceUrl = SourceUrl.normalize(rawUrl);
-        ScrapedProduct product = productPageScrapePort.scrape(sourceUrl);
+        ScrapedProduct product = sourceProductProvider.provide(sourceUrl);
 
         // 상품명·이미지 중 하나도 못 건지면 이후 검색을 태울 입력 자체가 없으므로 여기서 끊는다.
         if (!product.hasEssentials()) {

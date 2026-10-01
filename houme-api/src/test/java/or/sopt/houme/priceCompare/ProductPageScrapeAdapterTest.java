@@ -108,6 +108,19 @@ class ProductPageScrapeAdapterTest {
         assertThat(product.hasEssentials()).isFalse();
     }
 
+    @Test
+    @DisplayName("쿠팡 상품 페이지는 OG 에 가격이 없어도 JSON-LD 에서 가격까지 필수값을 모두 건진다")
+    void 쿠팡_상품_페이지에서_필수값을_모두_건진다() {
+        ScrapedProduct product = scrape("scrape/coupang-product.html");
+
+        assertThat(product.title()).isEqualTo("힘내바 초코 스니커즈, 480g, 1개");
+        assertThat(product.thumbnailUrl()).isEqualTo("https://thumbnail.coupangcdn.com/thumbnails/remote/492x492ex"
+                + "/image/retail/images/90230770521962-86d21ff8-1bd7-461c-8116-8756605c0be0.jpg");
+        assertThat(product.price()).isEqualTo(14770L);
+        assertThat(product.currency()).isEqualTo("KRW");
+        assertThat(product.hasEssentials()).isTrue();
+    }
+
     private ScrapedProduct scrape(String fixturePath) {
         when(productPageFetcher.fetch(anyString())).thenReturn(loadFixture(fixturePath));
         return adapter.scrape(new SourceUrl(SOURCE_URL));

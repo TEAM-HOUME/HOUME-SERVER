@@ -101,6 +101,30 @@ public class ProductPageFetcher {
         throw new PriceCompareException(ErrorCode.PRODUCT_PAGE_FETCH_FAILED);
     }
 
+    /**
+     * 요청 한 번의 리다이렉트 목적지만 확인하고 따라가지는 않는다. 리다이렉트가 아니면 비어 있다.
+     *
+     * <p>단축 링크에서 목적지 주소만 알아내려는 용도다. 목적지 페이지는 봇 차단이 걸려 있을 수 있어서,
+     * 거기까지 요청할지는 호출자가 목적지를 보고 정한다.
+     */
+    public Optional<URI> redirectLocation(URI target) {
+        sourceUrlValidator.validate(target);
+        HttpResponse<InputStream> response = send(target);
+        try {
+            return redirectTarget(response, target);
+        } finally {
+            closeQuietly(response);
+        }
+    }
+
+    private void closeQuietly(HttpResponse<InputStream> response) {
+        try {
+            response.body().close();
+        } catch (IOException e) {
+            log.debug("응답 본문 닫기 실패: url={}", response.uri(), e);
+        }
+    }
+
     private HttpResponse<InputStream> send(URI target) {
         HttpRequest.Builder builder = HttpRequest.newBuilder()
                 .uri(target)

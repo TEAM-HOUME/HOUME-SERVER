@@ -1,12 +1,16 @@
 package or.sopt.houme.priceCompare;
 
+import or.sopt.houme.coupang.domain.port.out.CoupangProductPort;
 import or.sopt.houme.global.api.ErrorCode;
 import or.sopt.houme.global.api.handler.PriceCompareException;
 import or.sopt.houme.priceCompare.application.ProductScrapeService;
+import or.sopt.houme.priceCompare.application.SourceProductProvider;
 import or.sopt.houme.priceCompare.application.dto.ScrapedProductResponse;
 import or.sopt.houme.priceCompare.domain.ScrapedProduct;
 import or.sopt.houme.priceCompare.domain.SourceUrl;
+import or.sopt.houme.priceCompare.domain.port.out.CoupangShortLinkResolvePort;
 import or.sopt.houme.priceCompare.domain.port.out.ProductPageScrapePort;
+import or.sopt.houme.priceCompare.domain.port.out.ScrapedProductCachePort;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -24,7 +28,11 @@ import static org.mockito.Mockito.when;
 class ProductScrapeServiceTest {
 
     private final ProductPageScrapePort scrapePort = mock(ProductPageScrapePort.class);
-    private final ProductScrapeService productScrapeService = new ProductScrapeService(scrapePort);
+    private final ProductScrapeService productScrapeService = new ProductScrapeService(new SourceProductProvider(
+            scrapePort,
+            mock(CoupangProductPort.class),
+            mock(CoupangShortLinkResolvePort.class),
+            mock(ScrapedProductCachePort.class)));
 
     @Test
     @DisplayName("정규화된 URL 로 스크래핑을 요청하고 결과를 응답으로 변환한다")
