@@ -189,7 +189,9 @@ public class EbayPipelineService {
 
         // eBay 스코어링 결과
         List<UnifiedCandidate> unified = new java.util.ArrayList<>();
-        topScored.forEach(s -> unified.add(new UnifiedCandidate(toSimilarProduct(s.item(), s.score()), s.score())));
+        topScored.stream()
+                .filter(s -> s.score() >= minSimilarity)
+                .forEach(s -> unified.add(new UnifiedCandidate(toSimilarProduct(s.item(), s.score()), s.score())));
         job.markEbayDone();
         trySave(job);
 
@@ -213,6 +215,7 @@ public class EbayPipelineService {
                         double imageSim = (finalOrigImageEmb != null && c.imageEmbedding() != null)
                                 ? utils.cosineSimilarity(finalOrigImageEmb, c.imageEmbedding()) : 0.0;
                         double score = IMAGE_WEIGHT * imageSim + TEXT_WEIGHT * textSim;
+                        if (score < minSimilarity) return;
                         unified.add(new UnifiedCandidate(new SimilarProduct(
                                 "COUPANG", c.id() != null ? String.valueOf(c.id()) : null,
                                 c.title(), c.imageUrl(), c.price(),
@@ -240,6 +243,7 @@ public class EbayPipelineService {
                         double imageSim = (finalOrigImageEmb != null && c.imageEmbedding() != null)
                                 ? utils.cosineSimilarity(finalOrigImageEmb, c.imageEmbedding()) : 0.0;
                         double score = IMAGE_WEIGHT * imageSim + TEXT_WEIGHT * textSim;
+                        if (score < minSimilarity) return;
                         // 찜 API는 source=RAW로만 원천 상품을 조회하므로 source를 RAW로 고정
                         unified.add(new UnifiedCandidate(new SimilarProduct(
                                 "RAW", String.valueOf(c.catalogItemId()), c.title(), c.imageUrl(), c.price(),
@@ -256,9 +260,8 @@ public class EbayPipelineService {
         // eBay 후보 카탈로그 저장 — ebayItemId → 내부 ID 맵 획득 후 productId 교체
         Map<String, Long> ebayIdMap = upsertToCatalog(topScored, original.category());
 
-        // 통합 랭킹 — 최소 유사도 필터 → 점수 내림차순 top MAX_RESULTS, EBAY productId를 내부 ID로 치환
+        // 통합 랭킹 — 점수 내림차순 top MAX_RESULTS, EBAY productId를 내부 ID로 치환
         List<SimilarProduct> results = unified.stream()
-                .filter(c -> c.score() >= minSimilarity)
                 .sorted(Comparator.comparingDouble(UnifiedCandidate::score).reversed())
                 .limit(MAX_RESULTS)
                 .map(c -> {
