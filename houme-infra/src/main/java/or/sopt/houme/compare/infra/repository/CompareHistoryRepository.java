@@ -12,5 +12,5 @@ public interface CompareHistoryRepository
 
     List<CompareHistoryJpaEntity> findByUserIdOrderByCreatedAtDesc(Long userId, Pageable pageable);
 
-    Optional<CompareHistoryJpaEntity> findByUserIdAndSourceUrl(Long userId, String sourceUrl);
+    Optional<CompareHistoryJpaEntity> findFirstByUserIdAndSourceUrlOrderByIdDesc(Long userId, String sourceUrl);
 }

@@ -18,7 +18,7 @@ public class CompareHistoryAdapter implements SaveCompareHistoryPort, GetCompare
 
     @Override
     public void save(Long userId, String sourceUrl, String title, String thumbnail, Long price) {
-        repository.findByUserIdAndSourceUrl(userId, sourceUrl)
+        repository.findFirstByUserIdAndSourceUrlOrderByIdDesc(userId, sourceUrl)
                 .ifPresentOrElse(
                         existing -> {
                             existing.update(title, thumbnail, price);
