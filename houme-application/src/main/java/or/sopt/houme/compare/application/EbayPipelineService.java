@@ -215,7 +215,7 @@ public class EbayPipelineService {
                         double imageSim = (finalOrigImageEmb != null && c.imageEmbedding() != null)
                                 ? utils.cosineSimilarity(finalOrigImageEmb, c.imageEmbedding()) : 0.0;
                         double score = IMAGE_WEIGHT * imageSim + TEXT_WEIGHT * textSim;
-                        if (score < minSimilarity) return;
+                        if (!(score >= minSimilarity)) return;
                         unified.add(new UnifiedCandidate(new SimilarProduct(
                                 "COUPANG", c.id() != null ? String.valueOf(c.id()) : null,
                                 c.title(), c.imageUrl(), c.price(),
@@ -243,7 +243,7 @@ public class EbayPipelineService {
                         double imageSim = (finalOrigImageEmb != null && c.imageEmbedding() != null)
                                 ? utils.cosineSimilarity(finalOrigImageEmb, c.imageEmbedding()) : 0.0;
                         double score = IMAGE_WEIGHT * imageSim + TEXT_WEIGHT * textSim;
-                        if (score < minSimilarity) return;
+                        if (!(score >= minSimilarity)) return;
                         // 찜 API는 source=RAW로만 원천 상품을 조회하므로 source를 RAW로 고정
                         unified.add(new UnifiedCandidate(new SimilarProduct(
                                 "RAW", String.valueOf(c.catalogItemId()), c.title(), c.imageUrl(), c.price(),
