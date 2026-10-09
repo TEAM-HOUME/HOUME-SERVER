@@ -18,13 +18,20 @@ public class CompareHistoryAdapter implements SaveCompareHistoryPort, GetCompare
 
     @Override
     public void save(Long userId, String sourceUrl, String title, String thumbnail, Long price) {
-        repository.save(CompareHistoryJpaEntity.builder()
-                .userId(userId)
-                .sourceUrl(sourceUrl)
-                .title(title)
-                .thumbnail(thumbnail)
-                .price(price)
-                .build());
+        repository.findByUserIdAndSourceUrl(userId, sourceUrl)
+                .ifPresentOrElse(
+                        existing -> {
+                            existing.update(title, thumbnail, price);
+                            repository.save(existing);
+                        },
+                        () -> repository.save(CompareHistoryJpaEntity.builder()
+                                .userId(userId)
+                                .sourceUrl(sourceUrl)
+                                .title(title)
+                                .thumbnail(thumbnail)
+                                .price(price)
+                                .build())
+                );
     }
 
     @Override

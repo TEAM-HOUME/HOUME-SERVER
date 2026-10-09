@@ -45,4 +45,10 @@ public class CompareHistoryJpaEntity extends BaseEntity {
     @Column(name = "price")
     @Comment("스크래핑된 가격 (KRW)")
     private Long price;
+
+    public void update(String title, String thumbnail, Long price) {
+        this.title = title;
+        this.thumbnail = thumbnail;
+        this.price = price;
+    }
 }

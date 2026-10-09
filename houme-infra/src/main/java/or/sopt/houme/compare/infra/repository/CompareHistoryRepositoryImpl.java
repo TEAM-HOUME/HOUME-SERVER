@@ -32,7 +32,7 @@ public class CompareHistoryRepositoryImpl implements CompareHistoryRepositoryCus
                                         .groupBy(sub.sourceUrl)
                         )
                 )
-                .orderBy(ch.createdAt.desc())
+                .orderBy(ch.updatedAt.desc())
                 .limit(limit)
                 .fetch();
     }
