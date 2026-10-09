@@ -64,6 +64,9 @@ public class EbayPipelineService {
     @Value("${compare.pipeline.top-n:7}")
     private int topN;
 
+    @Value("${compare.pipeline.min-similarity:0.35}")
+    private double minSimilarity;
+
     @Async("imageGenerationExecutor")
     public void runAsync(CompareJob job) {
         try {
@@ -253,8 +256,9 @@ public class EbayPipelineService {
         // eBay 후보 카탈로그 저장 — ebayItemId → 내부 ID 맵 획득 후 productId 교체
         Map<String, Long> ebayIdMap = upsertToCatalog(topScored, original.category());
 
-        // 통합 랭킹 — 점수 내림차순 top MAX_RESULTS, EBAY productId를 내부 ID로 치환
+        // 통합 랭킹 — 최소 유사도 필터 → 점수 내림차순 top MAX_RESULTS, EBAY productId를 내부 ID로 치환
         List<SimilarProduct> results = unified.stream()
+                .filter(c -> c.score() >= minSimilarity)
                 .sorted(Comparator.comparingDouble(UnifiedCandidate::score).reversed())
                 .limit(MAX_RESULTS)
                 .map(c -> {
