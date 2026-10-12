@@ -64,6 +64,9 @@ public class EbayPipelineService {
     @Value("${compare.pipeline.top-n:7}")
     private int topN;
 
+    @Value("${compare.pipeline.min-similarity:0.35}")
+    private double minSimilarity;
+
     @Async("imageGenerationExecutor")
     public void runAsync(CompareJob job) {
         try {
@@ -186,7 +189,9 @@ public class EbayPipelineService {
 
         // eBay 스코어링 결과
         List<UnifiedCandidate> unified = new java.util.ArrayList<>();
-        topScored.forEach(s -> unified.add(new UnifiedCandidate(toSimilarProduct(s.item(), s.score()), s.score())));
+        topScored.stream()
+                .filter(s -> s.score() >= minSimilarity)
+                .forEach(s -> unified.add(new UnifiedCandidate(toSimilarProduct(s.item(), s.score()), s.score())));
         job.markEbayDone();
         trySave(job);
 
@@ -210,6 +215,7 @@ public class EbayPipelineService {
                         double imageSim = (finalOrigImageEmb != null && c.imageEmbedding() != null)
                                 ? utils.cosineSimilarity(finalOrigImageEmb, c.imageEmbedding()) : 0.0;
                         double score = IMAGE_WEIGHT * imageSim + TEXT_WEIGHT * textSim;
+                        if (!(score >= minSimilarity)) return;
                         unified.add(new UnifiedCandidate(new SimilarProduct(
                                 "COUPANG", c.id() != null ? String.valueOf(c.id()) : null,
                                 c.title(), c.imageUrl(), c.price(),
@@ -237,6 +243,7 @@ public class EbayPipelineService {
                         double imageSim = (finalOrigImageEmb != null && c.imageEmbedding() != null)
                                 ? utils.cosineSimilarity(finalOrigImageEmb, c.imageEmbedding()) : 0.0;
                         double score = IMAGE_WEIGHT * imageSim + TEXT_WEIGHT * textSim;
+                        if (!(score >= minSimilarity)) return;
                         // 찜 API는 source=RAW로만 원천 상품을 조회하므로 source를 RAW로 고정
                         unified.add(new UnifiedCandidate(new SimilarProduct(
                                 "RAW", String.valueOf(c.catalogItemId()), c.title(), c.imageUrl(), c.price(),

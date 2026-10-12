@@ -172,6 +172,7 @@ compare:
   pipeline:
     top-n: 7
     usd-to-krw-rate: 1350
+    min-similarity: 0.35
 
 logging:
   level:
