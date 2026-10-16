@@ -121,6 +121,26 @@ class ProductPageScrapeAdapterTest {
         assertThat(product.hasEssentials()).isTrue();
     }
 
+    @Test
+    @DisplayName("이케아 할인 상품처럼 판매가가 AggregateOffer 안쪽 offers 에만 있어도 가격을 건진다")
+    void AggregateOffer_안쪽_offers_에서_판매가를_건진다() {
+        ScrapedProduct product = scrape("scrape/ikea-sale-product.html");
+
+        // 기존가(highPrice 149,000)가 아니라 지금 파는 가격이어야 한다
+        assertThat(product.price()).isEqualTo(129000L);
+        assertThat(product.currency()).isEqualTo("KRW");
+        assertThat(product.hasEssentials()).isTrue();
+    }
+
+    @Test
+    @DisplayName("안쪽 offers 없이 가격 범위만 둔 AggregateOffer 는 최저가를 판매가로 쓴다")
+    void AggregateOffer_의_최저가를_판매가로_쓴다() {
+        ScrapedProduct product = scrape("scrape/aggregate-offer-product.html");
+
+        assertThat(product.price()).isEqualTo(89L);
+        assertThat(product.currency()).isEqualTo("USD");
+    }
+
     private ScrapedProduct scrape(String fixturePath) {
         when(productPageFetcher.fetch(anyString())).thenReturn(loadFixture(fixturePath));
         return adapter.scrape(new SourceUrl(SOURCE_URL));

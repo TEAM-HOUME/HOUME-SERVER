@@ -114,7 +114,7 @@ public class JsonLdProductParser implements ProductPageParser {
         List<String> images = readImages(product.get("image"), sourceUrl);
         JsonNode offer = firstOffer(product.get("offers"));
 
-        String priceText = offer == null ? null : text(offer.get("price"));
+        String priceText = priceTextOf(offer);
         Long price = priceTextParser.parseAmount(priceText).orElse(null);
         String currency = price == null
                 ? null
@@ -162,14 +162,45 @@ public class JsonLdProductParser implements ProductPageParser {
         return brandNode.isObject() ? text(brandNode.get("name")) : text(brandNode);
     }
 
+    /**
+     * 가격을 읽을 offer 를 고른다. 배열이면 첫 번째 것을 쓴다.
+     *
+     * <p>할인 중인 상품(이케아 등)은 {@code AggregateOffer} 로 내려와 자기 {@code price} 가 없고,
+     * 판매가는 안쪽 {@code offers} 에만 있다. 그런 경우 안쪽 offer 를 고른다.
+     */
     private JsonNode firstOffer(JsonNode offersNode) {
         if (offersNode == null || offersNode.isNull()) {
             return null;
         }
         if (offersNode.isArray()) {
-            return offersNode.isEmpty() ? null : offersNode.get(0);
+            if (offersNode.isEmpty()) {
+                return null;
+            }
+            return firstOffer(offersNode.get(0));
+        }
+        if (text(offersNode.get("price")) != null) {
+            return offersNode;
+        }
+        JsonNode inner = firstOffer(offersNode.get("offers"));
+        if (inner != null && text(inner.get("price")) != null) {
+            return inner;
         }
         return offersNode;
+    }
+
+    /**
+     * offer 의 판매가 문자열. 안쪽 offer 없이 가격 범위만 둔 {@code AggregateOffer} 는
+     * {@code price} 대신 {@code lowPrice}(최저가) 에 판매가를 둔다.
+     */
+    private String priceTextOf(JsonNode offer) {
+        if (offer == null) {
+            return null;
+        }
+        String price = text(offer.get("price"));
+        if (price != null) {
+            return price;
+        }
+        return text(offer.get("lowPrice"));
     }
 
     private String text(JsonNode node) {
