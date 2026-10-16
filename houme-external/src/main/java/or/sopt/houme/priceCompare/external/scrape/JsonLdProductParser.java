@@ -118,8 +118,7 @@ public class JsonLdProductParser implements ProductPageParser {
         Long price = priceTextParser.parseAmount(priceText).orElse(null);
         String currency = price == null
                 ? null
-                : priceTextParser.resolveCurrency(
-                        offer == null ? null : text(offer.get("priceCurrency")), priceText, hostOf(sourceUrl));
+                : priceTextParser.resolveCurrency(currencyOf(offer), priceText, hostOf(sourceUrl));
 
         return new ScrapedProduct(
                 sourceUrl,
@@ -191,6 +190,7 @@ public class JsonLdProductParser implements ProductPageParser {
     /**
      * offer 의 판매가 문자열. 안쪽 offer 없이 가격 범위만 둔 {@code AggregateOffer} 는
      * {@code price} 대신 {@code lowPrice}(최저가) 에 판매가를 둔다.
+     * 할인 중인 이케아 상품처럼 가격이 {@code priceSpecification} 에만 있으면 거기서 판매가를 읽는다.
      */
     private String priceTextOf(JsonNode offer) {
         if (offer == null) {
@@ -200,7 +200,58 @@ public class JsonLdProductParser implements ProductPageParser {
         if (price != null) {
             return price;
         }
-        return text(offer.get("lowPrice"));
+        String lowPrice = text(offer.get("lowPrice"));
+        if (lowPrice != null) {
+            return lowPrice;
+        }
+        JsonNode spec = sellingPriceSpecification(offer);
+        if (spec == null) {
+            return null;
+        }
+        return text(spec.get("price"));
+    }
+
+    private String currencyOf(JsonNode offer) {
+        if (offer == null) {
+            return null;
+        }
+        String currency = text(offer.get("priceCurrency"));
+        if (currency != null) {
+            return currency;
+        }
+        JsonNode spec = sellingPriceSpecification(offer);
+        if (spec == null) {
+            return null;
+        }
+        return text(spec.get("priceCurrency"));
+    }
+
+    /**
+     * {@code priceSpecification} 에서 판매가 항목을 고른다.
+     * 판매가와 함께 취소선 정가({@code priceType=StrikethroughPrice})가 들어오므로 정가는 건너뛴다.
+     */
+    private JsonNode sellingPriceSpecification(JsonNode offer) {
+        JsonNode specsNode = offer.get("priceSpecification");
+        if (specsNode == null || specsNode.isNull()) {
+            return null;
+        }
+        List<JsonNode> specs = new ArrayList<>();
+        if (specsNode.isArray()) {
+            specsNode.forEach(specs::add);
+        } else {
+            specs.add(specsNode);
+        }
+        for (JsonNode spec : specs) {
+            if (!isStrikethroughPrice(spec) && text(spec.get("price")) != null) {
+                return spec;
+            }
+        }
+        return null;
+    }
+
+    private boolean isStrikethroughPrice(JsonNode spec) {
+        String priceType = text(spec.get("priceType"));
+        return priceType != null && priceType.endsWith("StrikethroughPrice");
     }
 
     private String text(JsonNode node) {

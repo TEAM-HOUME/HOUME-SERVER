@@ -133,6 +133,17 @@ class ProductPageScrapeAdapterTest {
     }
 
     @Test
+    @DisplayName("이케아 할인 상품처럼 가격이 priceSpecification 에만 있으면 취소선 정가가 아닌 판매가를 건진다")
+    void priceSpecification_에서_판매가를_건진다() {
+        ScrapedProduct product = scrape("scrape/ikea-price-spec-product.html");
+
+        // 취소선 정가(14,900)가 아니라 지금 파는 가격이어야 한다
+        assertThat(product.price()).isEqualTo(12900L);
+        assertThat(product.currency()).isEqualTo("KRW");
+        assertThat(product.hasEssentials()).isTrue();
+    }
+
+    @Test
     @DisplayName("안쪽 offers 없이 가격 범위만 둔 AggregateOffer 는 최저가를 판매가로 쓴다")
     void AggregateOffer_의_최저가를_판매가로_쓴다() {
         ScrapedProduct product = scrape("scrape/aggregate-offer-product.html");
