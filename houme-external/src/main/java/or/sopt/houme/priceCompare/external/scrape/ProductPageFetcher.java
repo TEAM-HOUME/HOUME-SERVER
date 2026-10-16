@@ -11,11 +11,13 @@ import org.springframework.stereotype.Component;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.CookieManager;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
@@ -35,7 +37,8 @@ public class ProductPageFetcher {
 
     private static final Duration CONNECT_TIMEOUT = Duration.ofSeconds(3);
     private static final Duration REQUEST_TIMEOUT = Duration.ofSeconds(7);
-    private static final int MAX_REDIRECTS = 3;
+    /** 오늘의집 앱 공유 링크(ozip.me)는 상품 페이지까지 4번 이동한다. 여유를 한 번 둔다. */
+    private static final int MAX_REDIRECTS = 5;
     private static final int MAX_BODY_BYTES = 3 * 1024 * 1024;
 
     /**
@@ -74,10 +77,13 @@ public class ProductPageFetcher {
 
     public Document fetch(String url) {
         URI target = URI.create(url);
+        // 앱 공유 링크의 추적 서버는 쿠키를 심고 자기 자신으로 되돌려 보내, 쿠키를 돌려받아야 다음으로 넘겨준다.
+        // 그래서 브라우저처럼 쿠키를 들고 따라가되, 이 요청 안에서만 쓴다. 공유하면 다른 사용자 요청과 섞인다.
+        CookieManager cookies = new CookieManager();
 
         for (int hop = 0; hop <= MAX_REDIRECTS; hop++) {
             sourceUrlValidator.validate(target);
-            HttpResponse<InputStream> response = send(target);
+            HttpResponse<InputStream> response = send(target, cookies);
 
             Optional<URI> redirect = redirectTarget(response, target);
             if (redirect.isPresent()) {
@@ -109,7 +115,7 @@ public class ProductPageFetcher {
      */
     public Optional<URI> redirectLocation(URI target) {
         sourceUrlValidator.validate(target);
-        HttpResponse<InputStream> response = send(target);
+        HttpResponse<InputStream> response = send(target, new CookieManager());
         try {
             return redirectTarget(response, target);
         } finally {
@@ -125,21 +131,31 @@ public class ProductPageFetcher {
         }
     }
 
-    private HttpResponse<InputStream> send(URI target) {
+    private HttpResponse<InputStream> send(URI target, CookieManager cookies) {
         HttpRequest.Builder builder = HttpRequest.newBuilder()
                 .uri(target)
                 .timeout(REQUEST_TIMEOUT)
                 .GET();
         BROWSER_HEADERS.forEach(builder::header);
-        HttpRequest request = builder.build();
         try {
-            return httpClient.send(request, HttpResponse.BodyHandlers.ofInputStream());
+            addCookies(builder, cookies, target);
+            HttpResponse<InputStream> response = httpClient.send(builder.build(), HttpResponse.BodyHandlers.ofInputStream());
+            cookies.put(target, response.headers().map());
+            return response;
         } catch (IOException e) {
             log.warn("상품 페이지 요청 실패: url={}, message={}", target, e.getMessage());
             throw new PriceCompareException(ErrorCode.PRODUCT_PAGE_FETCH_FAILED);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             throw new PriceCompareException(ErrorCode.PRODUCT_PAGE_FETCH_FAILED);
+        }
+    }
+
+    /** 앞선 응답에서 받아 둔 쿠키 중 이 주소로 보낼 것을 붙인다. 어느 주소에 보낼지는 브라우저와 같은 규칙을 따른다. */
+    private void addCookies(HttpRequest.Builder builder, CookieManager cookies, URI target) throws IOException {
+        List<String> stored = cookies.get(target, Map.of()).getOrDefault("Cookie", List.of());
+        if (!stored.isEmpty()) {
+            builder.header("Cookie", String.join("; ", stored));
         }
     }
 
