@@ -56,6 +56,55 @@ class SourceUrlTest {
     }
 
     @ParameterizedTest(name = "[{index}] {0}")
+    @DisplayName("쿠팡 상품 URL 은 공유 경로와 무관하게 상품 ID 만 남긴 데스크톱 URL 로 모은다")
+    @ValueSource(strings = {
+            "https://www.coupang.com/vp/products/7335597976",
+            "https://www.coupang.com/vp/products/7335597976?itemId=18855165010&vendorItemId=86960985090",
+            "https://m.coupang.com/vm/products/7335597976?itemId=18855165010",
+            "coupang.com/vp/products/7335597976/?clickEventId=5328bd30",
+            "https://WWW.COUPANG.COM/vp/products/7335597976#sdpReview"
+    })
+    void 쿠팡_상품_URL_을_정규형으로_모은다(String rawInput) {
+        SourceUrl url = SourceUrl.normalize(rawInput);
+
+        assertThat(url.value()).isEqualTo("https://www.coupang.com/vp/products/7335597976");
+        assertThat(url.coupangProductId()).contains("7335597976");
+    }
+
+    @Test
+    @DisplayName("쿠팡이어도 상품 상세가 아닌 경로는 쿼리를 보존하고 상품 ID 도 없다")
+    void 쿠팡_상품_상세가_아니면_그대로_둔다() {
+        SourceUrl url = SourceUrl.normalize("https://www.coupang.com/np/search?q=sofa");
+
+        assertThat(url.value()).isEqualTo("https://www.coupang.com/np/search?q=sofa");
+        assertThat(url.coupangProductId()).isEmpty();
+    }
+
+    @Test
+    @DisplayName("쿠팡이 아닌 몰은 상품 ID 가 없다")
+    void 쿠팡이_아니면_상품_ID_가_없다() {
+        assertThat(SourceUrl.normalize("https://ohou.se/productions/123").coupangProductId()).isEmpty();
+    }
+
+    @ParameterizedTest(name = "[{index}] {0}")
+    @DisplayName("쿠팡 앱 공유·파트너스 링크는 단축 링크로 본다")
+    @ValueSource(strings = {
+            "https://link.coupang.com/a/bQ7xyz",
+            "https://link.coupang.com/re/AFFSDP?lptag=AF1234567&pageKey=7335597976",
+            "coupa.ng/bKjSxL"
+    })
+    void 쿠팡_단축_링크를_알아본다(String rawInput) {
+        assertThat(SourceUrl.normalize(rawInput).isCoupangShortLink()).isTrue();
+    }
+
+    @ParameterizedTest(name = "[{index}] {0}")
+    @DisplayName("쿠팡 상품 URL 과 다른 몰 URL 은 단축 링크가 아니다")
+    @ValueSource(strings = {"https://www.coupang.com/vp/products/7335597976", "https://ohou.se/productions/123"})
+    void 단축_링크가_아니다(String rawInput) {
+        assertThat(SourceUrl.normalize(rawInput).isCoupangShortLink()).isFalse();
+    }
+
+    @ParameterizedTest(name = "[{index}] {0}")
     @DisplayName("URL 로 볼 수 없는 입력은 INVALID_PRODUCT_URL 로 거절한다")
     @ValueSource(strings = {"", "   ", "http://"})
     void 유효하지_않은_입력은_거절한다(String rawInput) {

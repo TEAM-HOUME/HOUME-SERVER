@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Mid-Century Accent Chair - Example Mall</title>
+
+    <!--
+      옵션(색상·사이즈)마다 가격이 달라 단일 price 대신 가격 범위만 두는 AggregateOffer.
+      안쪽 offers 가 없으므로 최저가(lowPrice)를 판매가로 써야 한다.
+      통화도 AggregateOffer 에 적힌 값(USD)을 따라야 한다 — 호스트(.kr)로 추정하면 KRW 가 된다.
+    -->
+    <meta property="og:title" content="Mid-Century Accent Chair"/>
+    <meta property="og:image" content="https://example-mall.co.kr/images/products/chair-main.jpg"/>
+
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Product",
+      "name": "Mid-Century Accent Chair",
+      "image": "https://example-mall.co.kr/images/products/chair-main.jpg",
+      "brand": { "@type": "Brand", "name": "Example Living" },
+      "offers": {
+        "@type": "AggregateOffer",
+        "lowPrice": "89.99",
+        "highPrice": "129.99",
+        "priceCurrency": "USD",
+        "offerCount": 3
+      }
+    }
+    </script>
+</head>
+<body>
+<h1>Mid-Century Accent Chair</h1>
+</body>
+</html>

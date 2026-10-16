@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>ÅFJÄLL 오피엘 폼매트리스, 단단함/화이트, 90x200 cm  - IKEA</title>
+
+    <!--
+      이케아 할인 상품 페이지의 구조를 본뜬 픽스처.
+      할인 중인 상품은 offers 가 AggregateOffer 가 되어 자기 price 가 없고,
+      판매가는 안쪽 offers[0].price 에만 있다. highPrice 는 기존가(149,000), lowPrice 는 판매가(129,000)다.
+      OG 에는 가격 태그가 없으므로, JSON-LD 에서 못 읽으면 가격이 통째로 빈다.
+    -->
+    <meta name="og:title" content="ÅFJÄLL 오피엘 폼매트리스, 단단함/화이트, 90x200 cm"/>
+    <meta property="og:title" content="ÅFJÄLL 오피엘 폼매트리스, 단단함/화이트, 90x200 cm  - IKEA"/>
+    <meta property="og:type" content="product"/>
+    <meta property="og:image" content="https://www.ikea.com/kr/ko/images/products/afjaell-foam-mattress-firm-white__0986620_pe818094_s5.jpg"/>
+    <meta property="og:url" content="https://www.ikea.com/kr/ko/p/afjaell-foam-mattress-firm-white-70568635/"/>
+    <meta property="og:site_name" content="IKEA"/>
+
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org/",
+      "@type": "Product",
+      "aggregateRating": { "@type": "AggregateRating", "ratingValue": "4", "reviewCount": "1266" },
+      "brand": { "@type": "Brand", "name": "IKEA" },
+      "category": "폼/라텍스/하이브리드 매트리스",
+      "color": "화이트",
+      "description": "ÅFJÄLL 오피엘 폼매트리스 - 단단함/화이트 90x200 cm. 단일 폼은 편안하고 안정적인 수면을 선사합니다.",
+      "image": [
+        {
+          "@type": "ImageObject",
+          "contentUrl": "https://www.ikea.com/kr/ko/images/products/afjaell-foam-mattress-firm-white__0986620_pe818094_s5.jpg",
+          "height": "2000px",
+          "width": "2000px"
+        }
+      ],
+      "mpn": "705.686.35",
+      "name": "ÅFJÄLL 오피엘 폼매트리스 - 단단함/화이트 90x200 cm",
+      "offers": {
+        "@type": "AggregateOffer",
+        "highPrice": "149000",
+        "lowPrice": "129000",
+        "offercount": 1,
+        "offers": [
+          {
+            "@type": "Offer",
+            "availability": "https://schema.org/InStock",
+            "itemCondition": "https://schema.org/NewCondition",
+            "price": "129000",
+            "priceCurrency": "KRW",
+            "priceValidUntil": "2027-08-27Z",
+            "seller": { "@type": "Organization", "name": "IKEA", "url": "https://www.ikea.com/kr/ko/" },
+            "url": "https://www.ikea.com/kr/ko/p/afjaell-foam-mattress-firm-white-70568635/"
+          }
+        ],
+        "priceCurrency": "KRW"
+      },
+      "sku": "705.686.35",
+      "url": "https://www.ikea.com/kr/ko/p/afjaell-foam-mattress-firm-white-70568635/"
+    }
+    </script>
+</head>
+<body>
+<h1>ÅFJÄLL 오피엘 폼매트리스</h1>
+</body>
+</html>

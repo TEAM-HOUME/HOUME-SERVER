@@ -28,6 +28,11 @@ public class CoupangProductAdapter implements CoupangProductPort {
                 .collect(Collectors.toList());
     }
 
+    @Override
+    public Optional<CoupangProduct> findByCoupangProductId(String coupangProductId) {
+        return repository.findByCoupangProductId(coupangProductId).map(this::toDomain);
+    }
+
     private CoupangProduct toDomain(or.sopt.houme.domain.coupang.model.entity.CoupangProductJpaEntity e) {
         return new CoupangProduct(
                 e.getId(),

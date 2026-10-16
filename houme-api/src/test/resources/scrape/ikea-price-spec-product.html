@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>DAGOTTO 다고토 발받침, 블랙  - IKEA</title>
+
+    <!--
+      이케아 할인 상품 페이지의 구조를 본뜬 픽스처 (2026-10 기준).
+      할인 중인 상품은 offers 가 Offer 지만 자기 price 가 없고, 가격이 priceSpecification 목록에만 있다.
+      목록에는 판매가(12,900)와 취소선 정가(priceType=StrikethroughPrice, 14,900)가 함께 들어 있다.
+      실제 페이지는 판매가가 앞에 오지만 순서가 보장되지 않으므로, 여기서는 정가를 앞에 둔다.
+      OG 에는 가격 태그가 없으므로, JSON-LD 에서 못 읽으면 가격이 통째로 빈다.
+    -->
+    <meta name="og:title" content="DAGOTTO 다고토 발받침, 블랙"/>
+    <meta property="og:title" content="DAGOTTO 다고토 발받침, 블랙  - IKEA"/>
+    <meta property="og:type" content="product"/>
+    <meta property="og:image" content="https://www.ikea.com/kr/ko/images/products/dagotto-foot-rest-black__0156454_pe315498_s5.jpg"/>
+    <meta property="og:url" content="https://www.ikea.com/kr/ko/p/dagotto-foot-rest-black-20240990/"/>
+    <meta property="og:site_name" content="IKEA"/>
+
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org/",
+      "@type": "Product",
+      "brand": { "@type": "Brand", "name": "IKEA" },
+      "category": "책상 소품/정리용품",
+      "color": "그레이, 블랙",
+      "description": "DAGOTTO 다고토 발받침 - 블랙. 편안한 자세로 책상에 앉을 수 있고 다리와 등, 목의 긴장감을 줄여줍니다.",
+      "image": [
+        {
+          "@type": "ImageObject",
+          "contentUrl": "https://www.ikea.com/kr/ko/images/products/dagotto-foot-rest-black__0156454_pe315498_s5.jpg",
+          "height": "2000px",
+          "width": "2000px"
+        }
+      ],
+      "mpn": "202.409.90",
+      "name": "DAGOTTO 다고토 발받침 - 블랙",
+      "offers": {
+        "@type": "Offer",
+        "availability": "https://schema.org/InStock",
+        "itemCondition": "https://schema.org/NewCondition",
+        "priceSpecification": [
+          {
+            "@type": "UnitPriceSpecification",
+            "price": "14900",
+            "priceCurrency": "KRW",
+            "priceType": "https://schema.org/StrikethroughPrice"
+          },
+          {
+            "@type": "UnitPriceSpecification",
+            "price": "12900",
+            "priceCurrency": "KRW",
+            "validFrom": "2026-08-27Z",
+            "validThrough": "2027-08-27Z"
+          }
+        ],
+        "seller": { "@type": "Organization", "name": "IKEA", "url": "https://www.ikea.com/kr/ko/" },
+        "url": "https://www.ikea.com/kr/ko/p/dagotto-foot-rest-black-20240990/"
+      },
+      "sku": "202.409.90",
+      "url": "https://www.ikea.com/kr/ko/p/dagotto-foot-rest-black-20240990/"
+    }
+    </script>
+</head>
+<body>
+<h1>DAGOTTO 다고토 발받침</h1>
+</body>
+</html>

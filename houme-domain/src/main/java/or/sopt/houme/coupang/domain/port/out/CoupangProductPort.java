@@ -8,4 +8,5 @@ import java.util.Optional;
 public interface CoupangProductPort {
     Optional<CoupangProduct> findById(Long id);
     List<CoupangProduct> findAllByIdIn(List<Long> ids);
+    Optional<CoupangProduct> findByCoupangProductId(String coupangProductId);
 }

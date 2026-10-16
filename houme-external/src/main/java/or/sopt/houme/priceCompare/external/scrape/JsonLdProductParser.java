@@ -114,12 +114,11 @@ public class JsonLdProductParser implements ProductPageParser {
         List<String> images = readImages(product.get("image"), sourceUrl);
         JsonNode offer = firstOffer(product.get("offers"));
 
-        String priceText = offer == null ? null : text(offer.get("price"));
+        String priceText = priceTextOf(offer);
         Long price = priceTextParser.parseAmount(priceText).orElse(null);
         String currency = price == null
                 ? null
-                : priceTextParser.resolveCurrency(
-                        offer == null ? null : text(offer.get("priceCurrency")), priceText, hostOf(sourceUrl));
+                : priceTextParser.resolveCurrency(currencyOf(offer), priceText, hostOf(sourceUrl));
 
         return new ScrapedProduct(
                 sourceUrl,
@@ -162,14 +161,97 @@ public class JsonLdProductParser implements ProductPageParser {
         return brandNode.isObject() ? text(brandNode.get("name")) : text(brandNode);
     }
 
+    /**
+     * 가격을 읽을 offer 를 고른다. 배열이면 첫 번째 것을 쓴다.
+     *
+     * <p>할인 중인 상품(이케아 등)은 {@code AggregateOffer} 로 내려와 자기 {@code price} 가 없고,
+     * 판매가는 안쪽 {@code offers} 에만 있다. 그런 경우 안쪽 offer 를 고른다.
+     */
     private JsonNode firstOffer(JsonNode offersNode) {
         if (offersNode == null || offersNode.isNull()) {
             return null;
         }
         if (offersNode.isArray()) {
-            return offersNode.isEmpty() ? null : offersNode.get(0);
+            if (offersNode.isEmpty()) {
+                return null;
+            }
+            return firstOffer(offersNode.get(0));
+        }
+        if (text(offersNode.get("price")) != null) {
+            return offersNode;
+        }
+        JsonNode inner = firstOffer(offersNode.get("offers"));
+        if (inner != null && text(inner.get("price")) != null) {
+            return inner;
         }
         return offersNode;
+    }
+
+    /**
+     * offer 의 판매가 문자열. 안쪽 offer 없이 가격 범위만 둔 {@code AggregateOffer} 는
+     * {@code price} 대신 {@code lowPrice}(최저가) 에 판매가를 둔다.
+     * 할인 중인 이케아 상품처럼 가격이 {@code priceSpecification} 에만 있으면 거기서 판매가를 읽는다.
+     */
+    private String priceTextOf(JsonNode offer) {
+        if (offer == null) {
+            return null;
+        }
+        String price = text(offer.get("price"));
+        if (price != null) {
+            return price;
+        }
+        String lowPrice = text(offer.get("lowPrice"));
+        if (lowPrice != null) {
+            return lowPrice;
+        }
+        JsonNode spec = sellingPriceSpecification(offer);
+        if (spec == null) {
+            return null;
+        }
+        return text(spec.get("price"));
+    }
+
+    private String currencyOf(JsonNode offer) {
+        if (offer == null) {
+            return null;
+        }
+        String currency = text(offer.get("priceCurrency"));
+        if (currency != null) {
+            return currency;
+        }
+        JsonNode spec = sellingPriceSpecification(offer);
+        if (spec == null) {
+            return null;
+        }
+        return text(spec.get("priceCurrency"));
+    }
+
+    /**
+     * {@code priceSpecification} 에서 판매가 항목을 고른다.
+     * 판매가와 함께 취소선 정가({@code priceType=StrikethroughPrice})가 들어오므로 정가는 건너뛴다.
+     */
+    private JsonNode sellingPriceSpecification(JsonNode offer) {
+        JsonNode specsNode = offer.get("priceSpecification");
+        if (specsNode == null || specsNode.isNull()) {
+            return null;
+        }
+        List<JsonNode> specs = new ArrayList<>();
+        if (specsNode.isArray()) {
+            specsNode.forEach(specs::add);
+        } else {
+            specs.add(specsNode);
+        }
+        for (JsonNode spec : specs) {
+            if (!isStrikethroughPrice(spec) && text(spec.get("price")) != null) {
+                return spec;
+            }
+        }
+        return null;
+    }
+
+    private boolean isStrikethroughPrice(JsonNode spec) {
+        String priceType = text(spec.get("priceType"));
+        return priceType != null && priceType.endsWith("StrikethroughPrice");
     }
 
     private String text(JsonNode node) {
