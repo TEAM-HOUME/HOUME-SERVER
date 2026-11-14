@@ -88,7 +88,7 @@ public class GeminiEmbeddingAdapter implements EmbeddingPort {
         try {
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(URI.create(url))
-                    .timeout(Duration.ofSeconds(15))
+                    .timeout(Duration.ofSeconds(5))
                     .header("User-Agent", "Houme-Compare/1.0")
                     .GET()
                     .build();
