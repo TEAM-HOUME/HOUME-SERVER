@@ -148,7 +148,7 @@ public class FurnitureFacadeImpl implements FurnitureFacade {
                         5);
 
         // 4. 최종 응답 조립 (Facade 책임)
-        return FurnitureProductsInfoResponseForPlan.of(user.getName(), infos);
+        return FurnitureProductsInfoResponseForPlan.of(user != null ? user.getName() : null, infos);
     }
 
 
@@ -191,6 +191,6 @@ public class FurnitureFacadeImpl implements FurnitureFacade {
                 );
 
         // 4. 최종 응답 조립 (Facade 책임)
-        return FurnitureProductsInfoResponseForPlan.of(user.getName(), infos);
+        return FurnitureProductsInfoResponseForPlan.of(user != null ? user.getName() : null, infos);
     }
 }

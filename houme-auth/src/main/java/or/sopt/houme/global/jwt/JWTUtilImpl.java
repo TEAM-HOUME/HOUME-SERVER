@@ -2,6 +2,7 @@ package or.sopt.houme.global.jwt;
 
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
+import or.sopt.houme.domain.user.model.entity.Role;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -13,6 +14,10 @@ import java.util.UUID;
 
 @Component
 public class JWTUtilImpl implements JWTUtil {
+
+    // 어드민 토큰 식별용 클레임. 회원 토큰에는 이 클레임이 없다.
+    private static final String PRINCIPAL_TYPE_CLAIM = "principalType";
+    private static final String ADMIN_PRINCIPAL_TYPE = "ADMIN";
 
     private final SecretKey secretKey;
 
@@ -132,5 +137,33 @@ public class JWTUtilImpl implements JWTUtil {
                 .setExpiration(new Date(System.currentTimeMillis() + expiredMs))
                 .signWith(secretKey)
                 .compact();
+    }
+
+    @Override
+    public String createAdminAccessToken(Long adminId, long expiredSeconds) {
+        long now = System.currentTimeMillis();
+
+        return Jwts.builder()
+                .claim("category", "access")
+                .claim("id", adminId)
+                .claim("role", Role.ROLE_ADMIN.name())
+                .claim(PRINCIPAL_TYPE_CLAIM, ADMIN_PRINCIPAL_TYPE)
+                .setId(UUID.randomUUID().toString())
+                .setIssuedAt(new Date(now))
+                .setExpiration(new Date(now + expiredSeconds * 1000L))
+                .signWith(secretKey)
+                .compact();
+    }
+
+    @Override
+    public boolean isAdminToken(String token) {
+        String principalType = Jwts.parserBuilder()
+                .setSigningKey(secretKey)
+                .build()
+                .parseClaimsJws(token)
+                .getBody()
+                .get(PRINCIPAL_TYPE_CLAIM, String.class);
+
+        return ADMIN_PRINCIPAL_TYPE.equals(principalType);
     }
 }

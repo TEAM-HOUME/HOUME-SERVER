@@ -8,6 +8,7 @@ import or.sopt.houme.domain.user.model.entity.Role;
 import or.sopt.houme.user.domain.User;
 import or.sopt.houme.domain.user.presentation.controller.dto.CustomUserDetails;
 import or.sopt.houme.domain.user.presentation.controller.dto.CustomUserDetailsService;
+import or.sopt.houme.user.domain.port.out.AdminRepositoryPort;
 import or.sopt.houme.domain.user.repository.BlacklistTokenRepository;
 import or.sopt.houme.global.config.JWTConfig;
 import or.sopt.houme.global.jwt.JWTUtil;
@@ -69,6 +70,9 @@ class JjymV2ControllerTest {
 
     @MockBean
     private CustomUserDetailsService customUserDetailsService;
+
+    @MockBean
+    private AdminRepositoryPort adminRepositoryPort;
 
     @MockBean
     private LegacyApiCallHistoryService legacyApiCallHistoryService;

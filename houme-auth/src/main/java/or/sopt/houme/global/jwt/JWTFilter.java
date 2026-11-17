@@ -8,10 +8,12 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import or.sopt.houme.domain.user.presentation.controller.dto.AdminPrincipal;
 import or.sopt.houme.domain.user.presentation.controller.dto.CustomUserDetails;
 import or.sopt.houme.domain.user.presentation.controller.dto.CustomUserDetailsService;
 import or.sopt.houme.domain.user.model.entity.Role;
 import or.sopt.houme.user.domain.User;
+import or.sopt.houme.user.domain.port.out.AdminRepositoryPort;
 import or.sopt.houme.domain.user.repository.BlacklistTokenRepository;
 import or.sopt.houme.global.api.ErrorCode;
 import or.sopt.houme.global.config.JWTConfig;
@@ -20,6 +22,7 @@ import or.sopt.houme.global.logging.TraceIdFilter;
 import org.slf4j.MDC;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
@@ -46,6 +49,7 @@ public class JWTFilter extends OncePerRequestFilter {
     private final JWTConfig jwtConfig;
     private final BlacklistTokenRepository blacklistTokenRepository;
     private final CustomUserDetailsService customUserDetailsService;
+    private final AdminRepositoryPort adminRepositoryPort;
 
     private static final AntPathMatcher pathMatcher = new AntPathMatcher();
     private static final List<String> ALL_WHITELIST = Stream.of(
@@ -139,6 +143,12 @@ public class JWTFilter extends OncePerRequestFilter {
             return;
         }
 
+        // 어드민 토큰은 admins 테이블 기준으로 인증한다 (users 테이블과 id 체계가 다르다)
+        if (jwtUtil.isAdminToken(accessToken)) {
+            authenticateAdmin(accessToken, request, response, filterChain);
+            return;
+        }
+
         //토큰에서 id와 role 획득
         Long id = jwtUtil.getId(accessToken);
         String roleString = jwtUtil.getRole(accessToken);
@@ -161,6 +171,20 @@ public class JWTFilter extends OncePerRequestFilter {
          * */
         CustomUserDetails customUserDetails = customUserDetailsService.loadUserById(id);
 
+        /**
+         * #696 이전에 발급된 어드민 토큰은 principalType 클레임 없이 role=ROLE_ADMIN 과 admins 테이블 id를 담고 있어,
+         * 회원 토큰처럼 처리되면 id가 같은 다른 회원으로 인증된다.
+         * 회원 토큰은 발급 시점의 회원 role을 담으므로, role 클레임이 ROLE_ADMIN인데 회원이 어드민이 아니면 거부한다.
+         * */
+        if (role == Role.ROLE_ADMIN && customUserDetails.getUser().getRole() != Role.ROLE_ADMIN) {
+            if (isWhitelisted(request.getRequestURI())) {
+                filterChain.doFilter(request, response);
+                return;
+            }
+            setErrorResponse(response, ErrorCode.INVALID_TOKEN);
+            return;
+        }
+
         //스프링 시큐리티 인증 토큰 생성
         Authentication authToken = new UsernamePasswordAuthenticationToken(customUserDetails, null, customUserDetails.getAuthorities());
         //세션에 사용자 등록
@@ -168,6 +192,30 @@ public class JWTFilter extends OncePerRequestFilter {
 
         // 인증된 사용자 ID를 MDC에 실어 이후 모든 로그 라인에 포함시킨다 (정리는 TraceIdFilter가 담당)
         MDC.put(TraceIdFilter.USER_ID_MDC_KEY, String.valueOf(id));
+
+        filterChain.doFilter(request, response);
+    }
+
+
+    private void authenticateAdmin(String accessToken, HttpServletRequest request, HttpServletResponse response,
+                                   FilterChain filterChain) throws ServletException, IOException {
+        Long adminId = jwtUtil.getId(accessToken);
+
+        if (!adminRepositoryPort.existsById(adminId)) {
+            if (isWhitelisted(request.getRequestURI())) {
+                filterChain.doFilter(request, response);
+                return;
+            }
+            setErrorResponse(response, ErrorCode.ADMIN_NOT_FOUND);
+            return;
+        }
+
+        AdminPrincipal adminPrincipal = new AdminPrincipal(adminId);
+        Authentication authToken = new UsernamePasswordAuthenticationToken(
+                adminPrincipal, null, List.of(new SimpleGrantedAuthority(Role.ROLE_ADMIN.name())));
+        SecurityContextHolder.getContext().setAuthentication(authToken);
+
+        MDC.put(TraceIdFilter.USER_ID_MDC_KEY, adminPrincipal.getName());
 
         filterChain.doFilter(request, response);
     }
