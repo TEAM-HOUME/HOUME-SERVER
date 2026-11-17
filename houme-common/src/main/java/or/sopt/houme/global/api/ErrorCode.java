@@ -89,6 +89,7 @@ public enum ErrorCode {
     ACCESS_TOKEN_BLACKLISTED(HttpStatus.UNAUTHORIZED,40101 ,"회원의 액세스 토큰이 블랙리스트 처리되었습니다" ),
     INVALID_SIGNATURE(HttpStatus.UNAUTHORIZED,40102,"토큰의 서명이 유효하지 않습니다"),
     INVALID_TOKEN(HttpStatus.UNAUTHORIZED,40103,"유효하지 않은 토큰입니다"),
+    ADMIN_NOT_FOUND(HttpStatus.UNAUTHORIZED,40104,"어드민 계정을 찾을 수 없습니다. 다시 로그인해주세요"),
 
     /**
      * 403 FORBIDDEN

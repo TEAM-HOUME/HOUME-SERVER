@@ -27,7 +27,7 @@ public class AdminSSRController {
     @PostMapping("/login")
     public String login(@ModelAttribute AdminLoginRequestDTO adminLoginRequestDTO, Model model) {
         try {
-            String token = adminService.login(adminLoginRequestDTO);
+            String token = adminService.login(adminLoginRequestDTO).accessToken();
             return "redirect:/admin/dashboard?token=" + token;
         } catch (GeneralException e) {
             model.addAttribute("adminLoginRequestDTO", adminLoginRequestDTO);

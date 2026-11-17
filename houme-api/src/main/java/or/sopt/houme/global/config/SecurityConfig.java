@@ -11,6 +11,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Role;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authorization.AuthorizationDecision;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -31,6 +32,17 @@ import java.util.List;
 @EnableWebSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
+
+    private static final String[] ADMIN_PATHS = {
+            "/api/v1/admin/**",
+            "/api/admin/**",
+            "/admin/**"
+    };
+
+    private static final String[] FOR_PLAN_PATHS = {
+            "/api/v1/generated-images/*/curations/products/*/for-plan",
+            "/api/v1/generated-images/*/curations/products/*/for-plan/detail"
+    };
 
     private final JWTFilter jwtFilter;
     private final OAuthService oAuthService;
@@ -66,6 +78,7 @@ public class SecurityConfig {
                         configuration.setAllowedOrigins(Arrays.asList(
                                 "http://localhost:5173",
                                 "http://localhost:5174",
+                                "http://localhost:5175", // 백오피스 클라이언트 로컬 개발
                                 "https://dev.houme.kr",
                                 "https://www.houme.kr",
                                 "https://preview.houme.kr",
@@ -113,8 +126,14 @@ public class SecurityConfig {
                 .requestMatchers(WhiteListConfig.adminWhiteList().toArray(new String[0])).permitAll()
                 .requestMatchers(WhiteListConfig.curationWhiteList().toArray(new String[0])).permitAll()
                 .requestMatchers(HttpMethod.GET, WhiteListConfig.compareWhiteList().toArray(new String[0])).permitAll()
-                .requestMatchers("/api/admin/**").hasAuthority("ROLE_ADMIN")
-                .anyRequest().authenticated());
+                // 어드민 API·SSR 대시보드는 어드민 토큰(ROLE_ADMIN)만 허용
+                .requestMatchers(ADMIN_PATHS).hasAuthority("ROLE_ADMIN")
+                // 기획 의사결정용 for-plan 조회는 어드민 대시보드도 호출하므로 회원·어드민 토큰 모두 허용
+                .requestMatchers(HttpMethod.GET, FOR_PLAN_PATHS).authenticated()
+                .requestMatchers("/error").authenticated()
+                // 나머지 회원 API는 회원 토큰만 허용 — 어드민 토큰으로는 회원 API를 호출할 수 없다
+                .anyRequest().access((authentication, context) ->
+                        new AuthorizationDecision(authentication.get().getPrincipal() instanceof CustomUserDetails)));
 
 
         http

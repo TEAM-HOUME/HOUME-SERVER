@@ -2,6 +2,7 @@ package or.sopt.houme.domain.user.presentation.controller;
 
 import or.sopt.houme.domain.user.presentation.controller.dto.CustomUserDetails;
 import or.sopt.houme.domain.user.presentation.controller.dto.CustomUserDetailsService;
+import or.sopt.houme.user.domain.port.out.AdminRepositoryPort;
 import or.sopt.houme.domain.user.presentation.controller.dto.MyPageGeneratedImageV2Response;
 import or.sopt.houme.domain.user.presentation.controller.dto.MyPageInfoResponse;
 import or.sopt.houme.domain.user.model.entity.*;
@@ -75,6 +76,9 @@ class UserControllerTest {
 
     @MockBean
     private CustomUserDetailsService customUserDetailsService;
+
+    @MockBean
+    private AdminRepositoryPort adminRepositoryPort;
 
     @MockBean
     private BlacklistTokenRepository blacklistTokenRepository;

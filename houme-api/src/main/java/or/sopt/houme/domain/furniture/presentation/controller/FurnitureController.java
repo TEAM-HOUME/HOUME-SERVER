@@ -131,7 +131,7 @@ public class FurnitureController {
             @RequestParam int pHash
     ) {
         FurnitureProductsInfoResponseForPlan response = furnitureFacade.getFurnitureProductInfoFromNaverApiForPlan(
-                userDetails.getUser(),
+                userDetails != null ? userDetails.getUser() : null, // 어드민 토큰이면 회원 정보가 없다
                 tagId,
                 furnitureId,
                 searchKeyword,
@@ -158,7 +158,7 @@ public class FurnitureController {
             @RequestParam(required = false, defaultValue = "false") Boolean applyNaverPay
     ) {
         FurnitureProductsInfoResponseForPlan response = furnitureFacade.getFurnitureProductInfoFromNaverApiForPlanV2(
-                userDetails.getUser(),
+                userDetails != null ? userDetails.getUser() : null, // 어드민 토큰이면 회원 정보가 없다
                 tagId,
                 furnitureId,
                 searchKeyword,

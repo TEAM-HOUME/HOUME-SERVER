@@ -2,6 +2,7 @@ package or.sopt.houme.domain.user.service.admin;
 
 import lombok.RequiredArgsConstructor;
 import or.sopt.houme.domain.user.presentation.admin.controller.dto.AdminLoginRequestDTO;
+import or.sopt.houme.domain.user.presentation.admin.controller.dto.AdminLoginResponse;
 import or.sopt.houme.domain.user.presentation.admin.controller.dto.AdminSignUpRequestDTO;
 import or.sopt.houme.domain.user.model.admin.entity.Admin;
 import or.sopt.houme.domain.user.repository.admin.AdminRepository;
@@ -20,6 +21,8 @@ import java.util.Optional;
 @RequiredArgsConstructor
 @Transactional
 public class AdminServiceImpl implements AdminService {
+
+    private static final long ACCESS_TOKEN_EXPIRES_IN_SECONDS = 24 * 60 * 60;
 
     private final AdminRepository adminRepository;
     private final BCrypt bCrypt;
@@ -52,7 +55,8 @@ public class AdminServiceImpl implements AdminService {
      * 단일토큰 정책으로 구현하였습니다.
      * */
     @Override
-    public String login(AdminLoginRequestDTO adminLoginRequestDTO) {
+    @Transactional(readOnly = true)
+    public AdminLoginResponse login(AdminLoginRequestDTO adminLoginRequestDTO) {
         Admin admin = adminRepository.findByUsername(adminLoginRequestDTO.email())
                 .orElseThrow(() -> new GeneralException(ErrorCode.USER_NOT_FOUND));
 
@@ -60,8 +64,8 @@ public class AdminServiceImpl implements AdminService {
             throw new GeneralException(ErrorCode.USER_NOT_FOUND);
         }
 
-        long expiredMs = 24 * 60 * 60;
+        String accessToken = jwtUtil.createAdminAccessToken(admin.getId(), ACCESS_TOKEN_EXPIRES_IN_SECONDS);
 
-        return jwtUtil.createJwt("access", admin.getId(), admin.getRole().name(), expiredMs);
+        return new AdminLoginResponse(accessToken, ACCESS_TOKEN_EXPIRES_IN_SECONDS);
     }
 }
