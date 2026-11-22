@@ -61,7 +61,7 @@ def record(env, container, stamp, line):
         ("traceId", r"[A-Za-z0-9._-]{1,36}"),
         ("event", r"[A-Za-z][A-Za-z0-9_.-]{0,63}"),
         ("errorCode", r"[A-Za-z]{0,20}[-_]?[0-9]{1,8}"),
-        ("exceptionType", r"(?:[a-zA-Z_$][\w$]*\.)*[A-Z][\w$]*(?:Error|Exception)"),
+        ("exceptionType", r"(?:[a-zA-Z_$][\w$]*\.)*(?:[A-Z][\w$]*)?(?:Error|Exception)"),
     ):
         value = fields.get(name)
         if name == "errorCode" and type(value) is int and 0 <= value <= 99999999:
@@ -76,21 +76,40 @@ def record(env, container, stamp, line):
     return output
 
 
-def collect(env, day, folder):
+def collect(env, day, folder, cutoff):
     target = folder / (day.isoformat() + ".jsonl.gz")
     if target.exists():
-        return
-    start = int(datetime.combine(day, time.min, KST).timestamp()) * 10**9
-    hour = 3600 * 10**9
+        return False
+    start = datetime.combine(day, time.min, KST)
+    end = start + DAY
+    missing_end = min(cutoff, end)
+    has_gap = start < missing_end
+    if has_gap:
+        interval = f"[{start.isoformat()}, {missing_end.isoformat()})"
+        target.with_name(day.isoformat() + ".gap").write_text(interval + "\n")
+        print(f"Loki retention gap env={env} interval={interval}", file=sys.stderr)
+    if cutoff >= end:
+        return True
+
+    current = max(start, cutoff)
     temporary = target.with_suffix(".part")
     with gzip.open(temporary, "wt", encoding="utf-8") as output:
-        for offset in range(24):
-            for entry in windows(env, start + offset * hour, start + (offset + 1) * hour):
+        while current < end:
+            following = min(current + timedelta(hours=1), end)
+            for entry in windows(env, epoch_ns(current), epoch_ns(following)):
                 output.write(json.dumps(entry, separators=(",", ":")) + "\n")
+            current = following
     temporary.replace(target)
+    return has_gap
 
 
-def run(folder, bucket, today):
+def epoch_ns(moment):
+    return int(moment.replace(microsecond=0).timestamp()) * 10**9 + moment.microsecond * 1000
+
+
+def run(folder, bucket, now):
+    today = now.date()
+    cutoff = now - timedelta(hours=72)
     failed = False
     for env in ENVIRONMENTS:
         spool = folder / env
@@ -102,17 +121,13 @@ def run(folder, bucket, today):
             pending.replace(cursor)
         day = date.fromisoformat(cursor.read_text())
         while day < today:
-            if day < today - 2 * DAY and not (spool / (day.isoformat() + ".jsonl.gz")).exists():
-                print(f"Loki retention gap env={env} date={day}", file=sys.stderr)
-                (spool / (day.isoformat() + ".gap")).touch()
-                failed = True
-            else:
-                try:
-                    collect(env, day, spool)
-                except Exception as error:
-                    print(f"collect failed env={env} date={day} type={type(error).__name__}", file=sys.stderr)
+            try:
+                if collect(env, day, spool, cutoff):
                     failed = True
-                    break
+            except Exception as error:
+                print(f"collect failed env={env} date={day} type={type(error).__name__}", file=sys.stderr)
+                failed = True
+                break
             day += DAY
             pending = cursor.with_suffix(".tmp")
             pending.write_text(day.isoformat())
@@ -136,4 +151,4 @@ def run(folder, bucket, today):
 
 if __name__ == "__main__":
     sys.exit(run(Path(os.environ["STATE_DIRECTORY"]), os.environ["ARCHIVE_BUCKET"],
-                 datetime.now(KST).date()))
+                 datetime.now(KST)))
