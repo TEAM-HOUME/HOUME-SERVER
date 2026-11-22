@@ -1,0 +1,15 @@
+[Unit]
+Description=Archive HOUME dev and prod logs to S3
+After=network-online.target docker.service
+Wants=network-online.target
+StartLimitIntervalSec=0
+
+[Service]
+Type=oneshot
+DynamicUser=yes
+StateDirectory=houme-log-archive
+EnvironmentFile=/etc/houme-log-archive.env
+ExecStart=/usr/bin/python3 /opt/houme-log-archive/archive.py
+Restart=on-failure
+RestartSec=30min
+UMask=0077

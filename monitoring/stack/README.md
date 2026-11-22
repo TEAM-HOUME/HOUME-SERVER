@@ -53,3 +53,7 @@ curl -XPOST http://127.0.0.1:9093/api/v2/alerts -H 'Content-Type: application/js
 
 > dev 호스트 CPU/디스크 지표가 필요하면 dev EC2 에도 node-exporter 를 띄우고
 > `prometheus.yml` 에 스크랩 타깃을 추가하면 됩니다 (본 스택은 prod 호스트 기준).
+
+## S3 일일 로그 보관
+
+중앙 Loki에서 dev·prod 로그를 하루 한 번 읽어 30일간 보관합니다. 설치, 권한 설정, 적재 확인과 traceId 조회 방법은 [로그 아카이브 운영 절차](../archive/README.md)를 참고하세요.
