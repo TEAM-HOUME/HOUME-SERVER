@@ -50,7 +50,7 @@ public class GeminiEmbeddingAdapter implements EmbeddingPort {
     }
 
     public List<Double> embedImageUrl(String imageUrl) {
-        DownloadResult download = downloadWithMimeType(imageUrl);
+        DownloadResult download = downloadWithMimeType(imageUrl, 5);
         GeminiEmbeddingRequest req = GeminiEmbeddingRequest.forImage(download.mimeType(), download.base64());
         return embedWithRetry(() -> embeddingClient.embedContent(EMBEDDING_MODEL, apiKey, req), "image:" + imageUrl);
     }
@@ -81,14 +81,14 @@ public class GeminiEmbeddingAdapter implements EmbeddingPort {
     }
 
     public String downloadBase64(String url) {
-        return downloadWithMimeType(url).base64();
+        return downloadWithMimeType(url, 15).base64();
     }
 
-    private DownloadResult downloadWithMimeType(String url) {
+    private DownloadResult downloadWithMimeType(String url, int timeoutSeconds) {
         try {
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(URI.create(url))
-                    .timeout(Duration.ofSeconds(15))
+                    .timeout(Duration.ofSeconds(timeoutSeconds))
                     .header("User-Agent", "Houme-Compare/1.0")
                     .GET()
                     .build();
