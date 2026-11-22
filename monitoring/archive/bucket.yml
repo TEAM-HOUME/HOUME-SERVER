@@ -1,0 +1,45 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Private 30-day HOUME log archive
+Parameters:
+  ArchiveWriterRole:
+    Type: String
+    Description: Existing IAM role name of the central monitoring EC2 instance
+Resources:
+  LogArchive:
+    Type: AWS::S3::Bucket
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      LifecycleConfiguration:
+        Rules:
+          - Id: ExpireDailyLogs
+            Status: Enabled
+            Prefix: env=
+            ExpirationInDays: 30
+            AbortIncompleteMultipartUpload:
+              DaysAfterInitiation: 1
+  ArchiveWritePolicy:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyName: !Sub '${AWS::StackName}-write'
+      Roles: [!Ref ArchiveWriterRole]
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Action: [s3:PutObject, s3:AbortMultipartUpload]
+            Resource:
+              - !Sub '${LogArchive.Arn}/env=dev/*'
+              - !Sub '${LogArchive.Arn}/env=prod/*'
+Outputs:
+  BucketName:
+    Value: !Ref LogArchive

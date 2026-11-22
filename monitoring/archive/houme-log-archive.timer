@@ -1,0 +1,9 @@
+[Unit]
+Description=Archive yesterday's HOUME logs daily at 01:00 KST
+
+[Timer]
+OnCalendar=*-*-* 01:00:00 Asia/Seoul
+Persistent=true
+
+[Install]
+WantedBy=timers.target
